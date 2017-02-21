@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript HTML App</title>
+    <link href="trastyle.css\" type="text/css" rel="stylesheet" />
+    <script src="app.js"></script>
+</head>
+<body>
+
+    <div id="content" onclick="OnPreview()" >content</div>
+
+    <div id="source" style="border:solid 2px; border-color:gray; position:fixed;left:0px;bottom:0px;width:100%;background-color:gray">
+
+        <textarea id="wikitext" style="font-size:large; font-family:'Courier New'; background-color:RGB(255,255,204); width:100%;height:300px;" onkeydown="OnWikiChanged()"></textarea>
+
+
+        <input type="button" id="ShowHide" style="width:100px" value="Hide markup" onclick="OnShowHide()" />
+        <input type="button" id="ShowHideResult" style="width:100px" value="Show html" onclick="OnShowHideResult()" />
+
+        <input type="button" value="Update" style="width:100px" onclick="OnPreview()" />
+
+
+
+        <textarea id="htmlresult" style="display:none;background-color:rgb(182, 255, 0); width:100%;height:300px;">        </textarea>
+    </div>
+
+</body>
+</html>

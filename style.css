@@ -1,0 +1,46 @@
+﻿h1
+{
+    color:RGB(86,143,195);    
+}
+
+h2
+{
+     color:RGB(86,143,195)
+}
+
+h3
+{
+       color:RGB(86,143,195)
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+p {    
+    font-size:large;
+}
+
+li {    
+    font-size:large;
+}
+
+body {    
+    max-width:50em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 54em)
+{
+    body {
+        margin-left: 2em;
+    margin-right: 2em;
+    }
+}
+
+* {
+    font-family:Calibri;
+}

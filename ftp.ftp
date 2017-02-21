@@ -1,0 +1,8 @@
+open ftp.thradams.com
+user thradams T54rfvbn
+cd /thradams.com/web/codeblog/
+prompt
+mput *.txt
+mput *.htm
+close
+quit

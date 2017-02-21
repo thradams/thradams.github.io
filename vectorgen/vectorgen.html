@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Vector generator</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="app.js"></script>
+    <script src="cpptohtml.js"></script>
+    <style>
+        pre {
+            border: rgb(145,145,145) 1px solid;
+            padding: 4px;
+        }
+
+        body {
+            padding-left: 1.5em;
+            padding-right: 1.5em;
+        }
+
+        .comment {
+            color: #800000;
+        }
+
+        .keyword {
+            color: #0000AA;
+            font-weight: bold;
+        }
+
+        .string {
+            color: teal;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vector generator</h1>
+    
+    <table >
+        <tr>
+            <td>Vector type name</td>
+            <td><input id="vectorName" type="text" title="enter the vector type name. ex: vector_int" /></td>
+        </tr>
+
+        <tr>
+            <td>&nbsp;</td><td>&nbsp;</td>
+        </tr>
+
+        <tr>
+            <td>Item type</td>
+            <td><input id="ItemType" type="text" title="enter the item type name. ex: int" /> </td>
+        </tr>
+        <tr>
+            <td>Item destructor</td>
+            <td><input id="ItemDestructor" type="text" title="enter the function name to destroy the item, or leave it blank." /> </td>
+        </tr>
+        <tr>
+            <td>Item copy</td>
+            <td><input id="ItemCopy" type="text" title="enter the function name to copy the item, or leave it blank for byte-copy." /> </td>
+        </tr>
+        <tr>
+            <td>Item move</td>
+            <td><input disabled id="ItemMove" type="text" title="enter the function name to move the item, or leave it blank for byte-move." /> </td>
+        </tr>
+        <tr>
+            <td>Item print</td>
+            <td><input id="ItemPrint" type="text" title="enter the function name to print the item, or leave it blank." /></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Zero ended</td>
+            <td><input id="AddZero" type="checkbox" title="adds zero after the last element (used for strings)" /></td>
+        </tr>
+        <tr>
+            <td>Geometric grow (4 8 16 ..)</td>
+            <td><input id="GeometricGrow" type="checkbox" title="mark this option to grow capacity geometrically." /></td>
+        </tr>
+    </table>
+
+    <input id="Button1" type="button" value="Generate" onclick="Generate()" />
+    <div id="Result">
+    </div>
+    <div id="Source">
+    </div>
+
+</body>
+</html>

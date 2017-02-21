@@ -1,0 +1,40 @@
+module Creole
+{
+    language Creole
+    {   
+       interleave BLANKS = ("\t"+);
+       
+       token NEXTLINE = ("\n" | "\r\n")("//.");        
+       token COMMENTSTART = (("\n" | "\r\n")("//")("\n" | "\r\n" | "\0"))
+                            | (("\n" | "\r\n")("//")(' ' .. '-' | '/' .. '\u007F') ' '..'\u007F'* ("\n" | "\r\n" | "\0"));
+
+        token NOWIKI_BLOCK_CLOSE = ('\n' | "\r\n") "}}}";
+        
+        token NEWLINE2 = ("\n" | "\r\n") " "* ("\n" | "\r\n") " "*;
+        token NEWLINE = ("\n" | "\r\n") " "*;
+        token SPACES = " "+;
+        
+        token ESCAPE = '~';
+        
+
+        token COLON_SLASH =  ":/";
+        token ITAL =  '//';
+        token CODEPRE =  "''";
+        
+		token NOWIKI_CPPOPEN = '{{{cpp' ('\n' | "\r\n");
+		token NOWIKI_OPEN = '{{{' ('\n' | "\r\n");
+		token NOWIKI_CLOSE = '}}}';
+		token LINK_OPEN = '[[';
+		token LINK_CLOSE = ']]';
+		token IMAGE_OPEN = '{{';
+		token IMAGE_CLOSE = '}}';
+		token FORCED_LINEBREAK = '\\\\';
+		token EQUAL = '=';
+		token PIPE = '|';
+		token POUND = '#';
+		token DASH = '-';
+		token STAR = '*';
+		token SLASH = '/';
+		token INSIGNIFICANT_CHAR = ' '..'\u007F';  
+    }
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<rss version="2.0">
+<channel>
+<title>Thiago R. Adams website</title>
+<description>My website's updates</description>
+<link>http://www.thradams.com</link>
+<item>
+<title>Win32 express</title>
+<link> http://www.thradams.com/codeblog/winexpress2.htm </link>
+<pubDate>7/20/2010 3:00:00 AM</pubDate>
+</item>
+<item>
+<title>(Title)</title>
+<link> http://www.thradams.com/codeblog/datetime.htm </link>
+<pubDate>7/18/2010 3:00:00 AM</pubDate>
+</item>
+<item>
+<title>C++ online Code Assistant</title>
+<link> http://www.thradams.com/codeblog/codeassistant.htm </link>
+<pubDate>7/5/2010 3:00:00 AM</pubDate>
+</item>
+<item>
+<title>Character names</title>
+<link> http://www.thradams.com/codeblog/charnames.htm </link>
+<pubDate>6/10/2010 3:00:00 AM</pubDate>
+</item>
+<item>
+<title>Windows assert</title>
+<link> http://www.thradams.com/codeblog/wassert.htm </link>
+<pubDate>5/26/2010 3:00:00 AM</pubDate>
+</item>
+<item>
+<title>Technique to remove WndProc switches. (Windows message switch)</title>
+<link> http://www.thradams.com/codeblog/wndproc.htm </link>
+<pubDate>4/11/2010 3:00:00 AM</pubDate>
+</item>
+</channel>
+</rss>
