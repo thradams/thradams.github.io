@@ -1,0 +1,84 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<hr>
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+std::<span class="keyword2">string</span> to_dec_string(It first, It last);
+</pre>
+
+
+
+
+<hr>
+<h3>Sample</h3>
+
+<pre>
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    <span class="keyword">int</span> u[] = {<span class="number">9</span>, <span class="number">8</span>, <span class="number">4</span>, <span class="number">0</span>};
+    std::cout &lt;&lt; to_dec_string&lt;<span class="number">10</span>&gt;(begin(u), end(u));
+}
+
+Output:
+ <span class="number">489</span>
+
+</pre>
+
+
+<hr>
+<h3>Implementation</h3>
+
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+std::<span class="keyword2">string</span> to_dec_string(It first, It last)
+{
+    std::<span class="keyword2">string</span> result;
+
+    <span class="keyword">while</span> (!is_zero(first, last))
+    {
+        result += <span class="keyword">char</span>(mod&lt;base&gt;(first, last, <span class="number">10</span>) + <span class="string">'0'</span>);
+        divide_in_place&lt;base&gt;(first, last, <span class="number">10</span>);
+    }
+
+    std::reverse(result.begin(), result.end());
+    <span class="keyword">return</span> result;
+}
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

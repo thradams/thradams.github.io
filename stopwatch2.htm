@@ -1,0 +1,134 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2> Stopwatch class</h2>
+
+<p>Stopwatch class using clock</p>
+
+<p>See also:<a href="Stopwatch.htm">Stopwatch QueryPerformanceCounter</a></p>
+
+<pre>
+<span class="comment">//
+</span><span class="comment">// Copyright (C) 2010, Thiago Adams
+</span><span class="comment">//
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">#include</span> &lt;ctime&gt;
+<span class="keyword">#include</span> &lt;cassert&gt;
+
+<span class="keyword">class</span> Stopwatch
+{
+  clock_t m_StartCount;
+  clock_t m_StopCount;
+
+<span class="keyword">public</span>:
+
+    Stopwatch()
+    {
+        Reset();
+    }
+
+    Stopwatch(<span class="keyword">bool</span> start)
+    {
+        Reset();
+        <span class="keyword">if</span> (start)
+           Start();
+    }
+
+    <span class="keyword">static</span> size_t GetFrequency() <span class="comment">//in milliseconds
+</span>    {
+      <span class="comment">//static_assert(CLOCKS_PER_SEC &gt;= 1000);
+</span>      <span class="keyword">return</span> CLOCKS_PER_SEC / <span class="number">1000</span>;
+    }
+
+    <span class="keyword">void</span> Reset()
+    {
+        m_StopCount = <span class="number">0</span>;
+        m_StartCount = <span class="number">0</span>;
+
+        assert(!IsRunning());
+        assert(GetElapsedTicks() == <span class="number">0</span>);
+    }
+
+    <span class="keyword">void</span> Start()
+    {
+        <span class="keyword">if</span> (IsRunning())
+            <span class="keyword">return</span>;
+
+        <span class="keyword">const</span> <span class="keyword">bool</span> resume = (m_StartCount != <span class="number">0</span>);
+        <span class="keyword">if</span> (resume)
+            m_StopCount = <span class="number">0</span>;
+        <span class="keyword">else</span>
+        {
+            m_StartCount = clock();
+        }
+
+        assert(IsRunning());
+    }
+
+    <span class="keyword">void</span> Stop()
+    {
+        <span class="keyword">if</span> (!IsRunning())
+            <span class="keyword">return</span>;
+        
+        m_StopCount = clock();
+
+        assert(!IsRunning());
+    }
+
+    clock_t GetElapsedTicks() <span class="keyword">const</span>
+    {
+        <span class="keyword">if</span> (IsRunning())
+           <span class="keyword">return</span> (clock() - m_StartCount);
+         
+        <span class="keyword">return</span> (m_StopCount - m_StartCount);
+    }
+
+    clock_t GetElapsedMilliseconds() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> GetElapsedTicks() / GetFrequency();
+    }
+
+    <span class="keyword">bool</span> IsRunning() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_StartCount != <span class="number">0</span> &amp;&amp; m_StopCount == <span class="number">0</span>;
+    }
+};
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

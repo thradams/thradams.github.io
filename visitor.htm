@@ -1,0 +1,341 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>Performance test</p>
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> &lt;typeinfo&gt;
+<span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> <span class="string">&quot;Stopwatch.h&quot;</span>
+
+<span class="keyword">int</span> boxCount = <span class="number">0</span>;
+<span class="keyword">int</span> circleCount = <span class="number">0</span>;
+<span class="keyword">int</span> ellipseCount = <span class="number">0</span>;
+
+<span class="keyword">void</span> ClearCount()
+{
+  boxCount = <span class="number">0</span>;
+  circleCount = <span class="number">0</span>;
+  ellipseCount = <span class="number">0</span>;
+}
+
+<span class="keyword">void</span> PrintCount()
+{
+  std::cout &lt;&lt; <span class="string">&quot;box count = &quot;</span> &lt;&lt; boxCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;circle count = &quot;</span> &lt;&lt; circleCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;ellipse count = &quot;</span> &lt;&lt; ellipseCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;------------------------------------&quot;</span> &lt;&lt; std::endl;
+  std::cout &lt;&lt; std::endl;
+}
+
+<span class="keyword">struct</span> TBox;
+<span class="keyword">struct</span> TCircle;
+<span class="keyword">struct</span> TEllipse;
+
+<span class="keyword">struct</span> ShapeVisitor
+{
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TBox&amp;) = <span class="number">0</span>;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TCircle&amp;) = <span class="number">0</span>;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TEllipse&amp;) = <span class="number">0</span>;
+};
+
+
+<span class="keyword">struct</span> Shape
+{
+  <span class="keyword">virtual</span> ~Shape() {};
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Accept(ShapeVisitor&amp;) = <span class="number">0</span>;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> VirtualDraw() = <span class="number">0</span>;
+};
+
+<span class="keyword">struct</span> TBox : <span class="keyword">public</span> Shape
+{
+  <span class="keyword">int</span> m_boxint;
+  TBox()
+  {
+    m_boxint = <span class="number">1</span>;
+  }
+
+  <span class="keyword">virtual</span>  <span class="keyword">void</span> Accept(ShapeVisitor&amp; shapeVisitor) <span class="keyword">override</span>
+  {
+    shapeVisitor.Visit(*<span class="keyword">this</span>);
+  }
+  <span class="keyword">virtual</span> <span class="keyword">void</span> VirtualDraw() <span class="keyword">override</span>
+  {
+    boxCount++;
+  }
+};
+
+<span class="keyword">struct</span> TCircle : <span class="keyword">public</span> Shape
+{
+  <span class="keyword">int</span> m_circleint;
+  TCircle()
+  {
+    m_circleint = <span class="number">1</span>;
+  }
+
+  <span class="keyword">virtual</span>  <span class="keyword">void</span> Accept(ShapeVisitor&amp; shapeVisitor) <span class="keyword">override</span>
+  {
+    shapeVisitor.Visit(*<span class="keyword">this</span>);
+  }
+  <span class="keyword">virtual</span> <span class="keyword">void</span> VirtualDraw() <span class="keyword">override</span>
+  {
+    circleCount++;
+  }
+};
+
+<span class="keyword">struct</span> TEllipse : <span class="keyword">public</span> Shape
+{
+  <span class="keyword">int</span> m_ellipseint;
+  TEllipse()
+  {
+    m_ellipseint = <span class="number">1</span>;
+  }
+
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Accept(ShapeVisitor&amp; shapeVisitor) <span class="keyword">override</span>
+  {
+    shapeVisitor.Visit(*<span class="keyword">this</span>);
+  }
+
+  <span class="keyword">virtual</span> <span class="keyword">void</span> VirtualDraw() <span class="keyword">override</span>
+  {
+    ellipseCount++;
+  }
+};
+
+
+<span class="keyword">void</span> Draw(TBox&amp; box)
+{
+  boxCount += box.m_boxint;
+}
+
+<span class="keyword">void</span> Draw(TCircle&amp; circle)
+{
+  circleCount += circle.m_circleint;
+}
+
+<span class="keyword">void</span> Draw(TEllipse&amp; ellipse)
+{
+  ellipseCount += ellipse.m_ellipseint;
+}
+
+<span class="keyword">struct</span> DrawVisitor : <span class="keyword">public</span> ShapeVisitor
+{
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TBox&amp; obj) <span class="keyword">override</span>
+  {
+    Draw(obj);
+  }
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TCircle&amp; obj) <span class="keyword">override</span>
+  {
+    Draw(obj);
+  }
+  <span class="keyword">virtual</span> <span class="keyword">void</span> Visit(TEllipse&amp; obj) <span class="keyword">override</span>
+  {
+    Draw(obj);
+  }
+};
+
+<span class="keyword">void</span> DrawTypeId(Shape&amp; shape)
+{
+  <span class="keyword">if</span> (<span class="keyword">typeid</span>(shape) == <span class="keyword">typeid</span>(TBox))
+  {
+    Draw(<span class="keyword">dynamic_cast</span>&lt;TBox&amp;&gt;(shape));
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeid</span>(shape) == <span class="keyword">typeid</span>(TCircle))
+  {
+    Draw(<span class="keyword">dynamic_cast</span>&lt;TCircle&amp;&gt;(shape));
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeid</span>(shape) == <span class="keyword">typeid</span>(TEllipse))
+  {
+    Draw(<span class="keyword">dynamic_cast</span>&lt;TEllipse&amp;&gt;(shape));
+  }
+  <span class="keyword">else</span>
+  {
+    assert(<span class="keyword">false</span>);
+  }
+}
+
+<span class="keyword">void</span> DrawDynamicCast(Shape&amp; shape)
+{
+  <span class="keyword">if</span> (<span class="keyword">auto</span> p = <span class="keyword">dynamic_cast</span>&lt;TBox*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">auto</span> p = <span class="keyword">dynamic_cast</span>&lt;TCircle*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">auto</span> p = <span class="keyword">dynamic_cast</span>&lt;TEllipse*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  <span class="keyword">else</span>
+  {
+    assert(<span class="keyword">false</span>);
+  }
+}
+
+<span class="keyword">void</span> CreateShapes(std::<span class="keyword2">vector</span>&lt;std::<span class="keyword2">unique_ptr</span>&lt;Shape&gt;&gt;&amp; shapes)
+{
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++)
+  {
+    <span class="keyword">if</span> (i % <span class="number">2</span> == <span class="number">0</span>)
+    {
+      shapes.emplace_back(std::<span class="keyword2">unique_ptr</span>&lt;TBox&gt;(<span class="keyword">new</span> TBox));
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (i % <span class="number">3</span> == <span class="number">0</span>)
+    {
+      shapes.emplace_back(std::<span class="keyword2">unique_ptr</span>&lt;TCircle&gt;(<span class="keyword">new</span> TCircle));
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (i % <span class="number">5</span> == <span class="number">0</span>)
+    {
+      shapes.emplace_back(std::<span class="keyword2">unique_ptr</span>&lt;TEllipse&gt;(<span class="keyword">new</span> TEllipse));
+    }
+  }
+
+}
+
+<span class="keyword">int</span> main()
+{
+  std::<span class="keyword2">vector</span>&lt;std::<span class="keyword2">unique_ptr</span>&lt;Shape&gt;&gt; shapes;
+
+  CreateShapes(shapes);
+  ClearCount();
+
+  Stopwatch sw(<span class="keyword">true</span>);
+
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; shapes.size(); i++)
+  {
+    DrawTypeId(*shapes[i].get());
+  }
+
+
+
+
+  sw.Stop();
+  std::cout &lt;&lt; <span class="string">&quot;Using typeid + dynamic_cast&quot;</span> &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+
+  <span class="comment">/////////////////
+</span>  ClearCount();
+  sw.Start();
+
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; shapes.size(); i++)
+  {
+    shapes[i]-&gt;VirtualDraw();
+  }
+
+  sw.Stop();
+  std::cout &lt;&lt; <span class="string">&quot;Using virtual function&quot;</span> &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+  <span class="comment">//////////////////////
+</span>
+  <span class="comment">/////////////////
+</span>  ClearCount();
+  sw.Start();
+
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; shapes.size(); i++)
+  {
+    DrawDynamicCast(*shapes[i].get());
+  }
+
+  sw.Stop();
+  std::cout &lt;&lt; <span class="string">&quot;Using dynamic_cast&quot;</span> &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+  <span class="comment">//////////////////////
+</span>  ClearCount();
+
+  DrawVisitor drawVisitor;
+  sw.Start();
+
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; shapes.size(); i++)
+  {
+    shapes[i]-&gt;Accept(drawVisitor);
+  }
+
+  sw.Stop();
+
+  std::cout &lt;&lt; <span class="string">&quot;Using visitor pattern&quot;</span> &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+
+  PrintCount();
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+
+<p>Results - Visual  C++ 2012</p>
+
+<pre>
+Using typeid + dynamic_cast
+397 ticks, 0 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using virtual function
+90555 ticks, 35 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using dynamic_cast
+217489 ticks, 85 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using visitor pattern
+329539 ticks, 129 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+</pre>
+
+
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

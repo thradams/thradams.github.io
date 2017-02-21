@@ -1,0 +1,220 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Interface cast</h2>
+
+
+<p>&quot;Beauty is in the eye of the beholder&quot;</p>
+
+
+<p>What's the idea?</p>
+
+<p>The ideia is to have an object not derived from interface (abstract class) behaving like it was.</p>
+
+<p>For instance, lets say I have the object //Box// and the interface //IShape//:</p>
+
+<pre>
+<span class="keyword">struct</span> Box
+{
+    <span class="keyword">void</span> Draw() {}
+};
+
+<span class="keyword">struct</span> IShape
+{
+    <span class="keyword">virtual</span> <span class="keyword">void</span> Draw() = <span class="number">0</span>;
+};
+
+</pre>
+
+
+<p>//Box// is not derived from //IShape//, however it has the methods necessary to implement the //IShape// interface.</p>
+
+<p>I want to use the //Box// object like it was derived from //IShape//.</p>
+
+<p>For this job I have created the <strong>interface</p>
+
+<pre>
+<span class="keyword">int</span> main()
+{
+    Box box;
+    IShape&amp; r = interface_cast&lt;IShape&gt;(box);
+    r.Draw();
+}
+</pre>
+
+
+<p>How does it works?</p>
+
+<p>The <strong>interface</p>
+
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TObject, <span class="keyword">class</span> TInterface&gt; 
+<span class="keyword">struct</span> InterfaceAdapter; <span class="comment">// Not Implemented
+</span>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TInterface, <span class="keyword">class</span> TObject&gt;
+InterfaceAdapter&lt;TObject, TInterface&gt; interface_cast(TObject&amp; r)
+{
+    <span class="keyword">return</span> InterfaceAdapter&lt;TObject, TInterface&gt;(r);
+}
+</pre>
+
+
+<p>The returned object is a template especialization of InterfaceAdapter.</p>
+
+<p>For any object that has the same functions signatures and names of IShape is possible to use this adapter:</p>
+
+<pre>
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">struct</span> InterfaceAdapter&lt;T, IShape&gt; : <span class="keyword">public</span> IShape
+{
+    T&amp; m_r;
+    InterfaceAdapter(T&amp; r) : m_r(r) {}
+
+    <span class="keyword">virtual</span> <span class="keyword">void</span> Draw()
+    {
+        m_r.Draw(); <span class="comment">//call
+</span>    }
+};
+</pre>
+
+
+<p>This adapter is created manually for the interface we want to use with <strong>interface</p>
+
+<hr>
+<h3>Diferent names</h3>
+<p>If the function name is diferent, it is necessary a more especialized implementation.</p>
+
+<p>For instance, lets say that the //Box// class has function name called //draw2// instead of //Draw//.</p>
+<pre>
+<span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> InterfaceAdapter&lt;Box, IShape&gt; : <span class="keyword">public</span> IShape
+{
+    <span class="keyword">typedef</span> Box T;
+    T&amp; m_r;
+    InterfaceAdapter(T&amp; r) : m_r(r) {}
+    
+    <span class="keyword">virtual</span> <span class="keyword">void</span> Draw()
+    {
+        m_r.draw2();
+    }
+};
+</pre>
+
+
+<hr>
+<h3>Keeping the interfaces===</h3>
+
+<p>If you need to keep the interface pointer:</p>
+
+<p>Usage:</p>
+<pre>
+   IShape* p = New&lt;Box, IShape&gt;();
+   p-&gt;Draw();
+   <span class="keyword">delete</span> p;
+</pre>
+
+
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TObject, <span class="keyword">class</span> TInterface&gt; 
+<span class="keyword">struct</span> InterfaceAdapterInstance : <span class="keyword">public</span> InterfaceAdapter&lt;TObject, TInterface&gt;
+{
+  TObject m_obj;
+  InterfaceAdapterInstance() : InterfaceAdapter&lt;TObject, TInterface&gt;(m_obj){}
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TObject, <span class="keyword">class</span> TInterface&gt;
+InterfaceAdapterInstance&lt;TObject, TInterface&gt;* New()
+{
+    <span class="keyword">return</span> <span class="keyword">new</span> InterfaceAdapterInstance&lt;TObject, TInterface&gt;;    
+}
+
+</pre>
+
+<p><strong>Obs:</strong> In this case the &quot;New&quot; should have 0..N arguments to forward arguments to the object constructor.</p>
+<h3>Sample</h3>
+<pre>
+<span class="comment">////////////////////////////////////////////////////////////////////
+</span><span class="comment">// interface_cast
+</span>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TObject, <span class="keyword">class</span> TInterface&gt; 
+<span class="keyword">struct</span> InterfaceAdapter; <span class="comment">// Not Implemented
+</span>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TInterface, <span class="keyword">class</span> TObject&gt;
+InterfaceAdapter&lt;TObject, TInterface&gt; interface_cast(TObject&amp; r)
+{
+    <span class="keyword">return</span> InterfaceAdapter&lt;TObject, TInterface&gt;(r);
+}
+
+<span class="comment">/////////////////////////////////////////////////////////////
+</span><span class="comment">//IShape interface
+</span><span class="keyword">struct</span> IShape
+{
+    <span class="keyword">virtual</span> <span class="keyword">void</span> Draw() = <span class="number">0</span>;
+};
+
+<span class="comment">//Adaptor for the IShape
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">struct</span> InterfaceAdapter&lt;T, IShape&gt; : <span class="keyword">public</span> IShape
+{
+    T&amp; m_r;
+    InterfaceAdapter(T&amp; r) : m_r(r) {}
+
+    <span class="keyword">virtual</span> <span class="keyword">void</span> Draw()
+    {
+        m_r.Draw();
+    }
+};
+<span class="comment">/////////////////////////////////////////////////////////////
+</span>
+<span class="comment">//Some class
+</span><span class="keyword">struct</span> Box
+{
+    <span class="keyword">void</span> Draw() {}
+};
+
+<span class="keyword">int</span> main()
+{
+    Box box;
+    IShape&amp; r = interface_cast&lt;IShape&gt;(box);
+    r.Draw();
+}
+
+</pre>
+
+
+<h3> History</h3>
+<ul>
+<li> 3/10/2010 Updated</li>
+<li> 18/11/2010 InterfaceAdapterInstance Added</li>
+<li> 22/11/2010 </li>
+</ul>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,191 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>What is C++ special member function?</p>
+
+<p></p>
+
+<p>What I did is a javascript generator for creating the C special functions.</p>
+
+<p>This is a working i progress. Today the configuration is json, but the ideia is the implement a small struct parser.</p>
+
+<p>Here is the javascript generator. Today it works only for int and const char</p>
+
+
+<p>For this struct...</p>
+<pre>
+  <span class="keyword">struct</span> obj
+  { 
+      <span class="keyword">int</span> n;
+      <span class="keyword">const</span> <span class="keyword">char</span>* text;
+      <span class="keyword">const</span> <span class="keyword">char</span>* text2;
+  };
+</pre>
+
+
+<p>The generated especial functions would be</p>
+
+<p>Header</p>
+<pre>
+<span class="comment">/*forward declarations*/</span>
+
+<span class="keyword">#define</span> OBJ_INIT {<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>}
+
+<span class="keyword">int</span> obj_init(<span class="keyword">struct</span> obj* obj, 
+             <span class="keyword">int</span> n, 
+             <span class="keyword">const</span> <span class="keyword">char</span>* text, 
+             <span class="keyword">const</span> <span class="keyword">char</span>* text2);
+
+<span class="keyword">void</span> obj_swap(<span class="keyword">struct</span> obj* obj, <span class="keyword">struct</span> obj* other);
+
+<span class="keyword">void</span> obj_destroy(<span class="keyword">struct</span> obj* obj);
+
+
+<span class="keyword">struct</span> obj* obj_create(<span class="keyword">int</span> n,
+                       <span class="keyword">const</span> <span class="keyword">char</span>* text,
+                       <span class="keyword">const</span> <span class="keyword">char</span>* text2);
+
+<span class="keyword">void</span> obj_delete(<span class="keyword">struct</span> obj* obj);
+</pre>
+
+
+<p>Source</p>
+<pre>
+<span class="comment">/*implementation*/</span>
+
+<span class="keyword">inline</span> <span class="keyword">char</span>* str_create(<span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+   size_t n = strlen(text);
+   <span class="keyword">char</span> *p = (<span class="keyword">char</span>*) malloc (<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (n + <span class="number">1</span>));
+   <span class="keyword">if</span> (p)
+   {
+      strncpy(p, text, n);
+   }
+   <span class="keyword">return</span> p;
+}
+
+<span class="keyword">int</span> obj_init(<span class="keyword">struct</span> obj* obj, 
+             <span class="keyword">int</span> n, 
+             <span class="keyword">const</span> <span class="keyword">char</span>* text, 
+             <span class="keyword">const</span> <span class="keyword">char</span>* text2)
+{
+   obj-&gt;n = n;
+   obj-&gt;text = str_create(text);
+   <span class="keyword">if</span> (obj-&gt;text)
+   {
+       obj-&gt;text2 = str_create(text2);
+       <span class="keyword">if</span> (obj-&gt;text2)
+       {
+           <span class="keyword">return</span> <span class="number">1</span>;
+       }
+       free(obj-&gt;text);
+       obj-&gt;text = <span class="number">0</span>;
+   }
+   obj-&gt;n = <span class="number">0</span>;
+   <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="keyword">void</span> obj_swap(<span class="keyword">struct</span> obj* obj, <span class="keyword">struct</span> obj* other)
+{
+  int_swap(&amp;obj-&gt;n, &amp;other-&gt;n);
+  ptr_swap(&amp;obj-&gt;text, &amp;other-&gt;text);
+  ptr_swap(&amp;obj-&gt;text2, &amp;other-&gt;text2);
+}
+
+<span class="keyword">void</span> obj_destroy(<span class="keyword">struct</span> obj* obj)
+{
+   obj-&gt;n = <span class="number">0</span>;
+   free(obj-&gt;text);
+   obj-&gt;text = <span class="number">0</span>;
+   free(obj-&gt;text2);
+   obj-&gt;text2 = <span class="number">0</span>;
+}
+
+
+<span class="keyword">struct</span> obj* obj_create(<span class="keyword">int</span> n,
+                       <span class="keyword">const</span> <span class="keyword">char</span>* text,
+                       <span class="keyword">const</span> <span class="keyword">char</span>* text2)
+{
+  obj* p = (obj*) malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> obj));
+  <span class="keyword">if</span> (p)
+  {
+    <span class="keyword">if</span> (obj_init(p, n, text, text2) == <span class="number">0</span>)
+    {
+      free(p);
+      p = <span class="number">0</span>;
+    }
+  }
+  <span class="keyword">return</span> p;
+}
+
+<span class="keyword">void</span> obj_delete(<span class="keyword">struct</span> obj* obj)
+{
+  <span class="keyword">if</span> (obj == <span class="number">0</span>)
+  {
+    assert(<span class="keyword">false</span>);
+    <span class="keyword">return</span>;
+  }
+  obj_destroy(obj);
+  free(obj);
+}
+</pre>
+
+
+
+
+
+
+<pre>
+<span class="keyword">enum</span>
+{
+  r_succeedeed,
+  r_outofmemory,
+  r_succeeded,
+  r_failed
+};
+
+<span class="keyword">void</span> int_swap(<span class="keyword">int</span>* a, <span class="keyword">int</span>* b)
+{
+  <span class="keyword">int</span> t = *a;
+  *a = *b; 
+  *b = t;
+}
+
+<span class="keyword">void</span> ptr_swap(<span class="keyword">void</span>** a, <span class="keyword">void</span>** b)
+{
+  <span class="keyword">void</span>* t = a;
+  *a = *b;
+  *b = t;
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

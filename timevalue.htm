@@ -1,0 +1,141 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Time Value of Money</h2>
+
+<pre>
+Present Value (PV) : The value of the annuity at time=0 
+Future Value (FV) : The value of the annuity at time=nPer 
+Payment (PMT) : The value of the individual payments in each compounding period
+Rate% (Rate) : The interest rate that would be compounded for each period of time
+Period (nPer) : The number of payment periods
+</pre>
+
+<pre>
+
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">#include</span> &lt;<span class="keyword">float</span>.h&gt;
+<span class="keyword">#include</span> &lt;math.h&gt;
+
+<span class="keyword">double</span> calc_fv(<span class="keyword">double</span> pv, <span class="keyword">double</span> rate, <span class="keyword">double</span> nper, <span class="keyword">double</span> pmt)
+{
+  <span class="keyword">double</span> fv = (pmt - pow(rate + <span class="number">1.0</span>, nper) * (pmt + rate * pv)) / rate;  
+  <span class="keyword">return</span> fv;
+}
+
+<span class="keyword">double</span> calc_pv(<span class="keyword">double</span> rate, <span class="keyword">double</span> nper, <span class="keyword">double</span> pmt, <span class="keyword">double</span> fv)
+{
+  <span class="keyword">double</span> pv = (pow(rate + <span class="number">1.0</span>, -nper) * (-pmt * pow(rate + <span class="number">1.0</span>, nper) - fv * rate + pmt)) / rate;
+  <span class="keyword">return</span> pv;
+}
+
+<span class="keyword">double</span> calc_pmt(<span class="keyword">double</span> pv, <span class="keyword">double</span> rate, <span class="keyword">double</span> nper, <span class="keyword">double</span> fv)
+{
+  <span class="keyword">const</span> <span class="keyword">double</span> pow_rate1 = pow(rate + <span class="number">1</span>, nper);
+  <span class="keyword">double</span> pmt = -(rate * ( pv * pow_rate1 + fv)) / (pow_rate1 - <span class="number">1</span>);
+  <span class="keyword">return</span> pmt;
+}
+
+<span class="keyword">double</span> calc_nper(<span class="keyword">double</span> pv, <span class="keyword">double</span> rate, <span class="keyword">double</span> pmt, <span class="keyword">double</span> fv)
+{
+  <span class="keyword">double</span> nper =  log((pmt - rate * fv) / (pmt + rate * pv)) / log(rate + <span class="number">1</span>);
+  <span class="keyword">return</span> nper;
+}
+
+<span class="keyword">double</span> calc_rate(<span class="keyword">double</span> fv,
+                 <span class="keyword">double</span> pv,
+                 <span class="keyword">double</span> nper,
+                 <span class="keyword">double</span> pmt,
+                 <span class="keyword">double</span> accuracy = DBL_MIN)
+{
+  <span class="keyword">struct</span> RateF
+  {
+    <span class="keyword">double</span> fv, pv, nper, pmt;
+    RateF(<span class="keyword">double</span> fv1, <span class="keyword">double</span> pv1, <span class="keyword">double</span> nper1, <span class="keyword">double</span> pmt1)
+      : fv(fv1), pv(pv1), nper(nper1), pmt(pmt1) {
+    }
+    <span class="keyword">double</span> <span class="keyword">operator</span> ()(<span class="keyword">double</span> rate) <span class="keyword">const</span> {
+      <span class="keyword">return</span> (pmt - pow(rate + <span class="number">1.0</span>, nper) * (pmt + rate * pv)) / rate - fv;
+    }
+  };
+  
+  <span class="keyword">return</span> Bisection(RateF(fv, pv, nper, pmt), DBL_MIN, <span class="number">10</span>, <span class="number">1000</span>, accuracy);
+}
+
+<span class="keyword">double</span> calc_rate_n(<span class="keyword">double</span> nper, <span class="keyword">double</span> nom_rate, <span class="keyword">double</span> accuracy = DBL_MIN)
+{
+  <span class="keyword">struct</span> RateFN
+  {
+    <span class="keyword">double</span> nper, nom_rate;
+    RateFN(<span class="keyword">double</span> nper1, <span class="keyword">double</span> nom_rate1)
+      : nper(nper1), nom_rate(nom_rate1){
+    }
+    <span class="keyword">double</span> <span class="keyword">operator</span> ()(<span class="keyword">double</span> rate) <span class="keyword">const</span> {
+      <span class="keyword">return</span> pow(<span class="number">1</span> + rate, nper) - (<span class="number">1</span> + nom_rate);
+    }
+  };
+  <span class="keyword">return</span> Bisection(RateFN(nper, nom_rate), <span class="number">0</span>, nom_rate);
+}
+
+<span class="keyword">double</span> SAC(<span class="keyword">int</span> n, <span class="keyword">double</span> PV, <span class="keyword">double</span> rate, <span class="keyword">double</span> ntotal)
+{
+  <span class="keyword">double</span> am = PV / ntotal;
+  <span class="keyword">return</span> rate * (PV - PV / ntotal * (n - <span class="number">1</span>)) + am;
+}
+</pre>
+
+
+<p>See also Bisection Method</p>
+
+<p>C++ 0x</p>
+<pre>
+<span class="keyword">double</span> calc_rate(<span class="keyword">double</span> fv,
+                 <span class="keyword">double</span> pv,
+                 <span class="keyword">double</span> nper,
+                 <span class="keyword">double</span> pmt,
+                 <span class="keyword">double</span> accuracy = DBL_MIN)
+{
+  <span class="keyword">auto</span> f = [&amp;](<span class="keyword">double</span> rate) {
+      <span class="keyword">return</span> (pmt - pow(rate + <span class="number">1.0</span>, nper) * (pmt + rate * pv)) / rate - fv;
+  };
+  
+  <span class="keyword">return</span> Bisection(f, DBL_MIN, <span class="number">10</span>, <span class="number">1000</span>, accuracy);
+
+}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

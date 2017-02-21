@@ -1,0 +1,169 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>tklgen grammar</p>
+
+<pre>
+
+<span class="keyword">module</span> tklgen2
+{
+  <span class="keyword">language</span> tklgen
+  {    
+    <span class="keyword">token</span> PlusCharacter                = <span class="string">'+'</span>;
+    <span class="keyword">token</span> LiteralChar                  = <span class="string">&quot;'&quot;</span>((<span class="string">' '</span>..<span class="string">'&amp;'</span> | <span class="string">'('</span>..<span class="string">'['</span> | <span class="string">']'</span>..<span class="string">'~'</span>) |
+	                                (<span class="string">'\\'</span>(<span class="string">'\''</span> | <span class="string">'\\'</span> | <span class="string">'/'</span> | <span class="string">'0'</span> | <span class="string">'b'</span> | <span class="string">'f'</span> | <span class="string">'n'</span> | <span class="string">'r'</span> | <span class="string">'t'</span> | (<span class="string">'u'</span>(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>))))
+                                         )* <span class="string">&quot;'&quot;</span>;
+    <span class="keyword">token</span> RangeSeparator               = <span class="string">&quot;..&quot;</span>;
+    <span class="keyword">token</span> EqualsCharacter              = <span class="string">'='</span>;
+    <span class="keyword">token</span> SemicolonCharacter           = <span class="string">';'</span>;
+    <span class="keyword">token</span> CommaCharacter               = <span class="string">','</span>;
+    
+    <span class="keyword">token</span> KeywordEmpty                 = <span class="string">&quot;empty&quot;</span>;
+    <span class="keyword">token</span> KeywordAny                   = <span class="string">&quot;any&quot;</span>;
+    <span class="keyword">token</span> KeywordModule                = <span class="string">&quot;module&quot;</span>;
+    <span class="keyword">token</span> KeywordLanguage              = <span class="string">&quot;language&quot;</span>;
+    <span class="keyword">token</span> KeywordInterleave            = <span class="string">&quot;interleave&quot;</span>;
+    <span class="keyword">token</span> KeywordSyntax                = <span class="string">&quot;syntax&quot;</span>;
+    <span class="keyword">token</span> KeywordToken                 = <span class="string">&quot;token&quot;</span>;
+
+    <span class="keyword">token</span> Identifier                   = (<span class="string">'a'</span>..<span class="string">'z'</span> | <span class="string">'A'</span>..<span class="string">'Z'</span> | <span class="string">'_'</span> | <span class="string">'$'</span>) +
+                                         (<span class="string">'0'</span>..<span class="string">'9'</span> + (<span class="string">'a'</span>..<span class="string">'z'</span> | <span class="string">'A'</span>..<span class="string">'Z'</span> | <span class="string">'_'</span> | <span class="string">'$'</span>) +) ?;
+        
+    <span class="keyword">token</span> QuestionMarkCharacter        = <span class="string">'?'</span>;
+    <span class="keyword">token</span> AsteriskCharacter            = <span class="string">'*'</span>;
+    <span class="keyword">token</span> LeftCurlyBracketCharacter    = <span class="string">'{'</span>;
+    <span class="keyword">token</span> RightCurlyBracketCharacter   = <span class="string">'}'</span>;
+    <span class="keyword">token</span> VerticalLineCharacter        = <span class="string">'|'</span>;
+    <span class="keyword">token</span> AmpersandCharacter           = <span class="string">'&amp;'</span>;
+    <span class="keyword">token</span> LeftParenthesisCharacter     = <span class="string">'('</span>;
+    <span class="keyword">token</span> RightParenthesisCharacter    = <span class="string">')'</span>;
+    <span class="keyword">token</span> StringLiteral                = <span class="string">'&quot;'</span>((<span class="string">' '</span>..<span class="string">'!'</span> | <span class="string">'#'</span>..<span class="string">'['</span> | <span class="string">']'</span>..<span class="string">'~'</span>) | 
+                                         (<span class="string">'\\'</span>(<span class="string">'&quot;'</span> | <span class="string">'\\'</span> | <span class="string">'0'</span> | <span class="string">'/'</span> | <span class="string">'b'</span> | <span class="string">'f'</span> | <span class="string">'n'</span> | <span class="string">'r'</span> | <span class="string">'t'</span> | (<span class="string">'u'</span>(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>)(<span class="string">'0'</span>..<span class="string">'9'</span> | <span class="string">'A'</span>..<span class="string">'F'</span> | <span class="string">'a'</span>..<span class="string">'f'</span>))))
+                                         )* <span class="string">'&quot;'</span>;
+    
+    <span class="keyword">interleave</span> Blanks                  = ((<span class="string">&quot; &quot;</span> | <span class="string">&quot;\n&quot;</span> | <span class="string">&quot;\t&quot;</span> | <span class="string">&quot;\r&quot;</span>) +) |
+                                             (<span class="string">&quot;//&quot;</span>(<span class="string">' '</span>..<span class="string">'~'</span>) * (<span class="string">&quot;\n&quot;</span> | <span class="string">&quot;\r\n&quot;</span>)) |
+                                             (<span class="string">&quot;/*&quot;</span>(((<span class="string">' '</span>..<span class="string">')'</span> | <span class="string">'+'</span>..<span class="string">'~'</span> | <span class="string">&quot;\n&quot;</span> | <span class="string">&quot;\r&quot;</span> | <span class="string">&quot;\t&quot;</span>)) |
+                                             (<span class="string">&quot;*&quot;</span>(<span class="string">' '</span>..<span class="string">'.'</span> | <span class="string">'0'</span>..<span class="string">'~'</span> | <span class="string">&quot;\n&quot;</span> | <span class="string">&quot;\r&quot;</span> | <span class="string">&quot;\t&quot;</span>)))* <span class="string">&quot;*/&quot;</span>);
+
+    <span class="keyword">syntax</span> Main = ModuleBody;
+    <span class="keyword">syntax</span> ModuleBody = <span class="string">&quot;module&quot;</span> Identifier
+                        <span class="string">'{'</span>
+                           LanguageBody 
+                        <span class="string">'}'</span>;
+
+    <span class="keyword">syntax</span> LanguageBody = <span class="string">&quot;language&quot;</span> Identifier
+                          <span class="string">'{'</span>
+                             Declarations 
+                          <span class="string">'}'</span>;
+
+    <span class="keyword">syntax</span> Declarations = Declaration Declarations | <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> Declaration = TokenDeclaration |
+                         SyntaxDeclaration |
+                         InterleaveDeclaration;
+
+    <span class="keyword">syntax</span> TokenDeclaration = 
+       <span class="string">&quot;token&quot;</span> Identifier <span class="string">'='</span> TokenExpression <span class="string">';'</span>;
+
+    <span class="keyword">syntax</span> InterleaveDeclaration = 
+      <span class="string">&quot;interleave&quot;</span> Identifier <span class="string">'='</span> TokenExpression <span class="string">';'</span>;
+    
+    <span class="keyword">syntax</span> SyntaxDeclaration = 
+      <span class="string">&quot;syntax&quot;</span> Identifier <span class="string">'='</span> SyntaxExpression <span class="string">';'</span>;
+
+    <span class="comment">//tokens expressions-------------------------------------
+</span>    <span class="comment">//Tip:
+</span>    <span class="comment">//E --&gt; T { T };
+</span>    <span class="comment">//T --&gt; F { &quot;|&quot; F };
+</span>    <span class="comment">//F --&gt; P [&quot;?&quot;];
+</span>    <span class="comment">//P --&gt; V | &quot;(&quot; E &quot;)&quot;;
+</span>    <span class="comment">//V --&gt; v [&quot;..&quot; v];
+</span>    
+    <span class="keyword">syntax</span> TokenExpression = T ZeroOrMoreT;
+    <span class="keyword">syntax</span> ZeroOrMoreT = T ZeroOrMoreT | <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> T = F ZeroOrMoreOrF;
+    <span class="keyword">syntax</span> OrF = <span class="string">'|'</span> F;
+    <span class="keyword">syntax</span> ZeroOrMoreOrF = OrF ZeroOrMoreOrF | <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> F = P OptOperator;
+
+    <span class="keyword">syntax</span> OptOperator = QuestionMarkCharacter |
+                         AsteriskCharacter     |
+                         PlusCharacter         |
+                         <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> P = V | <span class="string">'('</span> TokenExpression <span class="string">')'</span>;
+    <span class="keyword">syntax</span> V = LiteralChar RangeOpt |
+               Identifier           |
+               KeywordAny           |
+               StringLiteral;
+
+    <span class="keyword">syntax</span> RangeOpt  = RangeSeparator LiteralChar | <span class="keyword">empty</span>;
+    
+    <span class="comment">//end token expressions---------------------------------------------------
+</span>
+
+    <span class="comment">// Syntax expression----------------------------------------------------
+</span>    <span class="comment">//Tip:
+</span>    <span class="comment">//E --&gt; T { | T};
+</span>    <span class="comment">//T --&gt; F { F };
+</span>    <span class="comment">//T --&gt; Empty;
+</span>    <span class="comment">//F --&gt; NAME | CHAR | STRING | OPENB Action CLOSEB;
+</span>
+    <span class="keyword">syntax</span> SyntaxExpression = SyntaxExpressionSingle SyntaxExpressionMoreSingle;
+
+    <span class="keyword">syntax</span> SyntaxExpressionMoreSingle = 
+      <span class="string">'|'</span> SyntaxExpressionSingle SyntaxExpressionMoreSingle |
+      <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> SyntaxExpressionSingle = SyntaxExpressionItem SyntaxExpressionSingleFollow;
+    <span class="keyword">syntax</span> SyntaxExpressionSingle = KeywordEmpty;
+
+    <span class="keyword">syntax</span> SyntaxExpressionSingleFollow = SyntaxExpressionItem SyntaxExpressionSingleFollow |
+                            <span class="keyword">empty</span>;
+
+    <span class="keyword">syntax</span> SyntaxExpressionItem = Identifier |
+                                  LiteralChar |
+                                  StringLiteral |
+                                  SyntaxExpressionAction;
+
+    <span class="keyword">syntax</span> SyntaxExpressionAction = <span class="string">'{'</span> Identifier <span class="string">'}'</span>;
+
+    <span class="comment">//end syntax expression ---------------------------------------------------
+</span>  }
+}
+
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

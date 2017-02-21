@@ -1,0 +1,239 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1>C para programadores C++ - Construtores e destrutores em C</h1>
+
+<p>Os objetos em C podem ser contruídos de duas formas</p>
+
+<ul>
+<li> Por inicialização estática</li>
+<li> Por inicialização durante a execução do programa</li>
+</ul>
+
+<h2> Inicialização estática</h2>
+
+<p>Este tipo de inicialização é feita com uma atribuição na declaração.</p>
+
+<p>Exemplo de inicialização de uma variável global.</p>
+
+<pre>
+<span class="keyword">struct</span> Point {
+  <span class="keyword">int</span> x;
+  <span class="keyword">int</span> y
+};
+
+<span class="keyword">struct</span> Point point = { <span class="number">0</span> , <span class="number">0</span> };
+</pre>
+
+
+<p>Exemplo para variáveis locais</p>
+
+<pre>
+<span class="keyword">void</span> f()
+{
+  <span class="keyword">struct</span> Point point = { <span class="number">0</span> , <span class="number">0</span> };
+}
+  
+</pre>
+
+<p>Ambos os exemplos são chamados de inicialização estática.</p>
+
+<p>Na prática, somente o primeiro ocorre efetivalmente antes da execução do programa.</p>
+
+<p>Esta forma de inicialização trás consigo um problema. </p>
+
+<p>Ela depende do conhecimento da representação exata do objeto para ser usada. Imagine que o mesmo objeto Point está sendo inicializado em vários lugares e alguém decide mudar o tipo da coordenada de int para double ou adicionar uma terceira coordenada. Neste caso todos os locais de inicialização teriam que ser revistos e atualizados.</p>
+
+<p>A forma que os programadores evitam este problema é através da criação de uma macro de inicialização.</p>
+<pre>
+<span class="keyword">struct</span> Point {
+  <span class="keyword">int</span> x;
+  <span class="keyword">int</span> y
+};
+<span class="keyword">#define</span> POINT_INIT {<span class="number">0</span>, <span class="number">0</span>}
+
+<span class="keyword">void</span> f()
+{
+  <span class="keyword">struct</span> Point point = POINT_INIT;
+}
+
+</pre>
+
+<p>Esta macro é declarada com o tipo e pode ser usada em todos os lugares aonde o tipo seja usado.Caso hava alguma mudança na struct o programador pode simplestemente atualizar a macro. </p>
+
+<p>Umas das características importantes é que também é possível compor tipos.</p>
+
+<pre>
+struct Line {
+  Point start;
+  Point end;
+};
+
+#define LINE_INIT { POINT_INIT , POINT_INIT }
+</pre>
+
+<p>Além disso, se necessário, pode-se passar parâmetros  e fazer alguma expressão desde que ela seja estática.Arrays e strings também podem ser inicializados desta forma.</p>
+
+
+<h2> Inicialização dinâmica, ou em tempo de execução</h2>
+
+<p>Nem sempre é possível usar a inicialição estática. Não é possível, por exemplo, compor nesta forma estática constructores que podem falhar.</p>
+
+<p>Neste caso é normamente oferecido um constructor não estático na forma de uma função especial.</p>
+
+<pre>
+
+<span class="keyword">struct</span> ArrayInts {
+  <span class="keyword">int</span>* p;
+};
+
+ErrorCode ArrayInts_Init(<span class="keyword">struct</span> ArrayInts* p, size_t n)
+{
+  p-&gt;p = malloc(<span class="keyword">sizeof</span>(<span class="keyword">int</span>) * n);
+  <span class="keyword">if</span> (p-&gt;p == NULL)
+  {
+    <span class="keyword">return</span> ErrorCode_OutOfMem;
+  }
+  <span class="keyword">return</span> ErrorCode_Ok;
+}
+</pre>
+
+
+<p>O que esta função têm de especial?</p>
+
+<p>Uma das características desta função é que o argumento (que é o tipo a ser inicializado) não contém nenhum estado válido na entrada. Em outras palavras, o input só pode ser usado para inicialização.</p>
+
+<p>Após uma inicialização com sucesso todos os membros da struct devem estar inicializados.</p>
+
+<p>O exemplo do array foi escolhido aqui, pois ele não teria como ser inicializado de forma estática.</p>
+
+<p>Com este exemplo também entramos na questão do destructor. Quando o array foi inicializado ele alocou memória que ficou sob sua custodia. Desta forma, quando o objeto parar de ser usado ele precisa retornar esta memória.</p>
+
+<pre>
+void ArrayInts_Destroy(struct ArrayInts* p)
+{
+  if (p)
+  {
+    free(p-&gt;p);
+  }
+}
+</pre>
+
+<p>Por que o destructor é uma função especial?</p>
+
+<p>Após a chamada do destructor o objeto <strong>não se encontra mais em um estado válido</strong> e não deve ser acessado.No caso do C++, a não ser que se chama um destructor diretamente, não é possível mais usar o objeto já que o destructor é chamado na saída do escopo.</p>
+
+<p>O par constructor e destructor, formam no C o seguinte padrão.</p>
+<pre>
+struct ArrayInts values;
+ErrorCode result = ArrayInts_Init(&amp;values);
+if (result == ErrorCode_Ok)
+{
+  ArrayInts_Destroy(&amp;values);
+}
+
+</pre>
+<p>Para toda inicialização com sucesso haverá um Destroy. Existe uma exceção a esta regra mas ela será mostrada com o conceito de move.</p>
+
+<p>Algums programadores C não adotam o conceito de destructor. Ao invés disso, ele utilizam o conceito de limpar, ou devolver o objeto a um estado inicial.Geralmente a função então se chama clear.</p>
+
+<p>A diferença é que após um clear o objeto pode ser usado e no destructor não.Então o destructor é mais otimizado pois ele evita zerar valores na struct que não serão mais usados.</p>
+
+<p>A memória de um objeto pode ser usada novamente após o destructor. Basta chamar o init.</p>
+
+
+<p>Umas das diferenças entre o C e o C++, é que o destrutor no C pode conter parâmetros embora isso seja raro.</p>
+
+
+<p>Como reportar erros?</p>
+
+<p>Em C++, o modo mais comum de reportar erros no constructor é através de exceções.</p>
+
+<p>Em C, o erro é normalmente reportado com um código de retorno da função.</p>
+
+<p>Uma questão importante nas funções de inicialização é garantir que em caso de erro nenhum efeito colateral seja observado como um vazamento de memória. Este comportamento que é feito automaticamente pelo C++, no C têm que ser feito na mão.</p>
+
+<p>Exemplo:</p>
+
+<pre>
+<span class="keyword">struct</span> Data {
+  ArrayInts ValuesIn;
+  ArrayInts ValuesOut;
+};
+
+ErrorCode Data_Init(<span class="keyword">struct</span> Data* p)
+{
+  ErrorCode result = ArrayInts_Init(&amp;p-&gt;ValuesIn);
+  <span class="keyword">if</span> (result == ErrorCode_Ok)
+  {
+    result = ArrayInts_Init(&amp;p-&gt;ValuesOut);
+    <span class="keyword">if</span> (result != ErrorCode_Ok)
+    {
+       <span class="comment">//é preciso liberar a memória de ValuesIn
+</span>    }
+  }
+  <span class="keyword">return</span> result;
+}
+
+</pre>
+
+<p>Com isso nós entramos na questão dos destructores.</p>
+
+<p>O destrutor no C também é um função especial que tem o efeito inverso ao constructor.O destrutor tem a função de desfazer a inicialização. Se houve alocação de memória por exemplo, e esta memória está sob custódia do objeto, então é preciso liberar este recurso.</p>
+
+<pre>
+ErrorCode Data_D(struct Data* p)
+{
+  ErrorCode result = ArrayInts_Init(&amp;p-&gt;ValuesIn);
+  if (result == ErrorCode_Ok)
+  {
+    result = ArrayInts_Init(&amp;p-&gt;ValuesOut);
+    if (result != ErrorCode_Ok)
+    {
+       //é preciso liberar a memória de ValuesIn
+    }
+  }
+  return result;
+}
+</pre>
+
+<h2>Curiosidade do C</h2>
+<p>No C é possível fazer um constructor para vários objetos. A mesma coisa para o destructor.Por exemplo, </p>
+
+<pre>
+struct X { int i; } ;
+struct Y { int i; } ;
+</pre>
+
+
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

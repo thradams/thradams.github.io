@@ -1,0 +1,283 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>Sample:</p>
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;UnitTest.h&quot;</span>
+
+<span class="keyword">void</span> Test1()
+{
+  Assert(<span class="number">1</span> &gt; <span class="number">2</span>);
+}
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">using</span> <span class="keyword">namespace</span> UnitTest;
+  ConsoleReport consoleReport;
+  RunTest(&amp;Test1, consoleReport, L<span class="string">&quot;Test1&quot;</span>);
+}
+</pre>
+
+
+
+<p>Source Code: UnitTest.h</p>
+
+<pre>
+<span class="keyword">#pragma</span> once
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">#include</span> &lt;chrono&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+
+
+<span class="keyword">namespace</span> UnitTest
+{
+  <span class="keyword">enum</span> <span class="keyword">class</span> TestResult
+  {
+    Passed,
+    Failed,
+    Canceled,
+  };
+
+  <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keyword">wchar_t</span>* GetTestResultMsg(TestResult r)
+  {
+    <span class="keyword">switch</span> (r)
+    {
+      <span class="keyword">case</span> TestResult::Passed:
+        <span class="keyword">return</span> L<span class="string">&quot;Passed&quot;</span>;
+
+      <span class="keyword">case</span> TestResult::Failed:
+        <span class="keyword">return</span> L<span class="string">&quot;Failed&quot;</span>;
+
+      <span class="keyword">case</span> TestResult::Canceled:
+        <span class="keyword">return</span> L<span class="string">&quot;Canceled&quot;</span>;
+
+      <span class="keyword">default</span>:
+        <span class="keyword">break</span>;
+    }
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+  }
+
+  <span class="keyword">class</span> TestResultException
+  {
+  <span class="keyword">public</span>:
+    <span class="keyword">int</span> m_SourceLine;
+    std::<span class="keyword2">wstring</span> m_FileName;
+    std::<span class="keyword2">wstring</span> m_Message;
+    TestResult m_TestResult;
+    TestResultException(TestResult r,
+                        <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message,
+                        <span class="keyword">const</span> <span class="keyword">wchar_t</span>* f,
+                        <span class="keyword">int</span> l)
+    {
+      m_Message = message;
+      m_FileName = f;
+      m_SourceLine = l;
+      m_TestResult = r;
+    }
+  };
+
+  <span class="comment">//
+</span>  <span class="comment">//Assertions to be used inside the test functions
+</span>  <span class="comment">//
+</span>
+  <span class="keyword">inline</span> <span class="keyword">void</span> Cancel(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;&quot;</span>,
+                     <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                     <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    <span class="keyword">throw</span> TestResultException(TestResult::Canceled, message, file, line);
+  }
+
+  <span class="keyword">inline</span> <span class="keyword">void</span> Assert(<span class="keyword">bool</span> condition,
+                     <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;assertion failed&quot;</span>,
+                     <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                     <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    <span class="keyword">if</span> (!condition)
+      <span class="keyword">throw</span> TestResultException(TestResult::Failed, message, file, line);
+  }
+
+  <span class="keyword">inline</span> <span class="keyword">void</span> IsTrue(<span class="keyword">bool</span> condition,
+                     <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;assertion IsTrue failed&quot;</span>,
+                     <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                     <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    Assert(condition, message, file, line);
+  }
+
+  <span class="keyword">inline</span> <span class="keyword">void</span> Fail(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;Test failed&quot;</span>,
+                   <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                   <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    Assert(<span class="keyword">false</span>, message, file, line);
+  }
+
+  <span class="keyword">inline</span> <span class="keyword">void</span> IsFalse(<span class="keyword">bool</span> condition,
+                      <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;assertion IsFalse failed&quot;</span>,
+                      <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                      <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    Assert(!condition, message, file, line);
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+  <span class="keyword">inline</span> <span class="keyword">void</span> AreEqual(<span class="keyword">const</span> T1&amp; v1,
+                       <span class="keyword">const</span> T2&amp; v2,
+                       <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;assertion AreEqual failed&quot;</span>,
+                       <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                       <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    Assert(v1 == v2, message, file, line);
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+  <span class="keyword">inline</span> <span class="keyword">void</span> AreNotEqual(<span class="keyword">const</span> T1&amp; v1,
+                          <span class="keyword">const</span> T2&amp; v2,
+                          <span class="keyword">const</span> <span class="keyword">wchar_t</span>* message = L<span class="string">&quot;assertion AreNotEqual failed&quot;</span>,
+                          <span class="keyword">const</span> <span class="keyword">wchar_t</span>* file = L<span class="string">&quot;&quot;</span>,
+                          <span class="keyword">int</span> line = <span class="number">0</span>)
+  {
+    Assert(v1 != v2, message, file, line);
+  }
+
+
+
+  <span class="keyword">struct</span> Report
+  {
+    <span class="comment">// I will count this for you
+</span>    <span class="keyword">int</span> m_PassedCount;
+    <span class="keyword">int</span> m_FailedCount;
+    <span class="keyword">int</span> m_CanceledCount;
+
+    Report()
+    {
+      m_PassedCount = <span class="number">0</span>;
+      m_FailedCount = <span class="number">0</span>;
+      m_CanceledCount = <span class="number">0</span>;
+    }
+
+    <span class="keyword">virtual</span> <span class="keyword">void</span> ReportResultCore(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* testName,
+                                  std::chrono::high_resolution_clock::duration&amp;,
+                                  UnitTest::TestResult result,
+                                  <span class="keyword">const</span> <span class="keyword">wchar_t</span>* pszMessage) = <span class="number">0</span>;
+
+    <span class="keyword">void</span> ReportResult(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* testName,
+                      std::chrono::high_resolution_clock::duration&amp; duration,
+                      UnitTest::TestResult result,
+                      <span class="keyword">const</span> <span class="keyword">wchar_t</span>* pszMessage)
+    {
+      <span class="keyword">switch</span> (result)
+      {
+        <span class="keyword">case</span> TestResult::Passed:
+          m_PassedCount++;
+          <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> TestResult::Failed:
+          m_FailedCount++;
+          <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> TestResult::Canceled:
+          m_CanceledCount++;
+          <span class="keyword">break</span>;
+      }
+
+      ReportResultCore(testName,
+                       duration,
+                       result,
+                       pszMessage);
+    }
+  };
+
+
+  <span class="keyword">struct</span> ConsoleReport : <span class="keyword">public</span> Report
+  {
+    <span class="keyword">virtual</span> <span class="keyword">void</span> ReportResultCore(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* testName,
+                                  std::chrono::high_resolution_clock::duration&amp; duration,
+                                  TestResult result,
+                                  <span class="keyword">const</span> <span class="keyword">wchar_t</span>* pszMessage) <span class="keyword">override</span>
+    {
+      std::wcout &lt;&lt; testName &lt;&lt; L<span class="string">&quot; &quot;</span>;
+      std::wcout &lt;&lt; pszMessage;
+
+      <span class="keyword">typedef</span> std::chrono::duration&lt;<span class="keyword">int</span>, std::ratio&lt;<span class="number">1</span>, <span class="number">1000</span>&gt;&gt; MS;
+      <span class="keyword">int</span> ms = std::chrono::duration_cast&lt;MS&gt;(duration).count();
+      std::wcout &lt;&lt; ms &lt;&lt; L<span class="string">&quot; ms&quot;</span>;
+    }
+  };
+
+  <span class="keyword">void</span> RunTest(<span class="keyword">void</span> (*PF)(<span class="keyword">void</span>), Report&amp; report, <span class="keyword">const</span> <span class="keyword">wchar_t</span>* psz)
+  {
+    <span class="keyword">auto</span> startTime = std::chrono::high_resolution_clock::now();
+
+    <span class="keyword">try</span>
+    {
+      (*PF)();
+      <span class="keyword">auto</span> duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Passed, L<span class="string">&quot;succeeded&quot;</span>);
+    }
+    <span class="keyword">catch</span> (<span class="keyword">const</span> std::exception&amp;)
+    {
+      <span class="keyword">auto</span> duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, L<span class="string">&quot;failed&quot;</span>);
+    }
+    <span class="keyword">catch</span> (<span class="keyword">const</span> TestResultException&amp; e)
+    {
+      <span class="keyword">auto</span> duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, e.m_Message.c_str());
+    }
+    <span class="keyword">catch</span> (...)
+    {
+      <span class="keyword">auto</span> duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, L<span class="string">&quot;failed&quot;</span>);
+    }
+  }
+} <span class="comment">//namespace UnitTest
+</span>
+<span class="keyword">#define</span> WIDEN2(x) L ## x
+<span class="keyword">#define</span> WIDEN(x) WIDEN2(x)
+<span class="keyword">#define</span> __WFILE__ WIDEN(__FILE__)
+
+<span class="comment">// Auto generate comments, file and line numbers
+</span><span class="keyword">#define</span> Assert(x) UnitTest::Assert((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> IsTrue(x) UnitTest::IsTrue((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> IsFalse(x) UnitTest::IsFalse((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> AreEqual(x, y) UnitTest::AreEqual((x), (y), L<span class="string">&quot;AreEqual &quot;</span> L#x L<span class="string">&quot;, &quot;</span> L#y, __WFILE__, __LINE__)
+<span class="keyword">#define</span> AreNotEqual(x, y) UnitTest::AreNotEqual((x), (y), L<span class="string">&quot;AreNotEqual &quot;</span> L#x L<span class="string">&quot;, &quot;</span> L#y, __WFILE__, __LINE__)
+<span class="keyword">#define</span> Fail() UnitTest::Fail(L<span class="string">&quot;Test Failed&quot;</span>, __WFILE__, __LINE__)
+
+
+
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

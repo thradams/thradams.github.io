@@ -1,0 +1,123 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Palindrome check</h2>
+
+<p>A palindrome is a word, phrase, number or other sequence of units that has the property of reading the same in either direction.Example level, ABASee more at: <a href="http://en.wikipedia.org/wiki/Palindrome">http://en.wikipedia.org/wiki/Palindrome</a></p>
+
+<p>The C++ language is really good to implement this kind of algorithm</p>
+<ul>
+<li> really fast</li>
+<li> generic</li>
+<li> good abstration</li>
+</ul>
+
+<p>And how about your language? :)</p>
+<pre>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Iterator&gt;
+<span class="keyword">bool</span> PalindromeCheckAlgorithm(Iterator begin, Iterator end)
+{
+    <span class="keyword">while</span>(begin &lt; end)
+    {
+        <span class="keyword">if</span> (*begin != *end)
+            <span class="keyword">return</span> <span class="keyword">false</span>;
+        ++begin;
+        --end;
+    }
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Container&gt;
+<span class="keyword">bool</span> PalindromeCheck(<span class="keyword">const</span> Container &amp;container)
+{
+    <span class="keyword">if</span> (container.size() == <span class="number">0</span>)
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+
+    <span class="keyword">return</span> PalindromeCheckAlgorithm(container.begin(), container.end() - <span class="number">1</span>);
+}
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> PalindromeCheck(<span class="keyword">const</span> <span class="keyword">wchar_t</span> * pszText)
+{
+    <span class="keyword">const</span> size_t lenght = wcslen(pszText);
+
+    <span class="keyword">if</span> (lenght == <span class="number">0</span>)
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+
+    <span class="keyword">return</span> PalindromeCheckAlgorithm(pszText, pszText + lenght - <span class="number">1</span>);
+}
+
+
+<span class="keyword">void</span> assert2(<span class="keyword">bool</span> b)
+{
+    <span class="keyword">if</span> (!b)
+        cout &lt;&lt; <span class="string">&quot;error!&quot;</span>;
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword2">vector</span>&lt;<span class="keyword">int</span>&gt; numbers;
+    lista.push_back(<span class="number">1</span>);
+    lista.push_back(<span class="number">2</span>);
+    lista.push_back(<span class="number">1</span>);
+
+    Stopwatch stopwatch(<span class="keyword">true</span>);
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000000</span>; i++)
+    {
+        assert2(PalindromeCheck(L<span class="string">&quot;&quot;</span>) == <span class="keyword">false</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;1&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;A&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;ABC&quot;</span>) == <span class="keyword">false</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;ABC&quot;</span>) == <span class="keyword">false</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;level&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;level&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;ABBA&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(L<span class="string">&quot;1221&quot;</span>) == <span class="keyword">true</span>);
+        assert2(PalindromeCheck(numbers) == <span class="keyword">true</span>);
+    }
+
+    stopwatch.Stop();
+
+    cout &lt;&lt; <span class="string">&quot;elapsed time: &quot;</span> &lt;&lt; stopwatch &lt;&lt; endl;
+
+    <span class="keyword">int</span> i;
+    cin &gt;&gt; i;
+}
+
+</pre>
+
+
+<p>See also: <a href="Stopwatch">Stopwatch.htm</a></p>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

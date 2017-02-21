@@ -1,0 +1,276 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p><a href="tklgen.htm">TKLGEN</a></p>
+
+
+<p>Header:<strong>&quot;FileStream.h&quot;</strong></p>
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">#include</span> &lt;cstdio&gt;
+<span class="keyword">#include</span> &lt;cassert&gt;
+
+<span class="keyword">struct</span> FileStream
+{
+  <span class="keyword">typedef</span> <span class="keyword">const</span> <span class="keyword">wchar_t</span>* BufferIterator;
+
+  <span class="keyword">wchar_t</span>*     m_pCharacteres;
+  <span class="keyword">const</span> size_t m_MaxBufferSize;
+  <span class="keyword">wchar_t</span>*     m_pCurrentChar;
+  FILE*        m_hFile;
+  size_t       m_CurrentLine;
+  size_t       m_CurrentCol;
+
+  <span class="keyword">bool</span>         m_HasPutBack;
+  <span class="keyword">wchar_t</span>      m_PutBackCharacter;
+
+  <span class="keyword">bool</span>         m_EofSent;
+
+  BufferIterator FirstBufferEnd() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_pCharacteres + m_MaxBufferSize - <span class="number">1</span>;
+  }
+
+  BufferIterator SecondBufferEnd() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_pCharacteres + m_MaxBufferSize * <span class="number">2</span> - <span class="number">1</span>;
+  }
+
+  <span class="keyword">bool</span> NextCharCore(<span class="keyword">wchar_t</span>&amp; ch)
+  {
+    <span class="keyword">if</span> (m_HasPutBack)
+    {
+      ch = m_PutBackCharacter;
+      m_HasPutBack = <span class="keyword">false</span>;
+      m_PutBackCharacter = <span class="number">0</span>;
+      <span class="keyword">return</span> <span class="keyword">true</span>;
+    }
+
+    <span class="keyword">if</span> (m_EofSent)
+      <span class="keyword">return</span> <span class="keyword">false</span>;
+
+    ch = *m_pCurrentChar++;
+
+    <span class="keyword">if</span> (ch == L<span class="string">'\0'</span>)
+    {
+      ch = <span class="string">'\0'</span>;
+      m_EofSent = <span class="keyword">true</span>;
+    }
+    <span class="keyword">else</span>
+    {
+      <span class="keyword">if</span> (*m_pCurrentChar == L<span class="string">'\0'</span>)
+      {
+        <span class="keyword">if</span> (m_pCurrentChar == FirstBufferEnd())
+        {
+          <span class="keyword">wchar_t</span>* pSecondBuffer =
+            m_pCharacteres + m_MaxBufferSize;
+
+          size_t r = fread(pSecondBuffer,
+                           <span class="keyword">sizeof</span>(<span class="keyword">wchar_t</span>),
+                           m_MaxBufferSize - <span class="number">1</span>,
+                           m_hFile);
+          pSecondBuffer[r] = <span class="number">0</span>;
+          m_pCurrentChar = pSecondBuffer;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> (m_pCurrentChar == SecondBufferEnd())
+        {
+          <span class="keyword">wchar_t</span>* pFirstBuffer = m_pCharacteres;
+
+          size_t r = fread(pFirstBuffer,
+                           <span class="keyword">sizeof</span>(<span class="keyword">wchar_t</span>),
+                           m_MaxBufferSize - <span class="number">1</span>,
+                           m_hFile);
+
+          pFirstBuffer[r] = <span class="number">0</span>;
+          m_pCurrentChar = pFirstBuffer;
+        }
+      }
+    }
+
+    assert(m_pCharacteres[m_MaxBufferSize - <span class="number">1</span>] == <span class="number">0</span>);
+    assert(m_pCharacteres[m_MaxBufferSize * <span class="number">2</span> - <span class="number">1</span>] == <span class="number">0</span>);
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+  }
+
+<span class="keyword">public</span>:
+
+  FileStream(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* fileName, size_t bufferSize = <span class="number">4096</span>)
+    : m_MaxBufferSize(bufferSize)
+    , m_CurrentLine(<span class="number">1</span>)
+    , m_CurrentCol(<span class="number">1</span>)
+    , m_HasPutBack(<span class="keyword">false</span>)
+    , m_PutBackCharacter(L<span class="string">'\0'</span>)
+    , m_EofSent(<span class="keyword">false</span>)
+  {
+    assert(bufferSize &gt;= <span class="number">2</span>);
+
+    <span class="comment">//allocate 2 buffers
+</span>    m_pCharacteres = <span class="keyword">new</span> <span class="keyword">wchar_t</span>[m_MaxBufferSize * <span class="number">2</span>];
+    m_pCharacteres[m_MaxBufferSize * <span class="number">2</span> - <span class="number">1</span>] = <span class="number">0</span>;
+    m_pCharacteres[m_MaxBufferSize - <span class="number">1</span>] = <span class="number">0</span>;
+    m_pCurrentChar = m_pCharacteres;
+
+    errno_t err = _wfopen_s(&amp;m_hFile, fileName, L<span class="string">&quot;r,ccs=UTF-8&quot;</span>);
+
+    <span class="keyword">if</span> (err == <span class="number">0</span>)
+    {
+      size_t r = fread(m_pCharacteres,
+                       <span class="keyword">sizeof</span>(<span class="keyword">wchar_t</span>),
+                       m_MaxBufferSize - <span class="number">1</span>,
+                       m_hFile);
+
+      m_pCharacteres[r] = L<span class="string">'\0'</span>;
+    }
+  }
+
+  ~FileStream()
+  {
+    fclose(m_hFile);
+    <span class="keyword">delete</span> [] m_pCharacteres;
+  }
+
+  <span class="keyword">void</span> PutBack(<span class="keyword">wchar_t</span> ch)
+  {
+    assert(m_HasPutBack == <span class="keyword">false</span>);
+
+    <span class="keyword">if</span> (ch == L<span class="string">'\n'</span>)
+    {
+      <span class="keyword">if</span> (m_CurrentLine &gt; <span class="number">1</span>)
+      {
+        m_CurrentLine--;
+      }
+    }
+    <span class="keyword">else</span>
+    {
+      <span class="keyword">if</span> (m_CurrentCol &gt; <span class="number">1</span>)
+      {
+        m_CurrentCol--;
+      }
+    }
+
+    m_PutBackCharacter = ch;
+    m_HasPutBack = <span class="keyword">true</span>;
+  }
+
+  <span class="keyword">bool</span> NextChar(<span class="keyword">wchar_t</span>&amp; ch)
+  {
+    <span class="keyword">bool</span> b = NextCharCore(ch);
+
+    <span class="keyword">if</span> (b &amp;&amp; ch == L<span class="string">'\n'</span>)
+    {
+      m_CurrentLine++;
+      m_CurrentCol = <span class="number">1</span>;
+    }
+    <span class="keyword">else</span>
+    {
+      m_CurrentCol++;
+    }
+
+    <span class="keyword">return</span> b;
+  }
+
+  size_t GetLine() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_CurrentLine;
+  }
+
+  size_t GetCol() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_CurrentCol;
+  }
+};
+
+
+</pre>
+
+
+<p>Test program</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> <span class="string">&quot;FileStream.h&quot;</span>
+
+<span class="keyword">const</span> <span class="keyword">wchar_t</span>*  IntToLiteral(<span class="keyword">wchar_t</span> i)
+{
+  <span class="keyword">switch</span> (i)
+  {
+    <span class="keyword">case</span> L<span class="string">'\0'</span>: <span class="keyword">return</span> L<span class="string">&quot;\\0&quot;</span>;
+    <span class="keyword">case</span> L<span class="string">'\r'</span>:<span class="keyword">return</span> L<span class="string">&quot;\\r&quot;</span>;
+    <span class="keyword">case</span> L<span class="string">'\n'</span>: <span class="keyword">return</span> L<span class="string">&quot;\\n&quot;</span>;
+    <span class="keyword">case</span> L<span class="string">'\t'</span>: <span class="keyword">return</span> L<span class="string">&quot;\\t&quot;</span>;
+    <span class="keyword">case</span> L<span class="string">'\''</span>:<span class="keyword">return</span> L<span class="string">&quot;\\'&quot;</span>;
+    <span class="keyword">case</span> L'\<span class="string">&quot;':return L&quot;</span>\\\<span class="string">&quot;&quot;</span>;
+    <span class="keyword">case</span> L'\?':return L&quot;\\?&quot;;
+    <span class="keyword">case</span> L<span class="string">'\\'</span>:<span class="keyword">return</span> L<span class="string">&quot;\\\\&quot;</span>;
+    <span class="keyword">case</span> L'\a':return L&quot;\\a&quot;;
+    <span class="keyword">case</span> L<span class="string">'\b'</span>:<span class="keyword">return</span> L<span class="string">&quot;\\b&quot;</span>;
+    <span class="keyword">case</span> L<span class="string">'\f'</span>:<span class="keyword">return</span> L<span class="string">&quot;\\f&quot;</span>;
+    <span class="keyword">case</span> L'\v':return L&quot;\\v&quot;;
+  }
+
+  <span class="keyword">static</span> <span class="keyword">wchar_t</span> ch[<span class="number">2</span>] = {<span class="number">0</span>, <span class="number">0</span>};
+  ch[<span class="number">0</span>] = <span class="keyword">wchar_t</span>(i);
+  <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">void</span> PrintAll(FileStream&amp; filestream)
+{
+  <span class="keyword">wchar_t</span> ch;
+
+  <span class="keyword">while</span> (filestream.NextChar(ch))
+  {
+    std::wcout &lt;&lt; IntToLiteral(ch) &lt;&lt; std::endl;
+  }
+}
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+  <span class="keyword">if</span> (argc == <span class="number">1</span>)
+  {
+    std::wcout &lt;&lt; <span class="string">&quot;missing filename&quot;</span>;
+    <span class="keyword">return</span> <span class="number">1</span>;
+  }
+
+  FileStream filestream(argv[<span class="number">1</span>], <span class="number">5</span>);
+  PrintAll(filestream);
+  filestream.PutBack(<span class="string">'\0'</span>);
+  PrintAll(filestream);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

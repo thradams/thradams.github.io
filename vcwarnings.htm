@@ -1,0 +1,96 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>VC++ Warning tips</h2>
+
+<h3>How to disable warnings?</h3>
+<pre>
+
+<span class="keyword">#pragma</span> warning( push )
+<span class="keyword">#pragma</span> warning( disable : <span class="number">4705</span> )
+<span class="keyword">#pragma</span> warning( disable : <span class="number">4706</span> )
+<span class="keyword">#pragma</span> warning( disable : <span class="number">4707</span> )
+<span class="comment">// Some code
+</span><span class="keyword">#pragma</span> warning( pop ) 
+</pre>
+
+
+<p>Useful warnings that are off by default can be enabled</p>
+
+<p>My favorites are:</p>
+<pre>
+<span class="comment">//class' : class has virtual functions, but destructor is not virtual
+</span><span class="comment">// C4265.cpp
+</span><span class="comment">// compile with: /W3 /c
+</span><span class="keyword">#pragma</span> warning(<span class="keyword">default</span> : <span class="number">4265</span>)
+<span class="keyword">class</span> B
+{
+<span class="keyword">public</span>:
+   <span class="keyword">virtual</span> <span class="keyword">void</span> vmf();
+
+   ~B();
+   <span class="comment">// try the following line instead
+</span>   <span class="comment">// virtual ~B();
+</span>};   <span class="comment">// C4265
+</span>
+<span class="keyword">int</span> main()
+{
+   B b;
+}
+</pre>
+
+
+<p>Sample 2:</p>
+
+<pre>
+<span class="comment">//enumerator 'identifier' in switch of enum 'enumeration' is not explicitly handled by a case label
+</span><span class="comment">// C4061.cpp
+</span><span class="comment">// compile with: /W4
+</span><span class="keyword">#pragma</span> warning(<span class="keyword">default</span> : <span class="number">4061</span>)
+
+<span class="keyword">enum</span> E { a, b, c };
+<span class="keyword">void</span> func ( E e )
+{
+   <span class="keyword">switch</span>(e)
+   {
+      <span class="keyword">case</span> a:
+      <span class="keyword">case</span> b:
+      <span class="keyword">default</span>:
+         <span class="keyword">break</span>;
+   }   <span class="comment">// C4061 c' not handled
+</span>}
+
+<span class="keyword">int</span> main()
+{
+}
+</pre>
+
+
+<p>See the complete list at: <a href="Compiler Warnings That Are Off by Default">&quot;http://msdn.microsoft.com/en-us/library/23k5d385.aspx</a>
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,130 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Multimethods in C++</h2>
+
+<p>The problem:Let's say we have a polymorphic shape class with functions to calculate intersections with other shapes.I want to choose in runtime the correct function based on the shape even using the base class shape. How to do it?Here, I will present a way to do it using RTTI capabilities from C++.</p>
+<pre>
+
+<span class="keyword">namespace</span> shapes {
+
+    <span class="keyword">struct</span> shape 
+    {
+        <span class="keyword">virtual</span> ~shape(){}
+        <span class="keyword">virtual</span> <span class="keyword">void</span> collide(<span class="keyword">const</span> shape &amp;) <span class="keyword">const</span> = <span class="number">0</span>;
+    };
+
+    <span class="keyword">struct</span> rectangle;
+
+    <span class="keyword">struct</span> circle : <span class="keyword">public</span> shape
+    {
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> circle &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;circle-&gt;circle&quot;</span> &lt;&lt; std::endl; }
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> rectangle &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;circle-&gt;rectangle&quot;</span> &lt;&lt; std::endl; }
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> shape &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;shape-&gt;shape&quot;</span> &lt;&lt; std::endl;  }
+    };
+
+    <span class="keyword">struct</span> rectangle : <span class="keyword">public</span> shape
+    {    
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> rectangle &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;rectangle-&gt;rectangle&quot;</span> &lt;&lt; std::endl; }
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> circle &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;rectangle-&gt;circle&quot;</span> &lt;&lt; std::endl; }
+        <span class="keyword">void</span> collide(<span class="keyword">const</span> shape &amp;) <span class="keyword">const</span> { std::cout &lt;&lt; <span class="string">&quot;shape-&gt;shape&quot;</span> &lt;&lt; std::endl;  }
+    };
+}
+
+<span class="keyword">struct</span> double_type_info_key
+{
+    <span class="keyword">const</span> type_info* l_info;
+    <span class="keyword">const</span> type_info* r_info;
+    double_type_info_key(<span class="keyword">const</span> type_info* l, <span class="keyword">const</span> type_info*r) :
+    l_info(l),
+    r_info(r)
+    {}
+};
+
+<span class="keyword">bool</span> <span class="keyword">operator</span> &lt; (<span class="keyword">const</span> double_type_info_key &amp;l,
+                 <span class="keyword">const</span> double_type_info_key &amp;r)
+{
+    <span class="keyword">if</span> ( *l.l_info == *r.l_info )
+        <span class="keyword">return</span> l.r_info-&gt;before(*r.r_info);
+    <span class="keyword">return</span> l.l_info-&gt;before(*r.l_info);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+<span class="keyword">struct</span> do_cast {
+   <span class="keyword">void</span> <span class="keyword">operator</span>()(<span class="keyword">const</span> shapes::shape &amp;l,
+                   <span class="keyword">const</span> shapes::shape &amp;r) <span class="keyword">const</span>
+   {
+      <span class="keyword">dynamic_cast</span>&lt;<span class="keyword">const</span> T1&amp;&gt;(l).collide(<span class="keyword">dynamic_cast</span>&lt;<span class="keyword">const</span> T2&amp;&gt;(r));
+   }
+};
+
+<span class="keyword">typedef</span> std::tr1::<span class="keyword2">function</span>&lt; <span class="keyword">void</span> (<span class="keyword">const</span> shapes::shape&amp;, <span class="keyword">const</span> shapes::shape&amp;) &gt;  collide_fptr;
+<span class="keyword">typedef</span> std::map&lt;double_type_info_key, collide_fptr&gt; Map;
+Map type_info_map;
+
+<span class="keyword">void</span> check_collision(<span class="keyword">const</span> shapes::shape &amp; l, <span class="keyword">const</span> shapes::shape &amp;r)
+{
+    Map::const_iterator it = type_info_map.find(double_type_info_key(&amp;<span class="keyword">typeid</span>(l), &amp;<span class="keyword">typeid</span>(r)));
+    <span class="keyword">if</span> (it == type_info_map.end())
+    {
+        l.collide(r);
+        <span class="keyword">return</span>;
+    }
+
+    (*it).second(l, r);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+std::pair&lt;double_type_info_key, collide_fptr&gt; make_key()
+{
+  <span class="keyword">return</span> make_pair(double_type_info_key(&amp;<span class="keyword">typeid</span>(T1), &amp;<span class="keyword">typeid</span>(T2)),
+                   collide_fptr(do_cast&lt;T1, T2&gt;()));
+}
+
+<span class="keyword">int</span> main()
+{
+    type_info_map.insert( make_key&lt;shapes::rectangle, shapes::circle&gt; ());
+    type_info_map.insert( make_key&lt;shapes::circle, shapes::rectangle&gt; ());
+    type_info_map.insert( make_key&lt;shapes::rectangle, shapes::rectangle&gt; ());
+    type_info_map.insert( make_key&lt;shapes::circle, shapes::circle&gt; ());
+    type_info_map.insert( make_key&lt;shapes::shape, shapes::shape&gt; ());
+
+    shapes::rectangle rectangle;
+    shapes::circle circle;
+
+    check_collision(rectangle, circle);
+    check_collision(rectangle, rectangle);
+    
+    check_collision(circle, rectangle);
+    check_collision(circle, circle);
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,314 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>==polimorphic</p>
+
+
+<p>{{{cpp</p>
+
+<h1>include <iostream></h1>
+<h1>include "polimorphic_list.h"</h1>
+
+<p>using namespace std;</p>
+
+<p>struct Box{    int i;    Box(int x) : i(x)    {    }</p>
+
+<p>    void Draw()    {        cout &lt;&lt; &quot;Box&quot; &lt;&lt; endl;    }};</p>
+
+<p>struct Circle{    int radius;    Circle(int r) : radius(r)    {    }</p>
+
+<p>    void Draw()    {        cout &lt;&lt; &quot;Circle&quot; &lt;&lt; endl;    }};</p>
+
+<p>int main(){    polimorphic    list.emplace    list.emplace</p>
+
+<p>    for (auto&amp; item : list)    {                if (auto p = item.is&lt;Circle&gt;())        {            p-&gt;Draw();        }                else if (auto p = item.is&lt;Box&gt;())        {            p-&gt;Draw();        }    }</p>
+
+<p>    return 0;}</p>
+
+
+<p>}}}</p>
+
+<p>===Implementation===</p>
+
+<p>{{{cpp</p>
+
+<h1>pragma once</h1>
+<h1>include <cstddef></h1>
+<h1>include <algorithm></h1>
+
+<p>class PointerType{    template&lt;class T&gt;    static size    {        static size        return (size    }</p>
+
+<p>    size    void </p>
+
+<p>protected:    template&lt;class T&gt;    void Set(T    {        m        m    }</p>
+
+<p>public:</p>
+
+<p>    template&lt;class T&gt;    T    {        return m    }   };</p>
+
+<p>struct ListNodeBase : public PointerType{    ListNodeBase    ListNodeBase};</p>
+
+<p>template&lt;class T&gt;struct ListNode : public ListNodeBase{    T m    template&lt;class...     ListNode(    {        Set(&amp;m    }};</p>
+
+<p>struct ListIterator{    typedef ListIterator iterator;    typedef ListIterator const    typedef PointerType value    typedef value    typedef value</p>
+
+<p>    typedef ListNodeBase </p>
+
+<p>    typedef size    typedef ptrdiff</p>
+
+<p>    ListNodeBase</p>
+
+<p>    ListIterator(ListNodeBase    {    }</p>
+
+<p>    ListIterator()    {    }</p>
+
+<p>    void Increment()    {        m    }    void Decrement()    {        m    }</p>
+
+<p>    bool operator==(const ListIterator&amp; x) const    {        return m    }</p>
+
+<p>    bool operator    {        return m    }</p>
+
+<p>    ListIterator(const iterator&amp; x) : ListIterator(x.m    {    }</p>
+
+<p>    reference operator    {        return     }</p>
+
+<p>    pointer operator-&gt;() const    {        return &amp;(operator    }</p>
+
+<p>    ListIterator&amp; operator++()    {        this-&gt;Increment();        return     }</p>
+
+<p>    ListIterator operator++(int)    {        auto tmp =         this-&gt;Increment();        return tmp;    }</p>
+
+<p>    ListIterator&amp; operator--()    {        this-&gt;Decrement();        return     }</p>
+
+<p>    ListIterator operator--(int)    {        auto tmp =         this-&gt;Decrement();        return tmp;    }};</p>
+
+<p>class polimorphic{ public:    typedef PointerType value    typedef value    typedef const value    typedef value    typedef const value    typedef ListNodeBase     typedef size    typedef ptrdiff    typedef ListIterator iterator;    typedef ListIterator const</p>
+
+<p>private:        ListNodeBase    template&lt;class T, class...     ListNodeBase    {        ListNodeBase        return p;    }</p>
+
+<p>public:    polimorphic    polimorphic</p>
+
+<p>    explicit polimorphic    {        m        m        m    }</p>
+
+<p>    ~polimorphic    {        clear();    }</p>
+
+<p>    iterator begin()    {        return (    }</p>
+
+<p>    const    {        return (    }</p>
+
+<p>    iterator end()    {        return m    }</p>
+
+<p>    const    {        return m    }</p>
+
+<p>    bool empty() const    {        return m    }</p>
+
+<p>    size    {        return size    }</p>
+
+<p>    reference front()    {        return     }</p>
+
+<p>    const    {        return     }</p>
+
+<p>    reference back()    {        return     }</p>
+
+<p>    const    {        return     }</p>
+
+<p>    void swap(polimorphic    {        std::swap(m    }</p>
+
+<p>    template&lt;class T, class...     iterator emplace    {                tmp-&gt;m        tmp-&gt;m        position.m        position.m        return tmp;    }</p>
+
+<p>    template&lt;class T, class...     void emplace    {        emplace    }</p>
+
+<p>    iterator erase(iterator position)    {        ListNodeBase        ListNodeBase                prev        next        delete n;        return iterator((    }</p>
+
+<p>    iterator erase(iterator first, iterator last)    {        while (first             erase(first++);        return last;    }</p>
+
+<p>    void pop    {        erase(begin());    }</p>
+
+<p>    void pop    {        iterator tmp = end();        erase(--tmp);    }</p>
+
+<p>    void clear()    {        ListNodeBase        while (cur         {            ListNodeBase            cur = (ListNodeBase            delete tmp;        }        m        m    }    };</p>
+
+<p>}}}</p>
+
+
+
+
+
+<p>==Test using polimorphic vector of unique</p>
+
+
+
+
+<p>{{{cpp</p>
+<h1>include "stdafx.h"</h1>
+
+<h1>include <iostream></h1>
+<h1>include <vector></h1>
+<h1>include <memory></h1>
+<h1>include "Stopwatch.h"</h1>
+<p>using namespace std;</p>
+
+<p>int boxCount = 0;int circleCount = 0;int ellipseCount = 0;</p>
+
+<p>struct Shape{    virtual void Draw() = 0;};</p>
+
+<p>struct TBox : public Shape{    int m    TBox()    {        m    }</p>
+
+<p>    void Draw()    {        boxCount += m    }};</p>
+
+<p>struct TCircle : public Shape{    int m    TCircle()    {        m    }</p>
+
+<p>    void Draw()    {        circleCount += m    }};</p>
+
+<p>struct TEllipse : public Shape{    int m    TEllipse()    {        m    }</p>
+
+<p>    void Draw()    {        ellipseCount += m    }};</p>
+
+<p>template&lt;class T&gt;void CreateShapes(T&amp; shapes){    Stopwatch sw(true);    for (int i = 0; i &lt; 100000; i++)    {        if (i % 2 == 0)        {            shapes.emplace        }        else if (i % 3 == 0)        {            shapes.emplace        }        else if (i % 5 == 0)        {            shapes.emplace        }    }</p>
+
+<p>    sw.Stop();    std::cout &lt;&lt; &quot;create shapes &quot; &lt;&lt; sw &lt;&lt; std::endl;</p>
+
+<p>}</p>
+
+
+<p>void PrintCount(){    std::cout &lt;&lt; &quot;box count = &quot; &lt;&lt; boxCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;circle count = &quot; &lt;&lt; circleCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;ellipse count = &quot; &lt;&lt; ellipseCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;------------------------------------&quot; &lt;&lt; std::endl;    std::cout &lt;&lt; std::endl;}</p>
+
+<p>int main(){    std::vector&lt;std::unique    CreateShapes(shapes);</p>
+
+<p>    Stopwatch sw(true);</p>
+
+<p>    for (auto&amp; item : shapes)    {         item-&gt;Draw();            }</p>
+
+
+<p>    sw.Stop();        std::cout &lt;&lt; &quot;vector shapes virtual &quot; &lt;&lt; sw &lt;&lt; std::endl &lt;&lt; std::endl;    PrintCount();</p>
+
+<p>    return 0;}</p>
+
+
+<p>}}}</p>
+
+
+<p>{{{create shapes 6 ms; 12566 ticksSvector shapes virtual 0 ms; 1774 ticksS</p>
+
+<p>box count = 50000circle count = 16667ellipse count = 6667</p>
+<hr>
+<p>}}}</p>
+
+<p>==Test using polimorphic</p>
+
+<p>{{{cpp</p>
+<h1>include "stdafx.h"</h1>
+
+<h1>include <iostream></h1>
+<h1>include "polimorphic_list.h"</h1>
+<h1>include "Stopwatch.h"</h1>
+<p>using namespace std;</p>
+
+
+<p>int boxCount = 0;int circleCount = 0;int ellipseCount = 0;</p>
+
+
+<p>struct TBox {    int m    TBox()    {        m    }</p>
+
+<p>    void Draw()     {        boxCount += m    }};</p>
+
+<p>struct TCircle {    int m    TCircle()    {        m    }</p>
+
+<p>    void Draw()     {        circleCount += m    }};</p>
+
+<p>struct TEllipse {    int m    TEllipse()    {        m    }</p>
+
+<p>    void Draw()     {        ellipseCount += m    }};</p>
+
+<p>template&lt;class T&gt;void CreateShapes(T&amp; shapes){    Stopwatch sw(true);    for (int i = 0; i &lt; 100000; i++)    {        if (i % 2 == 0)        {            shapes.emplace        }        else if (i % 3 == 0)        {            shapes.emplace        }        else if (i % 5 == 0)        {            shapes.emplace        }    }</p>
+
+<p>    sw.Stop();    std::cout &lt;&lt; &quot;create shapes &quot; &lt;&lt; sw &lt;&lt; std::endl;</p>
+
+<p>}</p>
+
+
+<p>void PrintCount(){    std::cout &lt;&lt; &quot;box count = &quot; &lt;&lt; boxCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;circle count = &quot; &lt;&lt; circleCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;ellipse count = &quot; &lt;&lt; ellipseCount &lt;&lt; std::endl;    std::cout &lt;&lt; &quot;------------------------------------&quot; &lt;&lt; std::endl;    std::cout &lt;&lt; std::endl;}</p>
+
+<p>int main(){    polimorphic    CreateShapes(shapes);</p>
+
+<p>    Stopwatch sw(true);</p>
+
+<p>    for (auto item : shapes)    {        if (auto p = item.is&lt;TCircle&gt;())        {            p-&gt;Draw();        }        else if (auto p = item.is&lt;TBox&gt;())        {            p-&gt;Draw();        }        else if (auto p = item.is&lt;TEllipse&gt;())        {            p-&gt;Draw();        }    }</p>
+
+
+<p>    sw.Stop();</p>
+
+<p>    std::cout &lt;&lt; &quot;polimorphic list &quot; &lt;&lt; sw &lt;&lt; std::endl &lt;&lt; std::endl;    PrintCount();    return 0;}</p>
+
+
+<p>}}}</p>
+
+
+<p>{{{create shapes 5 ms; 10839 ticks Spolimorphic list 0 ms; 848 ticks S</p>
+
+<p>box count = 50000circle count = 16667ellipse count = 6667</p>
+<hr>
+<p>}}}</p>
+
+
+
+<p>Changing</p>
+
+<p>From:</p>
+
+<p>{{{cpp</p>
+
+<p>class PointerType{    template&lt;class T&gt;    static size    {        static size        return (size    }</p>
+
+<p>    size    void </p>
+
+<p>protected:    template&lt;class T&gt;    void Set(T    {        m        m    }</p>
+
+<p>public:</p>
+
+<p>    template&lt;class T&gt;    T    {        return m    }   };}}}</p>
+
+<p>To:{{{cpp</p>
+
+<p>class PointerType{    const type    void </p>
+
+<p>protected:    template&lt;class T&gt;    void Set(T    {        m        m    }</p>
+
+<p>public:</p>
+
+<p>    template&lt;class T&gt;    T    {        return     }   };}}}</p>
+
+<p>Output{{{create shapes 5 ms; 10713 ticks Spolimorphic list 2 ms; 4572 ticks S</p>
+
+<p>box count = 50000circle count = 16667ellipse count = 6667</p>
+<hr>
+<p>}}}</p>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

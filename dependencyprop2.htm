@@ -1,0 +1,163 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Dependency properties (2)</h2>
+
+<p>The dependency property, in the way I am using in this text, is a property that depends on someone else to be evaluated.</p>
+
+<p>I came across of this necessity of dependency properties because I am implementing a HTML render including the CSS (Cascading Style Sheets) that is very suitable for this kind of implementation.</p>
+
+<p>For instance:</p>
+<pre>
+&lt;p style=&quot;font-size: large;&quot;&gt;
+&lt;span style=&quot;color:blue;&quot;&gt;i'm blue and large font&lt;/span&gt; 
+i'm large&lt;/p&gt;
+</pre>
+<p>Here, the span element is child of p. If you ask the span element for its FontSize, it will have to ask for its parents until someone returns a value, otherwise a default one will be returned.The implementation is based on a static map for each property which associates object address to the property value.</p>
+
+<p>This idea is an evolution of the first version of this implementation, and it was suggested by Cesar Mello who also has his own implementation.Source code:</p>
+
+<pre>
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// Acknoledgements. Cesar Mello
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> PropertyType, <span class="keyword">class</span> ObjectType&gt;
+<span class="keyword">class</span> Property
+{
+  <span class="keyword">typedef</span> std::map&lt;<span class="keyword">const</span> ObjectType*, PropertyType&gt; Map;
+  Map m_values;
+
+<span class="keyword">public</span>:
+
+  ~Property()
+  {
+    <span class="comment">// objects must clear the property values before they are deleted
+</span>    assert(m_values.empty());
+  }
+
+  <span class="keyword">void</span> SetValueOf(<span class="keyword">const</span> ObjectType&amp; object,
+                  <span class="keyword">const</span> PropertyType&amp; value)
+  {
+    m_values.insert(Map::value_type(&amp;object, value));
+  }
+
+  <span class="keyword">const</span> PropertyType* FindValueOf(<span class="keyword">const</span> ObjectType&amp; object) <span class="keyword">const</span>
+  {
+    Map::const_iterator it = m_values.find(&amp;object);
+    <span class="keyword">if</span> (it != m_values.end())
+      <span class="keyword">return</span> &amp;it-&gt;second;
+    <span class="keyword">return</span> <span class="number">0</span>;
+  }
+  
+  <span class="keyword">bool</span> HasValueFor(<span class="keyword">const</span> ObjectType&amp; object) <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> FindValueOf(object) != <span class="number">0</span>;
+  }
+
+  <span class="keyword">bool</span> ClearValueOf(<span class="keyword">const</span> ObjectType&amp; object)
+  {
+    <span class="keyword">return</span> m_values.erase(&amp;object) != <span class="number">0</span>;
+  }
+};
+</pre>
+
+
+<h3>Sample of use</h3>
+
+<pre>
+Header:
+
+<span class="keyword">class</span> X
+{
+  X * m_Parent;
+<span class="keyword">public</span>:
+
+  ~X();
+  X * GetParent() { <span class="keyword">return</span> m_Parent; }
+  <span class="keyword">const</span> X * GetParent() <span class="keyword">const</span> { <span class="keyword">return</span> m_Parent; }
+
+  COLORREF GetColor() <span class="keyword">const</span>;
+  <span class="keyword">void</span> SetColor(COLORREF);
+}
+
+Implementation:
+
+<span class="keyword">namespace</span> 
+{
+   Property&lt;COLORREF, X&gt; ColorProperty;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> PropertyType, <span class="keyword">class</span> ClassType&gt;
+<span class="keyword">const</span> PropertyType* InheritedFind(Property&lt;PropertyType, ClassType &gt;&amp; p,
+                                         <span class="keyword">const</span> ClassType&amp; object)
+{
+  <span class="keyword">const</span> ClassType* pObject = &amp;object;
+  <span class="keyword">while</span> (pObject != <span class="number">0</span>)
+  {
+    <span class="keyword">const</span> PropertyType * pVal = p.FindValueOf(*pObject);
+    <span class="keyword">if</span> (pVal)
+      <span class="keyword">return</span> pVal;
+    pObject = pObject-&gt;GetParent();
+  }
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> PropertyType, <span class="keyword">class</span> ClassType&gt;
+<span class="keyword">const</span> PropertyType&amp; InheritedFind(Property&lt;PropertyType, ClassType &gt;&amp; p,
+                                         <span class="keyword">const</span> ClassType&amp; object,
+                                         <span class="keyword">const</span> PropertyType&amp; def)
+{
+  <span class="keyword">const</span> PropertyType * pVal = RecursiveFindValueOf(p, object);
+  <span class="keyword">return</span> pVal ? *pVal : def;
+}
+
+X::~X()
+{
+  ColorProperty.ClearValueOf(*<span class="keyword">this</span>);
+}
+
+COLORREF X::GetColor() <span class="keyword">const</span>
+{
+   <span class="keyword">return</span> InheritedFind(ColorProperty, *<span class="keyword">this</span>, RGB(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>));
+}
+
+<span class="keyword">void</span> X::SetColor(COLORREF)
+{
+    ColorProperty.SetValueOf(*<span class="keyword">this</span>, c);
+}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,109 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Memory</h2>
+
+<p>Memory manipulation functions</p>
+<pre>
+
+<span class="comment">//
+</span><span class="comment">// Copyright (C) 2009, Thiago R. Adams
+</span><span class="comment">// http://www.thradams.com
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">#include</span> &lt;limits&gt;
+
+<span class="keyword">namespace</span> memory 
+{
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">void</span> clearbits(T &amp; v, <span class="keyword">int</span> bit_index, <span class="keyword">int</span> nbits)
+    {
+        T mask = ~(T(<span class="number">0</span>)) &lt;&lt; (<span class="keyword">sizeof</span>(T) * CHAR_BIT - T(nbits));
+        mask =  mask &gt;&gt; (<span class="keyword">sizeof</span>(T) * CHAR_BIT - T(bit_index) - T(nbits));
+        v &amp;= ~mask;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> T2&gt;
+    <span class="keyword">void</span> setbits(T &amp;v, <span class="keyword">int</span> bit_index, <span class="keyword">int</span> nbits, T2 number)
+    {  
+        <span class="comment">//static_assert(is_unsigned&lt;T&gt;::value);
+</span>        assert(number &lt;= (std::numeric_limits&lt;T&gt;::max)());
+        assert(number &gt;= <span class="number">0</span>);
+
+        clearbits(number, nbits, <span class="keyword">sizeof</span>(T2) * CHAR_BIT - nbits);
+
+        T big(number);
+        big = (big &lt;&lt; bit_index);
+
+        clearbits(v, bit_index, nbits);
+        v |= big;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    T getbits(T v, <span class="keyword">int</span> bit_index, <span class="keyword">int</span> nbits)
+    {
+        T r = v &gt;&gt; bit_index;
+        clearbits(r, nbits, <span class="keyword">sizeof</span>(T) * CHAR_BIT - nbits);
+        <span class="keyword">return</span> r;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">bool</span> is_bit_on(T v, <span class="keyword">int</span> bit_index)
+    {
+        <span class="keyword">return</span> (v &amp; (T(<span class="number">1</span>) &lt;&lt; bit_index)) != <span class="number">0</span>;
+    }
+
+} <span class="comment">//namespace memory
+</span>
+</pre>
+
+<p>===Helper===</p>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> PrintBitsLn(T v)
+{
+  <span class="keyword">for</span>  (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(T) * CHAR_BIT ; i++)
+  {
+    std::cout &lt;&lt; (memory::is_bit_on(v, i) ? <span class="string">'1'</span> : <span class="string">'0'</span>);
+  }
+  std::cout &lt;&lt; std::endl;
+}
+</pre>
+
+<h3>History</h3>
+
+<ul>
+<li> 3 fev 2010 : PrintBitsLn Added</li>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

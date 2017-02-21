@@ -1,0 +1,334 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<pre>
+
+<span class="keyword">void</span> quick_sort_string(<span class="keyword">const</span> <span class="keyword">char</span>* *unsorted_array,
+  <span class="keyword">int</span> first_index,
+  <span class="keyword">int</span> last_index)
+{
+  <span class="keyword">int</span> pivot, j, i;
+  <span class="keyword">const</span> <span class="keyword">char</span> * temp;
+
+  <span class="keyword">if</span> (first_index &lt; last_index)
+  {
+    pivot = first_index;
+    i = first_index;
+    j = last_index;
+
+    <span class="keyword">while</span> (i &lt; j)
+    {
+      <span class="keyword">while</span> (strcmp(unsorted_array[i], unsorted_array[pivot]) &lt;= <span class="number">0</span> &amp;&amp; 
+            i &lt; last_index)
+      {
+        i++;
+      }
+
+      <span class="keyword">while</span> (strcmp(unsorted_array[j], unsorted_array[pivot]) &gt; <span class="number">0</span>)
+      {
+        j--;
+      }
+
+      <span class="keyword">if</span> (i &lt; j)
+      {
+        <span class="comment">/*swap*/</span>
+        temp = unsorted_array[i];
+        unsorted_array[i] = unsorted_array[j];
+        unsorted_array[j] = temp;
+      }
+    }
+
+    <span class="comment">/*swap*/</span>
+    temp = unsorted_array[pivot];
+    unsorted_array[pivot] = unsorted_array[j];
+    unsorted_array[j] = temp;
+
+    quick_sort_string(unsorted_array, first_index, j - <span class="number">1</span>);
+    quick_sort_string(unsorted_array, j + <span class="number">1</span>, last_index);
+  }
+}
+
+</pre>
+
+
+
+<pre>
+
+<span class="keyword">void</span> quick_sort_int(<span class="keyword">int</span> *unsorted_array,
+  <span class="keyword">int</span> first_index,
+  <span class="keyword">int</span> last_index)
+{
+  <span class="keyword">int</span> pivot, j, i;
+  <span class="keyword">int</span> temp;
+
+  <span class="keyword">if</span> (first_index &lt; last_index)
+  {
+    pivot = first_index;
+    i = first_index;
+    j = last_index;
+
+    <span class="keyword">while</span> (i &lt; j)
+    {
+      <span class="keyword">while</span> (<span class="comment">/*compare int*/</span>(unsorted_array[i] - unsorted_array[pivot]) &lt;= <span class="number">0</span> &amp;&amp; i &lt; last_index)
+      {
+        i++;
+      }
+
+      <span class="keyword">while</span> (<span class="comment">/*compare int*/</span>(unsorted_array[j] - unsorted_array[pivot])&gt; <span class="number">0</span>)
+      {
+        j--;
+      }
+
+      <span class="keyword">if</span> (i &lt; j)
+      {
+        <span class="comment">/*swap*/</span>
+        temp = unsorted_array[i];
+        unsorted_array[i] = unsorted_array[j];
+        unsorted_array[j] = temp;          
+      }
+    }
+
+    <span class="comment">/*swap*/</span>
+    temp = unsorted_array[pivot];
+    unsorted_array[pivot] = unsorted_array[j];
+    unsorted_array[j] = temp;
+
+    quick_sort_int(unsorted_array, first_index, j - <span class="number">1</span>);
+    quick_sort_int(unsorted_array, j + <span class="number">1</span>, last_index);
+  }
+}
+</pre>
+
+
+<pre>
+
+<span class="keyword">int</span> binary_search_int(<span class="keyword">int</span>* sorted_array,
+  <span class="keyword">int</span> n_elements,
+  <span class="keyword">int</span> searchItem)
+{
+  <span class="keyword">int</span> mid;
+  <span class="keyword">int</span> c = <span class="number">0</span>;
+  <span class="keyword">int</span> l = <span class="number">0</span>;
+  <span class="keyword">int</span> u = n_elements - <span class="number">1</span>;
+
+  <span class="keyword">while</span> (l &lt;= u)
+  {
+    mid = (l + u) / <span class="number">2</span>;
+
+    <span class="keyword">int</span> cmp = searchItem - sorted_array[mid];
+
+    <span class="keyword">if</span> (cmp == <span class="number">0</span>)
+    {
+      c = <span class="number">1</span>;
+      <span class="keyword">break</span>;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)
+    {
+      u = mid - <span class="number">1</span>;
+    }
+    <span class="keyword">else</span>
+    {
+      l = mid + <span class="number">1</span>;
+    }
+  }
+
+  <span class="keyword">return</span> c == <span class="number">0</span> ? <span class="number">-1</span> : mid;
+}
+</pre>
+
+
+<pre>
+<span class="keyword">int</span> binary_search_str(<span class="keyword">const</span> <span class="keyword">char</span>** sorted_array,
+  <span class="keyword">int</span> n_elements,
+  <span class="keyword">const</span> <span class="keyword">char</span>* searchItem)
+{
+  <span class="keyword">int</span> mid;
+  <span class="keyword">int</span> c = <span class="number">0</span>;
+  <span class="keyword">int</span> l = <span class="number">0</span>;
+  <span class="keyword">int</span> u = n_elements - <span class="number">1</span>;
+
+  <span class="keyword">while</span> (l &lt;= u)
+  {
+    mid = (l + u) / <span class="number">2</span>;
+
+    <span class="keyword">int</span> cmp = strcmp(searchItem, sorted_array[mid]);
+
+    <span class="keyword">if</span> (cmp == <span class="number">0</span>)
+    {
+      c = <span class="number">1</span>;
+      <span class="keyword">break</span>;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)
+    {
+      u = mid - <span class="number">1</span>;
+    }
+    <span class="keyword">else</span>
+    {
+      l = mid + <span class="number">1</span>;
+    }
+  }
+
+  <span class="keyword">return</span> c == <span class="number">0</span> ? <span class="number">-1</span> : mid;
+}
+</pre>
+
+
+<pre>
+
+<span class="keyword">struct</span> str_array
+{
+  size_t    size;
+  size_t    capacity;
+  <span class="keyword">char</span>**   data;
+};
+
+<span class="keyword">#define</span> STR_ARRAY_INIT {<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>}
+
+<span class="keyword">void</span> str_array_destroy(<span class="keyword">struct</span> str_array* p);
+<span class="keyword">void</span> str_array_push(<span class="keyword">struct</span> str_array* p, <span class="keyword">const</span> <span class="keyword">char</span>*);
+
+
+<span class="keyword">static</span> size_t str_array_reserve(<span class="keyword">struct</span> str_array* p, size_t nelements)
+{
+  <span class="keyword">void</span> *pnew = <span class="number">0</span>;
+  <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+  {
+    pnew = realloc((<span class="keyword">void</span>*)p-&gt;data, nelements * <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]));
+    <span class="keyword">if</span> (pnew)
+    {
+      p-&gt;data = (<span class="keyword">const</span> <span class="keyword">char</span>**)pnew;
+      p-&gt;capacity = nelements;
+    }
+  }
+
+  <span class="keyword">return</span> (pnew != <span class="number">0</span>) ? nelements : <span class="number">0</span>;
+}
+
+size_t str_array_grow(<span class="keyword">struct</span> str_array* p, size_t nelements)
+{
+  <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+  {
+    size_t newCap = p-&gt;capacity == <span class="number">0</span> ? <span class="number">4</span> : p-&gt;capacity;
+    <span class="keyword">while</span> (newCap &lt; nelements)
+    {
+      newCap *= <span class="number">2</span>;
+      <span class="keyword">if</span> (newCap &lt; nelements ||
+        newCap &gt;(size_t)(UINT_MAX / <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>])))
+      {
+        newCap = (size_t)(UINT_MAX / <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]));
+      }
+    }
+    <span class="keyword">return</span> str_array_reserve(p, newCap);
+  }
+  <span class="keyword">return</span> p-&gt;capacity;
+}
+
+<span class="keyword">void</span> str_array_destroy(<span class="keyword">struct</span> str_array* p)
+{
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+  {
+    free(p-&gt;data[i]);
+  }
+}
+
+<span class="keyword">void</span> str_array_push(<span class="keyword">struct</span> str_array* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz)
+{
+  size_t result = type_ptr_array_grow(p, p-&gt;size + <span class="number">1</span>);
+
+  <span class="keyword">if</span> (result == <span class="number">0</span>)
+  {
+    free(psz);
+    <span class="keyword">return</span>;
+  }
+  
+  <span class="keyword">int</span> l = strlen(psz);
+  <span class="keyword">const</span> <span class="keyword">char</span> * ptemp = malloc(<span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]) * (l + <span class="number">1</span>));
+  strcpy(ptemp, psz);
+
+  <span class="keyword">if</span> (ptemp == <span class="number">0</span>)
+  {
+    <span class="keyword">return</span>;
+  }
+  
+  p-&gt;data[p-&gt;size] = ptemp;
+  p-&gt;size += <span class="number">1</span>;
+}
+</pre>
+
+
+<pre>
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+  <span class="keyword">int</span> a[] = { <span class="number">5</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span> };
+  quick_sort_int(a, <span class="number">0</span>, <span class="number">4</span>);
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++)
+  {
+    printf(<span class="string">&quot;%d\n&quot;</span>, binary_search_int(a, <span class="number">5</span>, a[i]));
+  }
+  printf(<span class="string">&quot;%d\n&quot;</span>, binary_search_int(a, <span class="number">5</span>, <span class="number">9</span>));
+
+  <span class="keyword">char</span> * s[] = { <span class="string">&quot;a&quot;</span>, <span class="string">&quot;ds&quot;</span>, <span class="string">&quot;db&quot;</span>, <span class="string">&quot;c&quot;</span> , <span class="string">&quot;e&quot;</span>};
+  quick_sort_string(s, <span class="number">0</span>, <span class="number">4</span>);
+  
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++)
+  {
+    printf(<span class="string">&quot;%d\n&quot;</span>, binary_search_str(s, <span class="number">5</span>, s[i]));
+  }
+  printf(<span class="string">&quot;%d\n&quot;</span>, binary_search_int(s, <span class="number">5</span>, <span class="string">&quot;outro&quot;</span>));
+
+  <span class="keyword">struct</span> str_array sa = STR_ARRAY_INIT;
+  str_array_push(&amp;sa, <span class="string">&quot;asd&quot;</span>);
+  str_array_push(&amp;sa, <span class="string">&quot;afgfsd&quot;</span>);
+  str_array_push(&amp;sa, <span class="string">&quot;asfdgdfd&quot;</span>);
+
+  quick_sort_string(sa.data, <span class="number">0</span>, sa.size - <span class="number">1</span>);
+
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sa.size; i++)
+  {
+    printf(<span class="string">&quot;%s\n&quot;</span>, sa.data[i]);
+  }
+
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sa.size; i++)
+  {
+    printf(<span class="string">&quot;%d\n&quot;</span>, binary_search_str(sa.data, sa.size, sa.data[i]));
+  }
+  binary_search_str(sa.data, sa.size, <span class="string">&quot;outro&quot;</span>);
+
+  str_array_destroy(&amp;sa);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

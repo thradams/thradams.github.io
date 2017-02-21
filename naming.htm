@@ -1,0 +1,242 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>My naming conventions</h2>
+
+<h3>General conventions</h3>
+
+<ul>
+<li> Do favour readability over brevity.</li>
+<li> Don't use underscores, hyphens, or any non alphanumeric char.</li>
+</ul>
+
+<h3>Capitalization conventions</h3>
+
+<ul>
+<li> Use PascalCasing for namespace, types, and member names </li>
+<li> Use camelCasing for parameter names, local variables</li>
+<li> SCREAMING</li>
+</ul>
+
+<h3>Names of classes, structs and interfaces</h3>
+
+<ul>
+<li> Use PascalCasing.</li>
+<li> Do not use prefixes like &quot;C&quot; or &quot;T&quot; for class types</li>
+<li> Use the &quot;I&quot; prefix for interfaces</li>
+<li> Consider end the names of derived class with the name of base class</li>
+<li> For exception classes use the suffix &quot;Exception&quot;</li>
+<li> Try not to use the name or suffix &quot;Manager&quot;</li>
+<li> Don't use the name or suffix &quot;Singleton&quot;</li>
+</ul>
+<p>E.g.</p>
+<pre>
+<span class="comment">// interfaces
+</span><span class="keyword">struct</span> ISerialize {};
+
+<span class="comment">//derived classes
+</span><span class="keyword">class</span> Dialog {};
+<span class="keyword">class</span> FontDialog : <span class="keyword">public</span> Dialog{};
+
+<span class="comment">// exception classes
+</span><span class="keyword">class</span> SocketException : <span class="keyword">public</span> std::exception {};
+
+</pre>
+
+
+<h3>Data Members</h3>
+
+<ul>
+<li>Use the prefix &quot;m</li>
+</ul>
+
+<h3>Naming Enumerations</h3>
+
+<ul>
+<li> Use the enumeration name as a prefix of the enumerations items</li>
+</ul>
+<pre>
+<span class="keyword">enum</span> FontStyle
+{
+   FontStyleNormal,
+   FontStyleBold,
+   FontStyleItalic
+};
+</pre>
+
+<p>Use &quot;EnumNameNone&quot; when appropriated for the 0 valueNamespaces</p>
+
+<ul>
+<li> Use PascalCasing.</li>
+<li> Avoid names like &quot;Utils&quot;, &quot;Utilities&quot;, &quot;Management&quot;, &quot;Common&quot;, &quot;Misc&quot;, &quot;Tools&quot; (This rule is valid for libs and classes as well)</li>
+<li> Use anonymous namespaces inside cpp files</li>
+<li> Use &quot;Detail&quot; namespace in header files to create sub-namespaces that are useful only for the implementation</li>
+</ul>
+
+<h3>Functions</h3>
+
+<ul>
+<li> Use PascalCasing.</li>
+<li> The name for functions should be a verb like:</li>
+</ul>
+<pre>
+Remove();
+Create();
+</pre>
+
+
+<h3>Member functions</h3>
+
+<ul>
+<li>Use the prefix &quot;Get&quot; for data member inquiries - Use &quot;Set&quot; to modify values.</li>
+</ul>
+<pre>
+CString Class::GetName() const;
+void Class::SetName(const CString &amp;);
+</pre>
+<ul>
+<li> For Boolean inquires use: &quot;Is&quot;, &quot;Can&quot;, &quot;Has&quot;</li>
+</ul>
+<p>E.g.</p>
+<pre>
+<span class="keyword">bool</span> Class::CanSearch() <span class="keyword">const</span>;
+<span class="keyword">bool</span> Class::IsActive() <span class="keyword">const</span>;
+<span class="keyword">bool</span> Class::HasChild() <span class="keyword">const</span>;
+</pre>
+
+<p>Use only affirmative phrases. Don't use IsNotActive, or CannotSearch</p>
+
+<h3>Function arguments</h3>
+
+<ul>
+<li> Use camelCasing. </li>
+<li> Describe the argument meaning</li>
+</ul>
+
+<p>In header files is not always necessary to have an argument nameFor instance, I prefer to declare copy constructors without naming the argumentE.g.</p>
+<pre>
+<span class="keyword">class</span> X
+{
+    X(<span class="keyword">const</span> X&amp;);
+    X &amp; <span class="keyword">operator</span> = (<span class="keyword">const</span> X&amp;);
+    <span class="keyword">void</span> DrawLine(<span class="keyword">const</span> Pen &amp;); <span class="comment">// is possible to understand, isn't it?
+</span>};
+</pre>
+
+
+<ul>
+<li> Consider the suffix &quot;Name&quot;, &quot;Text&quot; for string types or anything that reminds text</li>
+</ul>
+<pre>
+Open(<span class="keyword">const</span> <span class="keyword2">string</span> &amp;fileName);
+Alert(<span class="keyword">const</span> <span class="keyword2">string</span> &amp;alertText);
+Alert(<span class="keyword">const</span> <span class="keyword2">string</span> &amp;alertMessage);
+</pre>
+
+<p>Some people like to use the prefix &quot;str&quot; for strings. I don't like because choosing the correct name the prefix &quot;str&quot; is redundant.</p>
+<pre>
+Open(<span class="keyword">const</span> <span class="keyword2">string</span> &amp;strFileName);
+<span class="comment">//is not better than
+</span>Open(<span class="keyword">const</span> <span class="keyword2">string</span> &amp;fileName);
+</pre>
+
+<p>The &quot;Name&quot; suffix for me means text; Otherwise I will specify different like:Open(int fileId);</p>
+<ul>
+<li> Consider the suffix &quot;Count&quot;, &quot;Index&quot; for integer types.</li>
+<li> Consider the prefix &quot;num&quot; for integer types</li>
+</ul>
+<p>E.g.</p>
+<pre>
+<span class="keyword">void</span> Array::GetAt(<span class="keyword">int</span> index);
+<span class="keyword">void</span> Allocator::Allocate(<span class="keyword">int</span> numElements);
+</pre>
+
+
+<h3>Variables</h3>
+
+<ul>
+<li> Use camelCasing</li>
+</ul>
+
+<p>If choosing the type name to use as the variable name is enough to understand the variable meaning then use it.E.g.</p>
+<pre>
+<span class="keyword">class</span> Airplane
+{
+    Propeller m_Propeller;
+};
+
+Airplane airplane;
+</pre>
+
+
+<p>If the type name is not enough to understand the variable then explain what makes it different</p>
+<pre>
+Airplane bigAirplane(100);
+Airplane smallAirplane(1);
+</pre>
+<h3>Name for containers</h3>
+
+<p>If plural name of the item is enough to understand the meaning do like this:E.g.</p>
+<pre>
+std::vector&lt;Control&gt; m_Controls;
+</pre>
+<p>if you need to specify a name don't do this</p>
+<pre>
+std::vector&lt;Control&gt; m_Controls1;
+</pre>
+<p>Do something like:</p>
+<pre>
+std::vector&lt;Control&gt; m_StaticControls;
+std::vector&lt;Control&gt; m_DynamicControls;
+</pre>
+<p>This tip is valid for arguments and variables as wellE.g.</p>
+<pre>
+//Don't do this
+Paint(const Pen &amp; pen1, const Pen &amp; pen2);
+//Do
+Paint(const Pen &amp; backgroundPen, const Pen &amp; borderPen);
+</pre>
+
+<h3>Important variable prefixes</h3>
+
+<ul>
+<li> Use the &quot;sp&quot; for smart pointers and use &quot;p&quot; for pointers</li>
+<li> Use the prefix &quot;h&quot; or the suffix &quot;Handle&quot; for handles E.g.</li>
+</ul>
+<pre>
+<span class="keyword">class</span> File
+{
+  FILE m_hFile; <span class="comment">// or m_FileHandle;
+</span>  <span class="keyword2">shared_ptr</span>&lt;Item&gt; m_spItem;
+  Item * m_pSelectedItem;
+};
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

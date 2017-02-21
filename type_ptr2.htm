@@ -1,0 +1,260 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2> Polymorphism without virtual funcions</h2>
+
+<p><strong>type</p>
+
+
+<p>Sample</p>
+
+<pre>
+<span class="keyword">struct</span> Box
+{
+  ~Box()
+  {
+    std::cout &lt;&lt; <span class="string">&quot;~box&quot;</span> &lt;&lt; std::endl;
+  }
+};
+
+<span class="keyword">struct</span> Circle
+{
+  ~Circle()
+  {
+    std::cout &lt;&lt; <span class="string">&quot;~circle&quot;</span> &lt;&lt; std::endl;
+  }
+};
+
+<span class="keyword">void</span> Print(Box&amp; box)
+{
+  std::cout &lt;&lt; <span class="string">&quot;box&quot;</span> &lt;&lt; std::endl;
+}
+
+<span class="keyword">void</span> Print(Circle&amp; circle)
+{
+  std::cout &lt;&lt; <span class="string">&quot;circle&quot;</span> &lt;&lt; std::endl;
+}
+
+<span class="keyword">struct</span> F
+{
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">static</span> <span class="keyword">void</span> Call(T&amp; r) { Print(r); }
+};
+
+<span class="keyword">void</span> Test1()
+{
+  std::<span class="keyword2">vector</span>&lt;type_ptr&gt; v;
+
+  v.emplace_back(<span class="keyword">new</span> Box());
+  v.emplace_back(<span class="keyword">new</span> Circle());
+
+  <span class="comment">//Option 1 
+</span>  <span class="keyword">for</span> (<span class="keyword">auto</span> &amp; item : v)
+  {
+    <span class="keyword">if</span> (<span class="keyword">auto</span> p = item.is_ptr&lt;Box&gt;())
+    {
+      Print(*p);
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">auto</span> p = item.is_ptr&lt;Circle&gt;())
+    {
+      Print(*p);
+    }
+  }
+
+  <span class="comment">//Option 2 
+</span>  <span class="keyword">for</span> (<span class="keyword">auto</span> &amp; item : v)
+  {
+    <span class="keyword">switch</span> (is_index&lt;Box, Circle&gt;(item))
+    {
+    <span class="keyword">case</span> <span class="number">1</span>:
+      Print(item.ref&lt;Box&gt;());
+      <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">2</span>:
+      Print(item.ref&lt;Circle&gt;());
+      <span class="keyword">break</span>;
+    <span class="keyword">default</span>:
+      <span class="keyword">break</span>;
+    }
+  }
+
+  <span class="comment">//Option 3  
+</span>  <span class="keyword">for</span> (<span class="keyword">auto</span> &amp; item : v)
+  {
+    Select&lt;F, Box, Circle&gt;(item);
+  }
+}
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+  Test1();
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+
+<p>type</p>
+<pre>
+
+
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">#include</span> &lt;cassert&gt;
+
+<span class="keyword">class</span> type_ptr
+{
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  <span class="keyword">static</span> <span class="keyword">void</span> Delete(<span class="keyword">void</span>* p)
+  {
+    <span class="keyword">delete</span> (T*)p;
+  }
+
+<span class="keyword">protected</span>:
+
+  <span class="keyword">void</span>(*DeleteF)(<span class="keyword">void</span>*);
+  <span class="keyword">void</span> * ptr;
+  <span class="keyword">const</span> type_info* tinfo;
+
+<span class="keyword">public</span>:
+
+  type_ptr(type_ptr&amp;&amp; other)
+  {
+    ptr = other.ptr;
+    tinfo = other.tinfo;
+    DeleteF = other.DeleteF;
+
+    other.ptr = <span class="keyword">nullptr</span>;
+    other.tinfo = <span class="keyword">nullptr</span>;
+    other.DeleteF = <span class="keyword">nullptr</span>;
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  type_ptr(T* p)
+  {
+    ptr = p;
+    tinfo = &amp;<span class="keyword">typeid</span>(*p);
+    DeleteF = &amp;Delete&lt;T&gt;;
+  }
+
+  type_ptr()
+  {
+    ptr = <span class="keyword">nullptr</span>;
+    type_info* tinfo = <span class="keyword">nullptr</span>;
+  }
+
+  ~type_ptr()
+  {
+    <span class="keyword">if</span> (DeleteF != <span class="keyword">nullptr</span>)
+    {
+      DeleteF(ptr);
+      ptr = <span class="keyword">nullptr</span>;
+    }
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  <span class="keyword">bool</span> is() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> (*tinfo == <span class="keyword">typeid</span>(T));
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  T* is_ptr() <span class="keyword">const</span>
+  {
+    <span class="keyword">if</span> (is&lt;T&gt;())
+    {
+      <span class="keyword">return</span> (T*)ptr;
+    }
+    <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  T&amp; ref()
+  {
+    assert(is_ptr&lt;T&gt;() != <span class="keyword">nullptr</span>);
+    <span class="keyword">return</span> *((T*)ptr);
+  }
+};
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">int</span> N&gt;
+<span class="keyword">int</span> is_index_imp(<span class="keyword">const</span> type_ptr&amp;)
+{
+  <span class="keyword">return</span> <span class="number">-1</span>;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">int</span> N, <span class="keyword">class</span> T1, <span class="keyword">typename</span>... TN&gt;
+<span class="keyword">int</span> is_index_imp(<span class="keyword">const</span> type_ptr&amp; tp)
+{
+  <span class="keyword">if</span> (tp.is&lt;T1&gt;())
+  {
+    <span class="keyword">return</span> N;
+  }
+
+  <span class="keyword">return</span> is_index_imp&lt;N + <span class="number">1</span>, TN...&gt;(tp);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">typename</span>... TN&gt;
+<span class="keyword">int</span> is_index(<span class="keyword">const</span> type_ptr&amp; tp)
+{
+  <span class="keyword">return</span> is_index_imp&lt;<span class="number">1</span>, TN...&gt;(tp);
+}
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+<span class="keyword">void</span> call_imp(<span class="keyword">const</span> type_ptr&amp;)
+{
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> F, <span class="keyword">class</span> T1, <span class="keyword">typename</span>... TN&gt;
+<span class="keyword">void</span> call_imp(<span class="keyword">const</span> type_ptr&amp; tp)
+{
+  <span class="keyword">if</span> (<span class="keyword">auto</span> p = tp.is_ptr&lt;T1&gt;())
+  {
+    <span class="keyword">return</span> F::Call(*p);
+  }
+
+  <span class="keyword">return</span> call_imp&lt;F, TN...&gt;(tp);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> F, <span class="keyword">typename</span>... TN&gt;
+<span class="keyword">void</span> Select(<span class="keyword">const</span> type_ptr&amp; tp)
+{
+  <span class="keyword">return</span> call_imp&lt;F, TN...&gt;(tp);
+}
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

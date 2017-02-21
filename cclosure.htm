@@ -1,0 +1,240 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>In C, we can have closures passing a context to the function called.</p>
+
+<p>The only thing the function Call needs to known is the signature of the function to call (f).</p>
+
+<pre>
+<span class="keyword">void</span> Call(<span class="keyword">void</span>* p, <span class="keyword">void</span>(*f)(<span class="keyword">void</span>*))
+{
+  f(p);
+}
+</pre>
+
+
+<pre>
+<span class="keyword">void</span> f(<span class="keyword">void</span>* pv)
+{
+  printf(<span class="string">&quot;hello world!&quot;</span>);
+}
+
+<span class="keyword">int</span> main()
+{
+  Call(<span class="number">0</span>, &amp;f);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+<p>Now, let's capture one string.\\Note that the function &quot;Call&quot; didn't change.</p>
+
+<pre>
+<span class="keyword">void</span> f(<span class="keyword">void</span>* pv)
+{
+  <span class="keyword">const</span> <span class="keyword">char</span> * s = (<span class="keyword">const</span> <span class="keyword">char</span>*)pv;
+  printf(<span class="string">&quot;hello %s!&quot;</span>, s);
+}
+
+<span class="keyword">int</span> main()
+{
+  Call((<span class="keyword">void</span>*)<span class="string">&quot;closure&quot;</span>, &amp;f);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+
+<p>In case we need two or more variables.</p>
+
+<pre>
+<span class="keyword">struct</span> strings2
+{
+  <span class="keyword">const</span> <span class="keyword">char</span>* s1;
+  <span class="keyword">const</span> <span class="keyword">char</span>* s2;
+};
+
+<span class="keyword">void</span> f(<span class="keyword">void</span>* pv)
+{
+  <span class="keyword">struct</span> strings2 * p = (<span class="keyword">struct</span> strings2 *)pv;
+  printf(<span class="string">&quot;%s %s!&quot;</span>, p-&gt;s1, p-&gt;s2);
+}
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> strings2 c = { <span class="string">&quot;Hi&quot;</span>, <span class="string">&quot;closure&quot;</span> };
+  Call((<span class="keyword">void</span>*)&amp;c, &amp;f);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<p>How to store closures and use them in a polimorphic way.</p>
+
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;closure.h&quot;</span>
+
+<span class="keyword">void</span> f(<span class="keyword">void</span>*)
+{
+  printf(<span class="string">&quot;hello closure!\n&quot;</span>);
+}
+
+<span class="keyword">void</span> f2(<span class="keyword">void</span>* pv)
+{
+  <span class="keyword">struct</span> closure_void_str* p = (<span class="keyword">struct</span> closure_void_str*)pv;
+  printf(<span class="string">&quot;hello %s!\n&quot;</span>, p-&gt;text);
+}
+
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> closure_void cv = CLOSURE_VOID_INIT(&amp;f);
+  <span class="keyword">struct</span> closure_void * p = closure_void_new(&amp;f);
+
+  closure_void_call(&amp;cv);
+  closure_void_call(p);
+
+  closure_void_delete(p);
+
+
+  <span class="keyword">struct</span> closure_void * p2 = closure_void_str_new(&amp;f2, <span class="string">&quot;thiago&quot;</span>);
+  closure_void_call(p2);
+  closure_void_delete(p2);
+}
+
+</pre>
+
+
+<p>closure.h</p>
+
+<pre>
+
+<span class="keyword">#ifndef</span> _CLOSURE_H
+<span class="keyword">#define</span> _CLOSURE_H
+
+
+<span class="keyword">struct</span> closure_void
+{
+  <span class="keyword">void</span>(*call)(<span class="keyword">void</span>*);
+  <span class="keyword">void</span>(*free)(<span class="keyword">void</span>*);
+};
+
+<span class="keyword">#define</span> CLOSURE_VOID_INIT(f) { f , <span class="number">0</span> }
+
+<span class="keyword">void</span> closure_void_init(<span class="keyword">struct</span> closure_void* p,
+                       <span class="keyword">void</span>(*call)(<span class="keyword">void</span>*),
+                       <span class="keyword">void</span>(*free)(<span class="keyword">void</span>*));
+
+<span class="keyword">struct</span> closure_void* closure_void_new(<span class="keyword">void</span>(*pf)(<span class="keyword">void</span>*));
+
+<span class="keyword">void</span> closure_void_call(<span class="keyword">struct</span> closure_void* p);
+<span class="keyword">void</span> closure_void_free(<span class="keyword">struct</span> closure_void* p);
+<span class="keyword">void</span> closure_void_delete(<span class="keyword">struct</span> closure_void* p);
+
+
+<span class="keyword">struct</span> closure_void_str
+{
+  <span class="keyword">void</span>(*call)(<span class="keyword">void</span>*);
+  <span class="keyword">void</span>(*free)(<span class="keyword">void</span>*);
+  <span class="keyword">const</span> <span class="keyword">char</span>* text;
+};
+
+<span class="keyword">struct</span> closure_void* closure_void_str_new(<span class="keyword">void</span>(*pf)(<span class="keyword">void</span>*), <span class="keyword">const</span> <span class="keyword">char</span>* text);
+
+<span class="keyword">#endif</span> <span class="comment">//_CLOSURE_H
+</span>
+</pre>
+
+
+<p>Closure.cpp</p>
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;closure.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+
+<span class="keyword">void</span> closure_void_init(<span class="keyword">struct</span> closure_void* p,
+  <span class="keyword">void</span>(*call)(<span class="keyword">void</span>*),
+  <span class="keyword">void</span>(*free)(<span class="keyword">void</span>*))
+{
+  p-&gt;call = call;
+  p-&gt;free = free;
+}
+
+<span class="keyword">struct</span> closure_void* closure_void_new(<span class="keyword">void</span>(*pf)(<span class="keyword">void</span>*))
+{
+  <span class="keyword">struct</span> closure_void* p = (<span class="keyword">struct</span> closure_void*) malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> closure_void));
+  closure_void_init(p, pf, <span class="number">0</span>);
+  <span class="keyword">return</span> p;
+}
+
+<span class="keyword">void</span> closure_void_call(<span class="keyword">struct</span> closure_void* p)
+{
+  p-&gt;call(p);
+}
+
+<span class="keyword">void</span> closure_void_free(<span class="keyword">struct</span> closure_void* p)
+{
+  <span class="keyword">if</span> (p-&gt;free)
+    p-&gt;free(p);
+}
+
+<span class="keyword">void</span> closure_void_delete(<span class="keyword">struct</span> closure_void* p)
+{
+  closure_void_free(p);
+  free(p);
+}
+
+<span class="comment">//////////////////
+</span>
+<span class="keyword">static</span> <span class="keyword">void</span> closure_void_str_free(<span class="keyword">void</span>* pv)
+{
+  <span class="keyword">struct</span> closure_void_str * p = (<span class="keyword">struct</span> closure_void_str *)(pv);
+  free((<span class="keyword">void</span>*)p-&gt;text);
+}
+
+<span class="keyword">struct</span> closure_void* closure_void_str_new(<span class="keyword">void</span>(*pf)(<span class="keyword">void</span>*), <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+  <span class="keyword">struct</span> closure_void_str * p = (<span class="keyword">struct</span> closure_void_str*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> closure_void_str));
+  p-&gt;call = pf;
+  p-&gt;free = &amp;closure_void_str_free;
+  p-&gt;text = (<span class="keyword">const</span> <span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (strlen(text) + <span class="number">1</span>));
+  strcpy((<span class="keyword">char</span>*)p-&gt;text, text);
+  <span class="keyword">return</span> (<span class="keyword">struct</span> closure_void*)p;
+}
+
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

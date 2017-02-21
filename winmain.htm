@@ -1,0 +1,54 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<h2> Converting from WinMain to standard main</h2>
+
+<pre>
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, TCHAR* argv[]);
+
+<span class="keyword">int</span> APIENTRY _tWinMain(HINSTANCE hInstance,
+                       HINSTANCE hPrevInstance,
+                       LPTSTR    lpCmdLine,
+                       <span class="keyword">int</span>       nCmdShow)
+{   
+   <span class="keyword">int</span> nArgs;
+   LPWSTR *szArglist = CommandLineToArgvW(GetCommandLineW(), &amp;nArgs);
+
+   <span class="keyword">if</span> (szArglist == NULL)
+       <span class="keyword">return</span> <span class="number">1</span>; <span class="comment">//error
+</span>   
+   <span class="keyword">const</span> <span class="keyword">int</span> r = main(nArgs, szArglist);
+   LocalFree(szArglist);
+   <span class="keyword">return</span> r;   
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

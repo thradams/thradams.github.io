@@ -1,0 +1,307 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>Actors using C++</p>
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;ThreadPool.h&quot;</span>
+<span class="keyword">#include</span> &lt;mutex&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">class</span> Actor : <span class="keyword">public</span> std::enable_shared_from_this&lt;Actor&lt;T&gt;&gt;
+{    
+    <span class="keyword">enum</span> ACTOR_STATE
+    {
+        ACTOR_STATE_NONE,
+        ACTOR_STATE_RUNNING,
+        ACTOR_STATE_ONQUEUE
+    };
+
+    <span class="keyword">typedef</span> std::<span class="keyword2">function</span>&lt;<span class="keyword">void</span>(T&amp;)&gt; Message;
+    <span class="keyword">typedef</span>  std::<span class="keyword2">vector</span> &lt; Message &gt; Messages;
+    std::mutex m_mutex;
+    Messages m_messages;
+    ACTOR_STATE m_State;
+
+    T m_object;
+
+<span class="keyword">public</span>:
+
+    Messages GetMessages()
+    {
+        Messages messages;
+        std::lock_guard&lt;std::mutex&gt; lock(m_mutex);
+
+        <span class="keyword">if</span> (m_messages.empty())
+        {
+            m_State = ACTOR_STATE_NONE;
+        }
+        <span class="keyword">else</span>
+        {
+            m_State = ACTOR_STATE_RUNNING;
+            messages.swap(m_messages);
+        }
+        <span class="keyword">return</span> messages;
+    }
+
+    <span class="keyword">void</span> ProcessMessages()
+    {
+        <span class="keyword">for</span> (;;)
+        {
+            <span class="keyword">auto</span> messages = GetMessages();
+
+            <span class="keyword">if</span> (messages.empty())
+            {
+                <span class="keyword">break</span>;
+            }
+
+            <span class="keyword">for</span> (<span class="keyword">auto</span> &amp; item : messages)
+            {
+                item(m_object);
+            }
+        }
+    }
+
+<span class="keyword">public</span>:
+    Actor() : m_State(ACTOR_STATE_NONE)
+    {        
+    }
+
+    <span class="keyword">void</span> Post(Message f)
+    {
+        std::lock_guard&lt;std::mutex&gt; lock(m_mutex);
+        m_messages.push_back(f);
+
+        <span class="keyword">switch</span> (m_State)
+        {
+        <span class="keyword">case</span> ACTOR_STATE_NONE:
+        {
+            m_State = ACTOR_STATE_ONQUEUE;
+            std::weak_ptr&lt;Actor&gt; weak = shared_from_this();
+            ThreadPool::RunAsync([weak, f]
+            {
+                std::<span class="keyword2">shared_ptr</span>&lt;Actor&gt; sp = weak.lock();
+                <span class="keyword">if</span> (sp.get())
+                {
+                    sp-&gt;ProcessMessages();
+                }
+            });
+        }
+        <span class="keyword">break</span>;
+
+        <span class="keyword">case</span> ACTOR_STATE_ONQUEUE:
+        <span class="keyword">case</span> ACTOR_STATE_RUNNING:
+            <span class="keyword">break</span>;
+
+        <span class="keyword">default</span>:
+            assert(<span class="keyword">false</span>);
+        }
+    }
+
+};
+
+<span class="keyword">class</span> MyObject  
+{
+<span class="keyword">public</span>:
+    
+};
+
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+    ThreadPool pool(<span class="number">10</span>);
+
+
+    <span class="keyword">auto</span> actor = std::make_shared&lt;Actor&lt;MyObject&gt;&gt;();
+    
+    actor-&gt;Post([](MyObject&amp; obj)
+    {     
+        std::this_thread::sleep_for(std::chrono::seconds(<span class="number">2</span>));
+        std::cout &lt;&lt; <span class="string">&quot;1&quot;</span> &lt;&lt; std::endl;
+    });
+
+    actor-&gt;Post([](MyObject&amp;)
+    {
+        std::cout &lt;&lt; <span class="string">&quot;2&quot;</span> &lt;&lt; std::endl;
+    });
+
+
+    pool.StopAndJoin();
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<p>Thread pool</p>
+<pre>
+<span class="keyword">#pragma</span> once
+<span class="keyword">#ifndef</span> THREAD_POOL_H
+<span class="keyword">#define</span> THREAD_POOL_H
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;queue&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;thread&gt;
+<span class="keyword">#include</span> &lt;mutex&gt;
+<span class="keyword">#include</span> &lt;condition_variable&gt;
+<span class="keyword">#include</span> &lt;future&gt;
+<span class="keyword">#include</span> &lt;functional&gt;
+<span class="keyword">#include</span> &lt;stdexcept&gt;
+<span class="keyword">#include</span> &lt;Windows.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+
+
+<span class="keyword">class</span> ThreadPool
+{
+    <span class="keyword">static</span> ThreadPool* s_OutthreadPool;
+
+<span class="keyword">public</span>:
+    ThreadPool(size_t);
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+    <span class="keyword">void</span> enqueue(F&amp;&amp; f);
+    ~ThreadPool();
+    <span class="keyword">void</span> StopAndJoin();
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">static</span> <span class="keyword">void</span> RunAsync(T&amp;&amp; f)
+    {
+        assert(s_OutthreadPool);
+        s_OutthreadPool-&gt;enqueue(std::forward&lt;T&gt;(f));
+    }
+
+<span class="keyword">private</span>:
+
+
+    std::<span class="keyword2">vector</span>&lt; std::thread &gt; m_workers;
+    std::queue&lt; std::<span class="keyword2">function</span>&lt;<span class="keyword">void</span>()&gt; &gt; m_tasks;
+
+    std::mutex m_queue_mutex;
+    std::condition_variable m_condition;
+    <span class="keyword">bool</span> m_stop;
+};
+
+
+<span class="keyword">inline</span> ThreadPool::ThreadPool(size_t threads)
+    : m_stop(<span class="keyword">false</span>)
+{
+    s_OutthreadPool = <span class="keyword">this</span>;
+
+    <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i&lt;threads; ++i)
+        m_workers.emplace_back(
+        [<span class="keyword">this</span>, threads]
+    {
+        <span class="keyword">for</span> (;;)
+        {
+            std::unique_lock&lt;std::mutex&gt; lock(<span class="keyword">this</span>-&gt;m_queue_mutex);
+            <span class="keyword">while</span> (!<span class="keyword">this</span>-&gt;m_stop &amp;&amp; <span class="keyword">this</span>-&gt;m_tasks.empty())
+            {
+                <span class="keyword">this</span>-&gt;m_condition.wait(lock);
+            }
+            <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;m_stop &amp;&amp; <span class="keyword">this</span>-&gt;m_tasks.empty())
+            {
+                <span class="keyword">return</span>;
+            }
+
+            std::<span class="keyword2">function</span>&lt;<span class="keyword">void</span>()&gt; task(<span class="keyword">this</span>-&gt;m_tasks.front());
+            <span class="keyword">this</span>-&gt;m_tasks.pop();
+
+            lock.unlock();
+
+            task();
+        }
+    }
+    );
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+<span class="keyword">void</span> ThreadPool::enqueue(F&amp;&amp; f)
+{
+    {
+        std::unique_lock&lt;std::mutex&gt; lock(m_queue_mutex);
+        <span class="keyword">if</span> (m_stop)
+        {
+            assert(<span class="keyword">false</span>);
+            <span class="keyword">return</span>;
+        }
+        m_tasks.emplace(f);
+    }
+
+    m_condition.notify_one();
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span> ThreadPool::StopAndJoin()
+{
+    {
+        std::unique_lock&lt;std::mutex&gt; lock(m_queue_mutex);
+
+        <span class="keyword">if</span> (m_stop)
+        {
+            <span class="keyword">return</span>;
+        }
+        <span class="keyword">else</span>
+        {
+            m_stop = <span class="keyword">true</span>;
+        }
+    }
+
+    m_condition.notify_all();
+    <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; m_workers.size(); ++i)
+    {
+        m_workers[i].join();
+    }
+}
+
+<span class="keyword">inline</span> ThreadPool::~ThreadPool()
+{
+    StopAndJoin();
+}
+
+<span class="keyword">#endif</span>
+
+</pre>
+
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;ThreadPool.h&quot;</span>
+
+ThreadPool* ThreadPool::s_OutthreadPool = <span class="keyword">nullptr</span>;
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

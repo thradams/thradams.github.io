@@ -1,0 +1,402 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Measuring virtual function call cost</h2>
+
+<p>C++ version See stopwatch </p>
+
+<p>C++, </p>
+
+<pre>
+<span class="comment">//#define FCALLTYPE 
+</span><span class="comment">//#define FCALLTYPESTR &quot;__cdecl&quot;
+</span>
+<span class="keyword">#define</span> FCALLTYPE __fastcall
+<span class="keyword">#define</span> FCALLTYPESTR <span class="string">&quot;__fastcall&quot;</span>
+
+<span class="keyword">typedef</span> <span class="keyword">void</span>  (FCALLTYPE *SumPF)(<span class="keyword">int</span> &amp;);
+<span class="keyword">void</span> FCALLTYPE OddSum(<span class="keyword">int</span> &amp;s) { s += <span class="number">1</span>; }
+<span class="keyword">void</span> FCALLTYPE EvenSum(<span class="keyword">int</span> &amp;s) { s += <span class="number">2</span>; }
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    
+    <span class="keyword2">vector</span>&lt;SumPF&gt; v;
+    v.push_back(&amp;OddSum);
+    v.push_back(&amp;EvenSum);
+
+    Stopwatch sw;
+    sw.Start();
+
+    <span class="keyword">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">const</span> <span class="keyword">int</span> maxit = <span class="number">100000000</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxit; ++i)
+    {
+        <span class="keyword2">vector</span>&lt;SumPF&gt;::iterator it = v.begin();
+        <span class="keyword">for</span> (; it != v.end(); ++it)
+        {
+            (*it)(sum);
+        }
+    }
+    
+    sw.Stop();
+ 
+    cout &lt;&lt; <span class="string">&quot;/**C++, _SECURE_SCL 0, vector of function pointers, &quot;</span> &lt;&lt; FCALLTYPESTR &lt;&lt; <span class="string">&quot;*/&quot;</span> &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;iterations =&quot;</span> &lt;&lt; maxit &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;sum        =&quot;</span> &lt;&lt; sum &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;Elapsed    =&quot;</span> &lt;&lt; sw &lt;&lt; endl;    
+    cout &lt;&lt; <span class="string">&quot;Average    =&quot;</span>  &lt;&lt; sw.GetElapsedMilliseconds() / <span class="keyword">double</span>(maxit) &lt;&lt; <span class="string">&quot; milliseconds/call&quot;</span>;    
+    cin.get();
+}
+</pre>
+
+
+<p>C++, </p>
+
+<pre>
+
+<span class="keyword">#define</span> FCALLTYPE 
+<span class="keyword">#define</span> FCALLTYPESTR <span class="string">&quot;__cdecl&quot;</span>
+
+<span class="comment">//#define FCALLTYPE __fastcall
+</span><span class="comment">//#define FCALLTYPESTR &quot;__fastcall&quot;
+</span>
+
+<span class="keyword">struct</span> Base {
+  <span class="keyword">virtual</span> <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) = <span class="number">0</span>;
+  <span class="keyword">virtual</span> ~Base(){}
+};
+
+<span class="keyword">struct</span> Odd : <span class="keyword">public</span> Base {
+  <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) { s += <span class="number">1</span>; }
+};
+
+<span class="keyword">struct</span> Even : <span class="keyword">public</span> Base {
+  <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) { s += <span class="number">2</span>; }
+};
+
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    Base* podd(<span class="keyword">new</span> Odd());
+    Base* peven(<span class="keyword">new</span> Even());
+    
+    Stopwatch sw;
+    sw.Start();
+
+    <span class="keyword">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">const</span> <span class="keyword">int</span> maxit = <span class="number">100000000</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxit; ++i)
+    {
+      podd-&gt;Sum(sum);
+      peven-&gt;Sum(sum);
+    }
+    
+    sw.Stop();
+    
+    cout &lt;&lt; <span class="string">&quot;/**C++, _SECURE_SCL 0, direct base class call, &quot;</span> &lt;&lt; FCALLTYPESTR &lt;&lt; <span class="string">&quot;*/&quot;</span> &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;iterations =&quot;</span> &lt;&lt; maxit &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;sum        =&quot;</span> &lt;&lt; sum &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;Elapsed    =&quot;</span> &lt;&lt; sw &lt;&lt; endl;    
+    cout &lt;&lt; <span class="string">&quot;Average    =&quot;</span>  &lt;&lt; sw.GetElapsedMilliseconds() / <span class="keyword">double</span>(maxit) &lt;&lt; <span class="string">&quot; milliseconds/call&quot;</span>;
+
+    cin.get();
+
+    <span class="keyword">delete</span> podd;
+    <span class="keyword">delete</span> peven;
+}
+</pre>
+
+
+<p>C++, </p>
+
+<pre>
+
+<span class="comment">//#define FCALLTYPE 
+</span><span class="comment">//#define FCALLTYPESTR &quot;__cdecl&quot;
+</span>
+<span class="keyword">#define</span> FCALLTYPE __fastcall
+<span class="keyword">#define</span> FCALLTYPESTR <span class="string">&quot;__fastcall&quot;</span>
+
+
+<span class="keyword">struct</span> Base {
+  <span class="keyword">virtual</span> <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) = <span class="number">0</span>;
+  <span class="keyword">virtual</span> ~Base(){}
+};
+
+<span class="keyword">struct</span> Odd : <span class="keyword">public</span> Base {
+  <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) { s += <span class="number">1</span>; }
+};
+
+<span class="keyword">struct</span> Even : <span class="keyword">public</span> Base {
+  <span class="keyword">void</span> FCALLTYPE Sum(<span class="keyword">int</span> &amp;s) { s += <span class="number">2</span>; }
+};
+
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    
+    <span class="keyword2">vector</span>&lt;Base*&gt; v;
+    v.push_back(<span class="keyword">new</span> Odd());
+    v.push_back(<span class="keyword">new</span> Even());
+
+    Stopwatch sw;
+    sw.Start();
+
+    <span class="keyword">int</span> sum = <span class="number">0</span>;
+    <span class="keyword">const</span> <span class="keyword">int</span> maxit = <span class="number">100000000</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxit; ++i)
+    {
+        <span class="keyword2">vector</span>&lt;Base*&gt;::iterator it = v.begin();
+        <span class="keyword">for</span> (; it != v.end(); ++it)
+        {
+            (*it)-&gt;Sum(sum);
+        }
+    }
+    
+    sw.Stop();
+    
+    cout &lt;&lt; <span class="string">&quot;/**C++, _SECURE_SCL 0, vector base class call, &quot;</span> &lt;&lt; FCALLTYPESTR &lt;&lt; <span class="string">&quot;*/&quot;</span> &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;iterations =&quot;</span> &lt;&lt; maxit &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;sum        =&quot;</span> &lt;&lt; sum &lt;&lt; endl;
+    cout &lt;&lt; <span class="string">&quot;Elapsed    =&quot;</span> &lt;&lt; sw &lt;&lt; endl;    
+    cout &lt;&lt; <span class="string">&quot;Average    =&quot;</span>  &lt;&lt; sw.GetElapsedMilliseconds() / <span class="keyword">double</span>(maxit) &lt;&lt; <span class="string">&quot; milliseconds/call&quot;</span>;
+
+    
+    <span class="keyword">for</span> (<span class="keyword2">vector</span>&lt;Base*&gt;::iterator it = v.begin(); it != v.end(); ++it)
+    {
+        <span class="keyword">delete</span> *it;
+    }
+    cin.get();
+}
+</pre>
+
+
+<p>C</p>
+
+<pre>
+
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Diagnostics;
+
+<span class="keyword">namespace</span> ConsoleApplication1
+{
+
+    abstract <span class="keyword">class</span> Base
+    {
+        <span class="keyword">public</span> abstract <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s);
+    };
+
+    <span class="keyword">class</span> Odd : Base
+    {
+        <span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s) { s += <span class="number">1</span>; }
+    };
+
+    <span class="keyword">class</span> Even : Base
+    {
+        <span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s) { s += <span class="number">2</span>; }
+    };
+
+    <span class="keyword">class</span> Program
+    {
+        <span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword2">string</span>[] args)
+        {
+
+            List&lt;Base&gt; <span class="keyword2">list</span> = <span class="keyword">new</span> List&lt;Base&gt;();
+            <span class="keyword2">list</span>.Add(<span class="keyword">new</span> Odd());
+            <span class="keyword2">list</span>.Add(<span class="keyword">new</span> Even());
+
+            Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+            sw.Start();
+
+            <span class="keyword">int</span> sum = <span class="number">0</span>;
+            <span class="keyword">const</span> <span class="keyword">int</span> maxit = <span class="number">100000000</span>;
+            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxit; ++i)
+            {
+                <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; <span class="keyword2">list</span>.Count; k++)
+                {
+                    <span class="keyword2">list</span>[k].Sum(ref sum);
+                }
+            }
+
+            sw.Stop();
+
+            Console.WriteLine(<span class="string">&quot;iterations : {0}&quot;</span>, maxit);
+            Console.WriteLine(<span class="string">&quot;sum        : {0}&quot;</span>, sum);
+            Console.WriteLine(<span class="string">&quot;Elapsed    : {0}&quot;</span>, sw.ElapsedMilliseconds);
+            Console.WriteLine(<span class="string">&quot;Average    : {0}&quot;</span>, sw.ElapsedMilliseconds / (<span class="keyword">double</span>)maxit);
+            Console.Read();
+        }
+    }
+}
+</pre>
+
+
+<p>C</p>
+<pre>
+
+<span class="keyword">using</span> System;
+<span class="keyword">using</span> System.Collections.Generic;
+<span class="keyword">using</span> System.Linq;
+<span class="keyword">using</span> System.Text;
+<span class="keyword">using</span> System.Diagnostics;
+
+<span class="keyword">namespace</span> ConsoleApplication1
+{
+
+    abstract <span class="keyword">class</span> Base
+    {
+        <span class="keyword">public</span> abstract <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s);
+    };
+
+    <span class="keyword">class</span> Odd : Base
+    {
+        <span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s) { s += <span class="number">1</span>; }
+    };
+
+    <span class="keyword">class</span> Even : Base
+    {
+        <span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> Sum(ref <span class="keyword">int</span> s) { s += <span class="number">2</span>; }
+    };
+
+    <span class="keyword">class</span> Program
+    {
+        <span class="keyword">static</span> <span class="keyword">void</span> Main(<span class="keyword2">string</span>[] args)
+        {
+            Base odd = <span class="keyword">new</span> Odd();
+            Base even = <span class="keyword">new</span> Even();
+
+            Stopwatch sw = <span class="keyword">new</span> Stopwatch();
+            sw.Start();
+
+            <span class="keyword">int</span> sum = <span class="number">0</span>;
+            <span class="keyword">const</span> <span class="keyword">int</span> maxit = <span class="number">100000000</span>;
+            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxit; ++i)
+            {
+                odd.Sum(ref sum);
+                even.Sum(ref sum);
+            }
+
+            sw.Stop();
+
+            Console.WriteLine(<span class="string">&quot;iterations : {0}&quot;</span>, maxit);
+            Console.WriteLine(<span class="string">&quot;sum        : {0}&quot;</span>, sum);
+            Console.WriteLine(<span class="string">&quot;Elapsed    : {0}&quot;</span>, sw.ElapsedMilliseconds);
+            Console.WriteLine(<span class="string">&quot;Average    : {0}&quot;</span>, sw.ElapsedMilliseconds / (<span class="keyword">double</span>)maxit);
+            Console.Read();
+        }
+    }
+}
+</pre>
+
+
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =1695 ms (stopped)
+Average    =1.695e-005 milliseconds/call
+</pre>
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =769 ms (stopped)
+Average    =7.69e-006 milliseconds/call
+</pre>
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =2653 ms (stopped)
+Average    =2.653e-005 milliseconds/call
+</pre>
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =2549 ms (stopped)
+Average    =2.549e-005 milliseconds/call
+</pre>
+
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =3424 ms (stopped)
+Average    =3.424e-005 milliseconds/call
+</pre>
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =3320 ms (stopped)
+Average    =3.32e-005 milliseconds/call
+</pre>
+<p>C++, </p>
+<pre>
+iterations =100000000
+sum        =300000000
+Elapsed    =3078 ms (stopped)
+Average    =3.078e-005 milliseconds/call
+</pre>
+
+
+<p>C</p>
+<pre>
+iterations : 100000000
+sum        : 300000000
+Elapsed    : 984
+Average    : 9,84E-06
+</pre>
+<p>C</p>
+<pre>
+iterations : 100000000
+sum        : 300000000
+Elapsed    : 3293
+Average    : 3,293E-05
+</pre>
+<p>Brief</p>
+<pre>
+C++ vector function ptr 2549
+C++ vector              3078
+C# list                 3293  ~  +6%
+
+C++ base call 769 
+c#  base call 984 ~ +27%
+</pre>
+
+<p>Thanks Felipe Farion to point out the use of <i>fastcall VC++ 2008, uses <i>cdecl by default.
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

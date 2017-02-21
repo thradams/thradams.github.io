@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml"> <head> <title>Thiago's website</title> <link href="trastyle.css" type="text/css" rel="stylesheet"/>    <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> </head> <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> <body>     <div  class="pageheader"><h2>Thiago R. Adams website</h2> <p>     <a class="linkbox" href="index.htm">HOME</a>     <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>     <a class="linkbox" href="downloads.htm">PROJECTS</a>    <a class="linkbox" href="links.htm">LINKS</a>     <a class="linkbox" href="about.htm">ABOUT</a>     <br /> </p> </div><article><h2>Assertions in compile time</h2><p>
+See: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1720.html">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1720.html</a> </p>
+<p>
+And:</p>
+<p>
+<a href="http://www.boost.org/doc/libs/1_37_0/doc/html/boost_staticassert.html">http://www.boost.org/doc/libs/1_37_0/doc/html/boost_staticassert.html</a></p>
+<p>
+For simple cases we can use today: </p>
+<pre><tt><span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">namespace</span> private_assertion_namespace
+{
+    <span class="keyword">template</span>&lt;<span class="keyword">bool</span> assertion&gt; <span class="keyword">struct</span> assertion_class;
+    <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> assertion_class&lt;<span class="keyword">true</span>&gt;
+    {
+        <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>;
+    };
+}
+
+<span class="keyword">#define</span> <span class="keyword">static_assert</span>(x)  assert(private_assertion_namespace::assertion_class&lt;(x)&gt;::value);
+
+</tt></pre><p>
+</p>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

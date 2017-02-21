@@ -1,0 +1,41 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>Simple popup menu sample in Windows.</p>
+
+<p>{{{cpp  int ShowPopupMenu(HWND hWnd,                    int x,                    int y,                    const std::vector&lt;std::wstring&gt;&amp; items)  {    HMENU hMenu = CreatePopupMenu();</p>
+
+<p>    for(int i = 0; i &lt; items.size(); i++)    {      AppendMenu(hMenu, MF    }</p>
+
+<p>    POINT pt = {x, y};    ClientToScreen(hWnd, &amp;pt);    BOOL b =  TrackPopupMenu(hMenu,      TPM      pt.x,      pt.y,      0,      m      0);</p>
+
+<p>    DestroyMenu(hMenu);        return b;  }</p>
+
+<p>  void OnMouseDown(int xPos, int yPos)  {         std::vector&lt;std::wstring&gt; items;    items.push    items.push    items.push    ShowPopupMenu(m  }}}}
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

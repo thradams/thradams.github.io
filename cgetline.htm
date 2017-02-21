@@ -1,0 +1,354 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<pre>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;ERRNO.H&gt;
+<span class="keyword">#include</span> &lt;assert.H&gt;
+
+<span class="keyword">#define</span> MIN_LINE_ALLOCATION <span class="number">64</span>
+
+<span class="keyword">int</span> getstr(<span class="keyword">char</span> **lineptr, 
+  size_t *n,
+  FILE *stream,
+  <span class="keyword">char</span> terminator, 
+  <span class="keyword">int</span> offset)
+{    
+  <span class="keyword">int</span> ret;
+
+  <span class="keyword">if</span> (!lineptr || !n || !stream)
+  {
+    errno = EINVAL;
+    <span class="keyword">return</span> <span class="number">-1</span>;
+  }
+
+  <span class="keyword">if</span> (!*lineptr)
+  {
+    *n = MIN_LINE_ALLOCATION;
+    *lineptr = (<span class="keyword">char</span>*) malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (*n));
+    <span class="keyword">if</span> (!*lineptr)
+    {
+      errno = ENOMEM;
+      <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+  }
+
+  <span class="keyword">int</span> nchars_avail = *n - offset;
+  <span class="keyword">char</span> *read_pos = *lineptr + offset;
+
+  <span class="keyword">for</span> (;;)
+  {
+    <span class="keyword">int</span> save_errno;
+    <span class="keyword">int</span> c = getc(stream);
+
+    save_errno = errno;
+
+    assert((*lineptr + *n) == (read_pos + nchars_avail));
+    <span class="keyword">if</span> (nchars_avail &lt; <span class="number">2</span>)
+    {
+      <span class="keyword">if</span> (*n &gt; MIN_LINE_ALLOCATION)
+      {
+        *n *= <span class="number">2</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        *n += MIN_LINE_ALLOCATION;
+      }
+
+      nchars_avail = *n + *lineptr - read_pos;
+      *lineptr = (<span class="keyword">char</span>*)realloc(*lineptr, <span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (*n));
+      <span class="keyword">if</span> (!*lineptr)
+      {
+        errno = ENOMEM;
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      read_pos = *n - nchars_avail + *lineptr;
+      assert((*lineptr + *n) == (read_pos + nchars_avail));
+    }
+
+    <span class="keyword">if</span> (ferror(stream))
+    {
+      errno = save_errno;
+      <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+
+    <span class="keyword">if</span> (c == EOF)
+    {
+      <span class="keyword">if</span> (read_pos == *lineptr)
+      {
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        <span class="keyword">break</span>;
+      }
+    }
+
+    *read_pos++ = c;
+    nchars_avail--;
+
+    <span class="keyword">if</span> (c == terminator)
+    {
+      <span class="keyword">break</span>;
+    }
+  }
+
+  *read_pos = <span class="string">'\0'</span>;
+  ret = read_pos - (*lineptr + offset);
+  <span class="keyword">return</span> ret;
+}
+
+<span class="keyword">int</span> getline(<span class="keyword">char</span> **lineptr, size_t *n, FILE *stream)
+{
+  <span class="keyword">return</span> getstr(lineptr, n, stream, <span class="string">'\n'</span>, <span class="number">0</span>);
+}
+
+<span class="keyword">int</span> wgetstr(<span class="keyword">wchar_t</span> **lineptr,
+  size_t *n,
+  FILE *stream,
+  <span class="keyword">wchar_t</span> terminator,
+  <span class="keyword">int</span> offset)
+{    
+  <span class="keyword">int</span> ret;
+
+  <span class="keyword">if</span> (!lineptr || !n || !stream)
+  {
+    errno = EINVAL;
+    <span class="keyword">return</span> <span class="number">-1</span>;
+  }
+
+  <span class="keyword">if</span> (!*lineptr)
+  {
+    *n = MIN_LINE_ALLOCATION;
+    *lineptr = (<span class="keyword">wchar_t</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">wchar_t</span>) * (*n));
+    <span class="keyword">if</span> (!*lineptr)
+    {
+      errno = ENOMEM;
+      <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+  }
+
+  <span class="keyword">int</span> nchars_avail = *n - offset;
+  <span class="keyword">wchar_t</span>* read_pos = *lineptr + offset;
+
+  <span class="keyword">for</span> (;;)
+  {
+    <span class="keyword">int</span> save_errno;
+    <span class="keyword">register</span> wint_t c = fgetwc(stream);
+
+    save_errno = errno;
+
+    assert((*lineptr + *n) == (read_pos + nchars_avail));
+    <span class="keyword">if</span> (nchars_avail &lt; <span class="number">2</span>)
+    {
+      <span class="keyword">if</span> (*n &gt; MIN_LINE_ALLOCATION)
+      {
+        *n *= <span class="number">2</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        *n += MIN_LINE_ALLOCATION;
+      }
+
+      nchars_avail = *n + *lineptr - read_pos;
+      *lineptr = (<span class="keyword">wchar_t</span>*) realloc(*lineptr, <span class="keyword">sizeof</span>(<span class="keyword">wchar_t</span>) * (*n));
+      <span class="keyword">if</span> (!*lineptr)
+      {
+        errno = ENOMEM;
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      read_pos = *n - nchars_avail + *lineptr;
+      assert((*lineptr + *n) == (read_pos + nchars_avail));
+    }
+
+    <span class="keyword">if</span> (ferror(stream))
+    {
+      errno = save_errno;
+      <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+
+    <span class="keyword">if</span> (c == WEOF)
+    {
+      <span class="keyword">if</span> (read_pos == *lineptr)
+      {
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        <span class="keyword">break</span>;
+      }
+    }
+
+    *read_pos++ = c;
+    nchars_avail--;
+
+    <span class="keyword">if</span> (c == terminator)
+    {
+      <span class="keyword">break</span>;
+    }
+  }
+
+  *read_pos = L<span class="string">'\0'</span>;
+  ret = read_pos - (*lineptr + offset);
+  <span class="keyword">return</span> ret;
+}
+
+<span class="keyword">int</span> wgetline(<span class="keyword">wchar_t</span> **lineptr, size_t *n, FILE *stream)
+{
+  <span class="keyword">return</span> wgetstr(lineptr, n, stream, L<span class="string">'\n'</span>, <span class="number">0</span>);
+}
+
+</pre>
+
+
+<p>sample</p>
+<pre>
+  FILE *hFile = fopen(<span class="string">&quot;input.txt&quot;</span>, <span class="string">&quot;r, ccs=UTF-8&quot;</span>);
+  <span class="keyword">if</span> (hFile)
+  {
+    <span class="keyword">wchar_t</span> *lineptr = <span class="number">0</span>;
+    size_t n = <span class="number">0</span>;
+    <span class="keyword">while</span>  (wgetline(&amp;lineptr, &amp;n, hFile) != <span class="number">-1</span>)
+    {
+      wprintf(L<span class="string">&quot;%s&quot;</span>, lineptr);
+    }   
+    free(lineptr);
+    fclose(hFile);
+  }
+</pre>
+
+
+
+
+
+<pre>
+
+<span class="keyword">int</span> getstrstr(<span class="keyword">char</span> **lineptr,
+             size_t *n,
+             <span class="keyword">const</span> <span class="keyword">char</span>** stream,
+             <span class="keyword">char</span> terminator,
+             <span class="keyword">int</span>  offset)
+{
+  <span class="keyword">int</span> ret;
+
+  <span class="keyword">if</span> (!lineptr || !n || !(*stream))
+  {
+    <span class="keyword">return</span> <span class="number">-1</span>;
+  }
+
+  <span class="keyword">if</span> (!*lineptr)
+  {
+    *n = MIN_LINE_ALLOCATION;
+    *lineptr = (<span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (*n));
+    <span class="keyword">if</span> (!*lineptr)
+    {
+      <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+  }
+
+  <span class="keyword">int</span> nchars_avail = *n - offset;
+  <span class="keyword">char</span> *read_pos = *lineptr + offset;
+
+  <span class="keyword">for</span> (;;)
+  {
+    <span class="keyword">int</span> save_errno;
+    <span class="keyword">int</span> c = *(*stream);
+    (*stream)++;
+
+    assert((*lineptr + *n) == (read_pos + nchars_avail));
+    <span class="keyword">if</span> (nchars_avail &lt; <span class="number">2</span>)
+    {
+      <span class="keyword">if</span> (*n &gt; MIN_LINE_ALLOCATION)
+      {
+        *n *= <span class="number">2</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        *n += MIN_LINE_ALLOCATION;
+      }
+
+      nchars_avail = *n + *lineptr - read_pos;
+      *lineptr = (<span class="keyword">char</span>*)realloc(*lineptr, <span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (*n));
+      <span class="keyword">if</span> (!*lineptr)
+      {
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      read_pos = *n - nchars_avail + *lineptr;
+      assert((*lineptr + *n) == (read_pos + nchars_avail));
+    }
+
+    <span class="keyword">if</span> (c == <span class="number">0</span>)
+    {
+      <span class="keyword">if</span> (read_pos == *lineptr)
+      {
+        <span class="keyword">return</span> <span class="number">-1</span>;
+      }
+      <span class="keyword">else</span>
+      {
+        <span class="keyword">break</span>;
+      }
+    }
+
+    *read_pos++ = c;
+    nchars_avail--;
+
+    <span class="keyword">if</span> (c == terminator)
+    {
+      <span class="keyword">break</span>;
+    }
+  }
+
+  *read_pos = <span class="string">'\0'</span>;
+  ret = read_pos - (*lineptr + offset);
+  <span class="keyword">return</span> ret;
+}
+</pre>
+
+
+<pre>
+ <span class="keyword">char</span> *slineptr = <span class="number">0</span>;
+  size_t n = <span class="number">0</span>;
+  
+  <span class="keyword">const</span> <span class="keyword">char</span> *p = <span class="string">&quot;a , b, c&quot;</span>;
+
+  <span class="keyword">while</span> (getstrstr(&amp;slineptr,
+    &amp;n,
+    &amp;p,
+    <span class="string">','</span>,
+    <span class="number">0</span>) != <span class="number">-1</span>)
+  {
+    printf(<span class="string">&quot;'%s'&quot;</span>, slineptr);
+  }
+  free(slineptr);
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

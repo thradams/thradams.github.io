@@ -1,0 +1,474 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<h2> C++ Properties using C++ 11 </h2>
+
+<p>A property is a &quot;virtual field&quot;.\\When the virtual field is used as rvalue it calls some get function.When the virtual field is used as lvalue it calls the best set</p>
+
+<p>The idea behind this implementation is to detect when the field is used as lvalue using operator =, and to detect when the field is used as rvalue overriding operators +,- etc.</p>
+
+
+<h3> Sample</h3>
+
+<pre>
+<span class="keyword">auto</span> result = x.prop;
+x.prop = something;
+</pre>
+
+<p>will be equivalent of:</p>
+<pre>
+<span class="keyword">auto</span> result = x.get_prop();
+x.set_prop(something);
+</pre>
+
+
+<h3> Tested with:</h3>
+<p> </p>
+
+<p>See previous post </p>
+
+<hr>
+<h3> properties.h</h3>
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="comment">//
+</span><span class="comment">// Copyright (C) 2012, Thiago R. Adams
+</span><span class="comment">// http://www.thradams.com
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">#include</span> &lt;type_traits&gt;
+<span class="keyword">#include</span> &lt;ostream&gt;
+<span class="keyword">#include</span> &lt;type_traits&gt;
+<span class="keyword">#include</span> &lt;ostream&gt;
+
+<span class="keyword">struct</span> property_tag {};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">struct</span> is_property : <span class="keyword">public</span> std::is_base_of&lt;property_tag, T&gt; {};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TA, <span class="keyword">class</span> TB,  <span class="keyword">class</span> R&gt;
+<span class="keyword">struct</span> enable_if_any_is_prop : <span class="keyword">public</span> std::enable_if&lt;is_property&lt;TA&gt;::value || is_property&lt;TB&gt;::value, R&gt;
+{
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TA,  <span class="keyword">class</span> R&gt;
+<span class="keyword">struct</span> enable_if_is_prop : <span class="keyword">public</span> std::enable_if&lt;is_property&lt;TA&gt;::value, R&gt;
+{
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> TA,  <span class="keyword">class</span> R&gt;
+<span class="keyword">struct</span> enable_if_is_not_prop : <span class="keyword">public</span> std::enable_if&lt;!is_property&lt;TA&gt;::value, R&gt;
+{
+};
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">auto</span> eval(<span class="keyword">const</span> T&amp; v) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;T, <span class="keyword">decltype</span>(v.get())&gt;::type
+{
+    <span class="keyword">return</span> v.get();
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">auto</span> eval(<span class="keyword">const</span> T&amp; v) -&gt; <span class="keyword">typename</span> enable_if_is_not_prop&lt;T, <span class="keyword">decltype</span>(v) &gt;::type
+{
+    <span class="keyword">return</span> v;
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> R, <span class="keyword">typename</span> O&gt;
+R ReturnType(R (O::*)(<span class="keyword">void</span>) <span class="keyword">const</span>) 
+{ 
+  <span class="keyword">return</span> R();
+}
+
+
+<span class="keyword">#define</span> READ_ONLY_PROPERTY(CLASSTYPE, GETFUNC, name)\
+<span class="keyword">struct</span> CLASSTYPE_##name : <span class="keyword">public</span> property_tag\
+{\
+  <span class="keyword">typedef</span> <span class="keyword">decltype</span>(ReturnType(&amp;CLASSTYPE::GETFUNC)) GETTYPE;\
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">operator</span> T() <span class="keyword">const</span>\
+  {\
+      <span class="keyword">return</span> get();\
+  }\
+  GETTYPE <span class="keyword">operator</span> ()() <span class="keyword">const</span> \
+  {\
+      <span class="keyword">return</span> get();\
+  }\
+  <span class="keyword">operator</span> GETTYPE() <span class="keyword">const</span>\
+  {\
+      <span class="keyword">return</span> get();\
+  }\
+  GETTYPE get() <span class="keyword">const</span> \
+  {\
+     <span class="keyword">return</span> <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> CLASSTYPE*&gt;(<span class="keyword">this</span> - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+  }\
+} name
+
+<span class="keyword">#define</span> PROPERTY(CLASSTYPE, GETFUNC, SETFUNC, name)\
+<span class="keyword">struct</span> CLASSTYPE_##name : <span class="keyword">public</span> property_tag\
+{\
+    <span class="keyword">typedef</span> CLASSTYPE_##name MyType;\
+    <span class="keyword">typedef</span> <span class="keyword">decltype</span>(ReturnType(&amp;CLASSTYPE::GETFUNC)) GETTYPE;\
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">operator</span> T()\
+    {\
+        <span class="keyword">return</span> get();\
+    }\
+    GETTYPE <span class="keyword">operator</span> ()() <span class="keyword">const</span> \
+    {\
+        <span class="keyword">return</span> get();\
+    }\
+    GETTYPE get() <span class="keyword">const</span> \
+    {\
+       <span class="keyword">return</span> <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> CLASSTYPE*&gt;(<span class="keyword">this</span> - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+    }\
+	<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;\
+	<span class="keyword">void</span> set(T&amp;&amp; value)\
+    {\
+       <span class="keyword">reinterpret_cast</span>&lt;CLASSTYPE*&gt;(<span class="keyword">this</span> - offsetof(CLASSTYPE, name))-&gt;SETFUNC(std::forward&lt;T&gt;(value));\
+    }\
+    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;T, MyType&amp;&gt;::type\
+    <span class="keyword">operator</span> =(T&amp;&amp; value)\
+    {\
+        set(std::forward&lt;T&gt;(value.get()));\
+        <span class="keyword">return</span> *<span class="keyword">this</span>;\
+    }\
+    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">typename</span> enable_if_is_not_prop&lt;T, MyType&amp;&gt;::type\
+    <span class="keyword">operator</span> =(T&amp;&amp; value)\
+    {\
+        set(std::forward&lt;T&gt;(value));\
+        <span class="keyword">return</span> *<span class="keyword">this</span>;\
+    }\
+} name
+
+
+<span class="keyword">#define</span> DECLARE_BINARY_OPERATOR(OPERATOR) \
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> TA, <span class="keyword">class</span> TB&gt; \
+<span class="keyword">auto</span> <span class="keyword">operator</span> OPERATOR(<span class="keyword">const</span> TA&amp; a, <span class="keyword">const</span> TB&amp; b) -&gt; <span class="keyword">typename</span> enable_if_any_is_prop&lt;TA, TB, <span class="keyword">decltype</span>(eval(a) OPERATOR eval(b)) &gt;::type \
+{ \
+  <span class="keyword">return</span> eval(a) OPERATOR eval(b);\
+}
+
+DECLARE_BINARY_OPERATOR(+)
+DECLARE_BINARY_OPERATOR(-)
+DECLARE_BINARY_OPERATOR(*)
+DECLARE_BINARY_OPERATOR(/)
+DECLARE_BINARY_OPERATOR(%)
+DECLARE_BINARY_OPERATOR(&lt;)
+DECLARE_BINARY_OPERATOR(&gt;)
+DECLARE_BINARY_OPERATOR(==)
+DECLARE_BINARY_OPERATOR(&gt;=)
+DECLARE_BINARY_OPERATOR(&lt;=)
+DECLARE_BINARY_OPERATOR(!=)
+DECLARE_BINARY_OPERATOR(&amp;&amp;)
+DECLARE_BINARY_OPERATOR(||)
+DECLARE_BINARY_OPERATOR(&gt;&gt;)
+DECLARE_BINARY_OPERATOR(&lt;&lt;)
+
+<span class="keyword">#define</span> DECLARE_COMPOUND_OPERATOR(OPERATOR) \
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> TA, <span class="keyword">class</span> TB&gt; \
+<span class="keyword">auto</span> <span class="keyword">operator</span> OPERATOR=(TA&amp; a, <span class="keyword">const</span> TB&amp; b) -&gt; <span class="keyword">typename</span> enable_if_any_is_prop&lt;TA, TB, TA&amp;&gt;::type \
+{ \
+   a = (a.get() OPERATOR b);\
+   <span class="keyword">return</span> a;\
+}
+
+DECLARE_COMPOUND_OPERATOR(+)
+DECLARE_COMPOUND_OPERATOR(-)
+DECLARE_COMPOUND_OPERATOR(*)
+DECLARE_COMPOUND_OPERATOR(/)
+DECLARE_COMPOUND_OPERATOR(%)
+DECLARE_COMPOUND_OPERATOR(&amp;)
+DECLARE_COMPOUND_OPERATOR(|)
+DECLARE_COMPOUND_OPERATOR(^)
+DECLARE_COMPOUND_OPERATOR(&gt;&gt;)
+DECLARE_COMPOUND_OPERATOR(&lt;&lt;)
+
+<span class="comment">//Increment Prefix
+</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> ++(TA&amp; a) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;TA, <span class="keyword">decltype</span>(a.get()) &gt;::type
+{
+    a = (a.get() + <span class="number">1</span>);
+    <span class="keyword">return</span> a.get();
+}
+
+<span class="comment">//Increment Suffix
+</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> ++(TA&amp; a, <span class="keyword">int</span>) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;TA, <span class="keyword">decltype</span>(a.get()) &gt;::type
+{
+    <span class="keyword">auto</span> temp = a.get();
+    a = (a.get() + <span class="number">1</span>);
+    <span class="keyword">return</span> temp;
+}
+
+<span class="comment">//Decrement Prefix
+</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> --(TA&amp; a) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;TA, <span class="keyword">decltype</span>(a.get()) &gt;::type
+{
+    a = (a.get() - <span class="number">1</span>);
+    <span class="keyword">return</span> a.get();
+}
+
+<span class="comment">//Decrement Suffix
+</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> --(TA&amp; a, <span class="keyword">int</span>) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;TA, <span class="keyword">decltype</span>(a.get()) &gt;::type
+{
+    <span class="keyword">auto</span> temp = a.get();
+    a = (a.get() - <span class="number">1</span>);
+    <span class="keyword">return</span> temp;
+}
+
+<span class="comment">//Logical negation (NOT)
+</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> !(<span class="keyword">const</span> TA&amp; a) -&gt; <span class="keyword">typename</span> std::enable_if &lt; is_property&lt;TA&gt;::value, <span class="keyword">decltype</span>(!eval(a)) &gt;::type
+{
+    <span class="keyword">return</span> !a.get();
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> TA&gt;
+<span class="keyword">auto</span> <span class="keyword">operator</span> ~(<span class="keyword">const</span> TA&amp; a) -&gt; <span class="keyword">typename</span> enable_if_is_prop&lt;TA, <span class="keyword">decltype</span>(~a.get()) &gt;::type
+{
+    <span class="keyword">return</span> ~a.get();
+}
+
+<span class="comment">//iostrem
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> Elem,  <span class="keyword">class</span> Traits, <span class="keyword">class</span> TB&gt; <span class="keyword">inline</span>
+<span class="keyword">typename</span> enable_if_is_prop&lt;TB, std::basic_ostream&lt;Elem, Traits&gt;&amp; &gt;::type
+         <span class="keyword">operator</span> &lt;&lt; (std::basic_ostream&lt;Elem, Traits&gt;&amp; os, <span class="keyword">const</span> TB&amp; b)
+{
+    <span class="keyword">return</span> os &lt;&lt; b.get();
+}
+
+
+
+
+</pre>
+
+
+<hr>
+
+<h3> sample.cpp</h3>
+<pre>
+
+<span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> <span class="string">&quot;properties.h&quot;</span>
+
+<span class="keyword">struct</span> X
+{
+    std::<span class="keyword2">string</span> m_text;
+
+    <span class="keyword">void</span> set_text(std::<span class="keyword2">string</span> value)
+    {
+        m_text = value;
+    }
+
+    std::<span class="keyword2">string</span> get_text() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_text;
+    }
+
+    PROPERTY(X, get_text,set_text, text);
+
+    <span class="keyword">int</span> m_width;
+
+    <span class="keyword">void</span> set_width(<span class="keyword">int</span> value)
+    {
+        m_width = value;
+    }
+
+    <span class="keyword">int</span> get_width() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_width;
+    }
+
+    PROPERTY(X, get_width, set_width, width);
+
+    <span class="keyword">bool</span> m_b;
+
+    <span class="keyword">void</span> set_b(<span class="keyword">bool</span> value)
+    {
+        m_b = value;
+    }
+
+    <span class="keyword">bool</span> get_b() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_b;
+    }
+
+    PROPERTY(X, get_b, set_b,  b);
+
+};
+
+<span class="keyword">struct</span> X2
+{
+
+    std::<span class="keyword2">string</span> m_text2;
+
+    <span class="keyword">void</span> set_text2(<span class="keyword">const</span> <span class="keyword">char</span>* value)
+    {
+          m_text2 = value;
+    }
+    <span class="keyword">void</span> set_text2(std::<span class="keyword2">string</span> value)
+    {
+        m_text2 = value;
+    }
+
+    <span class="keyword">const</span> std::<span class="keyword2">string</span>&amp; get_text2() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_text2;
+    }
+
+    PROPERTY(X2, get_text2, set_text2, text2);
+
+    <span class="keyword">int</span> m_width;
+
+    <span class="keyword">void</span> set_width(<span class="keyword">int</span> value)
+    {
+        m_width = value;
+    }
+
+    <span class="keyword">int</span> get_width() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_width;
+    }
+
+    PROPERTY(X, get_width, set_width, width);
+
+    <span class="keyword">bool</span> m_b;
+
+    <span class="keyword">bool</span> get_b() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_b;
+    }
+    
+    READ_ONLY_PROPERTY(X, get_b, b);
+};
+
+<span class="keyword">void</span> f(<span class="keyword">int</span>) {}
+<span class="keyword">void</span> f1(<span class="keyword">const</span> <span class="keyword">int</span>) {}
+<span class="keyword">void</span> f2(<span class="keyword">int</span>&amp;) {}
+<span class="keyword">void</span> f3(<span class="keyword">double</span>) {}
+<span class="keyword">void</span> f4(<span class="keyword">const</span> std::<span class="keyword2">string</span>&amp;) {}
+
+
+<span class="keyword">int</span> main()
+{
+    X x;
+    X2 x2;
+    <span class="keyword">bool</span> b = x.text &lt;= x2.text2;
+    b = x2.text2 &lt;= x.text;
+    x.text = x2.text2;
+    x.text == x2.text2;
+    x.text != x2.text2;
+    x.text != <span class="string">&quot;aa&quot;</span>;
+    x.text = <span class="string">&quot;aa&quot;</span>;
+    x.text = x.text + <span class="string">&quot;b&quot;</span>;
+    x.text = <span class="string">&quot;a&quot;</span> + x.text;
+    x.text += <span class="string">&quot;c&quot;</span>;
+    x.text = x.text + x2.text2;
+    x2.text2=<span class="string">&quot;text2&quot;</span>;
+    b = (x.text == <span class="string">&quot;aa&quot;</span>);
+    b = x.text &gt; x2.text2;
+    b = x.text &lt; x2.text2;
+    b = x.text &lt; <span class="string">&quot;a&quot;</span>;
+    <span class="comment">//x2.b = true; //b is read only
+</span>    f4(x.text);
+    b = x.text &lt;= x2.text2;
+    x.width = !x.width;
+    x.width = <span class="number">1</span>;
+    x.width += <span class="number">1</span>;
+    x.width -= <span class="number">1</span>;
+    x.width *= <span class="number">1</span>;
+    x.width /= <span class="number">1</span>;
+    x.width = x.width == <span class="number">2</span> || x.width == <span class="number">1</span>;
+    x.width = x.width &amp;&amp; x.width ;
+
+    b = x2.b;
+    x.b = <span class="keyword">false</span>;
+    x.b = !x.b;
+    x.b == x2.b;
+    x.width++;
+    x.width--;
+
+    x.b = x.b || <span class="number">1</span>;
+    x.b = x.b || x2.b;
+    x.width = x.width &amp;&amp; <span class="number">1</span>;
+    x.width = x.width &amp;&amp; x.width;
+    x.width += x.width;
+    x.width -= <span class="number">1</span>;
+    x2.width = <span class="number">2</span>;
+    x.width == x2.width;
+    x.width++;
+    x.width &gt;= <span class="number">1</span>;
+    x.width &gt;= x2.width;
+    x.width &lt;= x2.width;
+    b = x.width &lt; x2.width;
+    b = x.width &gt; x2.width;
+    f(x.width);
+    f1(x.width);
+    ++x.width;
+    x.width = x2.width + <span class="number">1</span>;
+    x.width = x.width  + x2.width;
+    x.width = x.width  - x2.width;
+
+    x.width = <span class="number">5</span>;
+    assert(x.width % <span class="number">2</span>  == <span class="number">1</span>);
+    x.width = <span class="number">1</span>;
+    x2.width = <span class="number">2</span>;
+    assert(x2.width &gt; x.width);
+    assert(x.width &lt; x2.width);
+    x.width &lt;= x2.width;
+    x.width &gt;= x2.width;
+    x.width != x2.width;
+
+    <span class="keyword">if</span> (x.text().empty())
+    {
+    }
+    
+    x.text().clear(); <span class="comment">//ok
+</span>    <span class="comment">//x2.text2().clear(); // error
+</span>
+    std::cout &lt;&lt; x.width;
+    std::cout &lt;&lt; x.text;
+}
+
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

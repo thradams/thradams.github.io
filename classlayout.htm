@@ -1,0 +1,122 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>It is possible to print the class layout in Visual C++ using the following command option:</p>
+
+<pre>
+ /d1reportSingleClassLayoutCLASSNAME
+</pre>
+
+<p>Where CLASSNAME is the name of the class you want to print.</p>
+
+<p>The option can be added at the &quot;Command Line&quot; &quot;Additional Options&quot;</p>
+
+
+<p>Sample:</p>
+<pre>
+<span class="keyword">struct</span> Base
+{  
+  <span class="keyword">int</span> baseInt;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> f(){};
+  <span class="keyword">virtual</span> ~Base(){}
+};
+
+<span class="keyword">struct</span> D1 : <span class="keyword">public</span> Base
+{
+  <span class="keyword">int</span> D1Int;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> f1(){};
+  <span class="keyword">virtual</span> ~D1(){}
+};
+
+<span class="keyword">struct</span> D2 : <span class="keyword">public</span> Base
+{
+  <span class="keyword">int</span> D2Int;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> f2(){};
+  <span class="keyword">virtual</span> ~D2(){}
+};
+
+<span class="keyword">struct</span> D3 : <span class="keyword">public</span> D1, <span class="keyword">public</span> D2
+{
+  <span class="keyword">int</span> D3Int;
+  <span class="keyword">virtual</span> <span class="keyword">void</span> f(){};  
+};
+</pre>
+
+
+<pre>
+ /d1reportSingleClassLayoutD3
+</pre>
+
+<p>Output:</p>
+
+<pre>
+  class D3	size(28):
+  	+---
+  	| +--- (base class D1)
+  	| | +--- (base class Base)
+   0	| | | {vfptr}
+   4	| | | baseInt
+  	| | +---
+   8	| | D1Int
+  	| +---
+  	| +--- (base class D2)
+  	| | +--- (base class Base)
+  12	| | | {vfptr}
+  16	| | | baseInt
+  	| | +---
+  20	| | D2Int
+  	| +---
+  24	| D3Int
+  	+---
+  
+  D3::$vftableD1:
+  	| &amp;D3_meta
+  	|  0
+   0	| &amp;D3::f
+   1	| &amp;D3::{dtor}
+   2	| &amp;D1::f1
+  
+  D3::$vftableD2:
+  	| -12
+   0	| &amp;thunk: this-=12; goto D3::f
+   1	| &amp;thunk: this-=12; goto D3::{dtor}
+   2	| &amp;D2::f2
+  
+  D3::f this adjustor: 0
+  D3::{dtor} this adjustor: 0
+  D3::__delDtor this adjustor: 0
+  D3::__vecDelDtor this adjustor: 0
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

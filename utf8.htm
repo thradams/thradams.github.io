@@ -1,0 +1,67 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>Sample of use of codecvt</p>
+
+<p>This class is part of C++0x.&quot;Standard code conversion facets&quot;</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;fstream&gt;
+<span class="keyword">#include</span> &lt;codecvt&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="keyword">int</span> main()
+{
+
+        <span class="comment">// writing
+</span>	{
+		std::locale ulocale(locale(), <span class="keyword">new</span> codecvt_utf8&lt;<span class="keyword">wchar_t</span>&gt;) ;
+		std::wofstream ofs(<span class="string">&quot;test.txt&quot;</span>);
+		ofs.imbue(ulocale);
+		ofs &lt;&lt; L<span class="string">&quot;maçã&quot;</span>; <span class="comment">//apple in portuguese
+</span>        
+        }
+
+        <span class="comment">// reading
+</span>	{
+		std::locale ulocale(locale(), <span class="keyword">new</span> codecvt_utf8&lt;<span class="keyword">wchar_t</span>&gt;) ;
+		std::wifstream ifs(<span class="string">&quot;test.txt&quot;</span>);
+		ifs.imbue(ulocale);
+		std::<span class="keyword2">wstring</span> ws;
+		std::getline(ifs, ws);		
+    }
+}
+</pre>
+
+
+<p>(compiled using VC++ 2010 express)
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

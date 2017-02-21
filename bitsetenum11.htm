@@ -1,0 +1,157 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>See also: <a href="enum.html">enum.htm</a></p>
+
+<pre>
+<span class="keyword">enum</span> Font
+{
+  Bold   = <span class="number">1</span> &lt;&lt; <span class="number">0</span>,
+  Italic = <span class="number">1</span> &lt;&lt; <span class="number">1</span>,
+  Underline = <span class="number">1</span> &lt;&lt; <span class="number">2</span>,
+};
+
+<span class="keyword">inline</span> Font <span class="keyword">operator</span> | (Font a, Font b)
+{
+  <span class="keyword">typedef</span> std::underlying_type&lt;Font&gt;::type Type;
+  <span class="keyword">return</span> Font(Type(a) | Type(b));
+}
+
+<span class="keyword">inline</span> Font <span class="keyword">operator</span>~(Font a)
+{
+  <span class="keyword">typedef</span> std::underlying_type&lt;Font&gt;::type Type;
+  <span class="keyword">return</span> Font(~Type(a));
+}
+
+<span class="keyword">inline</span> Font <span class="keyword">operator</span>&amp; (Font a, Font b)
+{
+  <span class="keyword">typedef</span> std::underlying_type&lt;Font&gt;::type Type;
+  <span class="keyword">return</span> Font(Type(a) &amp; Type(b));
+}
+
+<span class="keyword">inline</span> Font&amp; <span class="keyword">operator</span>&amp;=(Font&amp; a, Font b)
+{
+  a = a &amp; b;
+  <span class="keyword">return</span> a;
+}
+
+<span class="keyword">inline</span> Font&amp; <span class="keyword">operator</span>|=(Font&amp; a, Font b)
+{
+  a = a | b;
+  <span class="keyword">return</span> a;
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span> Add(Font&amp; e, Font items)
+{
+  e = e | items;
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span> Remove(Font&amp; e, Font items)
+{
+  e = e &amp; ~items;
+}
+
+<span class="comment">//Determines whether all bits
+</span><span class="comment">//are set in the &quot;e&quot;.
+</span><span class="keyword">inline</span> <span class="keyword">bool</span> HasAllFlags(Font e, Font items)
+{
+  <span class="keyword">typedef</span> std::underlying_type&lt;Font&gt;::type Type;
+  <span class="keyword">return</span> (Type(e) &amp; Type(items)) == Type(items);
+}
+
+<span class="comment">//Determines whether one or more bit fields
+</span><span class="comment">//are set in the &quot;e&quot;.
+</span><span class="keyword">inline</span> <span class="keyword">bool</span> HasFlag(Font e, Font items)
+{
+  <span class="keyword">typedef</span> std::underlying_type&lt;Font&gt;::type Type;
+  <span class="keyword">return</span> (Type(e) &amp; Type(items)) != Type(<span class="number">0</span>);
+}
+</pre>
+
+
+
+<p>Test program:</p>
+<pre>
+
+std::<span class="keyword2">string</span> to_string(Font f)
+{
+  std::<span class="keyword2">string</span> ws;
+
+  <span class="keyword">if</span> (HasFlag(f, Font::Bold))
+    ws += <span class="string">&quot;Bold&quot;</span>;
+
+
+  <span class="keyword">if</span> (HasFlag(f, Font::Italic))
+  {
+    <span class="keyword">if</span> (!ws.empty())
+      ws += <span class="string">&quot; | &quot;</span>;
+
+    ws += <span class="string">&quot;Italic&quot;</span>;
+  }
+
+  <span class="keyword">if</span> (HasFlag(f, Font::Underline))
+  {
+    <span class="keyword">if</span> (!ws.empty())
+      ws += <span class="string">&quot; | &quot;</span>;
+
+    ws += <span class="string">&quot;Underline&quot;</span>;
+  }
+
+  <span class="keyword">return</span> ws;
+}
+
+<span class="keyword">int</span> main()
+{
+  Font f = Font::Bold;
+  f = f | Font::Italic;
+  std::cout &lt;&lt; <span class="string">&quot;HasFlag(underline) = &quot;</span> &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;HasFlag(italic) = &quot;</span> &lt;&lt; HasFlag(f, Font::Italic) &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;HasFlag(italic | bold) = &quot;</span> &lt;&lt; HasFlag(f, Font::Italic | Font::Bold) &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;HasAllFlags(bold | underline) = &quot;</span> &lt;&lt; HasAllFlags(f, Font::Bold | Font::Underline) &lt;&lt; std::endl;
+  
+  std::cout &lt;&lt; <span class="string">&quot;Add(underline)&quot;</span> &lt;&lt; std::endl;
+  Add(f, Font::Underline);
+  std::cout &lt;&lt; <span class="string">&quot;HasFlag(underline) = &quot;</span> &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;
+  std::cout &lt;&lt; <span class="string">&quot;HasAllFlags(bold | underline) = &quot;</span> &lt;&lt; HasAllFlags(f, Font::Bold | Font::Underline) &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; <span class="string">&quot;Remove(underline)&quot;</span> &lt;&lt; std::endl;
+
+  Remove(f, Font::Underline);
+  std::cout &lt;&lt; <span class="string">&quot;HasFlag(underline) = &quot;</span> &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

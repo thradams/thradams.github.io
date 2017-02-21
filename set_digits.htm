@@ -1,0 +1,105 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<h3>set_digits</h3>
+<p>Fills digits to represent a value using base.</p>
+
+<hr>
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+<span class="keyword">int</span> set_digits(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value,
+               It first,
+               It last);
+</pre>
+
+<hr>
+<h3>Sample</h3>
+<pre>
+       1 -&gt; {0, 0, 1} 
+                    base = 10
+
+       10 -&gt; {0, 1, 0} 
+                      base = 10
+
+       100 -&gt; {0, 0, 100} 
+                         base = 256
+</pre>
+
+<hr>
+<h3>Sample</h3>
+<pre>
+<span class="keyword">void</span> set_digits_test()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    <span class="keyword">int</span> n[] = { <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> , <span class="number">0</span> }; 
+    assert(set_digits&lt;<span class="number">10</span>&gt;(<span class="number">103</span>, begin(n), end(n)) == <span class="number">3</span>);
+    assert(n[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">1</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">3</span>);
+
+    std::fill(begin(n), end(n), <span class="number">0</span>);
+    assert(set_digits&lt;<span class="number">256</span>&gt;(<span class="number">103</span>, begin(n), end(n)) == <span class="number">1</span>);
+    assert(n[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">103</span>);
+}
+</pre>
+
+
+<hr>
+<h3>Implementation</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+<span class="keyword">int</span> set_digits(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value,
+               It first,
+               It last)
+{
+    <span class="keyword">static_assert</span>(base &gt; <span class="number">1</span>, <span class="string">&quot;base must be &gt; 1&quot;</span>);
+    <span class="keyword">int</span> d = <span class="number">0</span>;
+    <span class="keyword">for</span> (; first != last; ++first)
+    {
+        ++d;
+        *first = value % base;
+        value = value / base;
+
+        <span class="keyword">if</span> (value == <span class="number">0</span>)
+        {
+            <span class="keyword">return</span> d;   <span class="comment">//ok
+</span>        }
+    };
+
+    assert(<span class="keyword">false</span>);
+
+    <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">//more digits are necessary
+</span>}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

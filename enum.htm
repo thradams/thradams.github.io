@@ -1,0 +1,302 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1>Enumeration used as a set of bits</h1>
+
+<p>One of the most compact ways to represent styles is using bits. Generally programmes use to use integer constants or typedefs for this task. I will show a way that I consider better to express a set of bits. The idea is to add bit operations to an enum type. The main advantage is that using enums and operators we have a clear concept and it avoids type mixture. Using int / longs /defines you can mix everything.</p>
+
+<p>Use:</p>
+
+<pre>
+
+<span class="keyword">enum</span> FontStyle
+{
+   FontStyleNormal    = <span class="number">1</span> &lt;&lt; <span class="number">0</span>,
+   FontStyleBold      = <span class="number">1</span> &lt;&lt; <span class="number">1</span>,
+   FontStyleItalic    = <span class="number">1</span> &lt;&lt; <span class="number">2</span>,
+   FontStyleUnderline = <span class="number">1</span> &lt;&lt; <span class="number">3</span>
+};
+
+DECLARE_BITSET_ENUM(FontStyle);
+
+<span class="keyword">int</span> main()
+{
+  FontStyle style = FontStyleBold | FontStyleItalic;
+  <span class="comment">// style = (1 &lt;&lt; 1); error C2440: '=' : cannot convert from 'int' to 'FontStyle
+</span>}
+DECLARE_BITSET_ENUM code
+
+
+ <span class="keyword">#define</span> DECLARE_BITSET_ENUM(EnumName) \
+   <span class="keyword">inline</span> EnumName <span class="keyword">operator</span> | (EnumName a, EnumName b) {\
+   <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;EnumName&gt;(  <span class="keyword">static_cast</span>&lt;<span class="keyword">long</span>&gt;(a) |\
+     <span class="keyword">static_cast</span>&lt;<span class="keyword">long</span>&gt;(b));\
+ }\
+ <span class="keyword">inline</span> EnumName&amp; <span class="keyword">operator</span>|=(EnumName&amp; a, EnumName b) {\
+   a = <span class="keyword">static_cast</span>&lt;EnumName&gt;(a | b); \
+   <span class="keyword">return</span> a; \
+ }\
+ <span class="keyword">inline</span> EnumName <span class="keyword">operator</span>~ (EnumName a) { \
+  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;EnumName&gt;(~<span class="keyword">static_cast</span>&lt;<span class="keyword">long</span>&gt;(a)); \
+ }\
+ <span class="keyword">inline</span> EnumName <span class="keyword">operator</span>&amp; (EnumName a, EnumName b) {\
+   <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;EnumName&gt;(<span class="keyword">static_cast</span>&lt;<span class="keyword">long</span>&gt;(a) &amp; \
+     <span class="keyword">static_cast</span>&lt;<span class="keyword">long</span>&gt;(b)); \
+ }\
+ <span class="keyword">inline</span> EnumName&amp; <span class="keyword">operator</span>&amp;=(EnumName&amp; a, EnumName b) {\
+   a = <span class="keyword">static_cast</span>&lt;EnumName&gt;(a &amp; b); \
+   <span class="keyword">return</span> a; \
+ }
+ </pre>
+
+
+<p> More functions hand-made for each enum to be used as model</p>
+
+<pre>
+
+ <span class="keyword">#define</span> FONTSTYLE_SIZE (<span class="number">4</span>)
+
+<span class="comment">// #include &lt;string
+</span>std::<span class="keyword2">wstring</span> ToStringW(FontStyle e)
+{ 
+    <span class="keyword">const</span> <span class="keyword">wchar_t</span>* strs[FONTSTYLE_SIZE] = {L<span class="string">&quot;FontStyleNormal&quot;</span>,
+                                           L<span class="string">&quot;FontStyleBold&quot;</span>,
+                                           L<span class="string">&quot;FontStyleItalic&quot;</span>,
+                                           L<span class="string">&quot;FontStyleUnderline&quot;</span>};
+    std::<span class="keyword2">wstring</span> str;
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; FONTSTYLE_SIZE; i++)
+    {
+        <span class="keyword">if</span> (e &amp; (<span class="number">1</span> &lt;&lt; i))
+        {
+            <span class="keyword">if</span> (count &gt; <span class="number">0</span>)
+            str += L<span class="string">&quot; | &quot;</span>;
+            str += strs[i];
+            count++;
+        }
+    }
+    <span class="keyword">return</span> str;
+}
+
+<span class="comment">// #include &lt;string
+</span>std::<span class="keyword2">string</span> ToString(FontStyle e)
+{ 
+    <span class="keyword">const</span> <span class="keyword">char</span>* strs[FONTSTYLE_SIZE] = {<span class="string">&quot;FontStyleNormal&quot;</span>,
+                                        <span class="string">&quot;FontStyleBold&quot;</span>,
+                                        <span class="string">&quot;FontStyleItalic&quot;</span>,
+                                        <span class="string">&quot;FontStyleUnderline&quot;</span>};
+    std::<span class="keyword2">string</span> str;
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; FONTSTYLE_SIZE; i++)
+    {
+        <span class="keyword">if</span> (e &amp; (<span class="number">1</span> &lt;&lt; i))
+        {
+            <span class="keyword">if</span> (count &gt; <span class="number">0</span>)
+            str += <span class="string">&quot; | &quot;</span>;
+            str += strs[i];
+            count++;
+        }
+    }
+    <span class="keyword">return</span> str;
+}
+<span class="comment">// #include &lt;ostream
+</span>std::wostream&amp; <span class="keyword">operator</span> &lt;&lt; (std::wostream&amp; os, FontStyle e)
+{ 
+    <span class="keyword">const</span> <span class="keyword">wchar_t</span>* strs[FONTSTYLE_SIZE] = {L<span class="string">&quot;FontStyleNormal&quot;</span>,
+                                           L<span class="string">&quot;FontStyleBold&quot;</span>,
+                                           L<span class="string">&quot;FontStyleItalic&quot;</span>,
+                                           L<span class="string">&quot;FontStyle&quot;</span>};
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; FONTSTYLE_SIZE; i++)
+    {
+        <span class="keyword">if</span> (e &amp; (<span class="number">1</span> &lt;&lt; i))
+        {
+            <span class="keyword">if</span> (count &gt; <span class="number">0</span>)
+            os &lt;&lt; L<span class="string">&quot; | &quot;</span>;
+            os &lt;&lt; strs[i];
+            count++;
+        }
+    }
+    <span class="keyword">return</span> os;
+}
+
+<span class="comment">// #include &lt;ostream
+</span>std::ostream&amp; <span class="keyword">operator</span> &lt;&lt; (std::ostream&amp; os, FontStyle e)
+{ 
+    <span class="keyword">const</span> <span class="keyword">char</span>* strs[FONTSTYLE_SIZE] = {<span class="string">&quot;FontStyleNormal&quot;</span>,
+                                        <span class="string">&quot;FontStyleBold&quot;</span>,
+                                        <span class="string">&quot;FontStyleItalic&quot;</span>,
+                                        <span class="string">&quot;FontStyle&quot;</span>};
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; FONTSTYLE_SIZE; i++)
+    {
+        <span class="keyword">if</span> (e &amp; (<span class="number">1</span> &lt;&lt; i))
+        {
+            <span class="keyword">if</span> (count &gt; <span class="number">0</span>)
+            os &lt;&lt; <span class="string">&quot; | &quot;</span>;
+            os &lt;&lt; strs[i];
+            count++;
+        }
+    }
+    <span class="keyword">return</span> os;
+}
+
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> IsValidFontStyle(<span class="keyword">long</span> v)
+{
+    <span class="keyword">return</span> (v &amp; (FontStyleNormal | 
+                 FontStyleBold | 
+                 FontStyleItalic | 
+                 FontStyleUnderline)) == v;
+}
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> HasOneFontStyle(FontStyle e)
+{
+    <span class="keyword">return</span> e == FontStyleNormal || 
+           e == FontStyleBold   || 
+           e == FontStyleItalic || 
+           e == FontStyleUnderline;
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span> Add(FontStyle&amp; e, FontStyle items)
+{
+    e |= items;
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span> Remove(FontStyle&amp; e, FontStyle items)
+{
+    e &amp;= ~items;
+}
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> HasAll(FontStyle e, FontStyle items)
+{
+    <span class="keyword">return</span> (e &amp; items) == items;
+}
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> HasAny(FontStyle e, FontStyle items)
+{
+    <span class="keyword">return</span> e &amp; items;
+}
+</pre>
+
+
+<p>The river puzzle code was made using this type of construction.</p>
+
+<p>Extra functions included</p>
+
+
+<pre>
+
+#define DECLARE_BITSET_ENUM(EnumName) \
+   inline EnumName operator | (EnumName a, EnumName b) {\
+   return static_cast&lt;EnumName&gt;(  static_cast&lt;long&gt;(a) |\
+     static_cast&lt;long&gt;(b));\
+ }\
+ inline EnumName&amp; operator|=(EnumName&amp; a, EnumName b) {\
+   a = static_cast&lt;EnumName&gt;(a | b); \
+   return a; \
+ }\
+ inline EnumName operator~ (EnumName a) { \
+  return static_cast&lt;EnumName&gt;(~static_cast&lt;long&gt;(a)); \
+ }\
+ inline EnumName operator&amp; (EnumName a, EnumName b) {\
+   return static_cast&lt;EnumName&gt;(static_cast&lt;long&gt;(a) &amp; \
+     static_cast&lt;long&gt;(b)); \
+ }\
+ inline EnumName&amp; operator&amp;=(EnumName&amp; a, EnumName b) {\
+   a = static_cast&lt;EnumName&gt;(a &amp; b); \
+   return a; \
+ }\
+inline void Add(EnumName&amp; e, EnumName items)\
+{\
+    e |= items;\
+}\
+inline void Remove(EnumName&amp; e, EnumName items)\
+{\
+    e &amp;= ~items;\
+}\
+inline bool HasAll(EnumName e, EnumName items)\
+{\
+    return (e &amp; items) == items;\
+}\
+inline bool HasAny(EnumName e, EnumName items)\
+{\
+    return (e &amp; items) != 0;\
+}
+</pre>
+
+<p>From string sample</p>
+
+<pre>
+<span class="keyword">enum</span> LineStyle
+{
+  Solid,
+  Dash,
+  Dot
+};
+
+LineStyle FromString(<span class="keyword">const</span> <span class="keyword">char</span>* psz, LineStyle def)
+{
+  LineStyle result;
+  <span class="keyword">if</span> (_stricmp(psz, <span class="string">&quot;Solid&quot;</span>) == <span class="number">0</span>)
+    result = Solid;
+  <span class="keyword">else</span> <span class="keyword">if</span> (_stricmp(psz, <span class="string">&quot;Dash&quot;</span>) == <span class="number">0</span>)
+    result = Dash;
+  <span class="keyword">else</span> <span class="keyword">if</span> (_stricmp(psz, <span class="string">&quot;Dot&quot;</span>) == <span class="number">0</span>)
+    result = Dot;
+  <span class="keyword">else</span>
+    result = def;
+
+  <span class="keyword">return</span> result;
+}
+
+LineStyle FromString(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* psz, LineStyle def)
+{
+  LineStyle result;
+  <span class="keyword">if</span> (_wcsicmp(psz, L<span class="string">&quot;Solid&quot;</span>) == <span class="number">0</span>)
+    result = Solid;
+  <span class="keyword">else</span> <span class="keyword">if</span> (_wcsicmp(psz, L<span class="string">&quot;Dash&quot;</span>) == <span class="number">0</span>)
+    result = Dash;
+  <span class="keyword">else</span> <span class="keyword">if</span> (_wcsicmp(psz, L<span class="string">&quot;Dot&quot;</span>) == <span class="number">0</span>)
+    result = Dot;
+  <span class="keyword">else</span>
+    result = def;
+
+  <span class="keyword">return</span> result;
+}
+
+</pre>
+
+
+<h3>History</h3>
+
+<p>FromString added 4/11/2010</p>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,308 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>Normal pointers and references to shared objects.</p>
+
+<p>Sample</p>
+<pre>
+   
+   <span class="comment">//Creates a new shared object (ref counted)
+</span>   X* pShared = new_shared_object&lt;X&gt;();
+
+   <span class="comment">//Shares the object with pShared2
+</span>   X* pShared2 = share_object(pShared);
+
+   <span class="comment">//Release the pShared reference
+</span>   release_shared_object(pShared);
+   pShared = <span class="keyword">nullptr</span>;
+
+   <span class="comment">//Release the pShared2 reference
+</span>   release_shared_object(pShared2);
+   pShared2 = <span class="keyword">nullptr</span>;
+
+<span class="comment">//References:
+</span>
+   X&amp; sharedRef = *new_shared_object&lt;X&gt;();
+   X&amp; sharedRef2 = share_object(sharedRef);
+
+   <span class="comment">//(destructor for instance)
+</span>   release_shared_object(sharedRef);
+   release_shared_object(sharedRef2);
+</pre>
+
+
+<hr>
+
+<p>Source Code: (scratch)</p>
+
+<pre>
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">struct</span> AtomicHolder : <span class="keyword">public</span> T
+{
+  std::atomic&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; counter;
+  
+  AtomicHolder()
+  { 
+    counter = <span class="number">1</span>; 
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> A1, <span class="keyword">class</span> A2&gt;
+  AtomicHolder(A1&amp;&amp; a1, A2&amp;&amp; a2) : T(std::forward&lt;A1&gt;(a1), std::forward&lt;A2&gt;(a2)) 
+  { 
+    counter = <span class="number">1</span>; 
+  }
+};
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">int</span> is_shared_object(T *p)
+{
+  <span class="keyword">if</span> (!std::is_polymorphic&lt;T&gt;::value)
+  {      
+    <span class="comment">//we can't check using this method
+</span>    <span class="keyword">return</span> <span class="number">-1</span>;
+  }
+  <span class="keyword">return</span>  <span class="keyword">typeid</span>(*p) == <span class="keyword">typeid</span>(AtomicHolder&lt;T&gt;) ? <span class="number">1</span> : <span class="number">0</span>;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+T* share_object(T* p)
+{  
+  assert(is_shared_object(p) != <span class="number">0</span>);
+  AtomicHolder&lt;T&gt; *p2 = <span class="keyword">static_cast</span>&lt;AtomicHolder&lt;T&gt;*&gt;(p);
+  p2-&gt;counter++;
+  <span class="keyword">return</span> p;
+}
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+T&amp; share_object(T&amp; r)
+{    
+  <span class="keyword">return</span> *share_object(&amp;r);
+}
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> release_shared_object(T* p)
+{
+   <span class="keyword">if</span> (p == <span class="keyword">nullptr</span>)
+     <span class="keyword">return</span>;
+
+  assert(is_shared_object(p) != <span class="number">0</span>);
+
+  AtomicHolder&lt;T&gt; *p2 = <span class="keyword">static_cast</span>&lt;AtomicHolder&lt;T&gt;*&gt;(p);
+  <span class="keyword">if</span> (p2-&gt;counter.fetch_add(<span class="number">-1</span>) == <span class="number">1</span>)
+    <span class="keyword">delete</span> p2;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> release_shared_object(T&amp; r)
+{
+  release_shared_object(&amp;r);
+}
+
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
+T* new_shared_object() <span class="comment">//0..N arguments
+</span>{
+  T* p0 = <span class="keyword">new</span> AtomicHolder&lt;T&gt;();
+
+  <span class="comment">//I don't want to use dynamic_cast
+</span>  assert(<span class="keyword">static_cast</span>&lt;AtomicHolder&lt;T&gt;*&gt;(<span class="keyword">static_cast</span>&lt;T*&gt;(p0)) == p0);
+
+  <span class="keyword">return</span> p0;
+}
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> T, <span class="keyword">class</span> A1, <span class="keyword">class</span> A2&gt;
+AtomicHolder&lt;T&gt;* new_shared_object(A1&amp;&amp; a1, A2&amp;&amp; a2) <span class="comment">//0..N arguments
+</span>{
+  AtomicHolder&lt;T&gt;* p0 = <span class="keyword">new</span> AtomicHolder&lt;T&gt;(std::forward&lt;A1&gt;(a1), std::forward&lt;A2&gt;(a2));
+
+  <span class="comment">//I don't want to use dynamic_cast
+</span>  assert(<span class="keyword">static_cast</span>&lt;AtomicHolder&lt;T&gt;*&gt;(<span class="keyword">static_cast</span>&lt;T*&gt;(p0)) == p0);
+
+  <span class="keyword">return</span> p0;
+}
+
+
+</pre>
+
+
+<p>Sample</p>
+<pre>
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+
+<span class="keyword">struct</span> X
+{
+  X()
+  {
+    std::cout &lt;&lt; <span class="string">&quot;X&quot;</span> &lt;&lt; std::endl;
+  }
+  <span class="keyword">virtual</span> ~X()
+  {
+    std::cout &lt;&lt; <span class="string">&quot;~X&quot;</span> &lt;&lt; std::endl;
+  }
+};
+
+
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+  <span class="comment">//X *pNotShared = new X;
+</span>  <span class="comment">//X* pSharedWrong = share_object(pNotShared); //error
+</span>
+
+  X* pShared = new_shared_object&lt;X&gt;();
+  X* pShared2 = share_object(pShared);
+
+  release_shared_object(pShared);
+  release_shared_object(pShared2);
+
+  X&amp; sharedRef = *new_shared_object&lt;X&gt;();
+  X&amp; sharedRef2 = share_object(sharedRef);
+
+  release_shared_object(sharedRef);
+  release_shared_object(sharedRef2);
+
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+<hr>
+<p>Sample2:</p>
+
+<pre>
+<span class="keyword">struct</span> Point
+{
+  <span class="keyword">int</span> m_x;
+  <span class="keyword">int</span> m_y;
+
+  Point(<span class="keyword">int</span> x, <span class="keyword">int</span> y) : m_x(x), m_y(y)
+  {
+    std::cout &lt;&lt; <span class="string">&quot;Point(&quot;</span> &lt;&lt;m_x &lt;&lt; <span class="string">&quot;, &quot;</span> &lt;&lt; m_y &lt;&lt; <span class="string">&quot;)&quot;</span> &lt;&lt; std::endl;
+  }
+  
+  ~Point()
+  {
+    std::cout &lt;&lt; <span class="string">&quot;~Point(&quot;</span> &lt;&lt;m_x &lt;&lt; <span class="string">&quot;, &quot;</span> &lt;&lt; m_y &lt;&lt; <span class="string">&quot;)&quot;</span> &lt;&lt; std::endl;
+  }
+};
+
+<span class="keyword">struct</span> Line
+{
+  Point&amp; m_start;
+  Point&amp; m_end;
+  Line(Point&amp; start, Point&amp; end) : 
+     m_start(share_object(start)), 
+     m_end(share_object(end))
+  {
+    std::cout &lt;&lt; <span class="string">&quot;Line&quot;</span> &lt;&lt; std::endl;
+  }
+  ~Line()
+  {
+    release_shared_object(m_start);
+    release_shared_object(m_end);
+    std::cout &lt;&lt; <span class="string">&quot;~Line&quot;</span> &lt;&lt; std::endl;
+  }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">struct</span> SmartPtr
+{
+  T *m_p;
+  SmartPtr(AtomicHolder&lt;T&gt; *p)
+  {
+    m_p = p;
+  }
+  ~SmartPtr() 
+  {
+    release_shared_object(m_p);
+  }
+  <span class="keyword">operator</span> T*()
+  {
+    <span class="keyword">return</span> m_p;
+  }
+  
+  T * get()
+  {
+    <span class="keyword">return</span> m_p;
+  }
+};
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+ {
+    Line *pline = <span class="keyword">nullptr</span>;
+
+    {
+      SmartPtr&lt;Point&gt; pt1(new_shared_object&lt;Point&gt;(<span class="number">0</span>,<span class="number">0</span>));
+      SmartPtr&lt;Point&gt; pt2(new_shared_object&lt;Point&gt;(<span class="number">1</span>,<span class="number">1</span>));
+      pline = <span class="keyword">new</span> Line(*pt1.get(), *pt2.get());
+    }
+
+    Line *pline2 = <span class="keyword">nullptr</span>;
+    {
+      SmartPtr&lt;Point&gt; pt3(new_shared_object&lt;Point&gt;(<span class="number">1</span>,<span class="number">0</span>));
+      pline2 = <span class="keyword">new</span> Line(pline-&gt;m_end, *pt3.get());
+    }
+
+    <span class="keyword">delete</span> pline;
+    <span class="keyword">delete</span> pline2;
+  }  
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<p>Output:</p>
+
+<pre>
+Point(0, 0)
+Point(1, 1)
+Line
+Point(1, 0)
+Line
+~Point(0, 0)
+~Line
+~Point(1, 1)
+~Point(1, 0)
+~Line
+</pre>
+<p>See also:<a href="shared_ptr">http://www.thradams.com/codeblog/shared_ptr.htm</a>
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

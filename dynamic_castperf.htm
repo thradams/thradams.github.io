@@ -1,0 +1,348 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<h2> Which one is faster?</h2>
+
+<p>dynamic</p>
+
+<p>(All results are from VC++ 2010 compiler)</p>
+
+<hr>
+
+<h3>castTo x dynamic_cast</h3>
+
+<pre>
+<span class="keyword">class</span> D;
+
+<span class="keyword">class</span> B
+{
+<span class="keyword">public</span>:
+ <span class="keyword">virtual</span> ~B() { }
+ <span class="keyword">virtual</span> D* cast() { <span class="keyword">return</span> <span class="number">0</span>;  }
+};
+
+<span class="keyword">class</span> D : <span class="keyword">public</span> B
+{
+<span class="keyword">public</span>:
+  <span class="keyword">int</span> f(<span class="keyword">int</span> i) { <span class="keyword">return</span> i; }
+  <span class="keyword">virtual</span> D* cast() { <span class="keyword">return</span> <span class="keyword">this</span>; }
+};
+
+<span class="keyword">int</span> Test1(B* p)
+{
+  <span class="keyword">int</span> k = <span class="number">0</span>;
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; <span class="number">1000000</span>; i++)
+  {
+    D* pD = <span class="keyword">dynamic_cast</span>&lt;D*&gt;(p);
+    k += pD-&gt;f(i);
+  }
+  <span class="keyword">return</span> k;
+}
+
+<span class="keyword">int</span> Test2(B* p)
+{
+  <span class="keyword">int</span> k = <span class="number">0</span>;
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; <span class="number">1000000</span>; i++)
+  {
+    D* pD = p-&gt;cast();
+    k += pD-&gt;f(i);
+  }
+  <span class="keyword">return</span> k;
+}
+
+
+<span class="keyword">int</span> main()
+{
+  D d;
+  Stopwatch s;
+  
+  std::cout &lt;&lt; <span class="string">&quot;dynamic_cast&quot;</span> &lt;&lt; std::endl;
+  s.Start();
+  std::cout &lt;&lt; Test1(&amp;d) &lt;&lt; std::endl;
+  s.Stop();
+  std::cout &lt;&lt; s.GetElapsedTicks();
+  std::cout &lt;&lt; std::endl;
+  std::cout &lt;&lt; std::endl;
+
+  std::cout &lt;&lt; <span class="string">&quot;cast()&quot;</span> &lt;&lt; std::endl;
+  s.Start();
+  std::cout &lt;&lt; Test2(&amp;d) &lt;&lt; std::endl;
+  s.Stop();
+  std::cout &lt;&lt; s.GetElapsedTicks();
+
+}
+</pre>
+
+
+
+<p>Output</p>
+<pre>
+dynamic_cast
+1783293664
+114084 ticks
+
+cast()
+1783293664
+161149 ticks
+</pre>
+
+<p><strong>dynamic</p>
+
+<hr>
+
+<h2> Crosscast - only dynamic_cast</h2>
+
+<pre>
+
+<span class="keyword">struct</span> A
+{
+  <span class="keyword">int</span> iA;
+
+  <span class="keyword">virtual</span> ~A () {}  
+};
+
+<span class="keyword">struct</span> B
+{
+  <span class="keyword">int</span> iB;
+};
+
+<span class="keyword">struct</span> D: <span class="keyword">public</span> A, <span class="keyword">public</span> B
+{
+  <span class="keyword">int</span> iD;
+  D() { iB = <span class="number">0</span>; iA = <span class="number">0</span>; iD = <span class="number">0</span>; } 
+};
+
+<span class="keyword">void</span> f(A* pa)
+{
+   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; <span class="number">100000000</span>; i++)
+   {
+     B *pb = <span class="keyword">dynamic_cast</span>&lt;B*&gt; (pa);
+     pb-&gt;iB++;
+   }
+   
+   B *pb = <span class="keyword">dynamic_cast</span>&lt;B*&gt; (pa);
+   std::cout &lt;&lt; <span class="string">&quot;total = &quot;</span> &lt;&lt; pb-&gt;iB &lt;&lt; std::endl;
+}
+
+<span class="keyword">int</span> main()
+{
+  A *pa = <span class="keyword">new</span> D;
+  Stopwatch s;
+  s.Start();
+  f(pa);
+  s.Stop();
+  std::cout &lt;&lt; s.GetElapsedTicks() &lt;&lt; <span class="string">&quot; ticks &quot;</span> 
+            &lt;&lt; s.GetElapsedMilliseconds() &lt;&lt; <span class="string">&quot; ms &quot;</span> &lt;&lt; std::endl;
+}
+
+</pre>
+
+
+<p>Output</p>
+<pre>
+total = 100000000
+21270954 ticks 8361 ms
+</pre>
+
+
+<h2> Crosscast - dynamic_cast x queryinterface</h2>
+
+<p>COM QueryInterface style:</p>
+
+<pre>
+
+<span class="keyword">struct</span> I
+{
+  <span class="keyword">virtual</span> ~I()
+  {
+  };
+  
+  <span class="keyword">virtual</span> <span class="keyword">void</span>* queryInterface(<span class="keyword">int</span> i) 
+  {
+    <span class="keyword">switch</span> (i)
+    {
+      <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;I*&gt;(<span class="keyword">this</span>);     
+    }
+    <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+  };
+
+};
+
+<span class="keyword">struct</span> A : <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iA;
+  
+  <span class="keyword">virtual</span> <span class="keyword">void</span>* queryInterface(<span class="keyword">int</span> i) 
+  {
+    <span class="keyword">switch</span> (i)
+    {
+      <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;I*&gt;(<span class="keyword">this</span>);
+      <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;A*&gt;(<span class="keyword">this</span>);
+    }
+    <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+  };
+
+  <span class="keyword">virtual</span> ~A () {}  
+};
+
+<span class="keyword">struct</span> B : <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iB;
+  
+  <span class="keyword">virtual</span> <span class="keyword">void</span>* queryInterface(<span class="keyword">int</span> i) 
+  {
+    <span class="keyword">switch</span> (i)
+    {
+      <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;I*&gt;(<span class="keyword">this</span>);
+      <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;B*&gt;(<span class="keyword">this</span>);
+    }
+    <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+  };  
+};
+
+<span class="keyword">struct</span> D: <span class="keyword">public</span> A, <span class="keyword">public</span> B, <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iD;
+  D() { iB = <span class="number">0</span>; iA = <span class="number">0</span>; iD = <span class="number">0</span>; } 
+  
+  <span class="keyword">virtual</span> <span class="keyword">void</span>* queryInterface(<span class="keyword">int</span> i) 
+  {
+    <span class="keyword">switch</span> (i)
+    {
+      <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;I*&gt;(<span class="keyword">this</span>);
+      <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;A*&gt;(<span class="keyword">this</span>);
+      <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;B*&gt;(<span class="keyword">this</span>);
+    }
+    <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+  };  
+};
+
+<span class="keyword">void</span> f(A* pa)
+{
+   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; <span class="number">100000000</span>; i++)
+   {
+     B *pb = (B*)pa-&gt;queryInterface(<span class="number">2</span>);
+     pb-&gt;iB++;
+   }
+   
+   B *pb = (B*)pa-&gt;queryInterface(<span class="number">2</span>);
+   std::cout &lt;&lt; <span class="string">&quot;total = &quot;</span> &lt;&lt; pb-&gt;iB &lt;&lt; std::endl;
+}
+
+<span class="keyword">int</span> main()
+{
+  A *pa = <span class="keyword">new</span> D;
+  Stopwatch s;
+  s.Start();
+  f(pa);
+  s.Stop();
+  std::cout &lt;&lt; s.GetElapsedTicks() &lt;&lt; <span class="string">&quot; ticks &quot;</span> 
+            &lt;&lt; s.GetElapsedMilliseconds() &lt;&lt; <span class="string">&quot; ms &quot;</span> &lt;&lt; std::endl;
+}
+
+</pre>
+
+
+<p>Output</p>
+<pre>
+total = 100000000
+1038177 ticks 408 ms
+</pre>
+
+<p><strong>dynamic</p>
+
+<hr>
+
+<h2> Crosscast - dynamic_cast with a common base class I ==</h2>
+
+<pre>
+
+<span class="keyword">struct</span> I
+{
+  <span class="keyword">virtual</span> ~I()
+  {
+  };
+};
+
+<span class="keyword">struct</span> A : <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iA;
+
+  <span class="keyword">virtual</span> ~A () {}  
+};
+
+<span class="keyword">struct</span> B : <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iB;
+};
+
+<span class="keyword">struct</span> D: <span class="keyword">public</span> A, <span class="keyword">public</span> B , <span class="keyword">public</span> I
+{
+  <span class="keyword">int</span> iD;
+  D() { iB = <span class="number">0</span>; iA = <span class="number">0</span>; iD = <span class="number">0</span>; } 
+};
+
+
+<span class="keyword">void</span> f(A* pa)
+{
+   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span> ; i &lt; <span class="number">100000000</span>; i++)
+   {
+     B *pb = <span class="keyword">dynamic_cast</span>&lt;B*&gt;(pa);
+     pb-&gt;iB++;
+   }
+   
+   B *pb = <span class="keyword">dynamic_cast</span>&lt;B*&gt;(pa);
+   std::cout &lt;&lt; <span class="string">&quot;total = &quot;</span> &lt;&lt; pb-&gt;iB &lt;&lt; std::endl;
+}
+
+<span class="keyword">int</span> main()
+{
+  A *pa = <span class="keyword">new</span> 
+    D;
+  Stopwatch s;
+  s.Start();
+  f(pa);
+  s.Stop();
+  std::cout &lt;&lt; s.GetElapsedTicks() &lt;&lt; <span class="string">&quot; ticks &quot;</span> 
+            &lt;&lt; s.GetElapsedMilliseconds() &lt;&lt; <span class="string">&quot; ms &quot;</span> &lt;&lt; std::endl;
+}
+
+</pre>
+
+
+<pre>
+total = 100000000
+28984300 ticks 11393 ms
+</pre>
+
+<p><strong>dynamic</p>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

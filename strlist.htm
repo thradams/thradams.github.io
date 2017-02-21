@@ -1,0 +1,235 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<pre>
+
+
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+
+<span class="keyword">#ifdef</span> __cplusplus
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#endif</span>
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">#include</span> &lt;time.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+
+<span class="keyword">#define</span> LOOP_COUNT <span class="number">1000</span>
+
+<span class="keyword">#define</span> STRING_ITEM <span class="string">&quot;small&quot;</span>
+<span class="comment">//#define STRING_ITEM &quot;large large large large large&quot;
+</span>
+<span class="keyword">#define</span> LOCAL_BUFFER_SIZE <span class="keyword">sizeof</span>(size_t) * <span class="number">4</span>
+
+<span class="keyword">struct</span> str
+{
+    <span class="keyword">char</span> * text;
+    size_t size;
+    <span class="keyword">char</span> localbuffer[LOCAL_BUFFER_SIZE];
+    <span class="keyword">int</span> ismall;
+};
+
+<span class="keyword">inline</span> <span class="keyword">void</span> str_destroy(<span class="keyword">struct</span> str* p)
+{
+    <span class="keyword">if</span> (!p-&gt;ismall)
+    {
+        free(p-&gt;text);
+    }
+}
+
+<span class="keyword">inline</span> <span class="keyword">int</span> str_init(<span class="keyword">struct</span> str* p, <span class="keyword">const</span> <span class="keyword">char</span> * text)
+{
+    <span class="keyword">int</span> r = <span class="number">1</span>;
+    size_t text_size = strlen(text);
+
+    <span class="keyword">int</span> ismall = (text_size + <span class="number">1</span>) &lt; LOCAL_BUFFER_SIZE;
+
+    <span class="keyword">char</span> * pcopy = ismall ?
+        p-&gt;localbuffer : (<span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (text_size + <span class="number">1</span>));
+
+    <span class="keyword">if</span> (pcopy)
+    {
+        strncpy(pcopy, text, text_size + <span class="number">1</span>);
+        p-&gt;ismall = ismall;
+        p-&gt;text = pcopy;
+        p-&gt;size = text_size;
+        r = <span class="number">0</span>;
+    }
+
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">struct</span> strs
+{
+    <span class="keyword">struct</span> str * strings;
+    size_t size;
+    size_t capacity;
+};
+
+<span class="keyword">#define</span> STRS_INIT { <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> }
+
+<span class="keyword">inline</span> <span class="keyword">int</span> strs_reserve(<span class="keyword">struct</span> strs* p, size_t nelements)
+{
+    <span class="keyword">int</span> r = <span class="number">0</span>;
+    <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+    {
+        <span class="keyword">struct</span> str* pnew = p-&gt;strings;
+        pnew = (<span class="keyword">struct</span> str*)realloc(pnew, nelements * <span class="keyword">sizeof</span>(<span class="keyword">struct</span> str));
+        
+        <span class="keyword">if</span> (pnew &amp;&amp; p-&gt;strings != pnew)
+        {            
+            <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+            {
+                <span class="keyword">if</span> (pnew[i].ismall)
+                {
+                    <span class="comment">/*corre��o do ponteiro interno*/</span>
+                    pnew[i].text = pnew[i].localbuffer;
+                }
+            }
+        }
+        
+        <span class="keyword">if</span> (pnew)
+        {
+            p-&gt;strings = pnew;
+            p-&gt;capacity = nelements;
+            assert(r == <span class="number">0</span>);
+        }
+        <span class="keyword">else</span>
+        {
+            <span class="comment">/*sem memoria*/</span>
+            r = <span class="number">1</span>;
+        }
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">inline</span> <span class="keyword">int</span> strs_grow(<span class="keyword">struct</span> strs* p, size_t nelements)
+{
+    <span class="keyword">int</span> r = <span class="number">0</span>;
+    <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+    {
+        size_t new_nelements = p-&gt;capacity + p-&gt;capacity / <span class="number">2</span>;
+        <span class="keyword">if</span> (new_nelements &lt; nelements)
+        {
+            new_nelements = nelements;
+        }
+        r = strs_reserve(p, new_nelements);
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">inline</span> <span class="keyword">int</span> strs_emplace_back(<span class="keyword">struct</span> strs* p, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    <span class="keyword">int</span> r = strs_grow(p, p-&gt;size + <span class="number">1</span>);
+    <span class="keyword">if</span> (r == <span class="number">0</span>)
+    {
+        r = str_init(&amp;p-&gt;strings[p-&gt;size], text);
+        <span class="keyword">if</span> (r == <span class="number">0</span>)
+        {            
+            p-&gt;size++;
+        }        
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">void</span> strs_destroy(<span class="keyword">struct</span> strs* p)
+{
+    <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+    {
+        str_destroy(&amp;p-&gt;strings[i]);        
+    }
+    free(p-&gt;strings);
+}
+
+<span class="keyword">int</span> fc(<span class="keyword">void</span>)
+{
+    <span class="keyword">int</span> r = <span class="number">0</span>;
+    <span class="keyword">char</span> buffer[] = STRING_ITEM;
+    <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; LOOP_COUNT; k++)
+    {
+        <span class="keyword">struct</span> strs v = STRS_INIT;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; LOOP_COUNT; i++)
+        {
+            <span class="keyword">if</span> (strs_emplace_back(&amp;v, buffer) != <span class="number">0</span>)
+            {
+                r = <span class="number">0</span>;
+                <span class="keyword">break</span>;
+            }
+        }
+
+        strs_destroy(&amp;v);
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">#ifdef</span> __cplusplus
+<span class="keyword">int</span> f()
+{
+    <span class="keyword">char</span> buffer[] = STRING_ITEM;
+    <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; LOOP_COUNT; k++)
+    {
+        std::<span class="keyword2">vector</span>&lt;std::<span class="keyword2">string</span>&gt; v;
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; LOOP_COUNT; i++)
+        {
+            v.emplace_back(buffer);
+        }
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+<span class="keyword">#endif</span>
+
+<span class="keyword">int</span> run_test(<span class="keyword">const</span> <span class="keyword">char</span>* message, <span class="keyword">int</span>(*test)(<span class="keyword">void</span>))
+{
+    time_t start = clock();
+    <span class="keyword">int</span> r = test();
+    printf(<span class="string">&quot;%s %d\n&quot;</span>, message, (<span class="keyword">int</span>) clock() - start);
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+    run_test(<span class="string">&quot;C   :&quot;</span>, &amp;fc);
+<span class="keyword">#ifdef</span> __cplusplus
+    run_test(<span class="string">&quot;C++ :&quot;</span>, &amp;f);
+<span class="keyword">#endif</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

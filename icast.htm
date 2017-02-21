@@ -1,0 +1,95 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>Estava pensando: Por que tenho que expressar as interfaces \\de um objeto na sua declara��o?</p>
+
+<p>Eu n�o tenho que expressar no tipo do objeto, por exemplo, se ele vai ser instanciado na pilha ou no heap. Isso permite que use o mesmo objeto nos dois modos.</p>
+
+<p>A mesma id�ia poderia ser aplicada no polimorfismo.\\Eu poderia ter uma defini��o de classe e escolher se eu quero que seja polim�rfica ou n�o. Mais ainda, eu poderia escolher como eu vou ver aquele objeto e ele n�o precisa saber como ser�.</p>
+
+<p>Uma raz�o para fazer isso, � porque a heran�a complica o design e dificulta mudan�as.</p>
+
+<p>O polimorfismo est�tico e os algor�tmos gen�ricos, resolvem este problema em alguns casos, mas eles n�o resolvem o problema quando o polirmorfismo din�mico � necess�rio.</p>
+
+<p>Digamos que eu tenha uma lista de Cars e Dogs.\\Ambos t�m a propriedade Cor. Para aplicar um algor�tmo que usa a propriedade Cor nesta lista eu precisarei implementar uma interface comum em Car e Dog.Tenho que artificialmente criar esta interface comum apenas para acessar a Cor. Se a classe base de Dog � Animal e j� tem a propriedade Cor isto n�o vai ajudar, pois carro n�o � derivado de Animal. Se Car for derivado de Vehicle e Vehicle tiver a propriedade cor isso tamb�m n�o ajuda.</p>
+
+<p>Agora digamos que eu tenha essa interface em comum mas em outro programa eu vou usar apenas a classe Car. Para este programa a interface Vehicle � suficiente, porque vou ter uma lista somente de Vehicle. N�o vou precisar de Aninal neste caso.</p>
+
+<p>Este exemplo mostra que o mesmo objeto Car pode ser visto diferentemente em dois lugares. O objeto carro � exatamente o mesmo ele tem a propriedade cor. &quot;A beleza est� nos olhos de quem v�&quot;</p>
+
+<p>Tentando lidar com esta quest�o, eu fiz um experimento com a &quot;interface</p>
+
+
+<p>Exemplo:</p>
+
+<p>{{{cppstruct Car {  int Color() {return 1;}};</p>
+
+<p>struct Dog {  int Color() {return 2;}};}}}</p>
+
+<p>Eu preciso em algum software / algoritimo ver a Cor de uma maneira polim�rfica.Para isso eu vou usar uma &quot;vis�o&quot; ou interface.</p>
+
+<p>{{{cppstruct IColor { virtual int Color() = 0; };}}}O uso de &quot;interface{{{cppCar car;Dog dog;</p>
+
+<p>IColor&amp; rCar = interfacecout  &lt;&lt; rCar.Color();IColor&amp; rDog = interfacecout  &lt;&lt; rDog.Color();}}}</p>
+
+<p>A fun��o interface</p>
+
+<p>{{{cpp</p>
+
+<p>template&lt;class TObject, class TInterface&gt; struct InterfaceAdapter; // Not Implemented</p>
+
+<p>template&lt;class TInterface, class TObject&gt;InterfaceAdapter&lt;TObject, TInterface&gt; interface{    return InterfaceAdapter&lt;TObject, TInterface&gt;(r);}}}}</p>
+
+<p>O objeto retornado &quot;InterfaceAdapter&quot; precisa ser criado manualmente.</p>
+
+<p>Para este caso:{{{cpptemplate&lt;class T&gt;struct InterfaceAdapter&lt;T, IColor&gt; : public IColor{    T&amp; m    InterfaceAdapter(T&amp; r) : m</p>
+
+<p>    virtual int Color()    {        return m    }};}}}</p>
+
+<p>A propriedade cor poderia ter um sintaxe diferente, por exemplo MyColor. Neste caso, uma vers�o mais especializada de InterfaceAdapter tem que ser criada.{{{cpptemplate&lt;&gt;struct InterfaceAdapter&lt;Car, IColor&gt; : public IColor{    Car&amp; m    InterfaceAdapter(Car&amp; r) : m</p>
+
+<p>    virtual int Color()    {        return m    }};}}}</p>
+
+<p>Para manter o objeto de uma maneira polim�rfica em um container n�s poder�amos ter algo como:</p>
+
+
+<p>{{{cpptemplate&lt;class TObject, class TInterface&gt; struct InterfaceAdapterInstance : public InterfaceAdapter&lt;TObject, TInterface&gt;{  TObject m  InterfaceAdapterInstance() : InterfaceAdapter&lt;TObject, TInterface&gt;(m};</p>
+
+<p>template&lt;class TObject, class TInterface&gt;InterfaceAdapterInstance&lt;TObject, TInterface&gt;{    return new InterfaceAdapterInstance&lt;TObject, TInterface&gt;;   }</p>
+
+<p>std::vector&lt;IColorv.pushv.push}}}</p>
+
+<p>Eu penso que existe uma rela��o com a id�ia dos concepts. mas neste caso com um comportamento polim�rfico e din�mico.</p>
+
+<p>Eu iria aprecisar seu coment�rio sobre isto.</p>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

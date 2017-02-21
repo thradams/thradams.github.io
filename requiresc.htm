@@ -1,0 +1,71 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>This macro can be used to validate input arguments in COM.</p>
+
+<pre>
+<span class="keyword">#include</span> &lt;Windows.h&gt;
+
+<span class="keyword">#define</span> A_OUT(pp) <span class="keyword">if</span> (pp) {*pp = <span class="number">0</span>; } <span class="keyword">else</span> { hr = E_POINTER; }
+<span class="keyword">#define</span> A_IN(p) <span class="keyword">if</span> (!p) { hr = E_POINTER;}
+<span class="keyword">#define</span> A_OPTIONAL(p)
+
+<span class="keyword">#define</span> REQUIRE(...) \
+    <span class="keyword">while</span>(<span class="number">1</span>)\
+      {\
+     HRESULT hr = <span class="number">0</span>;  \
+     __VA_ARGS__ \
+     <span class="keyword">if</span> (FAILED(hr))  \
+        <span class="keyword">return</span> hr;  \
+      <span class="keyword">break</span>;\
+      }
+
+HRESULT F(<span class="keyword">const</span> <span class="keyword">char</span>* p, <span class="keyword">char</span>** pp)
+{
+  REQUIRE(A_IN(p) A_OUT(pp))
+
+  <span class="keyword">return</span> S_OK;
+}
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+  <span class="keyword">char</span>* p ;
+  HRESULT hr = F(<span class="string">&quot;s&quot;</span>, &amp;p);
+  hr = F(<span class="number">0</span>, &amp;p);
+  hr = F(<span class="string">&quot;s&quot;</span>, <span class="number">0</span>);
+  hr = F(<span class="number">0</span>, <span class="number">0</span>);
+
+	<span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

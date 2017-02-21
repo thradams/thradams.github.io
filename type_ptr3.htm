@@ -1,0 +1,200 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<h2> Polymorphism without inheritance and abstract classes</h2>
+
+<p>type</p>
+
+
+<p>Compiled with:</p>
+
+<p>Visual C++ Compiler Nov 2013 CTP (CTP</p>
+
+
+
+<p>Sample:</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> <span class="string">&quot;type_ptr.h&quot;</span>
+
+<span class="keyword">class</span> box
+{
+};
+<span class="keyword">class</span> circle
+{
+};
+
+<span class="keyword">void</span> draw(<span class="keyword">const</span> box &amp;)
+{
+    std::cout &lt;&lt; <span class="string">&quot;in a box&quot;</span> &lt;&lt; std::endl;
+}
+
+<span class="keyword">void</span> draw(<span class="keyword">const</span> circle &amp;)
+{
+    std::cout &lt;&lt; <span class="string">&quot;in a circle&quot;</span> &lt;&lt; std::endl;
+}
+
+<span class="keyword">int</span> main()
+{    
+    std::<span class="keyword2">vector</span>&lt;type_ptr&gt; v;
+    v.emplace_back(<span class="keyword">new</span> box());
+    v.emplace_back(<span class="keyword">new</span> circle());
+
+    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; item : v)
+    {
+        select&lt;box, circle&gt;(item, [](<span class="keyword">auto</span> s){ draw(s); });
+    }     
+    
+}
+
+</pre>
+
+
+
+<p>type</p>
+
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">#include</span> &lt;cassert&gt;
+
+<span class="keyword">class</span> type_ptr
+{
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">static</span> <span class="keyword">void</span> Delete(<span class="keyword">void</span>* p)
+    {
+        <span class="keyword">delete</span> (T*) p;
+    }
+
+<span class="keyword">protected</span>:
+
+    <span class="keyword">void</span>(*DeleteF)(<span class="keyword">void</span>*);
+    <span class="keyword">void</span> * ptr;
+
+<span class="keyword">public</span>:
+
+    type_ptr(type_ptr&amp;&amp; other)
+    {
+        ptr = other.ptr;
+        DeleteF = other.DeleteF;
+
+        other.ptr = <span class="keyword">nullptr</span>;
+        other.DeleteF = <span class="keyword">nullptr</span>;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    type_ptr(T* p)
+    {
+        ptr = p;
+        DeleteF = &amp;Delete&lt;T&gt;;
+    }
+
+    type_ptr()
+    {
+        ptr = <span class="keyword">nullptr</span>;
+        type_info* tinfo = <span class="keyword">nullptr</span>;
+    }
+
+    ~type_ptr()
+    {
+        <span class="keyword">if</span> (DeleteF != <span class="keyword">nullptr</span>)
+        {
+            DeleteF(ptr);
+            ptr = <span class="keyword">nullptr</span>;
+        }
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">bool</span> is() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> DeleteF == &amp;Delete&lt;T&gt;;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    T* is_ptr() <span class="keyword">const</span>
+    {
+        <span class="keyword">if</span> (is&lt;T&gt;())
+        {
+            <span class="keyword">return</span> (T*) ptr;
+        }
+        <span class="keyword">return</span> <span class="keyword">nullptr</span>;
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    T&amp; ref()
+    {
+        assert(is_ptr&lt;T&gt;() != <span class="keyword">nullptr</span>);
+        <span class="keyword">return</span> *((T*) ptr);
+    }
+};
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span>... N&gt;
+<span class="keyword">struct</span> select
+{
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+    select(type_ptr &amp;, <span class="keyword">const</span> F &amp;)
+    {
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span>... Tn&gt;
+<span class="keyword">struct</span> select&lt;T1, Tn...&gt;
+{
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+    select(type_ptr &amp;p, <span class="keyword">const</span> F &amp;f)
+    {
+        <span class="keyword">if</span> (p.is&lt;T1&gt;())
+            f(p.ref&lt;T1&gt;());
+        <span class="keyword">else</span>
+            select&lt;Tn...&gt;(p, f);
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span>... TN, <span class="keyword">class</span> List, <span class="keyword">class</span> F&gt;
+<span class="keyword">void</span> for_each(List&amp; <span class="keyword2">list</span>, F f)
+{
+    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; item : <span class="keyword2">list</span>)
+    {
+        select&lt;TN...&gt;(item, f);
+    }
+}
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

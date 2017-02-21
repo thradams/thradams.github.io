@@ -1,0 +1,293 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>Comparing runtime cost of exceptions x return codes.</p>
+
+<p>Uses:</p>
+
+<p><a href="stopwatch.htm">Stopwatch class</a></p>
+
+<h3>Code</h3>
+
+<pre>
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> <span class="string">&quot;stopwatch.h&quot;</span>
+<span class="keyword">typedef</span> <span class="keyword">int</span> ECode;
+<span class="keyword">#define</span> Error1 <span class="number">1</span>
+<span class="keyword">#define</span> Error2 <span class="number">2</span>
+<span class="keyword">#define</span> succeeded(e) ((e) == <span class="number">0</span>)
+<span class="keyword">#define</span> failed(e) ((e) != <span class="number">0</span>)
+
+<span class="keyword">struct</span> Error1Exception : <span class="keyword">public</span> std::exception
+{
+};
+<span class="keyword">struct</span> Error2Exception : <span class="keyword">public</span> std::exception
+{
+};
+<span class="keyword">const</span> <span class="keyword">int</span> maxsteps = <span class="number">100000000</span>;
+<span class="keyword">int</span> a = <span class="number">0</span>;
+<span class="keyword">int</span> b = <span class="number">0</span>;
+<span class="keyword">int</span> c = <span class="number">0</span>;
+<span class="keyword">int</span> d = <span class="number">0</span>;
+
+ECode f1(<span class="keyword">int</span> i, <span class="keyword">int</span>&amp; r)
+{
+    <span class="keyword">if</span> (i &gt;= a &amp;&amp; i &lt;= b)
+    {
+        <span class="keyword">return</span> Error1;
+    }
+
+    r = <span class="number">1</span>;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+ECode f2(<span class="keyword">int</span> i, <span class="keyword">int</span>&amp; r)
+{
+    <span class="keyword">if</span> (i &gt;= c &amp;&amp; i &lt;= d)
+    {
+        <span class="keyword">return</span> Error2;
+    }
+
+    r = <span class="number">2</span>;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+ECode g(<span class="keyword">int</span> i, <span class="keyword">int</span>&amp; r)
+{
+    <span class="keyword">int</span> r1 = <span class="number">0</span>;
+    ECode e = f1(i, r1);
+
+    <span class="keyword">if</span> (succeeded(e))
+    {
+        <span class="keyword">int</span> r2 = <span class="number">0</span>;
+        e = f2(i, r2);
+
+        <span class="keyword">if</span> (succeeded(e))
+        {
+            r = r1 + r2;
+        }
+    }
+
+    <span class="keyword">return</span> e;
+}
+
+<span class="keyword">int</span> ff1(<span class="keyword">int</span> i)
+{
+    <span class="keyword">if</span> (i &gt;= a &amp;&amp; i &lt;= b)
+    {
+        <span class="keyword">throw</span> Error1Exception();
+    }
+
+    <span class="keyword">return</span> <span class="number">1</span>;
+}
+
+<span class="keyword">int</span> ff2(<span class="keyword">int</span> i)
+{
+    <span class="keyword">if</span> (i &gt;= c &amp;&amp; i &lt;= d)
+    {
+        <span class="keyword">throw</span> Error2Exception();
+    }
+
+    <span class="keyword">return</span> <span class="number">2</span>;
+}
+
+<span class="keyword">int</span> gg(<span class="keyword">int</span> i)
+{
+    <span class="keyword">return</span> ff1(i) + ff2(<span class="number">2</span>);
+}
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="keyword">void</span> ErrorCode()
+{
+    <span class="keyword">int</span> total = <span class="number">0</span>;
+    Stopwatch sw(<span class="keyword">true</span>);
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxsteps; i++)
+    {
+        <span class="keyword">int</span> r = <span class="number">0</span>;
+        ECode e = g(i, r);
+
+        <span class="keyword">if</span> (succeeded(e))
+        {
+            total += r;
+        }
+    }
+
+    sw.Stop();
+    cout &lt;&lt; <span class="string">&quot;ErrorCode total = &quot;</span> &lt;&lt; total &lt;&lt; <span class="string">&quot; in &quot;</span>
+         &lt;&lt; sw.GetElapsedMilliseconds() &lt;&lt; <span class="string">&quot; ms&quot;</span> &lt;&lt; endl;
+}
+
+
+<span class="keyword">void</span> Exceptions()
+{
+    <span class="keyword">int</span> total = <span class="number">0</span>;
+    Stopwatch sw(<span class="keyword">true</span>);
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxsteps; i++)
+    {
+        <span class="keyword">try</span>
+        {
+          total += gg(i);
+        }
+        <span class="keyword">catch</span>(std::exception&amp;)
+        {
+        }        
+    }
+
+    sw.Stop();
+    cout &lt;&lt; <span class="string">&quot;Exceptions total = &quot;</span> &lt;&lt; total &lt;&lt; <span class="string">&quot; in &quot;</span>
+         &lt;&lt; sw.GetElapsedMilliseconds() &lt;&lt; <span class="string">&quot; ms&quot;</span> &lt;&lt; endl;
+}
+
+
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">bool</span> errors = <span class="keyword">false</span>;
+
+    <span class="keyword">if</span> (errors)
+    {
+        a = <span class="number">0</span>;
+        b = maxsteps / <span class="number">2</span>;
+        c = maxsteps / <span class="number">2</span>;
+        d = maxsteps;
+    }
+    <span class="keyword">else</span>
+    {
+        a = maxsteps;
+        b = maxsteps + <span class="number">10</span>;
+        c = b;
+        d = c + <span class="number">10</span>;
+    }
+
+    <span class="comment">//ErrorCode();
+</span>    Exceptions();
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+
+<h3>Results</h3>
+<pre>
+
+x86 - VC++ 2010 - errors = false
+
+
+Return code
+
+305 ms
+344 ms
+285 ms
+332 ms
+331 ms
+317 ms
+332 ms
+380 ms
+353 ms
+350 ms
+344 ms
+328 ms
+293 ms
+315 ms
+322 ms
+
+Average 328,73
+
+Exceptions
+
+290 ms
+331 ms
+292 ms
+386 ms
+393 ms
+284 ms
+331 ms
+291 ms
+368 ms
+329 ms
+347 ms
+308 ms
+332 ms
+392 ms
+393 ms
+
+Average 337,8  (+2,68%)
+
+
+
+x64 - VC++ 2010 - errors = false
+
+341 ms
+254 ms
+316 ms
+339 ms
+260 ms
+250 ms
+263 ms
+249 ms
+255 ms
+271 ms
+282 ms
+265 ms
+360 ms
+327 ms
+239 ms
+
+Average 284,73
+
+------
+471 ms
+467 ms
+442 ms
+444 ms
+407 ms
+407 ms
+395 ms
+383 ms
+407 ms
+427 ms
+446 ms
+446 ms
+454 ms
+441 ms
+390 ms
+
+Average 428,46 (+33%)
+
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,317 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<pre>
+
+<span class="keyword">#ifndef</span> _STRING_H
+<span class="keyword">#define</span> _STRING_H
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+
+<span class="keyword">typedef</span> <span class="keyword">char</span>* <span class="keyword2">string</span>;
+
+<span class="keyword">#define</span> STRING_INIT {<span class="number">0</span>}
+
+
+<span class="keyword">void</span>   string_reset(<span class="keyword2">string</span>* p);
+<span class="keyword">void</span>   string_destructor(<span class="keyword2">string</span>* p);
+size_t string_allocate(<span class="keyword2">string</span>* p, size_t size);
+<span class="keyword">void</span>   string_erase_n(<span class="keyword2">string</span>* p, size_t index, size_t count);
+size_t string_insert_n(<span class="keyword2">string</span>* p, size_t index, <span class="keyword">const</span> <span class="keyword">char</span>* pSource, size_t count);
+<span class="keyword">void</span>   string_set(<span class="keyword2">string</span>* p, size_t index, <span class="keyword">char</span> val);
+size_t string_size(<span class="keyword2">string</span>* p);
+<span class="keyword">void</span>   string_append(<span class="keyword2">string</span>* p, <span class="keyword">char</span> v);
+<span class="keyword">void</span>   string_append_n(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz, size_t nelements);
+<span class="keyword">char</span>   string_get(<span class="keyword2">string</span>* p, size_t index);
+<span class="keyword">char</span>   string_back(<span class="keyword2">string</span>* p);
+<span class="keyword">char</span>   string_front(<span class="keyword2">string</span>* p);
+<span class="keyword">bool</span>   string_empty(<span class="keyword2">string</span>* p);
+<span class="keyword">void</span>   string_clear(<span class="keyword2">string</span>* p);
+<span class="keyword">void</span>   string_copy(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz);
+<span class="keyword">void</span>   string_copy_n(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz, size_t nelements);
+<span class="keyword">void</span>   string_erase(<span class="keyword2">string</span>* p, size_t index);
+size_t string_push_back(<span class="keyword2">string</span>* p, <span class="keyword">char</span> val);
+<span class="keyword">void</span>   string_swap(<span class="keyword2">string</span>* a, <span class="keyword2">string</span>* b);
+<span class="keyword">void</span>   string_move_to(<span class="keyword2">string</span>* from, <span class="keyword2">string</span>* to);
+<span class="keyword">const</span> <span class="keyword">char</span>*  string_data(<span class="keyword2">string</span>* p);
+
+<span class="keyword">#ifdef</span> _DEBUG
+size_t get_string_instances();
+<span class="keyword">#endif</span>
+
+<span class="keyword">#endif</span>  <span class="comment">//_STRING_H
+</span>
+</pre>
+
+
+<pre>
+
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;memory.h&gt;
+
+<span class="keyword">#include</span> <span class="string">&quot;string.h&quot;</span>
+
+<span class="keyword">#define</span> INVALID_ADDRESS ((<span class="keyword">char</span>*)<span class="number">1</span>)
+
+<span class="keyword">#define</span> _IS_VALID_(p) assert((p) &amp;&amp; ((*p) != INVALID_ADDRESS))
+
+<span class="keyword">#ifdef</span> _DEBUG
+<span class="keyword">static</span> size_t s_string_instance_counter = <span class="number">0</span>;
+size_t get_string_instances()
+{
+    <span class="keyword">return</span> s_string_instance_counter;
+}
+<span class="keyword">#endif</span>
+
+size_t string_allocate(<span class="keyword2">string</span>* p, size_t nelements)
+{
+    _IS_VALID_(p);
+
+    size_t nelem = nelements + <span class="number">1</span>;
+    <span class="keyword">if</span> (*p == <span class="number">0</span>)
+    {
+        *p = (<span class="keyword">char</span>*) malloc(nelem * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));
+<span class="keyword">#ifdef</span> _DEBUG
+        <span class="keyword">if</span> (p)
+        {
+            s_string_instance_counter++;
+        }
+<span class="keyword">#endif</span>
+    }
+    <span class="keyword">else</span>
+    {
+        *p = (<span class="keyword">char</span>*) realloc(*p, nelem * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));
+    }
+
+    <span class="keyword">return</span> (*p != <span class="number">0</span>) ? nelements : <span class="number">0</span>;
+}
+
+<span class="keyword">const</span> <span class="keyword">char</span>* string_data(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+
+    <span class="keyword">if</span> (p == <span class="number">0</span>)
+        <span class="keyword">return</span> <span class="number">0</span>;
+
+    <span class="keyword">return</span> *p;
+}
+
+<span class="keyword">void</span> string_reset(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+<span class="keyword">#ifdef</span> _DEBUG
+    <span class="keyword">if</span> (*p)
+    {
+        assert(s_string_instance_counter &gt; <span class="number">0</span>);
+        s_string_instance_counter--;
+    }
+<span class="keyword">#endif</span>
+    string_clear(p);
+    *p = <span class="number">0</span>;
+}
+
+<span class="keyword">void</span> string_destructor(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+<span class="keyword">#ifdef</span> _DEBUG
+    <span class="keyword">if</span> (*p)
+    {
+        assert(s_string_instance_counter &gt; <span class="number">0</span>);
+        s_string_instance_counter--;
+    }
+<span class="keyword">#endif</span>
+    string_clear(p);
+    *p = (<span class="keyword">char</span>*)INVALID_ADDRESS;
+}
+
+size_t string_insert_n(<span class="keyword2">string</span>* p,
+    size_t index,
+    <span class="keyword">const</span> <span class="keyword">char</span>* pSource,
+    size_t nelements)
+{
+    _IS_VALID_(p);
+    size_t oldsize = string_size(p);
+    size_t size = oldsize + nelements;
+    size_t result = string_allocate(p, size);
+
+    <span class="keyword">if</span> (result == <span class="number">0</span>)
+    {
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+
+    <span class="keyword">if</span> (index &lt; oldsize)
+    {
+        memmove(&amp;((*p)[index + nelements]),
+            &amp;((*p)[index]),
+            (<span class="keyword">sizeof</span>(<span class="keyword">char</span>)) * (oldsize - index));
+    }
+
+    memmove(&amp;((*p)[index]), pSource, nelements);
+
+    <span class="comment">/*ensure zero ended*/</span>
+    (*p)[size] = <span class="number">0</span>;
+
+    <span class="keyword">return</span> nelements;
+}
+
+<span class="keyword">void</span> string_erase_n(<span class="keyword2">string</span>* p,
+    size_t position,
+    size_t nelements)
+{
+    _IS_VALID_(p);
+    size_t size = string_size(p);
+    assert(size &gt;= nelements);
+    assert(size &gt; position);
+    assert(nelements &lt;= size - position);
+
+    memmove(*p + position,
+            *p + position + nelements,
+            <span class="keyword">sizeof</span>(<span class="keyword">char</span>) * (size - nelements + <span class="number">1</span>));    
+}
+
+<span class="keyword">void</span> string_set(<span class="keyword2">string</span>* p, size_t position, <span class="keyword">char</span> value)
+{
+    _IS_VALID_(p);
+    (*p)[position] = value;
+}
+
+size_t string_size(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+
+    <span class="keyword">if</span> (*p == <span class="number">0</span>)
+        <span class="keyword">return</span> <span class="number">0</span>;
+
+    <span class="keyword">return</span> strlen(*p);
+}
+
+<span class="keyword">void</span> string_append(<span class="keyword2">string</span>* p, <span class="keyword">char</span> v)
+{
+    _IS_VALID_(p);
+    string_insert_n(p, string_size(p), &amp;v, <span class="number">1</span>);
+}
+
+<span class="keyword">void</span> string_append_n(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz, size_t nelements)
+{
+    _IS_VALID_(p);
+    string_insert_n(p, string_size(p), psz, nelements);
+}
+
+<span class="keyword">char</span> string_get(<span class="keyword2">string</span>* p, size_t index)
+{
+    _IS_VALID_(p);
+    <span class="keyword">return</span> (*p)[index];
+}
+
+<span class="keyword">char</span> string_back(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+    <span class="keyword">return</span> (*p)[string_size(p) - <span class="number">1</span>];
+}
+
+<span class="keyword">char</span> string_front(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+    <span class="keyword">return</span> (*p)[<span class="number">0</span>];
+}
+
+<span class="keyword">bool</span> string_empty(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+    <span class="keyword">return</span> *p == <span class="number">0</span>;
+}
+
+<span class="keyword">void</span> string_clear(<span class="keyword2">string</span>* p)
+{
+    _IS_VALID_(p);
+    <span class="keyword">if</span> (*p)
+    {
+        free(*p);
+        *p = <span class="number">0</span>;
+    }
+}
+
+<span class="keyword">void</span> string_copy(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz)
+{
+    _IS_VALID_(p);
+    size_t sz = psz ? strlen(psz) : <span class="number">0</span>;
+    string_copy_n(p, psz, sz);
+}
+
+<span class="keyword">void</span> string_copy_n(<span class="keyword2">string</span>* p, <span class="keyword">const</span> <span class="keyword">char</span>* psz, size_t nelements)
+{
+    _IS_VALID_(p);
+    string_clear(p);
+    string_insert_n(p, <span class="number">0</span>, psz, nelements);
+}
+
+<span class="keyword">void</span> string_erase(<span class="keyword2">string</span>* p, size_t index)
+{
+    _IS_VALID_(p);
+    string_erase_n(p, index, <span class="number">1</span>);
+}
+
+size_t string_push_back(<span class="keyword2">string</span>* p, <span class="keyword">char</span> val)
+{
+    _IS_VALID_(p);
+    <span class="keyword">return</span> string_insert_n(p, strlen(*p), &amp;val, <span class="number">1</span>);
+}
+
+<span class="keyword">void</span> string_swap(<span class="keyword2">string</span>* a, <span class="keyword2">string</span>* b)
+{
+    _IS_VALID_(a);
+    _IS_VALID_(b);
+
+    
+    <span class="keyword2">string</span> temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+<span class="keyword">void</span> string_move_to(<span class="keyword2">string</span>* from, <span class="keyword2">string</span>* to)
+{
+    _IS_VALID_(from);
+    _IS_VALID_(to);
+    
+    
+    string_swap(to, from);
+    string_destructor(from);
+}
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

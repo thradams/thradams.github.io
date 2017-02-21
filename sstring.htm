@@ -1,0 +1,150 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>With the C++0x move semantics is possible to create &quot;move only&quot; objects.</p>
+
+<p>Using this idea, I implemented a simple string class that holds a pointer and do not make copies. It can be used in stl containers like map.</p>
+
+<p>This implementation was tested in the Visual Studio Express 2010.</p>
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;map&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+
+<span class="comment">///////////////////////////////////////////////////////////////////////////////
+</span>
+<span class="keyword">#include</span> &lt;cstring&gt;
+<span class="keyword">#include</span> &lt;cstdlib&gt;
+
+<span class="keyword">class</span> String
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* m_psz;
+    String(<span class="keyword">const</span> String&amp; ); <span class="comment">//= delete;
+</span>    String &amp; <span class="keyword">operator</span> = (<span class="keyword">const</span> String&amp; );
+
+<span class="keyword">public</span>:
+
+    String()
+    {
+        m_psz = <span class="keyword">nullptr</span>;
+    }
+
+    <span class="keyword">explicit</span> String(<span class="keyword">const</span> <span class="keyword">char</span>* psz)
+    {
+        m_psz = _strdup(psz);
+    }
+
+    String(String&amp;&amp; s)
+    {
+        m_psz = s.m_psz;
+        s.m_psz = <span class="keyword">nullptr</span>;
+    }
+
+    ~String()
+    {
+        Clear();
+    }
+
+    <span class="keyword">const</span> <span class="keyword">char</span>* c_str() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> m_psz;
+    }
+
+    <span class="keyword">void</span> Clear()
+    {
+        free((<span class="keyword">void</span>*)m_psz);
+        m_psz = <span class="keyword">nullptr</span>;
+    }
+    
+    <span class="keyword">void</span> Swap(String&amp; s)
+    {
+        <span class="keyword">const</span> <span class="keyword">char</span>* psz = m_psz;
+        m_psz = s.m_psz;
+        s.m_psz = psz;
+    }
+
+    <span class="keyword">int</span> Compare(<span class="keyword">const</span> String&amp; s) <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> strcmp(m_psz, s.m_psz) ;
+    }
+    
+    <span class="keyword">bool</span> <span class="keyword">operator</span> &lt; (<span class="keyword">const</span> String&amp; s) <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> Compare(s) &lt; <span class="number">0</span>;
+    }
+
+    <span class="keyword">bool</span> <span class="keyword">operator</span> &gt; (<span class="keyword">const</span> String&amp; s) <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> Compare(s) &gt; <span class="number">0</span>;
+    }
+
+    <span class="keyword">bool</span> <span class="keyword">operator</span> == (<span class="keyword">const</span> String&amp; s) <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> Compare(s) == <span class="number">0</span>;
+    }
+};
+
+
+<span class="keyword">int</span> _tmain(<span class="keyword">int</span> argc, _TCHAR* argv[])
+{
+    String s(<span class="string">&quot;testando&quot;</span>);
+    String s2(s.c_str());
+
+    std::map&lt;String, <span class="keyword">int</span>&gt; map;
+    map[String(<span class="string">&quot;teste&quot;</span>)] = <span class="number">1</span>;
+    map[String(<span class="string">&quot;teste2&quot;</span>)] = <span class="number">2</span>;
+
+    std::cout &lt;&lt; map[String(<span class="string">&quot;teste2&quot;</span>)] &lt;&lt; std::endl;
+
+    std::cout &lt;&lt; <span class="string">&quot;sizeof(std::string) = &quot;</span> &lt;&lt; <span class="keyword">sizeof</span>(std::<span class="keyword2">string</span>) &lt;&lt; std::endl;
+    std::cout &lt;&lt; <span class="string">&quot;sizeof(String) = &quot;</span> &lt;&lt; <span class="keyword">sizeof</span>(String) &lt;&lt; std::endl;
+
+    <span class="keyword">int</span> i;
+    std::cin &gt;&gt; i;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+
+<h3>Output:</h3>
+<p>This is the ouput of VC++ 2010 express</p>
+<pre>
+2
+sizeof(std::string) = 28
+sizeof(String) = 4
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

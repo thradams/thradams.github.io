@@ -1,0 +1,635 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1>My implementation of the std::tr1::function</h1>
+
+<p>Pointers to functions always interested me. I have made several classes along the years to deal with this question. With the TR1, we will have a standard way to create general functional pointers.So I have decided to implement the function class as defined in :</p>
+
+
+<p>What is implemented here?</p>
+<ul>
+<li> mem</li>
+<li> function</li>
+<li> reference</li>
+<li> bad</li>
+<li> bind is implemented partially</li>
+</ul>
+
+<p>What is missing in this implementation?</p>
+<ul>
+<li> reference</li>
+<li> result</li>
+</ul>
+
+
+<p>The function class implemented here can be tested using the samples of the book:&quot;The C++ Standard Library Extensions A Tutorial and Reference&quot; - by Pete BeckerThe website contains the book samples: </p>
+
+
+<p>Implementation:</p>
+
+<p>Header: &quot;type</p>
+
+<pre>
+
+<span class="keyword">#ifndef</span> _TR1_TYPE_TRAITS
+<span class="keyword">#define</span> _TR1_TYPE_TRAITS
+
+<span class="keyword">namespace</span> std {
+    <span class="keyword">namespace</span> tr1 {
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">struct</span> is_integral { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">false</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">bool</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">char</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">signed</span> <span class="keyword">char</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">wchar_t</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">short</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">unsigned</span> <span class="keyword">short</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">int</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">long</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">long</span> <span class="keyword">long</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+        <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_integral&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span>&gt; { <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">bool</span> value = <span class="keyword">true</span>; };
+    }
+}
+
+<span class="keyword">#endif</span>
+}}}
+
+Header: <span class="string">&quot;functional&quot;</span>
+C+<span class="number">+0</span>x implementation <span class="keyword">for</span> <span class="keyword2">function</span> <span class="keyword">and</span> mem_fn
+{{{cpp
+
+<span class="comment">//
+</span><span class="comment">// Copyright (C) 2007, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// This is the implementation of std::tr1::function proposed in tr1.
+</span><span class="comment">// See details in: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
+</span><span class="comment">//
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">#ifndef</span> TR1_FUNCTIONAL_HEADER
+<span class="keyword">#define</span> TR1_FUNCTIONAL_HEADER
+
+<span class="keyword">#include</span> &lt;functional&gt;
+<span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">#include</span> &lt;typeinfo&gt;
+<span class="keyword">#include</span> &lt;stdexcept&gt;
+<span class="keyword">#include</span> <span class="string">&quot;type_traits&quot;</span>
+
+<span class="keyword">namespace</span> std {
+    <span class="keyword">namespace</span> tr1 {
+
+        <span class="keyword">namespace</span> detail
+        {
+            <span class="keyword">template</span> &lt;<span class="keyword">bool</span> B, <span class="keyword">class</span> T = <span class="keyword">void</span>&gt;
+            <span class="keyword">struct</span> disable_if_c { <span class="keyword">typedef</span> T type; };
+
+            <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
+            <span class="keyword">struct</span> disable_if_c&lt;<span class="keyword">true</span>, T&gt; {};
+
+            <span class="keyword">template</span> &lt;<span class="keyword">class</span> Cond, <span class="keyword">class</span> T = <span class="keyword">void</span>&gt;
+            <span class="keyword">struct</span> disable_if : <span class="keyword">public</span> disable_if_c&lt;Cond::value, T&gt; {};
+        }
+
+        <span class="comment">//An exception of type bad_function_call is thrown by function::operator() ([3.7.2.4])
+</span>        <span class="comment">//when the function wrapper object has no target.
+</span>        <span class="keyword">class</span> bad_function_call : <span class="keyword">public</span> std::runtime_error
+        {
+        <span class="keyword">public</span>:
+            bad_function_call() : std::runtime_error(<span class="string">&quot;call to empty tr1::function&quot;</span>) {}
+        };
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">class</span> reference_wrapper
+        {
+        <span class="keyword">public</span>:
+            <span class="keyword">typedef</span> T type;
+
+            <span class="keyword">explicit</span> reference_wrapper(T&amp; t): t_(&amp;t) {}
+
+            <span class="keyword">operator</span> T&amp; () <span class="keyword">const</span> { <span class="keyword">return</span> *t_; }
+
+            T&amp; get() <span class="keyword">const</span> { <span class="keyword">return</span> *t_; }
+
+            T* get_pointer() <span class="keyword">const</span> { <span class="keyword">return</span> t_; }
+
+        <span class="keyword">private</span>:
+
+            T* t_;
+        };
+
+        <span class="comment">//primary template
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">struct</span> const_mem_fn_t;
+
+        <span class="comment">//primary template
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">struct</span> mem_fn_t;
+
+        <span class="comment">//primary template
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">struct</span> mem_fn_t_binder;
+
+        <span class="comment">//primary template
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">struct</span> const_mem_fn_t_binder;
+
+        <span class="comment">//primary template
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt; <span class="keyword">class</span> <span class="keyword2">function</span>;
+
+        <span class="keyword">struct</span> unspecified_null_pointer_type {};
+
+        <span class="keyword">struct</span> function_base
+        {
+            <span class="keyword">void</span> *m_pInvoker;
+
+            function_base() : m_pInvoker(<span class="number">0</span>)
+            {
+            }
+
+            <span class="keyword">bool</span> empty() <span class="keyword">const</span>
+            {
+                <span class="keyword">return</span> m_pInvoker == <span class="number">0</span>;
+            }
+        };
+
+        <span class="comment">// [3.7.2.7] Null pointer comparisons
+</span>        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Function&gt;
+        <span class="keyword">bool</span> <span class="keyword">operator</span>==(<span class="keyword">const</span> function_base&amp; f, unspecified_null_pointer_type *)
+        {
+            <span class="keyword">return</span> !f;
+        }
+
+        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Function&gt;
+        <span class="keyword">bool</span> <span class="keyword">operator</span>==(unspecified_null_pointer_type * , <span class="keyword">const</span> function_base&amp; f)
+        {
+            <span class="keyword">return</span> !f;
+        }
+
+        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Function&gt;
+        <span class="keyword">bool</span> <span class="keyword">operator</span>!=(<span class="keyword">const</span> function_base&amp; f, unspecified_null_pointer_type * )
+        {
+            <span class="keyword">return</span> (<span class="keyword">bool</span>)f;
+        }
+
+        <span class="keyword">template</span> &lt;<span class="keyword">class</span> Function&gt;
+        <span class="keyword">bool</span> <span class="keyword">operator</span>!=(unspecified_null_pointer_type *, <span class="keyword">const</span> function_base&amp; f)
+        {
+            <span class="keyword">return</span> (<span class="keyword">bool</span>)f;
+        }
+
+        <span class="comment">// [3.7.2.8] specialized algorithms
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Function&gt; <span class="keyword">void</span> swap(<span class="keyword2">function</span>&lt;Function&gt;&amp; a, <span class="keyword2">function</span>&lt;Function&gt;&amp; b)
+        {
+            a.swap(b);
+        }
+
+    } <span class="comment">//namespace tr1
+</span>} <span class="comment">//namespace std
+</span>
+<span class="keyword">#define</span> MACRO_JOIN(a, b)        MACRO_DO_JOIN(a, b)
+<span class="keyword">#define</span> MACRO_DO_JOIN(a, b)     MACRO_DO_JOIN2(a, b)
+<span class="keyword">#define</span> MACRO_DO_JOIN2(a, b)    a##b
+
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">0</span>(t)
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">1</span>(t)    t##1
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">2</span>(t)    t##1, ##t##2
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">3</span>(t)    t##1, ##t##2, ##t##3
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">4</span>(t)    t##1, ##t##2, ##t##3, ##t##4
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1_<span class="number">5</span>(t)    t##1, ##t##2, ##t##3, ##t##4, ##t##5
+
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">0</span>(t1, t2)
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">1</span>(t1, t2)   t1##1 t2##1
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">2</span>(t1, t2)   t1##1 t2##1, t1##2 t2##2
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">3</span>(t1, t2)   t1##1 t2##1, t1##2 t2##2, t1##3 t2##3
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">4</span>(t1, t2)   t1##1 t2##1, t1##2 t2##2, t1##3 t2##3, t1##4 t2##4
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2_<span class="number">5</span>(t1, t2)   t1##1 t2##1, t1##2 t2##2, t1##3 t2##3, t1##4 t2##4, t1##5 t2##5
+
+
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS1(n, t)         MACRO_JOIN(MACRO_MAKE_PARAMS1_, n) (t)
+<span class="keyword">#define</span> MACRO_MAKE_PARAMS2(n, t1, t2)    MACRO_JOIN(MACRO_MAKE_PARAMS2_, n) (t1, t2)
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">0</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">1</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">2</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">3</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">4</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+<span class="keyword">#define</span> FUNC_NUM_ARGS <span class="number">5</span>
+<span class="keyword">#include</span> <span class="string">&quot;functional_imp\function_imp.h&quot;</span>
+<span class="keyword">#undef</span> FUNC_NUM_ARGS
+
+
+<span class="keyword">#endif</span> <span class="comment">//TR1_FUNCTIONAL_HEADER
+</span>Header: <span class="string">&quot;function_imp.h&quot;</span>
+Template especializations:
+
+
+<span class="keyword">#if</span> FUNC_NUM_ARGS == <span class="number">0</span>
+<span class="keyword">#define</span> FUNC_USE_COMMA_IF
+
+<span class="keyword">#define</span> CLASST1_CLASSTN
+<span class="keyword">#define</span> T1_TN              <span class="keyword">void</span>
+<span class="keyword">#define</span> T1t<span class="number">1</span>_TNtn
+<span class="keyword">#define</span> t1_tn
+
+<span class="keyword">#else</span>
+<span class="keyword">#define</span> FUNC_USE_COMMA_IF ,
+
+<span class="keyword">#define</span> CLASST1_CLASSTN    MACRO_MAKE_PARAMS1(FUNC_NUM_ARGS, <span class="keyword">class</span> T)
+<span class="keyword">#define</span> T1_TN              MACRO_MAKE_PARAMS1(FUNC_NUM_ARGS, T)
+<span class="keyword">#define</span> T1t<span class="number">1</span>_TNtn          MACRO_MAKE_PARAMS2(FUNC_NUM_ARGS, T, t)
+<span class="keyword">#define</span> t1_tn              MACRO_MAKE_PARAMS1(FUNC_NUM_ARGS, t)
+
+
+<span class="keyword">#endif</span>
+
+<span class="keyword">#if</span> FUNC_NUM_ARGS == <span class="number">1</span>
+<span class="keyword">#define</span> USING_FUNCTION , std::unary_function&lt;T1, Result&gt;
+<span class="keyword">#define</span> USING_FUNCTIONM  : <span class="keyword">public</span> std::binary_function&lt;T, T1, Result&gt;
+#elif FUNC_NUM_ARGS == <span class="number">2</span>
+<span class="keyword">#define</span> USING_FUNCTION , std::binary_function&lt;T1, T2, Result&gt;
+<span class="keyword">#define</span> USING_FUNCTIONM  <span class="comment">//: public std::binary_function&lt;T1, T2, Result&gt;
+</span><span class="keyword">#else</span>
+<span class="keyword">#define</span> USING_FUNCTION
+<span class="keyword">#define</span> USING_FUNCTIONM
+<span class="keyword">#endif</span>
+
+
+<span class="keyword">namespace</span> std {
+    <span class="keyword">namespace</span> tr1 {
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        <span class="keyword">struct</span> const_mem_fn_t&lt;Result (T::*) (T1_TN) <span class="keyword">const</span> &gt;
+            USING_FUNCTIONM
+        {
+            <span class="keyword">typedef</span> Result result_type;
+            Result (T::*pMemberFunc) (T1_TN) <span class="keyword">const</span>;
+
+            const_mem_fn_t(Result (T::*pf) (T1_TN) <span class="keyword">const</span>) : pMemberFunc(pf)
+            {
+            }
+
+            Result <span class="keyword">operator</span> ()(<span class="keyword">const</span> T *f FUNC_USE_COMMA_IF T1t<span class="number">1</span>_TNtn) <span class="keyword">const</span>
+            {
+                <span class="keyword">return</span> ((f-&gt;*pMemberFunc)(t1_tn));
+            }
+
+            Result <span class="keyword">operator</span> ()(<span class="keyword">const</span> T &amp;f FUNC_USE_COMMA_IF T1t<span class="number">1</span>_TNtn) <span class="keyword">const</span>
+            {
+                <span class="keyword">return</span> ((f.*pMemberFunc)(t1_tn));
+            }
+        };
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        <span class="keyword">struct</span> mem_fn_t&lt;Result (T::*) (T1_TN) &gt;
+            USING_FUNCTIONM
+        {
+            <span class="keyword">typedef</span> Result result_type;
+            <span class="keyword">typedef</span> Result (T::*pointer_type) (T1_TN);
+            Result (T::*pMemberFunc) (T1_TN);
+
+            mem_fn_t(Result (T::*pf) (T1_TN)) : pMemberFunc(pf)
+            {
+            }
+            Result <span class="keyword">operator</span> ()(T *f FUNC_USE_COMMA_IF T1t<span class="number">1</span>_TNtn)
+            {
+                <span class="keyword">return</span> ((f-&gt;*pMemberFunc)(t1_tn));
+            }
+            Result <span class="keyword">operator</span> ()(T &amp;f FUNC_USE_COMMA_IF T1t<span class="number">1</span>_TNtn)
+            {
+                <span class="keyword">return</span> ((f.*pMemberFunc)(t1_tn));
+            }
+        };
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        mem_fn_t&lt;Result (T::*) (T1_TN)&gt; mem_fn(Result (T::*pF) (T1_TN) )
+        {
+            <span class="keyword">return</span> mem_fn_t&lt;Result (T::*) (T1_TN)&gt;(pF);
+        }
+
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        const_mem_fn_t&lt;Result (T::*) (T1_TN) <span class="keyword">const</span>&gt; mem_fn(Result (T::*pF) (T1_TN) <span class="keyword">const</span>)
+        {
+            <span class="keyword">return</span> const_mem_fn_t&lt;Result (T::*) (T1_TN) <span class="keyword">const</span> &gt;(pF);
+        }
+
+        <span class="comment">//bind partially implemented
+</span>        <span class="comment">//Allows to create function objects that holds &quot;this&quot;
+</span>        <span class="comment">//X x;
+</span>        <span class="comment">//f = bind(&amp;X::F, x);
+</span>
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        <span class="keyword">struct</span> const_mem_fn_t_binder&lt;Result (T::*) (T1_TN) <span class="keyword">const</span>&gt;
+        {
+            const_mem_fn_t&lt;Result (T::*) (T1_TN) <span class="keyword">const</span>&gt; m_f;
+            <span class="keyword">const</span> T * m_p;
+
+            const_mem_fn_t_binder(Result(T::*PF)(T1_TN) <span class="keyword">const</span>, <span class="keyword">const</span> T &amp; r)
+                : m_p(&amp;r), m_f(PF)
+            {
+            }
+
+            const_mem_fn_t_binder(Result(T::*PF)(T1_TN) <span class="keyword">const</span>, <span class="keyword">const</span> T *p)
+                : m_p(p), m_f(PF)
+            {
+            }
+
+            Result <span class="keyword">operator</span> ()(T1t<span class="number">1</span>_TNtn) <span class="keyword">const</span>
+            {
+                <span class="keyword">return</span> m_f(m_p FUNC_USE_COMMA_IF t1_tn);
+            }
+        };
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        <span class="keyword">struct</span> mem_fn_t_binder&lt;Result (T::*) (T1_TN) &gt;
+        {
+            mem_fn_t&lt;Result (T::*) (T1_TN)&gt; m_f;
+            T * m_p;
+
+            mem_fn_t_binder(Result(T::*PF)(T1_TN), T &amp; r)
+                : m_p(&amp;r), m_f(PF)
+            {
+            }
+
+            mem_fn_t_binder(Result(T::*PF)(T1_TN), T *p)
+                : m_p(p), m_f(PF)
+            {
+            }
+
+            Result <span class="keyword">operator</span> ()(T1t<span class="number">1</span>_TNtn)
+            {
+                <span class="keyword">return</span> m_f(m_p FUNC_USE_COMMA_IF t1_tn);
+            }
+        };
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        mem_fn_t_binder&lt;Result(T::*)(T1_TN)&gt; bind(Result(T::*PF)(T1_TN), T &amp;r)
+        {
+            <span class="keyword">return</span> mem_fn_t_binder&lt;Result(T::*)(T1_TN)&gt;(PF, r);
+        }
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        const_mem_fn_t_binder&lt;Result(T::*)(T1_TN) <span class="keyword">const</span>&gt; bind(Result(T::*PF)(T1_TN) <span class="keyword">const</span>, T &amp;r)
+        {
+            <span class="keyword">return</span> const_mem_fn_t_binder&lt;Result(T::*)(T1_TN) <span class="keyword">const</span>&gt;(PF, r);
+        }
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        mem_fn_t_binder&lt;Result(T::*)(T1_TN)&gt; bind(Result(T::*PF)(T1_TN), T *p)
+        {
+            <span class="keyword">return</span> mem_fn_t_binder&lt;Result(T::*)(T1_TN)&gt;(PF, p);
+        }
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result, <span class="keyword">class</span> T FUNC_USE_COMMA_IF CLASST1_CLASSTN&gt;
+        const_mem_fn_t_binder&lt;Result(T::*)(T1_TN) <span class="keyword">const</span>&gt; bind(Result(T::*PF)(T1_TN) <span class="keyword">const</span>, T *p)
+        {
+            <span class="keyword">return</span> const_mem_fn_t_binder&lt;Result(T::*)(T1_TN) <span class="keyword">const</span>&gt;(PF, p);
+        }
+
+
+        <span class="comment">// Function type Result (T1, T2, ..., TN), 0 &lt;= N &lt;= Nmax
+</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> Result FUNC_USE_COMMA_IF  CLASST1_CLASSTN&gt;
+        <span class="keyword">class</span> <span class="keyword2">function</span> &lt;Result (T1_TN)&gt; : <span class="keyword">public</span> function_base
+            USING_FUNCTION
+        {
+            <span class="keyword">struct</span> invoker_base
+            {
+                <span class="keyword">virtual</span> ~invoker_base(){}
+                <span class="keyword">virtual</span> Result invoke(T1_TN) = <span class="number">0</span>;
+                <span class="keyword">virtual</span> invoker_base * clone() <span class="keyword">const</span> = <span class="number">0</span>;
+                <span class="keyword">virtual</span> <span class="keyword">void</span> * get_ptr( <span class="keyword">const</span> type_info &amp; ) <span class="keyword">const</span> = <span class="number">0</span>;
+                <span class="keyword">virtual</span> <span class="keyword">const</span> type_info &amp; get_type_info() <span class="keyword">const</span> = <span class="number">0</span>;
+            };
+
+            <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+            <span class="keyword">struct</span> invoker : <span class="keyword">public</span> invoker_base
+            {
+                <span class="keyword">typedef</span> T target_type;
+                target_type m_functor_object;
+
+                invoker_base * clone() <span class="keyword">const</span>
+                {
+                    <span class="keyword">return</span> <span class="keyword">new</span> invoker(*<span class="keyword">this</span>);
+                }
+
+                <span class="keyword">const</span> type_info &amp; get_type_info() <span class="keyword">const</span>
+                {
+                    <span class="keyword">return</span> <span class="keyword">typeid</span>(target_type);
+                }
+
+                <span class="keyword">void</span> * get_ptr( <span class="keyword">const</span> type_info &amp; ti) <span class="keyword">const</span>
+                {
+                    <span class="keyword">if</span> (<span class="keyword">typeid</span>(target_type) == ti)
+                        <span class="keyword">return</span> (<span class="keyword">void</span>*) &amp;m_functor_object;
+                    <span class="keyword">return</span> <span class="number">0</span>;
+                }
+
+                Result invoke(T1t<span class="number">1</span>_TNtn)
+                {
+                    <span class="keyword">return</span> m_functor_object(t1_tn);
+                }
+
+                invoker(<span class="keyword">const</span> target_type &amp; object)
+                    : m_functor_object(object)
+                {
+                }
+            };
+
+            <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt; <span class="keyword">void</span> new_invoker( <span class="keyword">const</span> T &amp;object )
+            {
+                m_pInvoker = <span class="keyword">new</span> invoker&lt;T&gt;(object);
+            }
+
+            <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">void</span> new_invoker( Result (T::*pmFunction) (T1_TN) )
+            {
+                <span class="keyword">if</span> (pmFunction == <span class="number">0</span>)
+                    <span class="keyword">return</span>;
+
+                <span class="keyword">typedef</span> mem_fn_t&lt;Result (T::*)(T1_TN)&gt; functor;
+                m_pInvoker = <span class="keyword">new</span> invoker&lt; functor &gt;( functor(pmFunction) );
+            }
+
+        <span class="keyword">public</span>:
+
+            <span class="keyword">typedef</span> Result result_type;
+
+            <span class="comment">// [3.7.2.1] construct/copy/destroy
+</span>            <span class="keyword">explicit</span> <span class="keyword2">function</span>() : function_base()
+            {
+                assert(!*<span class="keyword">this</span>);
+            }
+
+            <span class="keyword2">function</span>(<span class="keyword">const</span> <span class="keyword2">function</span>&amp; f)
+            {
+                <span class="keyword">if</span> (f.m_pInvoker != <span class="number">0</span>)
+                    m_pInvoker = ((invoker_base*)(f.m_pInvoker))-&gt;clone();
+
+                assert( (!*<span class="keyword">this</span> &amp;&amp; !f) || (*<span class="keyword">this</span> &amp;&amp; f));
+            }
+
+            <span class="keyword2">function</span>(unspecified_null_pointer_type *) : function_base()
+            {
+                assert(!*<span class="keyword">this</span>);
+            }
+
+            <span class="comment">//enable_if here is to disable create function objects of integral types.
+</span>            <span class="comment">// so is possible to initialize do 0 function f(0);
+</span>            <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+            <span class="keyword2">function</span>(<span class="keyword">const</span> F &amp;f
+                ,<span class="keyword">typename</span> detail::disable_if&lt;is_integral&lt;F&gt; , <span class="keyword">int</span>&gt;::type = <span class="number">0</span>
+                )
+            {
+                new_invoker(f);
+            }
+
+            <span class="keyword2">function</span>&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> <span class="keyword2">function</span>&amp; f)
+            {
+                <span class="keyword2">function</span>(f).swap(*<span class="keyword">this</span>);
+                <span class="keyword">return</span> *<span class="keyword">this</span>;
+            }
+
+            <span class="keyword2">function</span>&amp; <span class="keyword">operator</span>=(unspecified_null_pointer_type * )
+            {
+                <span class="keyword">delete</span> ((invoker_base*)m_pInvoker);
+                m_pInvoker = <span class="number">0</span>;
+                assert(!*<span class="keyword">this</span>);
+                <span class="keyword">return</span> *<span class="keyword">this</span>;
+            }
+
+            <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+            <span class="keyword">typename</span> detail::disable_if&lt; is_integral&lt;F&gt; , <span class="keyword2">function</span> &gt;::type &amp;
+                <span class="keyword">operator</span>=(<span class="keyword">const</span> F &amp;f)
+            {
+                <span class="keyword2">function</span>(f).swap(*<span class="keyword">this</span>);
+                <span class="keyword">return</span> *<span class="keyword">this</span>;
+            }
+
+            <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt; <span class="keyword2">function</span>&amp; <span class="keyword">operator</span>=(reference_wrapper&lt;F&gt; f)
+            {
+                <span class="keyword2">function</span>(f).swap(*<span class="keyword">this</span>);
+                <span class="keyword">return</span> *<span class="keyword">this</span>;
+            }
+
+            ~<span class="keyword2">function</span>()
+            {
+                <span class="keyword">delete</span> ((invoker_base*)m_pInvoker);
+            }
+
+            <span class="comment">// [3.7.2.2] function modifiers
+</span>            <span class="keyword">void</span> swap(<span class="keyword2">function</span>&amp; f)
+            {
+                std::swap(m_pInvoker, f.m_pInvoker);
+            }
+
+            <span class="comment">// [3.7.2.3] function capacity
+</span>            <span class="keyword">operator</span> <span class="keyword">bool</span>() <span class="keyword">const</span> <span class="keyword">throw</span>()
+            {
+                <span class="keyword">return</span> !empty();
+            }
+
+            <span class="comment">// [3.7.2.4] function invocation
+</span>            Result <span class="keyword">operator</span>()(T1t<span class="number">1</span>_TNtn) <span class="keyword">const</span>
+            {
+                <span class="keyword">if</span> (!*<span class="keyword">this</span>)
+                    <span class="keyword">throw</span> bad_function_call();
+
+                <span class="keyword">return</span> ((invoker_base*)m_pInvoker)-&gt;invoke(t1_tn);
+            }
+
+            <span class="comment">// [3.7.2.5] function target access
+</span>            <span class="keyword">const</span> std::type_info&amp; target_type() <span class="keyword">const</span>
+            {
+                <span class="keyword">if</span> (!*<span class="keyword">this</span>)
+                    <span class="keyword">return</span> <span class="keyword">typeid</span>(<span class="keyword">void</span>);
+                <span class="keyword">return</span> ((invoker_base*)m_pInvoker)-&gt;get_type_info();
+            }
+
+            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; T* target()
+            {
+                <span class="keyword">if</span> (!*<span class="keyword">this</span>)
+                    <span class="keyword">return</span> <span class="number">0</span>;
+                <span class="keyword">return</span> (T*)((invoker_base*)m_pInvoker)-&gt;get_ptr(<span class="keyword">typeid</span>(T));
+            }
+
+            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; <span class="keyword">const</span> T* target() <span class="keyword">const</span>
+            {
+                <span class="keyword">if</span> (!*<span class="keyword">this</span>)
+                    <span class="keyword">return</span> <span class="number">0</span>;
+                <span class="keyword">return</span> ((invoker_base*)m_pInvoker)-&gt;get_ptr(<span class="keyword">typeid</span>&lt;T&gt;);
+            }
+
+        <span class="keyword">private</span>:
+
+            <span class="comment">// [3.7.2.6] undefined operators
+</span>            <span class="keyword">template</span>&lt;<span class="keyword">class</span> Function&gt; <span class="keyword">bool</span> <span class="keyword">operator</span>==(<span class="keyword">const</span> <span class="keyword2">function</span>&lt;Function&gt;&amp;);
+            <span class="keyword">template</span>&lt;<span class="keyword">class</span> Function&gt; <span class="keyword">bool</span> <span class="keyword">operator</span>!=(<span class="keyword">const</span> <span class="keyword2">function</span>&lt;Function&gt;&amp;);
+        };
+
+    } <span class="comment">// namespace tr1
+</span>} <span class="comment">// namespace std
+</span>
+
+<span class="keyword">#undef</span> CLASST1_CLASSTN
+<span class="keyword">#undef</span> T1_TN
+<span class="keyword">#undef</span> T1t<span class="number">1</span>_TNtn
+<span class="keyword">#undef</span> t1_tn
+<span class="keyword">#undef</span> FUNC_USE_COMMA_IF
+<span class="keyword">#undef</span> USING_FUNCTION
+<span class="keyword">#undef</span> USING_FUNCTIONM
+
+</pre>
+
+
+<h3>References:</h3>
+
+<ul>
+<li> <a href="http://www.petebecker.com/tr1book/">http://www.petebecker.com/tr1book/</a></li>
+<li> <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf</a></li>
+<li> <a href="http://www.boost.org/doc/html/function.html">http://www.boost.org/doc/html/function.html</a></li>
+</ul>
+
+<h3>See also:</h3>
+<p>My implementation of std::tr1::shared
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

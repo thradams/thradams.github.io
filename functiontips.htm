@@ -1,0 +1,153 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Algums esclarecimentos sobre o std::function</h2>
+
+<p>O function não representa exatamente um ponteiro para função.E não existe como fazer um ponteiro genérico de função membro. </p>
+
+<p>O function faz uma chamada através de uma assinatura pré-determinada para um objeto função, para um função solta ou uma função membro. </p>
+
+<p>Essa assinatura é o parâmetro do template. </p>
+
+<p>Por exemplo: </p>
+<pre>
+<span class="keyword2">function</span>&lt;<span class="keyword">int</span> (X*)&gt; f; 
+</pre>
+
+<p>Isso quer dizer que &quot;f&quot; vai ser chamada passando um Xint. </p>
+
+<p>O function não determina se vai fazer uma chamada para função solta, função membro ou objeto função. </p>
+
+<p>Mas a lógica da chamada é modificada para o caso de ponteiros de função membro. </p>
+
+<p>Vou explicar com exemplos: </p>
+
+<p>Por exemplo, se apontar para uma função solta: </p>
+<pre>
+<span class="keyword">int</span> func2(X*) { <span class="keyword">return</span> <span class="number">2</span>; } 
+<span class="keyword">void</span> main() 
+{ 
+  <span class="keyword2">function</span>&lt;<span class="keyword">int</span> (X*)&gt; f; 
+  f = &amp;func2; 
+  X x; 
+  f(&amp;x); 
+} 
+</pre>
+
+
+<p>Neste exemplo o &quot;f(&amp;x);&quot; vai chamar a func2 passando o argumento X. \\Mas se eu apontar para uma função membro:</p>
+
+<pre>
+
+<span class="keyword">struct</span> X { 
+  <span class="keyword">int</span> func() { <span class="keyword">return</span> <span class="number">2</span>; } 
+};
+
+<span class="keyword">void</span> main() 
+{ 
+  <span class="keyword2">function</span>&lt;<span class="keyword">int</span> (X*)&gt; f; 
+  f = &amp;X::func; 
+  X x; 
+  f(&amp;x); 
+} 
+</pre>
+
+
+<p>Vai chamar a X::func da instância &amp;x sem passar parâmetros. </p>
+
+<p>Resumindo a lógica é a seguinte: </p>
+
+<p>Se é um ponteiro para função membro, então o primeiro argumento é considerado o &quot;this&quot; do objeto. </p>
+
+<p>Caso contrário ele é tratado como um argumento convencional. </p>
+
+<p>Ou seja, é preciso dizer o tipo do objeto para funções membro.Então não é possível criar um ponteiro para uma classe qualquer. </p>
+
+<p>Então não serve para nada? </p>
+
+<p>Serve, pois é só fazer um objeto função que faça a tradução da chamada: </p>
+<pre>
+<span class="keyword">struct</span> X { 
+  <span class="keyword">int</span> func() { <span class="keyword">return</span> <span class="number">2</span>; } 
+}; 
+
+<span class="keyword">struct</span> callX 
+{ 
+  X &amp;x; 
+  callX(X &amp;x_) : x(x_){} 
+  <span class="keyword">int</span> <span class="keyword">operator</span> ()() 
+  { 
+    <span class="keyword">return</span> x.func(); 
+  } 
+}; 
+
+<span class="keyword">void</span> main() 
+{ 
+  <span class="keyword2">function</span>&lt;<span class="keyword">int</span> (<span class="keyword">void</span>)&gt; f; 
+  X x; 
+  f = callX(x); 
+  f(); 
+} 
+</pre>
+
+<p>A regra para objetos função é a mesma que para funções não membro. (por isso eu removi o XOk, agora eu posso usar para qualquer tipo de classe. Mas vou ter que criar este adaptador cada vez que eu precisar chamar uma classe diferente? </p>
+
+<p>Não, você não precisa. Para isso que serve o bind. (além de outras coisas...) </p>
+
+<p>A função bind cria adaptadores para você dos mais variados tipos. </p>
+
+<p>Então por exemplo:</p>
+<pre>
+<span class="keyword">void</span> main() 
+{ 
+  <span class="keyword2">function</span>&lt;<span class="keyword">int</span> (<span class="keyword">void</span>)&gt; f; 
+  X x; 
+  f = bind(&amp;X::func, &amp;x); 
+  f(); 
+} 
+</pre>
+
+<p>Neste exemplo o bind vai criar um objeto como o criado &quot;na mão&quot; anteriormente. Se voce quiser o bind também pode ser usado para levar argumentos para você. </p>
+<pre>
+<span class="keyword">struct</span> X { 
+  <span class="keyword">int</span> func(<span class="keyword">int</span> ) { <span class="keyword">return</span> <span class="number">2</span>; } 
+}; 
+
+<span class="keyword">void</span> main() 
+{ 
+  <span class="keyword2">function</span>&lt;<span class="keyword">int</span> (<span class="keyword">void</span>)&gt; f; 
+  X x; 
+  f = bind(&amp;X::func, &amp;x, <span class="number">1</span>); 
+  f(); 
+} 
+</pre>
+
+
+<p>(Este texto foi colocado por mim na lista <a href="http://groups.google.com.br/group/ccppbrasil">http://groups.google.com.br/group/ccppbrasil</a> em 8 abr 2008)
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

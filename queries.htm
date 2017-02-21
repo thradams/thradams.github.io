@@ -1,0 +1,417 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Container Queries</h2>
+
+<p>Similar (not equal) functionality of C</p>
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;functional&gt;
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; 
+<span class="keyword">struct</span> IEnumerable
+{
+    <span class="keyword">typedef</span> T ValueType;
+    <span class="keyword">virtual</span> <span class="keyword">bool</span> Next() = <span class="number">0</span>;
+    <span class="keyword">virtual</span> T Current() <span class="keyword">const</span> = <span class="number">0</span>;
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Iterator&gt;
+<span class="keyword">struct</span> EnumerableAll : <span class="keyword">public</span> IEnumerable&lt;<span class="keyword">typename</span> Iterator::value_type&gt;
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::value_type T;
+    <span class="keyword">typedef</span> T ValueType;
+
+    Iterator it;
+    Iterator end;
+    <span class="keyword">bool</span> first;
+
+    EnumerableAll(<span class="keyword">const</span> Iterator&amp; begin, <span class="keyword">const</span> Iterator&amp; e)
+    {
+        first = <span class="keyword">true</span>;
+        it = begin;
+        end =  e;
+    }
+
+    <span class="keyword">bool</span> Next()
+    {
+        <span class="keyword">if</span> (first)
+        {
+            first = <span class="keyword">false</span>;
+        }
+        <span class="keyword">else</span>
+            it++;
+
+        <span class="keyword">return</span> it != end;
+    }
+
+    T Current() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> *it;
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerateType, <span class="keyword">class</span> Predicate&gt;
+<span class="keyword">struct</span> EnumerableWhere : <span class="keyword">public</span> IEnumerable&lt; <span class="keyword">typename</span> EnumerateType::ValueType &gt;
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> EnumerateType::ValueType ValueType;
+
+    EnumerateType en;
+    Predicate m_p;
+
+    EnumerableWhere(EnumerateType e, <span class="keyword">const</span> Predicate&amp; p) : en(e), m_p(p)
+    {
+    }
+
+    <span class="keyword">bool</span> Next()
+    {
+        <span class="keyword">bool</span> b;
+        <span class="keyword">for</span> (;;)
+        {
+            b = en.Next();
+            <span class="keyword">if</span> (!b || m_p(en.Current()))
+                <span class="keyword">break</span>;
+        }
+        <span class="keyword">return</span> b;
+    }
+
+    ValueType Current() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> en.Current();
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerateType, <span class="keyword">class</span> ConvertionType&gt;
+<span class="keyword">struct</span> EnumerableSelect : <span class="keyword">public</span> IEnumerable&lt; <span class="keyword">typename</span> ConvertionType::To &gt;
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> ConvertionType::To  ValueType;
+    EnumerateType en;
+    ConvertionType convert;
+
+    EnumerableSelect(<span class="keyword">const</span> EnumerateType&amp; e,
+                     <span class="keyword">const</span> ConvertionType&amp; ss)
+            : en(e),
+            convert(ss)
+    {
+    }
+
+    <span class="keyword">bool</span> Next() { <span class="keyword">return</span> en.Next(); }
+
+    ValueType Current() <span class="keyword">const</span> {
+        <span class="keyword">return</span> convert(en.Current());
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+EnumerableAll&lt;<span class="keyword">typename</span> T::iterator&gt; From(T&amp; v) {
+    <span class="keyword">return</span> EnumerableAll&lt;<span class="keyword">typename</span> T::iterator&gt;(v.begin(), v.end());
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Predicate&gt;
+<span class="keyword">struct</span> WhereType
+{
+    <span class="keyword">typedef</span> Predicate PredicateType;
+    <span class="keyword">const</span> Predicate &amp;p;
+    WhereType(<span class="keyword">const</span> Predicate&amp; pp) : p(pp) { }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Predicate&gt;
+WhereType&lt;Predicate&gt; Where(<span class="keyword">const</span> Predicate&amp; pp) {
+    <span class="keyword">return</span> WhereType&lt;Predicate&gt;(pp);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerableType, <span class="keyword">class</span> Predicate&gt;
+EnumerableWhere&lt;EnumerableType, Predicate&gt;
+<span class="keyword">operator</span> &gt;&gt; (<span class="keyword">const</span> EnumerableType&amp; en, <span class="keyword">const</span> WhereType&lt;Predicate&gt;&amp; were)
+{
+    <span class="keyword">return</span> EnumerableWhere&lt;EnumerableType, Predicate&gt;(en, were.p);
+}
+
+<span class="comment">//primary
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> From, <span class="keyword">class</span> To&gt; <span class="keyword">struct</span> ConvertType;
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> ClassType, <span class="keyword">class</span> DataType&gt;
+<span class="keyword">struct</span> ConvertDataMemberType
+{
+    <span class="keyword">typedef</span> ClassType From;
+    <span class="keyword">typedef</span> DataType To;
+
+    DataType ClassType::*m_p;
+
+    ConvertDataMemberType(DataType ClassType::*p) : m_p(p) {}
+
+    To <span class="keyword">operator</span>()(<span class="keyword">const</span> From&amp; from) <span class="keyword">const</span> {
+        <span class="keyword">return</span> from.*m_p;
+    }
+};
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> AnyConverter&gt;
+AnyConverter Select(<span class="keyword">const</span> AnyConverter&amp; c) { <span class="keyword">return</span> c; }
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> ClassType, <span class="keyword">class</span> DataType&gt;
+ConvertDataMemberType&lt;ClassType, DataType&gt; Select(DataType ClassType::*p)
+{
+    <span class="keyword">return</span> ConvertDataMemberType&lt;ClassType, DataType&gt;(p);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerableType, <span class="keyword">class</span> ConvertType&gt;
+EnumerableSelect&lt;EnumerableType, ConvertType&gt;
+<span class="keyword">operator</span> &gt;&gt; (<span class="keyword">const</span> ConvertType&amp; converter, <span class="keyword">const</span> EnumerableType&amp; en)
+{
+    <span class="keyword">return</span> EnumerableSelect&lt;EnumerableType, ConvertType&gt;(en, converter);
+}
+
+<span class="keyword">struct</span> Point
+{
+    <span class="keyword">int</span> x;
+    <span class="keyword">int</span> y;
+    Point(<span class="keyword">int</span> xx, <span class="keyword">int</span> yy) : x(xx), y(yy) {}
+};
+
+
+<span class="keyword">int</span> main()
+{
+    std::<span class="keyword2">vector</span>&lt;Point&gt; v;
+    v.push_back(Point(<span class="number">1</span>, <span class="number">1</span>));
+    v.push_back(Point(<span class="number">2</span>, <span class="number">1</span>));
+    v.push_back(Point(<span class="number">3</span>, <span class="number">1</span>));
+
+    IEnumerable&lt;Point&gt; &amp; en1 = From(v);
+    <span class="keyword">while</span> (en1.Next())
+        cout &lt;&lt; en1.Current().x &lt;&lt; <span class="string">&quot;, &quot;</span>;
+
+    cout &lt;&lt; endl;
+
+    IEnumerable&lt;<span class="keyword">int</span>&gt;&amp; en = Select(&amp;Point::x) &gt;&gt; 
+                           From(v) &gt;&gt;
+                           Where(std::bind2nd(std::less&lt;<span class="keyword">int</span>&gt;(), <span class="number">3</span>));
+
+    <span class="keyword">while</span> (en.Next())
+        cout &lt;&lt; en.Current() &lt;&lt; <span class="string">&quot;, &quot;</span>;
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+}}}
+Using <span class="keyword">auto</span> from C++ <span class="number">0</span>x
+
+{{{cpp
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;functional&gt;
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Iterator&gt;
+<span class="keyword">struct</span> EnumerableAll
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> Iterator::value_type T;
+    <span class="keyword">typedef</span> T ValueType;
+
+    Iterator it;
+    Iterator end;
+    <span class="keyword">bool</span> first;
+
+    EnumerableAll(<span class="keyword">const</span> Iterator&amp; begin, <span class="keyword">const</span> Iterator&amp; e)
+    {
+        first = <span class="keyword">true</span>;
+        it = begin;
+        end =  e;
+    }
+
+    <span class="keyword">bool</span> Next()
+    {
+        <span class="keyword">if</span> (first)
+        {
+            first = <span class="keyword">false</span>;
+        }
+        <span class="keyword">else</span>
+            it++;
+
+        <span class="keyword">return</span> it != end;
+    }
+
+    T Current() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> *it;
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerateType, <span class="keyword">class</span> Predicate&gt;
+<span class="keyword">struct</span> EnumerableWhere
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> EnumerateType::ValueType ValueType;
+
+    EnumerateType en;
+    Predicate m_p;
+
+    EnumerableWhere(EnumerateType e, <span class="keyword">const</span> Predicate&amp; p) : en(e), m_p(p)
+    {
+    }
+
+    <span class="keyword">bool</span> Next()
+    {
+        <span class="keyword">bool</span> b;
+        <span class="keyword">for</span> (;;)
+        {
+            b = en.Next();
+            <span class="keyword">if</span> (!b || m_p(en.Current()))
+                <span class="keyword">break</span>;
+        }
+        <span class="keyword">return</span> b;
+    }
+
+    ValueType Current() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> en.Current();
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerateType, <span class="keyword">class</span> ConvertionType&gt;
+<span class="keyword">struct</span> EnumerableSelect
+{
+    <span class="keyword">typedef</span> <span class="keyword">typename</span> ConvertionType::To  ValueType;
+    EnumerateType en;
+    ConvertionType convert;
+
+    EnumerableSelect(<span class="keyword">const</span> EnumerateType&amp; e,
+                     <span class="keyword">const</span> ConvertionType&amp; ss)
+            : en(e),
+            convert(ss)
+    {
+    }
+
+    <span class="keyword">bool</span> Next() { <span class="keyword">return</span> en.Next(); }
+
+    ValueType Current() <span class="keyword">const</span> {
+        <span class="keyword">return</span> convert(en.Current());
+    }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+EnumerableAll&lt;<span class="keyword">typename</span> T::iterator&gt; From(T&amp; v) {
+    <span class="keyword">return</span> EnumerableAll&lt;<span class="keyword">typename</span> T::iterator&gt;(v.begin(), v.end());
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Predicate&gt;
+<span class="keyword">struct</span> WhereType
+{
+    <span class="keyword">typedef</span> Predicate PredicateType;
+    <span class="keyword">const</span> Predicate &amp;p;
+    WhereType(<span class="keyword">const</span> Predicate&amp; pp) : p(pp) { }
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> Predicate&gt;
+WhereType&lt;Predicate&gt; Where(<span class="keyword">const</span> Predicate&amp; pp) {
+    <span class="keyword">return</span> WhereType&lt;Predicate&gt;(pp);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerableType, <span class="keyword">class</span> Predicate&gt;
+EnumerableWhere&lt;EnumerableType, Predicate&gt;
+<span class="keyword">operator</span> &gt;&gt; (<span class="keyword">const</span> EnumerableType&amp; en, <span class="keyword">const</span> WhereType&lt;Predicate&gt;&amp; were)
+{
+    <span class="keyword">return</span> EnumerableWhere&lt;EnumerableType, Predicate&gt;(en, were.p);
+}
+
+<span class="comment">//primary
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> From, <span class="keyword">class</span> To&gt; <span class="keyword">struct</span> ConvertType;
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> ClassType, <span class="keyword">class</span> DataType&gt;
+<span class="keyword">struct</span> ConvertDataMemberType
+{
+    <span class="keyword">typedef</span> ClassType From;
+    <span class="keyword">typedef</span> DataType To;
+
+    DataType ClassType::*m_p;
+
+    ConvertDataMemberType(DataType ClassType::*p) : m_p(p) {}
+
+    To <span class="keyword">operator</span>()(<span class="keyword">const</span> From&amp; from) <span class="keyword">const</span> {
+        <span class="keyword">return</span> from.*m_p;
+    }
+};
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> AnyConverter&gt;
+AnyConverter Select(<span class="keyword">const</span> AnyConverter&amp; c) { <span class="keyword">return</span> c; }
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> ClassType, <span class="keyword">class</span> DataType&gt;
+ConvertDataMemberType&lt;ClassType, DataType&gt; Select(DataType ClassType::*p)
+{
+    <span class="keyword">return</span> ConvertDataMemberType&lt;ClassType, DataType&gt;(p);
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> EnumerableType, <span class="keyword">class</span> ConvertType&gt;
+EnumerableSelect&lt;EnumerableType, ConvertType&gt;
+<span class="keyword">operator</span> &gt;&gt; (<span class="keyword">const</span> ConvertType&amp; converter, <span class="keyword">const</span> EnumerableType&amp; en)
+{
+    <span class="keyword">return</span> EnumerableSelect&lt;EnumerableType, ConvertType&gt;(en, converter);
+}
+
+<span class="keyword">struct</span> Point
+{
+    <span class="keyword">int</span> x;
+    <span class="keyword">int</span> y;
+    Point(<span class="keyword">int</span> xx, <span class="keyword">int</span> yy) : x(xx), y(yy) {}
+};
+
+
+<span class="keyword">int</span> main()
+{
+    std::<span class="keyword2">vector</span>&lt;Point&gt; v;
+    v.push_back(Point(<span class="number">1</span>, <span class="number">1</span>));
+    v.push_back(Point(<span class="number">2</span>, <span class="number">1</span>));
+    v.push_back(Point(<span class="number">3</span>, <span class="number">1</span>));
+
+    <span class="keyword">auto</span> en1 = From(v);
+    <span class="keyword">while</span> (en1.Next())
+        cout &lt;&lt; en1.Current().x &lt;&lt; <span class="string">&quot;, &quot;</span>;
+
+    cout &lt;&lt; endl;
+
+    <span class="keyword">auto</span> en = Select(&amp;Point::x) &gt;&gt; 
+                        From(v) &gt;&gt;
+                        Where([](<span class="keyword">int</span> i){ <span class="keyword">return</span> i &lt; <span class="number">3</span>; });
+
+    <span class="keyword">while</span> (en.Next())
+        cout &lt;&lt; en.Current() &lt;&lt; <span class="string">&quot;, &quot;</span>;
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

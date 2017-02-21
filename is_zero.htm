@@ -1,0 +1,103 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<h3>is_zero</h3>
+
+<p>Returns true if all digits are zero. Otherwise return false</p>
+
+<hr>
+
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> It&gt;
+<span class="keyword">bool</span> is_zero(It first, It last);
+</pre>
+
+
+<hr>
+<h3>Sample</h3>
+<pre>
+         {1}     -&gt; false
+            base
+
+         {0}     -&gt; true
+            base
+
+   {0, 0, 0}     -&gt; true
+            base
+
+{0, 0, 1, 2}     -&gt; false
+            base
+
+   {1, 1, 1}     -&gt; false
+            base
+</pre>
+<hr>
+
+<h3>Sample</h3>
+<pre>
+<span class="keyword">void</span> is_zero_test()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+    <span class="keyword">int</span> a[] = { <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> };
+    assert(is_zero(begin(a), end(a)) == <span class="keyword">true</span>);
+
+    <span class="keyword">int</span> b[] = { <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span> };
+    assert(is_zero(begin(b), end(b)) == <span class="keyword">false</span>);
+    
+    <span class="keyword">int</span> c[] = { <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span> };
+    assert(is_zero(begin(c), end(c)) == <span class="keyword">false</span>);
+
+    <span class="keyword">int</span> d[] = { <span class="number">0</span> };
+    assert(is_zero(begin(d), end(d)) == <span class="keyword">true</span>);
+
+    <span class="keyword">int</span> e[] = { <span class="number">1</span> };
+    assert(is_zero(begin(e), end(e)) == <span class="keyword">false</span>);        
+}
+</pre>
+
+<hr>
+<h3>Implementation</h3>
+<pre>
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> It&gt;
+<span class="keyword">bool</span> is_zero(It first, It last)
+{	
+  <span class="keyword">for</span> (; first != last; ++first)
+    <span class="keyword">if</span> (*first != <span class="number">0</span>)
+      <span class="keyword">return</span> <span class="keyword">false</span>;
+  <span class="keyword">return</span> <span class="keyword">true</span>;
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

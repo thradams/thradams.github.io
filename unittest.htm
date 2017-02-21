@@ -1,0 +1,881 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2> Simple Unit Test Framework for C++</h2>
+
+<p>This is a simple unit test (header only) framework that helps to registry and call unit test functions.</p>
+
+<p>A Visual C++ project Wizard is included to make faster and easy to generate new Unit Tests projects.</p>
+
+<p>Features: </p>
+
+<ul>
+<li> Custom Report. A console report is included as sample </li>
+<li> Extensible in many ways </li>
+<li> Simple and easy to use</li>
+<li> Grouped (Fixtures) or single tests </li>
+<li> Time calculation </li>
+<li> Many useful Asserts</li>
+<li> Handles windows structured exceptions </li>
+<li> Visual C++ Wizard included</li>
+</ul>
+
+<p>Download the wizard for Visual C++ </p>
+
+<p><a href="download">UnitTestWizard.zip</a></p>
+
+<h2>Instructions:</h2>
+
+<h1> Unzip the file.</h1>
+<h1> Run the Appropriate setup: setup90 (VC++ 2009) or setup90x (VC++2009 express) or setup80x (VC++ 2005 express) or setup80 (VC++ 2005)</h1>
+<h1> Run the VC++ and go to the New project menu. The entry UnitTestWizard will be there is the installation was successful.</h1>
+
+<h3>Documentation</h3>
+
+<p>To make a simple test, here is what you do:Create a function test with no arguments, for instance:</p>
+<pre>
+TEST_FUNCTION(TestOne)()
+{
+}
+</pre>
+
+
+
+
+<p>At this point this function will always succeeded. To check values you can use the Assert function.</p>
+<pre>
+TEST_FUNCTION(TestOne)()
+{
+   <span class="keyword">int</span> a = <span class="number">2</span>;
+   <span class="keyword">int</span> b = <span class="number">2</span>;
+   UnitTest::AreEqual(a, b);
+}
+</pre>
+
+
+<p>In case of failure the Assert will abort this test and write a diagnostic. (Also: IsTrue, IsFalse, AreNotEqual etc...)You can implement your report, or use a existing one, for instance ConsoleReport.</p>
+
+<p>To run all the tests all you need to do is to call the function RunAll.</p>
+<pre>
+<span class="keyword">int</span> main()
+{
+  UnitTest::ConsoleReport rep;
+  UnitTest::RunAll(rep);
+}
+</pre>
+
+<p>You also can group a set of functions and use a test fixtureThe group is defined by a common argument between functions. For instance:</p>
+<pre>
+
+<span class="keyword">class</span> Group1
+{
+  <span class="keyword">int</span> a;
+  <span class="keyword">int</span> b;
+
+<span class="keyword">public</span>:
+    Group1()
+    {
+      a = <span class="number">1</span>;
+      b = <span class="number">1</span>;
+    }
+    ~Group1()
+    {
+    }
+    
+    <span class="keyword">void</span> Test1()
+    {
+      AreEqual(a, b);
+    }
+
+    <span class="keyword">void</span> Test2()
+    {
+      IsTrue_(a + b == <span class="number">4</span>);
+    }
+};
+GROUP_TEST_ENTRY(Test1, Group1);
+GROUP_TEST_ENTRY(Test2, Group1);
+</pre>
+
+
+<p>Here, TestOne and TestTwo are tests from the same group. The class used as an argument can be used as a tag, or it can hold some variables for your test.</p>
+
+<p>The default constructor of Group1 will be called before the first test function of this group and the destructor will be called after the last function called in this this group. </p>
+
+<p>You can run test groups separately like this:</p>
+
+<pre>
+RunGroup(report, L<span class="string">&quot;Group1&quot;</span>);
+</pre>
+
+
+
+
+<h3>Source code</h3>
+
+<p>unittest.h</p>
+
+<pre>
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// www.thradams.com
+</span><span class="comment">// http://www.thradams.com/codeblog/myunittest3.htm
+</span><span class="comment">// Version: 21 July 2009
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">#ifndef</span> __TRA_UNITTEST_H_
+<span class="keyword">#define</span> __TRA_UNITTEST_H_
+
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;ctime&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>&gt;
+<span class="keyword">#include</span> &lt;algorithm&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">#ifdef</span> _WIN32
+<span class="keyword">#include</span> &lt;windows.h&gt;
+<span class="comment">//comment this line to disable windows structured exceptions
+</span><span class="comment">//Project options must be: Yes With SEH Exceptions (/EHa)
+</span><span class="keyword">#define</span> _TRA_USE_STRUCTURED_EXCEPTIONS_
+<span class="keyword">#endif</span>
+
+
+<span class="keyword">namespace</span> UnitTest
+{
+    <span class="keyword">typedef</span> std::<span class="keyword2">wstring</span> String;
+
+    <span class="keyword">enum</span> TestResult
+    {
+        TestResultPassed,
+        TestResultFailed,
+        TestResultCanceled,
+    };
+
+    <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keyword">wchar_t</span>* GetTestResultMsg(TestResult r)
+    {
+        <span class="keyword">switch</span> (r)
+        {
+            <span class="keyword">case</span> TestResultPassed:
+                <span class="keyword">return</span> L<span class="string">&quot;Passed&quot;</span>;
+            <span class="keyword">case</span> TestResultFailed:
+                <span class="keyword">return</span> L<span class="string">&quot;Failed&quot;</span>;
+            <span class="keyword">case</span> TestResultCanceled:
+                <span class="keyword">return</span> L<span class="string">&quot;Canceled&quot;</span>;
+            <span class="keyword">default</span>:
+                <span class="keyword">break</span>;
+        }
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+
+    <span class="keyword">namespace</span> Detail
+    {
+        <span class="keyword">template</span>&lt;<span class="keyword">int</span> max&gt;
+        String MakeString(<span class="keyword">const</span> <span class="keyword">char</span>* psz)
+        {
+            size_t origsize = strlen(psz) + <span class="number">1</span>;
+            size_t convertedChars = <span class="number">0</span>;
+            <span class="keyword">wchar_t</span> wcstring[max];
+            mbstowcs(wcstring, psz, max);
+            <span class="keyword">return</span> String(wcstring);
+        }
+
+        <span class="keyword">inline</span> <span class="keyword">void</span> FindReplace(String&amp; in_this_string,
+                                <span class="keyword">const</span> String&amp; find,
+                                <span class="keyword">const</span> String&amp; replace)
+        {
+            String::size_type pos = <span class="number">0</span>;
+            <span class="keyword">while</span> (String::npos != (pos = in_this_string.find(find, pos)))
+            {
+                in_this_string.replace(pos, find.length(), replace);
+                pos += replace.length();
+            }
+        }
+
+<span class="keyword">#ifdef</span> _WIN32
+        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keyword">wchar_t</span> * GetExceptionCodeMsg(<span class="keyword">unsigned</span> <span class="keyword">int</span> e)
+        {
+            <span class="keyword">switch</span> (e)
+            {
+                <span class="keyword">case</span> EXCEPTION_ACCESS_VIOLATION:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to read from or write to a virtual address for which it does &quot;</span>
+                           L<span class="string">&quot;not have access.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to access an array element that is out of bounds, &quot;</span>
+                           L<span class="string">&quot;and the underlying hardware supports bounds checking.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_BREAKPOINT:
+                    <span class="keyword">return</span> L<span class="string">&quot;A breakpoint is encountered.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_DATATYPE_MISALIGNMENT:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to read or write data that is misaligned &quot;</span>
+                           L<span class="string">&quot;on hardware that does not provide alignment.&quot;</span>
+                           L<span class="string">&quot; For example, 16-bit values must be aligned on 2-byte boundaries, &quot;</span>
+                           L<span class="string">&quot;32-bit values on 4-byte boundaries, and so on.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_DENORMAL_OPERAND:
+                    <span class="keyword">return</span> L<span class="string">&quot;One of the operands in a floating point operation is denormal.&quot;</span>
+                           L<span class="string">&quot; A denormal value is one that is too small to represent as a &quot;</span>
+                           L<span class="string">&quot;standard floating point value.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_DIVIDE_BY_ZERO:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to divide a floating point value by a floating &quot;</span>
+                           L<span class="string">&quot;point divisor of 0 (zero).&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_INEXACT_RESULT:
+                    <span class="keyword">return</span> L<span class="string">&quot;The result of a floating point operation cannot be represented exactly &quot;</span>
+                           L<span class="string">&quot;as a decimal fraction.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_INVALID_OPERATION:
+                    <span class="keyword">return</span> L<span class="string">&quot;A floating point exception that is not included in this list.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_OVERFLOW:
+                    <span class="keyword">return</span> L<span class="string">&quot;The exponent of a floating point operation is greater than &quot;</span>
+                           L<span class="string">&quot;the magnitude allowed by the corresponding type.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_STACK_CHECK:
+                    <span class="keyword">return</span> L<span class="string">&quot;The stack has overflowed or underflowed, because of &quot;</span>
+                           L<span class="string">&quot;a floating point operation.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_FLT_UNDERFLOW:
+                    <span class="keyword">return</span> L<span class="string">&quot;The exponent of a floating point operation is less than the&quot;</span>
+                           L<span class="string">&quot; magnitude allowed by the corresponding type.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_GUARD_PAGE:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread accessed memory allocated with the PAGE_GUARD modifier.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_ILLEGAL_INSTRUCTION:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread tries to execute an invalid instruction.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_IN_PAGE_ERROR:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread tries to access a page that is not present,&quot;</span>
+                           L<span class="string">&quot; and the system is unable to load the page.&quot;</span>
+                           L<span class="string">&quot; For example, this exception might occur if a network &quot;</span>
+                           L<span class="string">&quot;connection is lost while running a program over a network.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_INT_DIVIDE_BY_ZERO:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to divide an integer value &quot;</span>
+                           L<span class="string">&quot;by an integer divisor of 0 (zero).&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_INT_OVERFLOW:
+                    <span class="keyword">return</span> L<span class="string">&quot;The result of an integer operation causes a carry &quot;</span>
+                           L<span class="string">&quot;out of the most significant bit of the result.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_INVALID_DISPOSITION:
+                    <span class="keyword">return</span> L<span class="string">&quot;An exception handler returns an invalid disposition &quot;</span>
+                           L<span class="string">&quot;to the exception dispatcher. Programmers using a high-level &quot;</span>
+                           L<span class="string">&quot;language such as C should never encounter this exception.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_INVALID_HANDLE:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread used a handle to a kernel object that was &quot;</span>
+                           L<span class="string">&quot;invalid (probably because it had been closed.)&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_NONCONTINUABLE_EXCEPTION:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to continue execution after a &quot;</span>
+                           L<span class="string">&quot;non-continuable exception occurs.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_PRIV_INSTRUCTION:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread attempts to execute an instruction with &quot;</span>
+                           L<span class="string">&quot;an operation that is not allowed in the current computer mode.&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_SINGLE_STEP:
+                    <span class="keyword">return</span> L<span class="string">&quot;A trace trap or other single instruction mechanism signals that &quot;</span>
+                           L<span class="string">&quot;one instruction is executed&quot;</span>;
+                <span class="keyword">case</span> EXCEPTION_STACK_OVERFLOW:
+                    <span class="keyword">return</span> L<span class="string">&quot;The thread uses up its stack&quot;</span>;
+                <span class="keyword">default</span>:
+                    <span class="keyword">break</span>;
+            }
+            <span class="keyword">return</span> <span class="number">0</span>;
+        }
+<span class="keyword">#else</span>
+        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keyword">wchar_t</span>* GetExceptionCodeMsg(<span class="keyword">unsigned</span> <span class="keyword">int</span> e)
+        {
+            <span class="keyword">return</span> L<span class="string">&quot;&quot;</span>;
+        }
+<span class="keyword">#endif</span> <span class="comment">//_WIN32
+</span>
+        <span class="keyword">class</span> WinStructuredException
+        {
+            <span class="keyword">unsigned</span> <span class="keyword">int</span> m_Code;
+            WinStructuredException();
+        <span class="keyword">public</span>:
+            WinStructuredException(<span class="keyword">unsigned</span> <span class="keyword">int</span> n) : m_Code(n) {}
+            <span class="keyword">unsigned</span> <span class="keyword">int</span> GetCode() <span class="keyword">const</span>
+            {
+                <span class="keyword">return</span> m_Code;
+            }
+        };
+
+        <span class="keyword">struct</span> ScopeSETranslator
+        {
+<span class="keyword">#ifdef</span> _TRA_USE_STRUCTURED_EXCEPTIONS_
+            _se_translator_function m_OldSE;
+
+            <span class="keyword">static</span> <span class="keyword">void</span> trans_func(<span class="keyword">unsigned</span> <span class="keyword">int</span> u, PEXCEPTION_POINTERS)
+            {
+                <span class="keyword">throw</span> WinStructuredException(u);
+            }
+
+            ScopeSETranslator()
+            {
+                m_OldSE = _set_se_translator(&amp;trans_func);
+            }
+
+            ~ScopeSETranslator()
+            {
+                _set_se_translator(m_OldSE);
+            }
+<span class="keyword">#else</span>
+            ScopeSETranslator() {}
+            ~ScopeSETranslator() {}
+<span class="keyword">#endif</span> <span class="comment">// _TRA_USE_STRUCTURED_EXCEPTIONS_
+</span>        };
+
+        <span class="keyword">class</span> TestResultException
+        {
+        <span class="keyword">public</span>:
+            <span class="keyword">int</span> m_SourceLine;
+            String m_FileName;
+            String m_Message;
+            TestResult m_TestResult;
+            TestResultException(TestResult r,
+                                <span class="keyword">const</span> String&amp; message,
+                                <span class="keyword">const</span> String&amp; f,
+                                <span class="keyword">int</span> l)
+            {
+                m_Message = message;
+                m_FileName = f;
+                m_SourceLine = l;
+                m_TestResult = r;
+            }
+        };
+    } <span class="comment">//namespace Detail
+</span>
+    <span class="comment">//
+</span>    <span class="comment">//Assertions to be used inside the test functions
+</span>    <span class="comment">//
+</span>
+    <span class="keyword">inline</span> <span class="keyword">void</span> Cancel(<span class="keyword">const</span> String&amp; message = L<span class="string">&quot;&quot;</span>,
+                       <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                       <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        <span class="keyword">throw</span> Detail::TestResultException(TestResultCanceled, message, file, line);
+    }
+
+    <span class="keyword">inline</span> <span class="keyword">void</span> Assert(<span class="keyword">bool</span> condition,
+                       <span class="keyword">const</span> String&amp; message = L<span class="string">&quot;assertion failed&quot;</span>,
+                       <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                       <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        <span class="keyword">if</span> (!condition)
+            <span class="keyword">throw</span> Detail::TestResultException(TestResultFailed, message, file, line);
+    }
+
+    <span class="keyword">inline</span> <span class="keyword">void</span> IsTrue(<span class="keyword">bool</span> condition,
+                       <span class="keyword">const</span> String&amp; message = L<span class="string">&quot;assertion IsTrue failed&quot;</span>,
+                       <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                       <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        UnitTest::Assert(condition, message, file, line);
+    }
+
+    <span class="keyword">inline</span> <span class="keyword">void</span> Fail(<span class="keyword">const</span> String&amp; message = L<span class="string">&quot;Test failed&quot;</span>,
+                     <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                     <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        UnitTest::Assert(<span class="keyword">false</span>, message, file, line);
+    }
+
+    <span class="keyword">inline</span> <span class="keyword">void</span> IsFalse(<span class="keyword">bool</span> condition,
+                        <span class="keyword">const</span> String&amp; message = L<span class="string">&quot;assertion IsFalse failed&quot;</span>,
+                        <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                        <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        UnitTest::Assert(!condition, message, file, line);
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+    <span class="keyword">inline</span> <span class="keyword">void</span> AreEqual(<span class="keyword">const</span> T1&amp; v1,
+                         <span class="keyword">const</span> T2&amp; v2,
+                         <span class="keyword">const</span> String&amp; message = L<span class="string">&quot;assertion AreEqual failed&quot;</span>,
+                         <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                         <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        UnitTest::Assert(v1 == v2, message, file, line);
+    }
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T1, <span class="keyword">class</span> T2&gt;
+    <span class="keyword">inline</span> <span class="keyword">void</span> AreNotEqual(<span class="keyword">const</span> T1&amp; v1,
+                            <span class="keyword">const</span> T2&amp; v2,
+                            <span class="keyword">const</span> String&amp; message = L<span class="string">&quot;assertion AreNotEqual failed&quot;</span>,
+                            <span class="keyword">const</span> String&amp; file = L<span class="string">&quot;&quot;</span>,
+                            <span class="keyword">int</span> line = <span class="number">0</span>)
+    {
+        UnitTest::Assert(v1 != v2, message, file, line);
+    }
+
+<span class="comment">// Auto generate comments, file and line numbers
+</span><span class="keyword">#define</span> Assert_(x) UnitTest::Assert((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> IsTrue_(x) UnitTest::IsTrue((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> IsFalse_(x) UnitTest::IsFalse((x), L#x, __WFILE__, __LINE__)
+<span class="keyword">#define</span> AreEqual_(x, y) UnitTest::AreEqual((x), (y), L<span class="string">&quot;AreEqual &quot;</span> L#x L<span class="string">&quot;, &quot;</span> L#y, __WFILE__, __LINE__)
+<span class="keyword">#define</span> AreNotEqual_(x, y) UnitTest::AreNotEqual((x), (y), L<span class="string">&quot;AreNotEqual &quot;</span> L#x L<span class="string">&quot;, &quot;</span> L#y, __WFILE__, __LINE__)
+<span class="keyword">#define</span> Fail_() UnitTest::Fail(L<span class="string">&quot;Test Failed&quot;</span>, __WFILE__, __LINE__)
+
+    <span class="keyword">struct</span> GroupInfo
+    {
+        <span class="keyword">virtual</span> ~GroupInfo() {}
+        <span class="keyword">virtual</span> <span class="keyword">void</span> Call() = <span class="number">0</span>;
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupDataCreate() {}
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupDataDelete() {}
+        <span class="keyword">virtual</span> String GetGroupName()
+        {
+            <span class="keyword">return</span> L<span class="string">&quot;ungrouped&quot;</span>;
+        }
+    };
+
+    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+    <span class="keyword">struct</span> GroupInfoImp : <span class="keyword">public</span> GroupInfo
+    {
+        <span class="keyword">typedef</span> <span class="keyword">void</span> (*PF)(T&amp;);
+        PF m_Function;
+        String m_Name;
+
+        <span class="keyword">static</span> T * &amp; GetDataPtr()
+        {
+            <span class="keyword">static</span> T * data = <span class="number">0</span>;
+            <span class="keyword">return</span> data;
+        }
+
+        <span class="keyword">virtual</span> String GetGroupName()
+        {
+            <span class="keyword">return</span> m_Name;
+        }
+
+        GroupInfoImp(PF f) : m_Function(f)
+        {
+          m_Name = Detail::MakeString&lt;<span class="number">200</span>&gt;(<span class="keyword">typeid</span>(T).name());
+          Detail::FindReplace(m_Name, L<span class="string">&quot;struct &quot;</span>, L<span class="string">&quot;&quot;</span>);
+          Detail::FindReplace(m_Name, L<span class="string">&quot;class &quot;</span>, L<span class="string">&quot;&quot;</span>);
+        }
+
+        ~GroupInfoImp()
+        {
+        }
+
+        <span class="keyword">virtual</span> <span class="keyword">void</span> Call()
+        {
+            (*m_Function)(*GetDataPtr());
+        }
+
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupDataCreate()
+        {
+            <span class="keyword">if</span> (GetDataPtr() == <span class="number">0</span>)
+            {
+                GetDataPtr() = <span class="keyword">new</span> T();
+            }
+        }
+
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupDataDelete()
+        {
+            <span class="keyword">delete</span> GetDataPtr();
+            GetDataPtr() = <span class="number">0</span>;
+        }
+    };
+
+    <span class="keyword">struct</span> GroupInfoNone: <span class="keyword">public</span> GroupInfo
+    {
+        <span class="keyword">typedef</span> <span class="keyword">void</span> (*PF)(<span class="keyword">void</span>);
+        PF m_Function;
+
+        GroupInfoNone(PF f) : m_Function(f)
+        {
+        }
+        <span class="keyword">virtual</span> <span class="keyword">void</span> Call()
+        {
+            (*m_Function)();
+        }
+    };
+
+    <span class="keyword">struct</span> TestEntry;
+    <span class="keyword">inline</span> std::<span class="keyword2">vector</span>&lt;TestEntry*&gt; &amp; GetTestEntryList()
+    {
+        <span class="keyword">static</span> std::<span class="keyword2">vector</span>&lt;TestEntry*&gt; tests;
+        <span class="keyword">return</span> tests;
+    }
+
+    <span class="keyword">struct</span> TestEntry
+    {
+        String m_TestName;
+        String m_Source;
+        String m_Message;
+        <span class="keyword">int</span> m_SourceLine;
+        TestResult m_Result;
+        std::clock_t m_StartTime;
+        std::clock_t m_EndTime;
+        std::auto_ptr&lt;GroupInfo&gt; m_GroupInfo;
+
+        TestEntry(<span class="keyword">void</span> (*f)(<span class="keyword">void</span>),
+                  <span class="keyword">const</span> String&amp; name,
+                  <span class="keyword">const</span> String&amp; group,
+                  <span class="keyword">const</span> String&amp; source,
+                  <span class="keyword">int</span> line)
+        {
+            m_GroupInfo.reset(<span class="keyword">new</span> GroupInfoNone(f));
+            m_Result = TestResultFailed;
+            m_Source = source;
+            m_SourceLine = line;
+            m_TestName = name;
+            GetTestEntryList().push_back(<span class="keyword">this</span>);
+            m_StartTime = std::clock();
+            m_EndTime = m_StartTime;
+        }
+
+        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+        TestEntry(<span class="keyword">void</span> (*f)(T&amp;),
+                  <span class="keyword">const</span> String&amp; name,
+                  <span class="keyword">const</span> String&amp; group,
+                  <span class="keyword">const</span> String&amp; source,
+                  <span class="keyword">int</span> line)
+        {
+            m_GroupInfo.reset(<span class="keyword">new</span> GroupInfoImp&lt;T&gt;(f));
+            m_Result = TestResultFailed;
+            m_Source = source;
+            m_SourceLine = line;
+            m_TestName = name;
+            GetTestEntryList().push_back(<span class="keyword">this</span>);
+            m_StartTime = std::clock();
+            m_EndTime = m_StartTime;
+        }
+
+        <span class="keyword">bool</span> Failed() <span class="keyword">const</span>
+        {
+            <span class="keyword">return</span> m_Result == TestResultFailed;
+        }
+
+        <span class="keyword">bool</span> <span class="keyword">operator</span> &lt; (<span class="keyword">const</span> TestEntry &amp; te) <span class="keyword">const</span>
+        {
+            <span class="keyword">return</span> m_GroupInfo-&gt;GetGroupName() &lt; te.m_GroupInfo-&gt;GetGroupName();
+        }
+
+        <span class="keyword">int</span> GetDurationMs()
+        {
+            <span class="keyword">return</span> (<span class="keyword">int</span>)((m_EndTime - m_StartTime) / CLOCKS_PER_SEC * <span class="number">1000.0</span>);
+        }
+    };
+
+<span class="keyword">#define</span> WIDEN2(x) L ## x
+<span class="keyword">#define</span> WIDEN(x) WIDEN2(x)
+<span class="keyword">#define</span> __WFILE__ WIDEN(__FILE__)
+
+<span class="keyword">#define</span> TEST_ENTRY(<span class="keyword">class</span>)\
+  <span class="keyword">static</span> UnitTest::TestEntry __objMap_##class(&amp;<span class="keyword">class</span>, L#class, L<span class="string">&quot;&quot;</span>, __WFILE__, __LINE__);
+
+<span class="keyword">#define</span> GROUP_TEST_ENTRY(F, groupname) \
+<span class="keyword">inline</span> <span class="keyword">void</span> F(groupname&amp; groupname_arg) { groupname_arg.F(); } \
+TEST_ENTRY(F)
+
+<span class="keyword">#define</span> TEST_FUNCTION(X) <span class="keyword">void</span> X(); TEST_ENTRY(X); <span class="keyword">void</span> X
+
+    <span class="keyword">class</span> Report
+    {
+        <span class="comment">// I will count this for you
+</span>        <span class="keyword">int</span> m_PassedCount;
+        <span class="keyword">int</span> m_FailedCount;
+        <span class="keyword">int</span> m_CanceledCount;
+
+        <span class="comment">//Override this
+</span>        <span class="keyword">virtual</span> <span class="keyword">void</span> ReportResultCore(TestEntry&amp;)
+        {
+        }
+
+        <span class="comment">//Override this
+</span>        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupEnterCore(GroupInfo*)
+        {
+        }
+
+        <span class="comment">//Override this
+</span>        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupExitCore(GroupInfo*)
+        {
+        }
+
+        <span class="keyword">void</span> DoCount(TestEntry&amp; test)
+        {
+            <span class="keyword">switch</span> (test.m_Result)
+            {
+                <span class="keyword">case</span> TestResultPassed:
+                    m_PassedCount++;
+                    <span class="keyword">break</span>;
+                <span class="keyword">case</span> TestResultFailed:
+                    m_FailedCount++;
+                    <span class="keyword">break</span>;
+                <span class="keyword">case</span> TestResultCanceled:
+                    m_CanceledCount++;
+                    <span class="keyword">break</span>;
+            }
+        }
+
+    <span class="keyword">public</span>:
+        Report()
+        {
+            m_PassedCount = <span class="number">0</span>;
+            m_FailedCount = <span class="number">0</span>;
+            m_CanceledCount = <span class="number">0</span>;
+        }
+
+        <span class="keyword">int</span> GetPassedCount() <span class="keyword">const</span>
+        {
+            <span class="keyword">return</span> m_PassedCount;
+        }
+
+        <span class="keyword">int</span> GetFailedCount() <span class="keyword">const</span>
+        {
+            <span class="keyword">return</span> m_FailedCount;
+        }
+
+        <span class="keyword">int</span> GetCanceledCount() <span class="keyword">const</span>
+        {
+            <span class="keyword">return</span> m_CanceledCount;
+        }
+
+        <span class="keyword">void</span> GroupEnter(GroupInfo* p)
+        {
+            GroupEnterCore(p);
+        }
+
+        <span class="keyword">void</span> GroupExit(GroupInfo* p)
+        {
+            GroupExitCore(p);
+        }
+
+        <span class="keyword">void</span> ReportResult(TestEntry&amp; test)
+        {
+            DoCount(test);
+            ReportResultCore(test);
+        }
+    };
+
+    <span class="comment">//You can customize our own report like this
+</span>    <span class="keyword">class</span> ConsoleReport : <span class="keyword">public</span> UnitTest::Report
+    {
+        String m_Tab;
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupEnterCore(GroupInfo* p)
+        {
+            m_Tab = L<span class="string">&quot;  &quot;</span>;
+            std::wcout &lt;&lt; p-&gt;GetGroupName() &lt;&lt; std::endl;
+        }
+
+        <span class="keyword">virtual</span> <span class="keyword">void</span> GroupExitCore(GroupInfo* p)
+        {
+            m_Tab = L<span class="string">&quot;&quot;</span>;
+            std::wcout &lt;&lt; std::endl;
+        }
+
+        <span class="keyword">virtual</span> <span class="keyword">void</span> ReportResultCore(TestEntry&amp; test)
+        {
+            std::wcout &lt;&lt; m_Tab;
+            std::wcout &lt;&lt; test.m_TestName &lt;&lt; <span class="string">&quot; &quot;</span>;
+            std::wcout &lt;&lt; GetTestResultMsg(test.m_Result) &lt;&lt; <span class="string">&quot; (&quot;</span>;
+            std::wcout &lt;&lt; test.GetDurationMs() &lt;&lt; <span class="string">&quot; ms) &quot;</span>;
+            std::wcout &lt;&lt; test.m_Message &lt;&lt; std::endl;
+        }
+    };
+
+    <span class="keyword">namespace</span> Detail
+    {
+        <span class="keyword">inline</span> TestResult RunTest(TestEntry* pEntry, Report&amp; rep)
+        {
+            pEntry-&gt;m_Result = TestResultFailed;
+            <span class="keyword">try</span>
+            {
+                ScopeSETranslator st;
+                pEntry-&gt;m_StartTime = std::clock();
+                pEntry-&gt;m_EndTime = pEntry-&gt;m_StartTime;
+                pEntry-&gt;m_GroupInfo-&gt;Call();
+                pEntry-&gt;m_EndTime = std::clock();
+                pEntry-&gt;m_Result = TestResultPassed;
+                rep.ReportResult(*pEntry);
+            }
+            <span class="keyword">catch</span> (<span class="keyword">const</span> std::exception&amp; e)
+            {
+                pEntry-&gt;m_EndTime = std::clock();
+                String msg = L<span class="string">&quot;Test aborted by unhandled std::exception&quot;</span>;
+                msg += L<span class="string">&quot;\n&quot;</span>;
+                msg += MakeString&lt;<span class="number">400</span>&gt;(e.what());
+                pEntry-&gt;m_Message = msg;
+                rep.ReportResult(*pEntry);
+            }
+            <span class="keyword">catch</span> (<span class="keyword">const</span> TestResultException&amp; e)
+            {
+                pEntry-&gt;m_EndTime = std::clock();
+                pEntry-&gt;m_Result = e.m_TestResult;
+                pEntry-&gt;m_Message = e.m_Message;
+                rep.ReportResult(*pEntry);
+            }
+            <span class="keyword">catch</span> (<span class="keyword">const</span> WinStructuredException&amp; e)
+            {
+                pEntry-&gt;m_EndTime = std::clock();
+                String msg = L<span class="string">&quot;Test aborted by SE exception&quot;</span>;
+                msg += GetExceptionCodeMsg(e.GetCode());
+                pEntry-&gt;m_Message = msg;
+                rep.ReportResult(*pEntry);
+            }
+            <span class="keyword">catch</span> (...)
+            {
+                pEntry-&gt;m_EndTime = std::clock();
+                pEntry-&gt;m_Message =  L<span class="string">&quot;Test aborted by unhandled exception&quot;</span>;
+                rep.ReportResult(*pEntry);
+            }
+            <span class="keyword">return</span> pEntry-&gt;m_Result;
+        }
+
+        <span class="keyword">inline</span> <span class="keyword">bool</span> SortPred(TestEntry* pa, TestEntry *pb)
+        {
+            <span class="keyword">return</span> *pa &lt; *pb;
+        }
+
+        <span class="keyword">inline</span> <span class="keyword">void</span> Run(Report&amp; rep, <span class="keyword">const</span> String &amp; groupName, <span class="keyword">bool</span> runAll)
+        {
+            std::<span class="keyword2">vector</span>&lt;TestEntry*&gt; &amp;tests = GetTestEntryList();
+            std::sort(tests.begin(), tests.end(), SortPred);
+            <span class="keyword">bool</span> cancelGroup = <span class="keyword">true</span>;
+            String currentGroupName;
+            <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; tests.size(); i++)
+            {
+                TestEntry * pTestEntry = tests[i];
+                <span class="comment">// has the group changed?
+</span>                <span class="keyword">if</span> (i == <span class="number">0</span> || currentGroupName != pTestEntry-&gt;m_GroupInfo-&gt;GetGroupName())
+                {
+                    <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; !cancelGroup)
+                    {
+                        GroupInfo * pPreviousGroupInfo = tests[i - <span class="number">1</span>]-&gt;m_GroupInfo.get();
+                        pPreviousGroupInfo-&gt;GroupDataDelete();
+                        rep.GroupExit(pPreviousGroupInfo);
+                        cancelGroup = <span class="keyword">true</span>;
+                    }
+                    currentGroupName = pTestEntry-&gt;m_GroupInfo-&gt;GetGroupName();
+                    <span class="keyword">if</span> (runAll || currentGroupName == groupName)
+                    {
+                        ScopeSETranslator st;
+                        GroupInfo * pCurrentGroupInfo = pTestEntry-&gt;m_GroupInfo.get();
+                        <span class="keyword">try</span>
+                        {
+                            pCurrentGroupInfo-&gt;GroupDataCreate();
+                            cancelGroup = <span class="keyword">false</span>;
+                            rep.GroupEnter(pCurrentGroupInfo);
+                        }
+                        <span class="keyword">catch</span> (...)
+                        {
+                            cancelGroup = <span class="keyword">true</span>;
+                            std::wcout &lt;&lt; currentGroupName &lt;&lt; L<span class="string">&quot; canceled by unhandled exception&quot;</span> &lt;&lt; std::endl;
+                        }
+                    }
+                }
+                <span class="keyword">if</span> (!cancelGroup)
+                {
+                    TestResult res = RunTest(pTestEntry, rep);
+                }
+            }
+            <span class="keyword">if</span> (tests.size() &gt; <span class="number">0</span> &amp;&amp; !cancelGroup)
+            {
+                GroupInfo * pPreviousGroupInfo = tests.back()-&gt;m_GroupInfo.get();
+                pPreviousGroupInfo-&gt;GroupDataDelete();
+                rep.GroupExit(pPreviousGroupInfo);
+            }
+        }
+    } <span class="comment">//namespace Detail
+</span>
+    <span class="keyword">inline</span> <span class="keyword">void</span> RunAll(Report&amp; rep)
+    {
+        Detail::Run(rep, L<span class="string">&quot;&quot;</span>, <span class="keyword">true</span>);
+    }
+
+    <span class="keyword">inline</span> <span class="keyword">void</span> RunGroup(Report&amp; rep, <span class="keyword">const</span> String&amp; groupName)
+    {
+        Detail::Run(rep, groupName, <span class="keyword">false</span>);
+    }
+} <span class="comment">// namespace UnitTest
+</span>
+
+<span class="comment">//Sample of use:
+</span>
+<span class="comment">//#include &quot;unittest.h&quot;
+</span><span class="comment">//
+</span><span class="comment">//void TestOne()
+</span><span class="comment">//{
+</span><span class="comment">//   int a = 2;
+</span><span class="comment">//   int b = 2;
+</span><span class="comment">//   UnitTest::Assert(a == b);
+</span><span class="comment">//}
+</span><span class="comment">//TEST_ENTRY(TestOne)
+</span><span class="comment">//
+</span><span class="comment">//class Group1
+</span><span class="comment">//{
+</span><span class="comment">//public:
+</span><span class="comment">//  Group1() {}
+</span><span class="comment">//  ~Group1() {}
+</span><span class="comment">//};
+</span><span class="comment">//
+</span><span class="comment">//void Test1Group1(Group1&amp;){}
+</span><span class="comment">//TEST_ENTRY(Test1Group1)
+</span><span class="comment">//
+</span><span class="comment">//void Test2Group1(Group1&amp;){}
+</span><span class="comment">//TEST_ENTRY(Test2Group1)
+</span><span class="comment">//
+</span><span class="comment">//int main()
+</span><span class="comment">//{
+</span><span class="comment">//   UnitTest::ConsoleReport rep;
+</span><span class="comment">//   UnitTest::RunAll(rep);
+</span><span class="comment">//   return 0;
+</span><span class="comment">//}
+</span>
+<span class="comment">// OR
+</span>
+<span class="comment">//
+</span><span class="comment">//TEST_FUNCTION(TestOne)()
+</span><span class="comment">//{
+</span><span class="comment">//    int a = 2;
+</span><span class="comment">//    int b = 2;
+</span><span class="comment">//    AreEqual(a, b);
+</span><span class="comment">//    IsTrue(a + b == 4);
+</span><span class="comment">//}
+</span><span class="comment">//
+</span><span class="comment">//class Group1
+</span><span class="comment">//{
+</span><span class="comment">//public:
+</span><span class="comment">//    Group1(){}
+</span><span class="comment">//    ~Group1(){}
+</span><span class="comment">//    void Test1(){}
+</span><span class="comment">//    void Test2(){}
+</span><span class="comment">//};
+</span><span class="comment">//GROUP_TEST_ENTRY(Test1, Group1);
+</span><span class="comment">//GROUP_TEST_ENTRY(Test2, Group1);
+</span>
+
+<span class="keyword">#endif</span> <span class="comment">// __TRA_UNITTEST_H_
+</span>
+</pre>
+
+
+<h3>History</h3>
+
+<ul>
+<li>18 Jan 2011 Review</li>
+<li>26 January 2009 - Header file version 3 published </li>
+<li>20 July 2009 - VC++ Wizard Added</li>
+<li>21 July 2009 - New Macros to simplify</li>
+<li>22 July 2009 - Exceptions configured correctly into VC++ project</li>
+</ul>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

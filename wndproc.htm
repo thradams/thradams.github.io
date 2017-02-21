@@ -1,0 +1,211 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Technique to remove WndProc switches. (Windows message switch)</h2>
+
+<p>This post is for those who use window programming and WNDPROC.</p>
+
+<p>Ok, generally we don't need to write a message switch, because WTL, MFC do this for us. They use MACROS to hide the switch cases.</p>
+
+<p>However, if you are creating windows code without WTL/MFC maybe you will be interested in this solution.</p>
+
+<p>The idea is to map windows messages &quot;WM</p>
+
+<p>For instance, if the class has the function OnPaint, it means that the message WM</p>
+
+<p>Sample: \\wndprocsample.cpp</p>
+
+<pre>
+
+<span class="comment">// WndProc switch removal sample - Thiago R Adams - 2010
+</span><span class="comment">// http://www.thradams.com/
+</span>
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;wndprocsample.h&quot;</span>
+<span class="keyword">#include</span> &lt;windows.h&gt;
+
+<span class="comment">//Your class (no macros, no virtual, no base class)
+</span><span class="keyword">class</span> Doc
+{
+    HWND m_hWnd;
+<span class="keyword">public</span>:
+
+    Doc(HWND hWnd) : m_hWnd(hWnd)
+    {
+    }
+
+    <span class="keyword">void</span> OnCommand(DWORD dw, BOOL&amp; bHandled)
+    {
+        <span class="keyword">if</span> (dw == IDM_EXIT)
+        {
+            DestroyWindow(m_hWnd);
+            bHandled = TRUE;
+        }
+    }
+
+    <span class="keyword">void</span> OnPaint(HDC hdc)
+    {
+        ::TextOut(hdc, <span class="number">10</span>, <span class="number">10</span>, _T(<span class="string">&quot;Hello windows!&quot;</span>), <span class="number">14</span>);
+    }
+};
+
+<span class="keyword">int</span> APIENTRY _tWinMain(HINSTANCE hInstance,
+                       HINSTANCE hPrevInstance,
+                       LPTSTR    lpCmdLine,
+                       <span class="keyword">int</span>       nCmdShow)
+{
+    MSG msg;
+    HWND hWnd = CreateNewWindow(hInstance, TRUE);
+    
+    Doc doc(hWnd);
+    SetWindowDocument(hWnd, &amp;doc);
+    
+    <span class="comment">// Main message loop:
+</span>    <span class="keyword">while</span> (GetMessage(&amp;msg, NULL, <span class="number">0</span>, <span class="number">0</span>))
+    {
+        DispatchMessage(&amp;msg);
+    }
+    <span class="keyword">return</span> (<span class="keyword">int</span>) msg.wParam;
+}
+wndprocsample.h This code <span class="keyword">requires</span> VC++ extension VC++ __if_exists.
+
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">#include</span> <span class="string">&quot;resource.h&quot;</span>
+
+
+
+ATOM MyRegisterClass(HINSTANCE hInstance)
+{
+    WNDCLASSEX wcex;
+    wcex.cbSize = <span class="keyword">sizeof</span>(WNDCLASSEX);
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = DefWindowProc;
+    wcex.cbClsExtra     = <span class="number">0</span>;
+    wcex.cbWndExtra     = <span class="number">0</span>;
+    wcex.hInstance      = hInstance;
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WNDPROCSAMPLE));
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + <span class="number">1</span>);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_WNDPROCSAMPLE);
+    wcex.lpszClassName  = _T(<span class="string">&quot;sample&quot;</span>);
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    <span class="keyword">return</span> RegisterClassEx(&amp;wcex);
+}
+
+
+
+HWND CreateNewWindow(HINSTANCE hInstance,
+                     <span class="keyword">int</span> nCmdShow)
+{
+    MyRegisterClass(hInstance );
+    HWND hWnd = CreateWindow(_T(<span class="string">&quot;sample&quot;</span>), _T(<span class="string">&quot;Title&quot;</span>), WS_OVERLAPPEDWINDOW,
+                             CW_USEDEFAULT, <span class="number">0</span>, CW_USEDEFAULT, <span class="number">0</span>, NULL, NULL, hInstance, NULL);
+    <span class="keyword">if</span> (!hWnd)
+    {
+        <span class="keyword">return</span> NULL;
+    }
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
+    <span class="keyword">return</span> hWnd;
+}
+
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> GetWindowDocument(HWND hWnd, T**ppDoc)
+{
+    *ppDoc = (T*)((LONG_PTR)(::GetWindowLongPtrW(hWnd, GWLP_USERDATA)));
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+T* SetWindowDocument(HWND hWnd, T* pReceiver)
+{
+    LONG_PTR lptr = ::SetWindowLongPtrW(
+                        hWnd,
+                        GWLP_USERDATA,
+                        PtrToUlong(pReceiver));
+    T *pOldDoc = (T*)(LONG_PTR)(lptr);
+    LONG_PTR lptr2 = ::SetWindowLongPtrW(
+                         hWnd,
+                         GWLP_WNDPROC,
+                         (LONG_PTR)((WNDPROC) &amp; WindowsProcEx&lt;T&gt;));
+    ::ShowWindow(hWnd, TRUE);
+    ::UpdateWindow(hWnd);
+    ::InvalidateRect(hWnd, <span class="number">0</span>, <span class="number">0</span>);
+    <span class="keyword">return</span> pOldDoc;
+}
+
+
+<span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
+LRESULT CALLBACK WindowsProcEx(HWND hWnd,
+                               UINT message,
+                               WPARAM wParam,
+                               LPARAM lParam)
+{
+    T* pDoc = <span class="number">0</span>;
+    GetWindowDocument(hWnd, &amp;pDoc);
+    <span class="keyword">switch</span> (message)
+    {
+            __if_exists (T::OnCommand)
+            {
+            <span class="keyword">case</span> WM_COMMAND:
+            {
+                <span class="keyword">int</span> wmId = LOWORD(wParam);
+                BOOL bHandled = FALSE;
+                pDoc-&gt;OnCommand(wmId, bHandled);
+                <span class="keyword">if</span> (!bHandled)
+                    <span class="keyword">return</span> DefWindowProc(hWnd, message, wParam, lParam);
+                <span class="keyword">break</span>;
+            }
+        }
+        __if_exists (T::OnPaint)
+        {
+            <span class="keyword">case</span> WM_PAINT:
+            {
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hWnd, &amp;ps);
+                pDoc-&gt;OnPaint(hdc);
+                EndPaint(hWnd, &amp;ps);
+            }
+            <span class="keyword">break</span>;
+        }
+        <span class="keyword">case</span> WM_DESTROY:
+            PostQuitMessage(<span class="number">0</span>);
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>:
+            <span class="keyword">return</span> DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<p>See also: <a href="http://www.thradams.com/codeblog/guiexpress.htm">http://www.thradams.com/codeblog/guiexpress.htm</a>
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,288 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>Testing vector unique</p>
+
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;time.h&gt;
+
+<span class="keyword">const</span> size_t TOTAL = <span class="number">1000</span>;
+<span class="comment">//#define FRONT
+</span><span class="comment">//#define BACK
+</span><span class="keyword">#define</span> ALL
+
+<span class="keyword">struct</span> shape
+{
+    <span class="keyword">virtual</span> <span class="keyword">void</span> draw() = <span class="number">0</span>;
+    <span class="keyword">virtual</span> ~shape() {}
+};
+
+<span class="keyword">struct</span> box : <span class="keyword">public</span> shape
+{
+    <span class="keyword">int</span> w;  <span class="keyword">int</span> h;
+    <span class="keyword">virtual</span> <span class="keyword">void</span> draw() <span class="keyword">override</span>
+    {
+    }
+};
+
+<span class="keyword">void</span> f03()
+{
+    <span class="keyword">for</span> (size_t k = <span class="number">0</span>; k &lt; TOTAL; k++)
+    {
+        std::<span class="keyword2">vector</span>&lt;shape*&gt; shapes;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; TOTAL; i++)
+        {
+            shapes.emplace_back(<span class="keyword">new</span> box());
+        }
+
+<span class="keyword">#ifdef</span> ALL
+        <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; shapes.size(); i++)
+        {
+            <span class="keyword">delete</span> shapes[i];
+        }
+        shapes.clear();
+<span class="keyword">#else</span>
+        <span class="keyword">while</span> (!shapes.empty())
+        {
+<span class="keyword">#ifdef</span> FRONT
+            <span class="keyword">delete</span> shapes.front();
+            shapes.erase(shapes.begin());
+<span class="keyword">#endif</span>
+<span class="keyword">#ifdef</span> BACK
+            <span class="keyword">delete</span> shapes.back();
+            shapes.erase(shapes.end() - <span class="number">1</span>);
+<span class="keyword">#endif</span>
+        }
+<span class="keyword">#endif</span>    
+    }
+}
+
+<span class="keyword">void</span> f11()
+{
+    <span class="keyword">for</span> (size_t k = <span class="number">0</span>; k &lt; TOTAL; k++)
+    {
+        std::<span class="keyword2">vector</span>&lt;std::<span class="keyword2">unique_ptr</span>&lt;shape&gt;&gt; shapes;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; TOTAL; i++)
+        {
+            shapes.emplace_back(std::make_unique&lt;box&gt;());
+        }
+
+<span class="keyword">#ifdef</span> ALL
+        shapes.clear();
+<span class="keyword">#else</span>
+
+        <span class="keyword">while</span> (!shapes.empty())
+        {
+<span class="keyword">#ifdef</span> FRONT
+            shapes.erase(shapes.begin());
+<span class="keyword">#endif</span>
+<span class="keyword">#ifdef</span> BACK
+            shapes.erase(shapes.end() - <span class="number">1</span>);
+<span class="keyword">#endif</span>
+        }
+<span class="keyword">#endif</span>
+
+    }
+}
+
+
+<span class="keyword">void</span> destroy_shape(<span class="keyword">void</span>* p)
+{
+    shape * ps = (shape*)p;
+    <span class="keyword">delete</span> ps;
+}
+
+<span class="keyword">struct</span> vptrs
+{
+    <span class="keyword">void</span> ** data;
+    size_t size;
+    size_t capacity;
+};
+
+<span class="keyword">#define</span> INIT_VPTRS { <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span> }
+
+
+<span class="keyword">inline</span> <span class="keyword">int</span> vptrs_reserve(<span class="keyword">struct</span> vptrs* p, size_t nelements)
+{
+    <span class="keyword">int</span> r = <span class="number">0</span>;
+    <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+    {
+        <span class="keyword">void</span>** pnew = p-&gt;data;
+        pnew = (<span class="keyword">void</span>**)realloc(pnew, nelements * <span class="keyword">sizeof</span>(<span class="keyword">void</span>*));
+        <span class="keyword">if</span> (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = nelements;
+        }
+        <span class="keyword">else</span>
+        {
+            <span class="comment">/*sem memoria*/</span>
+            r = <span class="number">1</span>;
+        }
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">int</span> vptrs_grow(<span class="keyword">struct</span> vptrs* p, size_t nelements)
+{
+    <span class="keyword">int</span> r = <span class="number">0</span>;
+    <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+    {
+        size_t new_nelements = p-&gt;capacity + p-&gt;capacity / <span class="number">2</span>;
+        <span class="keyword">if</span> (new_nelements &lt; nelements)
+        {
+            new_nelements = nelements;
+        }
+        r = vptrs_reserve(p, new_nelements);
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">inline</span> <span class="keyword">int</span> vptrs_emplace_back(<span class="keyword">struct</span> vptrs* p, <span class="keyword">void</span>* pdata)
+{
+    <span class="keyword">int</span> r = vptrs_grow(p, p-&gt;size + <span class="number">1</span>);
+    <span class="keyword">if</span> (r == <span class="number">0</span>)
+    {
+        p-&gt;data[p-&gt;size] = pdata;
+        p-&gt;size++;
+    }
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">void</span> vptrs_destroy(<span class="keyword">struct</span> vptrs* p,
+    <span class="keyword">void</span>(*destroy)(<span class="keyword">void</span>*))
+{
+    <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+    {
+        destroy(p-&gt;data[i]);
+    }
+    free(p-&gt;data);
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span>* vptrs_remove_back(<span class="keyword">struct</span> vptrs* p)
+{    
+    <span class="keyword">void</span>* pdata = p-&gt;data[p-&gt;size - <span class="number">1</span>];
+    p-&gt;size--;
+    <span class="keyword">return</span> pdata;
+}
+
+<span class="keyword">inline</span> <span class="keyword">void</span>* vptrs_remove_front(<span class="keyword">struct</span> vptrs* p)
+{
+    <span class="keyword">void</span>* pdata = p-&gt;data[<span class="number">0</span>];
+    
+    memmove(p-&gt;data,
+            p-&gt;data + <span class="number">1</span>,
+            <span class="keyword">sizeof</span>(<span class="keyword">void</span>*) * (p-&gt;size - <span class="number">1</span>));
+
+    p-&gt;size--;
+
+    <span class="keyword">return</span> pdata;
+}
+
+
+<span class="keyword">void</span> fC()
+{
+    <span class="keyword">for</span> (size_t k = <span class="number">0</span>; k &lt; TOTAL; k++)
+    {
+        <span class="keyword">struct</span> vptrs shapes = INIT_VPTRS;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; TOTAL; i++)
+        {
+            vptrs_emplace_back(&amp;shapes, (<span class="keyword">void</span>*)<span class="keyword">new</span> box());
+        }
+
+<span class="keyword">#ifdef</span> ALL
+        vptrs_destroy(&amp;shapes, &amp;destroy_shape);
+<span class="keyword">#else</span>
+        <span class="keyword">while</span> (shapes.size &gt; <span class="number">0</span>)
+        {
+<span class="keyword">#ifdef</span> FRONT
+            destroy_shape(vptrs_remove_front(&amp;shapes));
+<span class="keyword">#endif</span>
+<span class="keyword">#ifdef</span> BACK
+            destroy_shape(vptrs_remove_back(&amp;shapes));
+<span class="keyword">#endif</span>
+        }
+<span class="keyword">#endif</span>    
+    }
+}
+
+<span class="keyword">void</span> run_test(<span class="keyword">const</span> <span class="keyword">char</span>* message, <span class="keyword">void</span>(*test)(<span class="keyword">void</span>))
+{
+    time_t start = clock();
+    test();
+    printf(<span class="string">&quot;%s %d\n&quot;</span>, message, (<span class="keyword">int</span>)clock() - start);
+
+}
+
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+
+<span class="keyword">#ifdef</span> ALL
+    printf(<span class="string">&quot;all\n\n&quot;</span>);
+<span class="keyword">#endif</span>
+<span class="keyword">#ifdef</span> FRONT
+    printf(<span class="string">&quot;front\n\n&quot;</span>);
+<span class="keyword">#endif</span>
+<span class="keyword">#ifdef</span> BACK
+    printf(<span class="string">&quot;back\n\n&quot;</span>);
+<span class="keyword">#endif</span>
+
+    <span class="comment">//A ordem pode alterar os resultados
+</span>
+    run_test(<span class="string">&quot;C     :&quot;</span>, &amp;fC);
+    run_test(<span class="string">&quot;C++ 03 :&quot;</span>, &amp;f03);
+    run_test(<span class="string">&quot;C++ 11:&quot;</span>, &amp;f11);
+    
+
+    printf(<span class="string">&quot;\n&quot;</span>);
+    
+
+    run_test(<span class="string">&quot;C     :&quot;</span>, &amp;fC);
+    run_test(<span class="string">&quot;C++ 03 :&quot;</span>, &amp;f03);
+    run_test(<span class="string">&quot;C++ 11:&quot;</span>, &amp;f11);
+    
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

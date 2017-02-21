@@ -1,0 +1,96 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2> Bisection Method</h2>
+
+<p>The bisection method is a root-finding algorithm which repeatedly divides an interval in half and then selects the subinterval in which a root exists.</p>
+
+<pre>
+
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">inline</span> <span class="keyword">double</span> Sign(<span class="keyword">double</span> x)
+{
+  <span class="keyword">return</span> x &gt; <span class="number">0</span> ? <span class="number">1.0</span> : <span class="number">-1.0</span>;
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+<span class="keyword">double</span> Bisection(<span class="keyword">const</span> F&amp; func,
+                 <span class="keyword">double</span> xmin, 
+                 <span class="keyword">double</span> xmax, 
+                 <span class="keyword">int</span> maxIterations = <span class="number">10000</span>,
+                 <span class="keyword">double</span> accuracy = DBL_MIN)
+{
+  <span class="keyword">double</span> fxmin = func(xmin);
+  <span class="keyword">double</span> fmid = func(xmax);
+
+  <span class="keyword">if</span> (xmin &gt;= xmax || Sign(fxmin) == Sign(fmid))
+    <span class="keyword">throw</span> std::runtime_error(<span class="string">&quot;invalid range&quot;</span>);
+  
+  <span class="keyword">double</span> dx;
+  <span class="keyword">double</span> x;
+
+  <span class="keyword">if</span> (fxmin &lt; <span class="number">0.0</span>)
+  {
+    dx = xmax - xmin; 
+    x = xmin; 
+  }
+  <span class="keyword">else</span> 
+  { 
+    dx = xmin - xmax;
+    x = xmax; 
+  };
+  
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxIterations; ++i)
+  {
+    dx = dx * <span class="number">0.5</span>;
+    <span class="keyword">double</span> xmid = x + dx;
+    fmid = func(xmid);
+    <span class="keyword">if</span> (fmid &lt;= <span class="number">0.0</span>) 
+    {
+      x = xmid;
+    }
+
+    <span class="keyword">if</span> (fabs(dx) &lt; accuracy || fmid == <span class="number">0.0</span>)
+    {
+      <span class="keyword">return</span> x;
+    }
+  }  
+  <span class="keyword">throw</span> std::runtime_error(<span class="string">&quot;number of iterations exceeded&quot;</span>);
+}
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,89 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>GuiExpress</h2>
+
+<p>What is GuiExpress?</p>
+
+<p>The GuiExpress is a library that I am developing to create user interfaces based on HTML and CSS.The primary goal is to have a gui library to create small applications with rich features and easy to use and get results.The GuiExpress is being developed to run in Windows and Windows Mobile.You can download the files at the user group.</p>
+
+<p>Hello world</p>
+
+<p>Let's see the Hello world sample</p>
+
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;stdafx.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;guiexpress/guiexpress.h&quot;</span>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> GuiEx;
+
+<span class="keyword">int</span> APIENTRY _tWinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPTSTR    lpCmdLine,
+                     <span class="keyword">int</span>       nCmdShow)
+{
+   Document doc;
+   doc.Write(L<span class="string">&quot;Hello World!&quot;</span>);
+   <span class="keyword">return</span> Run(doc);
+}
+</pre>
+
+<p><img src="figs/gui1.png"></p>
+
+<p>The fancy main funtion above is the windows entry point. You can generate a default windows project inside the VC++ and modify it to compile this hello world sample.As I said, the library is based on HTML, so you can easily change the appearance of your text.For instance:</p>
+
+<pre>
+Document doc;
+doc.Write(L<span class="string">&quot;&lt;p style='text-align:center; color:red'&gt;Hello World!&lt;/p&gt;&quot;</span>);
+<span class="keyword">return</span> Run(doc);
+</pre>
+
+
+<p><img src="figs/gui2.png"></p>
+
+<h2>Creating a document class</h2>
+
+<p>We can derive your class from the GuiEx::Document having something like a form.</p>
+
+<pre>
+<span class="keyword">class</span> MainPage : <span class="keyword">public</span> GuiEx::Document
+{
+<span class="keyword">public</span>:
+    MainPage();
+};
+
+MainPage::MainPage()
+{
+  Write(L<span class="string">&quot;Hello world&quot;</span>);
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

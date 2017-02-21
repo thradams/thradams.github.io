@@ -1,0 +1,130 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>This is a kind of concept check.</p>
+
+<p>We have a type predicate for the type T that saysif the type T is a concept X.</p>
+
+<p>It will be, if the type T is derived from X, or if we explicitly say that.</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;type_traits&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+
+
+<span class="keyword">struct</span> shape_concept {};
+<span class="keyword">struct</span> circle_concept : <span class="keyword">public</span> shape_concept {};
+<span class="keyword">struct</span> square_concept : <span class="keyword">public</span> shape_concept {};
+
+
+
+<span class="comment">//By default check if Concept is base of T
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> Concept&gt;
+<span class="keyword">struct</span> is_concept_model : <span class="keyword">public</span> std::is_base_of&lt;Concept, T&gt; {};
+
+
+<span class="comment">//Formula for circle_concept
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">typename</span> std::enable_if&lt;is_concept_model&lt;T, circle_concept&gt;::value, <span class="keyword">double</span>&gt;::type
+Area(<span class="keyword">const</span> T&amp; o)
+{
+    <span class="keyword">const</span> <span class="keyword">double</span> pi = <span class="number">3.1</span><span class="number">4</span>;
+    <span class="keyword">return</span> pi * o.radius() * o.radius();
+}
+
+<span class="comment">//Formula for square_concept
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">typename</span> std::enable_if&lt;is_concept_model&lt;T, square_concept&gt;::value, <span class="keyword">double</span>&gt;::type
+Area(<span class="keyword">const</span> T&amp; o)
+{
+    <span class="keyword">return</span> o.side() * o.side();
+}
+
+<span class="comment">//Error if T is not a shape_concept model
+</span><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">typename</span> std::enable_if&lt;!is_concept_model&lt;T, shape_concept&gt;::value, <span class="keyword">double</span>&gt;::type
+Area(<span class="keyword">const</span> T&amp; o)
+{
+    <span class="keyword">static_assert</span>(<span class="keyword">false</span>, <span class="string">&quot;type T must map shape_concept&quot;</span>);
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="keyword">struct</span> MyCircle1 : <span class="keyword">public</span> circle_concept
+{
+    <span class="keyword">double</span> radius() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> <span class="number">1.5</span>;
+    }
+};
+
+<span class="keyword">struct</span> MyCircle2
+{
+    <span class="keyword">double</span> radius() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> <span class="number">2.0</span>;
+    }
+};
+
+<span class="comment">//We explicitly will say that MyCircle2 is a model of circle_concept 
+</span><span class="comment">//and that MyCircle2 is a model of shape_concept should be automatic!
+</span><span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_concept_model&lt;MyCircle2, circle_concept&gt; : <span class="keyword">public</span> std::true_type {};
+<span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> is_concept_model&lt;MyCircle2, shape_concept&gt; : <span class="keyword">public</span> std::true_type{};
+
+<span class="keyword">struct</span> MySquare1 : <span class="keyword">public</span> square_concept
+{
+    <span class="keyword">double</span> side() <span class="keyword">const</span>
+    {
+        <span class="keyword">return</span> <span class="number">2.0</span>;
+    }
+};
+
+<span class="keyword">struct</span> MySquare2
+{    
+};
+
+<span class="keyword">int</span> main()
+{
+    MySquare1 s1;
+    MySquare2 s2;
+    MyCircle1 c1;
+    MyCircle2 c2;
+    std::cout &lt;&lt; Area(s1) &lt;&lt; std::endl;
+    std::cout &lt;&lt; Area(c1) &lt;&lt; std::endl;
+    std::cout &lt;&lt; Area(c2) &lt;&lt; std::endl;
+    <span class="comment">// std::cout &lt;&lt; Area(s2) &lt;&lt; std::endl;
+</span>}
+
+
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

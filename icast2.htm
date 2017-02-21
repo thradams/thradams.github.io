@@ -1,0 +1,56 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>===Alternativa ao interface</p>
+
+<p>(Ver o post anterior sobre o interface-cast.)</p>
+
+
+<p>Seguindo a motiva��o original:</p>
+
+<h1>	O objeto n�o precisa saber como os outros o veem</h1>
+<h1>	O polimorfismo pode ser adicionado depois</h1>
+
+
+<p>Digamos que eu tenha a classe Button:{{{cppstruct Button {  void Draw(Args args) {...}  void KeyDown(int key) {...}  void MouseDown(int x, int y) {...}};}}}Eu poderia usar esta classe diretamente desta forma:</p>
+
+<p>{{{cppstruct Window{  Button button;    void OnPaint()  {  ... button.Draw(args); ... }  ...}}}}Agora, digamos que eu queria ver o Button de uma maneira polim�rfica como um Control e assim ter uma lista de controles implementando esta interface.Eu poderia fazer o Control derivado de &quot;KeyEventReceiver&quot;, &quot;MouseEventReceiver&quot; e &quot;IDraw&quot; ou simplesmente colocar todas as fun��es dentro de Control sem nenhuma hierarquia extra. Por�m eu n�o quero decidir nada antes de ver os algoritmos e o uso.\\A alternativa para o interface</p>
+
+<p>{{{cppstruct NonPolymorphic {};Template&lt;class TInterface = NonPolymorphic&gt;struct Button : public TInterface {  void Draw(Args args) {...}   void KeyDown(int key) {...}  void MouseDown(int x, int y) {...}};}}}Agora, n�s temos a classe Button e uma interface. O Button n�o precisa conhecer nada sobre a TInterface. (1)</p>
+
+<p>Para usar um Button n�o polim�rfico n�s poder�amos fazer:{{{cpp Button&lt;&gt; button;}}}</p>
+
+<p>Para ver o Button como um Control polim�rfico n�s poder�amos fazer: </p>
+
+
+<p>Primeiro declarar a interface. (Como queremos ver o Button?) (2)</p>
+
+<p>{{{cppstruct Control  {  virtual void Draw(Args args) =0;  virtual void KeyDown(int key) =0;  virtual void MouseDown(int x, int y) =0; }}}}Depois passar esta interface para o par�metro do template, e o uso seria:{{{cppvector&lt;Controlv.push}}}Basicamente o padr�o � deixar em branco a classe Base. A interface � decidida de acordo com o uso. Se o Button for sempre visto de maneira polim�rfica � melhor ter um typedef do que ficar vendo o template  o tempo todo.
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

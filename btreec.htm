@@ -1,0 +1,290 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">struct</span> map_str_ptr;
+<span class="keyword">typedef</span> <span class="keyword">struct</span> map_str_ptr_node map_str_ptr_node_t;
+
+<span class="keyword">struct</span> map_str_ptr
+{
+  map_str_ptr_node_t * root;
+};
+
+<span class="keyword">#define</span> MAP_STR_PTR_INIT { <span class="number">0</span> };
+
+<span class="keyword">void</span> map_str_ptr_add(<span class="keyword">struct</span> map_str_ptr*,
+                     <span class="keyword">const</span> <span class="keyword">char</span>* key, <span class="keyword">void</span>* p);
+
+<span class="keyword">void</span>* map_str_ptr_get(<span class="keyword">struct</span> map_str_ptr*,
+                      <span class="keyword">const</span> <span class="keyword">char</span>* key);
+
+<span class="keyword">void</span> map_str_ptr_destroy(<span class="keyword">struct</span> map_str_ptr* map,
+                         <span class="keyword">void</span>(*destroy_proc)(<span class="keyword">void</span>*));
+
+</pre>
+
+
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;map_str_ptr.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+
+<span class="keyword">typedef</span> <span class="keyword">struct</span> map_str_ptr_node
+{
+  <span class="keyword">const</span> <span class="keyword">char</span>* key;
+  <span class="keyword">void</span> *data;
+
+  <span class="keyword">struct</span> map_str_ptr *     tree;
+  <span class="keyword">struct</span> map_str_ptr_node* parent;
+  <span class="keyword">struct</span> map_str_ptr_node* left;
+  <span class="keyword">struct</span> map_str_ptr_node* right;
+
+} map_str_ptr_node_t;
+
+<span class="keyword">void</span> map_str_ptr_node_destroy(map_str_ptr_node_t* node,
+                              <span class="keyword">void</span> (*destroy)(<span class="keyword">void</span>*))
+{
+  free(node-&gt;key);
+  <span class="keyword">if</span> (destroy)
+  {
+    destroy(node-&gt;data);
+  }
+}
+
+<span class="keyword">void</span> map_str_ptr_node_delete(map_str_ptr_node_t* node,
+  <span class="keyword">void</span>(*destroy)(<span class="keyword">void</span>*))
+{
+  map_str_ptr_node_destroy(node, destroy);
+  free(node);  
+}
+
+
+<span class="keyword">void</span> map_str_ptr_node_t_init(map_str_ptr_node_t* p,
+                           map_str_ptr_node_t* parent,
+                           <span class="keyword">struct</span> map_str_ptr* tree,
+                           <span class="keyword">const</span> <span class="keyword">char</span>* key,
+                           <span class="keyword">void</span>* data)
+{
+  p-&gt;key = key;
+  p-&gt;data = data;
+
+  p-&gt;tree = tree;
+  p-&gt;parent = parent;
+  p-&gt;left = NULL;
+  p-&gt;right = NULL;
+}
+
+
+map_str_ptr_node_t* map_str_ptr_node_t_create(map_str_ptr_node_t* parent,
+                                          <span class="keyword">struct</span> map_str_ptr* tree,
+                                          <span class="keyword">const</span> <span class="keyword">char</span>* key,
+                                          <span class="keyword">void</span>* data)
+{
+  map_str_ptr_node_t *p = malloc(<span class="keyword">sizeof</span>(map_str_ptr_node_t));
+  map_str_ptr_node_t_init(p, parent, tree, key, data);
+  <span class="keyword">return</span> p;
+}
+
+map_str_ptr_node_t * map_str_ptr_node_t_add_left(map_str_ptr_node_t* node,
+                            <span class="keyword">const</span> <span class="keyword">char</span>* key,
+                            <span class="keyword">void</span> *data)
+{
+  map_str_ptr_node_t* left = map_str_ptr_node_t_create(node, node-&gt;tree, key,data);
+  assert(node-&gt;left == NULL);
+  node-&gt;left = left;
+  <span class="keyword">return</span> left;
+}
+
+map_str_ptr_node_t *
+  map_str_ptr_node_t_add_right(map_str_ptr_node_t* node,
+  <span class="keyword">const</span> <span class="keyword">char</span>* key, 
+  <span class="keyword">void</span> *data)
+{
+  map_str_ptr_node_t* right = map_str_ptr_node_t_create(node, node-&gt;tree, key, data);
+  assert(node-&gt;right == NULL);
+  node-&gt;right = right;
+  <span class="keyword">return</span> right;
+}
+
+map_str_ptr_node_t* map_str_ptr_add_root(<span class="keyword">struct</span> map_str_ptr* tree, 
+                                              <span class="keyword">const</span> <span class="keyword">char</span>* key, 
+                                              <span class="keyword">void</span> *data)
+{
+  map_str_ptr_node_t* node = map_str_ptr_node_t_create(NULL, tree, key, data);
+  assert(tree-&gt;root == NULL);
+  tree-&gt;root = node;
+  <span class="keyword">return</span> node;
+}
+
+
+<span class="keyword">void</span> destroy_subtree(map_str_ptr_node_t* node,
+                     <span class="keyword">void</span>(*destroy_proc)(<span class="keyword">void</span>*))
+{
+  <span class="keyword">if</span> (node-&gt;left != NULL)
+  {
+    destroy_subtree(node-&gt;left, destroy_proc);
+  }
+
+  <span class="keyword">if</span> (node-&gt;right != NULL)
+  {
+    destroy_subtree(node-&gt;right, destroy_proc);
+  }
+
+  map_str_ptr_node_destroy(node, destroy_proc);
+
+  <span class="keyword">if</span> (node == node-&gt;tree-&gt;root)
+  {
+    node-&gt;tree-&gt;root = NULL;
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (node == node-&gt;parent-&gt;left)
+  {
+    node-&gt;parent-&gt;left = NULL;
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (node == node-&gt;parent-&gt;right)
+  {
+    node-&gt;parent-&gt;right = NULL;
+  }
+  <span class="keyword">else</span>
+  {
+    assert(<span class="number">0</span>);
+  }
+
+  free(node);  
+}
+
+
+<span class="keyword">void</span> add(<span class="keyword">const</span> <span class="keyword">char</span>* key,
+         <span class="keyword">void</span>* data,
+         map_str_ptr_node_t* node)
+{
+  map_str_ptr_node_t* next_node = NULL;
+  
+  <span class="keyword">int</span> strc = strcmp(key, node-&gt;key);
+
+  assert(strc != <span class="number">0</span>);
+
+  <span class="keyword">if</span> (strc &lt; <span class="number">0</span>)
+  {
+    next_node = node-&gt;left;
+    <span class="keyword">if</span> (next_node == NULL)
+    {
+      map_str_ptr_node_t_add_left(node, key, data);
+    }
+    <span class="keyword">else</span>
+    {
+      add(key, data, next_node);
+    }
+  }
+  <span class="keyword">else</span>
+  {
+    next_node = node-&gt;right;
+    <span class="keyword">if</span> (next_node == NULL)
+    {
+      map_str_ptr_node_t_add_right(node, key, data);
+    }
+    <span class="keyword">else</span>
+    {
+      add(key, data, next_node);
+    }
+  }
+}
+
+<span class="keyword">void</span> map_str_ptr_add(<span class="keyword">struct</span> map_str_ptr* map,
+  <span class="keyword">const</span> <span class="keyword">char</span>* key, <span class="keyword">void</span>* p)
+{
+  <span class="keyword">if</span> (map-&gt;root == NULL)
+  {
+    map_str_ptr_add_root(map, key, p);
+  }
+  <span class="keyword">else</span>
+  {
+    add(key, p, map-&gt;root);
+  }
+}
+
+<span class="keyword">static</span> <span class="keyword">void</span>* get_pos(<span class="keyword">const</span> <span class="keyword">char</span> *key,
+  map_str_ptr_node_t* node)
+{
+  map_str_ptr_node_t* next_node = NULL;
+
+  <span class="keyword">int</span> strc = <span class="number">0</span>;
+  <span class="keyword">void</span>* rcode = NULL;
+
+  strc = strcmp(key, node-&gt;key);
+
+  <span class="keyword">if</span> (strc == <span class="number">0</span>)
+  {
+    rcode = node-&gt;data;
+  }
+  <span class="keyword">else</span> <span class="keyword">if</span> (strc &lt; <span class="number">0</span>)
+  {
+    next_node = node-&gt;left;
+    <span class="keyword">if</span> (next_node != NULL)
+    {
+      rcode = get_pos(key, next_node);
+    }
+  }
+  <span class="keyword">else</span>
+  {
+    next_node = node-&gt;right;
+    <span class="keyword">if</span> (next_node != NULL)
+    {
+      rcode = get_pos(key, next_node);
+    }
+  }
+  <span class="keyword">return</span> rcode;
+}
+
+<span class="keyword">void</span>* map_str_ptr_get(<span class="keyword">struct</span> map_str_ptr* map,
+  <span class="keyword">const</span> <span class="keyword">char</span>* key)
+{
+  <span class="keyword">if</span> (map-&gt;root == NULL)
+    <span class="keyword">return</span> NULL;
+  <span class="keyword">return</span> get_pos(key, map-&gt;root);
+}
+
+<span class="keyword">void</span> map_str_ptr_destroy(<span class="keyword">struct</span> map_str_ptr* map,
+                         <span class="keyword">void</span>(*destroy_proc)(<span class="keyword">void</span>*))
+{
+  destroy_subtree(map-&gt;root, destroy_proc);
+  map-&gt;root = NULL;
+}
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

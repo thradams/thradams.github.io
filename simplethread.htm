@@ -1,0 +1,291 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>SimpleThread class</h2>
+
+<p>SimpleThread class for windows.See also:boost::thread and thread class in C++0x</p>
+
+<pre>
+
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// http://www.thradams.com/codeblog/simplethread.htm
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span><span class="keyword">namespace</span> Detail
+{
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+  <span class="keyword">class</span> SimpleThreadData0
+  {
+    F m_f;
+
+  <span class="keyword">public</span>:
+    SimpleThreadData0(<span class="keyword">const</span> F&amp; f) : m_f(f) { }
+    <span class="keyword">void</span> Run() { m_f(); }
+  };
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> F, <span class="keyword">class</span> A1&gt;
+  <span class="keyword">class</span> SimpleThreadData1
+  {
+    F m_f;
+    A1 m_a1;
+
+  <span class="keyword">public</span>:
+    SimpleThreadData1(<span class="keyword">const</span> F&amp; f, <span class="keyword">const</span> A1&amp; a1) : m_f(f), m_a1(a1) { }
+    <span class="keyword">void</span> Run() { m_f(m_a1); }
+  };
+} <span class="comment">//namespace Detail
+</span>
+<span class="keyword">class</span> SimpleThread
+{
+  HANDLE m_hThread;
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  <span class="keyword">static</span> DWORD WINAPI ThreadProc(LPVOID lpParameter)
+  {
+    DWORD r = <span class="number">0</span>;
+    T *p = <span class="keyword">reinterpret_cast</span>&lt;T*&gt;(lpParameter);
+    <span class="keyword">try</span>
+    {
+      p-&gt;Run();
+    }
+    <span class="keyword">catch</span> (...)
+    {
+      r = <span class="number">1</span>;
+    }
+    <span class="keyword">delete</span> p;
+    <span class="keyword">return</span> r;
+  }
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  <span class="keyword">static</span> HANDLE StartThread(T* p)
+  {
+    HANDLE hThread = CreateThread(NULL,         <span class="comment">// default security attributes
+</span>      <span class="number">0</span>,                 <span class="comment">// use default stack size
+</span>      &amp;ThreadProc&lt;T&gt;,    <span class="comment">// thread function
+</span>      p,                 <span class="comment">// argument to thread function
+</span>      <span class="number">0</span>,                 <span class="comment">// use default creation flags
+</span>      <span class="number">0</span>);                <span class="comment">// returns the thread identifier
+</span>    <span class="keyword">if</span> (hThread == <span class="number">0</span>)
+    {
+      DWORD dwError = GetLastError();
+      <span class="keyword">delete</span> p;
+      <span class="keyword">throw</span> std::exception(<span class="string">&quot;SimpleThread creation failed&quot;</span>);
+    }
+    <span class="comment">//release will be made in the other thread.
+</span>    <span class="keyword">return</span> hThread;
+  }
+
+<span class="keyword">public</span>:
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F&gt;
+  SimpleThread(<span class="keyword">const</span> F&amp; f) : m_hThread(NULL)
+  {
+    m_hThread = StartThread(<span class="keyword">new</span> Detail::SimpleThreadData0&lt;F&gt;(f));
+  }
+
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F, <span class="keyword">class</span> A1&gt;
+  SimpleThread(<span class="keyword">const</span> F&amp; f, <span class="keyword">const</span> A1&amp; a1) : m_hThread(NULL)
+  {
+    m_hThread = StartThread(<span class="keyword">new</span> Detail::SimpleThreadData1&lt;F, A1&gt;(f, a1));
+  }
+
+  ~SimpleThread()
+  {
+    Join();
+  }
+
+  <span class="keyword">void</span> Join()
+  {
+    ::WaitForSingleObject(m_hThread, INFINITE);
+    CloseHandle(m_hThread);
+    m_hThread = <span class="number">0</span>;
+  }    
+};
+}}}
+
+Sample
+{{{cpp
+<span class="keyword">void</span> f(<span class="keyword">const</span> std::<span class="keyword2">string</span>&amp; }
+{
+}
+
+<span class="keyword">int</span> main()
+{
+  SimpleThread thread3(&amp;f, std::<span class="keyword2">string</span>(<span class="string">&quot;test&quot;</span>));
+}
+Member functions
+
+<span class="keyword">class</span> X
+{
+  std::auto_ptr&lt;SimpleThread&gt; m_pThread;
+
+<span class="keyword">public</span>:
+  X() : m_pThread(<span class="keyword">nullptr</span>)
+  {
+  }
+  
+  <span class="keyword">void</span> Start()
+  {
+    m_pThread.reset(<span class="keyword">new</span> SimpleThread(std::tr1::bind(&amp;X::ThreadProc, <span class="keyword">this</span>)));
+  }
+
+  <span class="keyword">void</span> ThreadProc()
+  {
+    cout &lt;&lt; <span class="string">&quot;hi!&quot;</span>;
+  }
+};
+}}}
+
+Version <span class="number">2</span> - Requires tr1::bind avaiable in VC++ <span class="number">2008</span>
+
+{{{cpp
+<span class="comment">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// http://www.thradams.com/codeblog/simplethread.htm
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span>
+<span class="keyword">class</span> SimpleThread
+{
+  HANDLE m_hThread;
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> F&gt;
+  <span class="keyword">struct</span> SimpleThreadData0
+  {
+    F m_f;
+    SimpleThreadData0(<span class="keyword">const</span> F&amp; f) : m_f(f) { }
+  };
+
+  <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+  <span class="keyword">static</span> DWORD WINAPI ThreadProc(LPVOID lpParameter)
+  {
+    DWORD r = <span class="number">0</span>;
+    T *p = <span class="keyword">reinterpret_cast</span>&lt;T*&gt;(lpParameter);
+    <span class="keyword">try</span>
+    {
+      p-&gt;m_f();
+    }
+    <span class="keyword">catch</span> (...)
+    {
+      r = <span class="number">1</span>;
+    }
+    <span class="keyword">delete</span> p;
+    <span class="keyword">return</span> r;
+  }
+
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F&gt;
+  HANDLE SimpleThreadInit(<span class="keyword">const</span> F&amp; f)
+  {
+    std::auto_ptr&lt;SimpleThreadData0&lt;F&gt; &gt; sp(<span class="keyword">new</span> SimpleThreadData0&lt;F&gt;(f));
+
+    HANDLE hThread = CreateThread(NULL,         <span class="comment">// default security attributes
+</span>      <span class="number">0</span>,                 <span class="comment">// use default stack size
+</span>      &amp;ThreadProc&lt;SimpleThreadData0&lt;F&gt; &gt;,    <span class="comment">// thread function
+</span>      sp.get(),                 <span class="comment">// argument to thread function
+</span>      <span class="number">0</span>,                 <span class="comment">// use default creation flags
+</span>      <span class="number">0</span>);                <span class="comment">// returns the thread identifier
+</span>    <span class="keyword">if</span> (hThread == <span class="number">0</span>)
+    {
+      DWORD dwError = GetLastError();
+      <span class="keyword">throw</span> std::exception(<span class="string">&quot;SimpleThread creation failed&quot;</span>);
+    }
+
+    sp.release();
+    <span class="keyword">return</span> hThread;
+
+  }
+
+<span class="keyword">public</span>:
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F&gt;
+  SimpleThread(<span class="keyword">const</span> F&amp; f) : m_hThread(NULL)
+  {
+    m_hThread = SimpleThreadInit(f);
+  }    
+
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F, <span class="keyword">class</span> A1&gt;
+  SimpleThread(<span class="keyword">const</span> F&amp; f, <span class="keyword">const</span> A1&amp; a1) : m_hThread(NULL)
+  {
+    m_hThread = SimpleThreadInit(std::tr1::bind(f, a1));
+  }
+
+  <span class="keyword">template</span> &lt;<span class="keyword">class</span> F, <span class="keyword">class</span> A1, <span class="keyword">class</span> A2&gt;
+  SimpleThread(<span class="keyword">const</span> F&amp; f, <span class="keyword">const</span> A1&amp; a1, <span class="keyword">const</span> A2&amp; a2) : m_hThread(NULL)
+  {
+    m_hThread = SimpleThreadInit(std::tr1::bind(f, a1, a2));
+  }
+
+  ~SimpleThread()
+  {
+    Join();
+  }
+
+  <span class="keyword">void</span> Join()
+  {
+    ::WaitForSingleObject(m_hThread, INFINITE);
+    CloseHandle(m_hThread);
+    m_hThread = <span class="number">0</span>;
+  }
+};
+</pre>
+
+
+<p>Sample2</p>
+
+<pre>
+
+<span class="keyword">class</span> X
+{
+  std::auto_ptr&lt;SimpleThread&gt; m_pThread;
+
+<span class="keyword">public</span>:
+  X() : m_pThread(<span class="keyword">nullptr</span>)
+  {
+  }
+  
+  <span class="keyword">void</span> Start()
+  {
+     <span class="comment">//no need for manual bind here
+</span>     m_pThread.reset(<span class="keyword">new</span> SimpleThread(&amp;X::ThreadProc, <span class="keyword">this</span>, <span class="string">&quot;start&quot;</span>));
+  }
+
+  <span class="keyword">void</span> ThreadProc(<span class="keyword">const</span> std::<span class="keyword2">string</span>&amp; s)
+  {
+    std::cout &lt;&lt; <span class="string">&quot;hi!&quot;</span> &lt;&lt; s;
+  }
+};
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

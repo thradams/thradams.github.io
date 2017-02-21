@@ -1,0 +1,142 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p><a href="tklgen.htm">TKLGEN HOME</a></p>
+
+<p>Header:<strong>&quot;StringStream.h&quot;</strong></p>
+
+<pre>
+
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">struct</span> StringStream
+{
+  <span class="keyword">const</span> <span class="keyword">wchar_t</span>* m_pCharacteres;
+  <span class="keyword">const</span> <span class="keyword">wchar_t</span>* m_pCurrentChar;
+  size_t         m_CurrentLine;
+  size_t         m_CurrentCol;
+  <span class="keyword">bool</span>           m_HasPutBack;
+  <span class="keyword">wchar_t</span>        m_PutBackCharacter;
+  <span class="keyword">bool</span>           m_EofSent;
+
+  <span class="keyword">bool</span> NextCharCore(<span class="keyword">wchar_t</span>&amp; ch)
+  {
+    <span class="keyword">if</span> (m_HasPutBack)
+    {
+      ch = m_PutBackCharacter;
+      m_HasPutBack = <span class="keyword">false</span>;
+      m_PutBackCharacter = <span class="number">0</span>;
+      <span class="keyword">return</span> <span class="keyword">true</span>;
+    }
+
+    <span class="keyword">if</span> (m_EofSent)
+      <span class="keyword">return</span> <span class="keyword">false</span>;
+
+    ch = *m_pCurrentChar++;
+
+    <span class="keyword">if</span> (ch == L<span class="string">'\0'</span>)
+    {
+      ch = <span class="string">'\0'</span>;
+      m_EofSent = <span class="keyword">true</span>;
+    }
+
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+  }
+
+<span class="keyword">public</span>:
+
+  StringStream(<span class="keyword">const</span> <span class="keyword">wchar_t</span>* psz)
+    : m_pCharacteres(psz)
+    , m_CurrentLine(<span class="number">1</span>)
+    , m_CurrentCol(<span class="number">1</span>)
+    , m_HasPutBack(<span class="keyword">false</span>)
+    , m_PutBackCharacter(L<span class="string">'\0'</span>)
+    , m_EofSent(<span class="keyword">false</span>)
+  {
+    m_pCurrentChar = m_pCharacteres;
+  }
+
+  <span class="keyword">void</span> PutBack(<span class="keyword">wchar_t</span> ch)
+  {
+    assert(m_HasPutBack == <span class="keyword">false</span>);
+
+    <span class="keyword">if</span> (ch == L<span class="string">'\n'</span>)
+    {
+      <span class="keyword">if</span> (m_CurrentLine &gt; <span class="number">1</span>)
+      {
+        m_CurrentLine--;
+      }
+    }
+    <span class="keyword">else</span>
+    {
+      <span class="keyword">if</span> (m_CurrentCol &gt; <span class="number">1</span>)
+      {
+        m_CurrentCol--;
+      }
+    }
+
+    m_PutBackCharacter = ch;
+    m_HasPutBack = <span class="keyword">true</span>;
+  }
+
+  <span class="keyword">bool</span> NextChar(<span class="keyword">wchar_t</span>&amp; ch)
+  {
+    <span class="keyword">bool</span> b = NextCharCore(ch);
+
+    <span class="keyword">if</span> (b &amp;&amp; ch == L<span class="string">'\n'</span>)
+    {
+      m_CurrentLine++;
+      m_CurrentCol = <span class="number">1</span>;
+    }
+    <span class="keyword">else</span>
+    {
+      m_CurrentCol++;
+    }
+
+    <span class="keyword">return</span> b;
+  }
+
+  size_t GetLine() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_CurrentLine;
+  }
+
+  size_t GetCol() <span class="keyword">const</span>
+  {
+    <span class="keyword">return</span> m_CurrentCol;
+  }
+};
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

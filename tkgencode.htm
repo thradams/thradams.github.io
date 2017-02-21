@@ -1,0 +1,274 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>==Tokenizer - TkGen component - version 19 nov 2009==</p>
+
+<p>===Components===</p>
+
+<p>===TokenizerStream==={{{cpptypedef </p>
+
+<p>//puts ch into the buffer to be read againvoid PutBack(CharType ch);</p>
+
+<p>//returns true and the next char if it existsbool NextChar(CharType &amp; ch);}}}</p>
+
+<p>===Lexeme=== (Use std::wstring std::string){{{cppvoid clear();void append(CharType);}}}===Tokenizer=={{{cpptypedef bool NextToken(Lexeme&amp; lexeme, TokenType&amp; tk);bool NextToken(TokenType&amp; tk);}}}</p>
+
+<p>===Source===</p>
+<ul>
+<li> StringTokenizerStream (input is std::wstring)</li>
+<li> FileTokenizerStream (input is a file)</li>
+</ul>
+
+<p>{{{cpp// Tkgen tokenizer file - version 19 nov 2009// www.thradams.com//// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)// Permission to copy, use, modify, sell and distribute this software// is granted provided this copyright notice appears in all copies.// This software is provided &quot;as is&quot; without express or implied// warranty, and with no claim as to its suitability for any purpose.</p>
+
+
+<h1>pragma once</h1>
+
+<h1>include <fstream></h1>
+<h1>include <string></h1>
+<h1>include <cassert></h1>
+
+<p>template &lt; class TChar &gt;struct StringTokenizerStream{    typedef TChar CharType;    std::basic    typedef typename std::basic    Iterator m    CharType m</p>
+
+<p>public:</p>
+
+<p>    StringTokenizerStream(typename std::basic    {        m        m    }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {            ch = m            m        }        else        {            if (m                return false;            ch =         }        return true;    }};</p>
+
+<p>template &lt; class TChar, int BufferSize = 4096 &gt;struct FileTokenizerStream{    typedef TChar CharType;    typedef CharType    typedef std::basic    typedef CharType</p>
+
+<p>    Buffer m    BufferIterator m</p>
+
+<p>    wchar    bool m    Stream&amp; m</p>
+
+<p>    BufferIterator FirstBufferEnd() const    {        return m    }</p>
+
+<p>    BufferIterator SecondBufferEnd() const    {        return m    }</p>
+
+
+<p>public:</p>
+
+<p>    FileTokenizerStream(Stream&amp; stream) :            m    {        m        m        m        m        m        size        m        m        m    }</p>
+
+<p>    ~FileTokenizerStream()    {        delete     }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {            ch = m            m        }        else        {            if (m                return false;            ch =             if (            {                if (m                {                    m                    size                    m                    m                }                else if (m                {                    m                    size                    m                    m                }                else                {                    //terminate lexical analysis                    m                }            }        }        assert(m        assert(m        return true;    }};</p>
+
+
+<p>template &lt; class DFATraits, class TokenizerStreamT &gt;struct Tokenizer{    TokenizerStreamT&amp; m</p>
+
+<p>public:</p>
+
+<p>    typedef typename DFATraits::TokenType TokenType;</p>
+
+<p>    Tokenizer(TokenizerStreamT&amp; charEnumerator) : m    {    }</p>
+
+<p>    template&lt;class T&gt;    bool NextToken(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)    {        lexeme.clear();        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {              tk = tk2;                lastGoodState = currentState;            }            lexeme += ch;        }        return (lastGoodState     }</p>
+
+<p>    bool NextToken(typename DFATraits::TokenType&amp; tk)    {        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {              tk = tk2;              lastGoodState = currentState;            }        }        return (lastGoodState     }    </p>
+
+<p>};}}}</p>
+<hr>
+<p>===Interleaves===</p>
+
+<p>This is a different code that can be used to skip blanks.</p>
+
+<p>{{{cpp</p>
+
+<p>// Tkgen tokenizer file - version 28 nov 2009// www.thradams.com//// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)// Permission to copy, use, modify, sell and distribute this software// is granted provided this copyright notice appears in all copies.// This software is provided &quot;as is&quot; without express or implied// warranty, and with no claim as to its suitability for any purpose.</p>
+
+
+<h1>pragma once</h1>
+
+<h1>include <fstream></h1>
+<h1>include <string></h1>
+<h1>include <cassert></h1>
+
+<p>template &lt; class TChar &gt;struct StringTokenizerStream{    typedef TChar CharType;    std::basic    typedef typename std::basic    Iterator m    CharType m</p>
+
+<p>public:</p>
+
+<p>    StringTokenizerStream(typename std::basic    {        m        m    }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {            ch = m            m        }        else        {            if (m                return false;            ch =         }        return true;    }};</p>
+
+<p>template &lt; class TChar, int BufferSize = 4096 &gt;struct FileTokenizerStream{    typedef TChar CharType;    typedef CharType    typedef std::basic    typedef CharType</p>
+
+<p>    Buffer m    BufferIterator m</p>
+
+<p>    wchar    bool m    Stream&amp; m</p>
+
+<p>    BufferIterator FirstBufferEnd() const    {        return m    }</p>
+
+<p>    BufferIterator SecondBufferEnd() const    {        return m    }</p>
+
+
+<p>public:</p>
+
+<p>    FileTokenizerStream(Stream&amp; stream) :            m    {        m        m        m        m        m        size        m        m        m    }</p>
+
+<p>    ~FileTokenizerStream()    {        delete     }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {            ch = m            m        }        else        {            if (m                return false;            ch =             if (            {                if (m                {                    m                    size                    m                    m                }                else if (m                {                    m                    size                    m                    m                }                else                {                    //terminate lexical analysis                    m                }            }        }        assert(m        assert(m        return true;    }};</p>
+
+
+<p>template &lt; class DFATraits, class TokenizerStreamT &gt;struct Tokenizer{    TokenizerStreamT&amp; m</p>
+
+<p>public:</p>
+
+<p>    typedef typename DFATraits::TokenType TokenType;</p>
+
+<p>    Tokenizer(TokenizerStreamT&amp; charEnumerator) : m    {    }</p>
+
+<p>    template&lt;class T&gt;    bool NextToken(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)    {        for (;;)        {            if (                return false;</p>
+
+<p>            if (              return true;        }            }</p>
+
+<p>    bool NextToken(typename DFATraits::TokenType&amp; tk)    {        for (;;)        {            if (                return false;</p>
+
+<p>            if (              return true;        }            }</p>
+
+<p>    template&lt;class T&gt;    bool NextTokenNoInterleave(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)    {        lexeme.clear();        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {              tk = tk2;                lastGoodState = currentState;            }            lexeme += ch;        }        return (lastGoodState     }</p>
+
+<p>    bool NextTokenNoInterleave(typename DFATraits::TokenType&amp; tk)    {        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {              tk = tk2;              lastGoodState = currentState;            }        }        return (lastGoodState     }    </p>
+
+<p>};}}}</p>
+<hr>
+
+<p>===Compact Tokenizer for const wchar(The stream has been integrated into tokenizer)</p>
+
+<p>{{{cpptemplate &lt; class DFATraits &gt;class Tokenizer{  typedef wchar</p>
+
+<p>  const CharType  const CharType  CharType m</p>
+
+<p>  void PutBack(CharType ch)  {    m  }</p>
+
+<p>  bool NextChar(CharType &amp; ch)  {    if (m    {      ch = m      m    }    else    {      if (        return false;      ch =     }    return true;  }</p>
+
+<p>public:</p>
+
+<p>  typedef typename DFATraits::TokenType TokenType;</p>
+
+<p>  Tokenizer(const CharType  {    m    m  }</p>
+
+<p>  template&lt;class T&gt;  bool NextToken(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)  {    for (;;)    {      if (        return false;</p>
+
+<p>      if (        return true;    }          }</p>
+
+<p>  template&lt;class T&gt;  bool NextTokenNoInterleave(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)  {    lexeme.clear();    int lastGoodState = -1;    int currentState = 0;    CharType ch;    while (NextChar(ch))    {      currentState = DFATraits::GetNext(currentState, ch);      if (currentState == -1)      {        PutBack(ch);        break;      }      typename DFATraits::TokenType tk2;      if (DFATraits::GetTokenFromState(currentState, tk2))      {        tk = tk2;        lastGoodState = currentState;      }      lexeme += ch;    }    return (lastGoodState   }};}}}</p>
+
+<p>Sample:{{{cpp  const wchar  Tokenizer&lt;StateMachine&gt; tk(s);  Tokenizer&lt;StateMachine&gt;::TokenType t;</p>
+
+<p>  std::wstring lexeme;  while (tk.NextToken(lexeme, t))  {  }}}}</p>
+
+<p>==Sends EOF=={{{cpp// Tkgen tokenizer file - version 19 nov 2009// www.thradams.com//// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)// Permission to copy, use, modify, sell and distribute this software// is granted provided this copyright notice appears in all copies.// This software is provided &quot;as is&quot; without express or implied// warranty, and with no claim as to its suitability for any purpose.</p>
+
+
+<h1>pragma once</h1>
+
+<h1>include <fstream></h1>
+<h1>include <string></h1>
+<h1>include <cassert></h1>
+
+<p>template &lt; class TChar &gt;struct CommandLineTokenizerStream{    typedef TChar CharType;    typedef typename CharType    Iterator m    CharType m    const int m    CharType<strong> m    int m    static const CharType CharSeparator = L'\n';</p>
+
+<p>public:</p>
+
+<p>    CommandLineTokenizerStream(int argc, CharType<strong> argv) : m    {        m        m        m    }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {            ch = m            m        }        else        {            if (            {                if (m                    return false;                else                {                    m                    m                    ch = CharSeparator;                    return true;                }            }            ch =         }        return true;    }};</p>
+
+
+<p>template &lt; class TChar &gt;struct StringTokenizerStream{    typedef TChar CharType;    std::basic    typedef typename std::basic    Iterator m    CharType m    bool m    static const wcharpublic:</p>
+
+<p>    StringTokenizerStream(typename std::basic    {        m        m        m    }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m          return false;</p>
+
+<p>        if (m        {            ch = m            m        }        else        {            if (m            {                m                ch = eofChar;                return true;            }            ch =         }        return true;    }};</p>
+
+<p>template &lt; class TChar, int BufferSize = 4096 &gt;struct FileTokenizerStream{    typedef TChar CharType;    typedef CharType    typedef std::basic    typedef CharType</p>
+
+<p>    Buffer m    BufferIterator m</p>
+
+<p>    static const wchar</p>
+
+<p>    wchar    bool m    bool m    Stream&amp; m</p>
+
+<p>    BufferIterator FirstBufferEnd() const    {        return m    }</p>
+
+<p>    BufferIterator SecondBufferEnd() const    {        return m    }</p>
+
+
+<p>public:</p>
+
+<p>    FileTokenizerStream(Stream&amp; stream) :            m    {        m        m        m        m        m        size        m        m        m        m    }</p>
+
+<p>    ~FileTokenizerStream()    {        delete     }</p>
+
+<p>    void PutBack(CharType ch)    {        m    }</p>
+
+<p>    bool NextChar(CharType &amp; ch)    {        if (m        {          return false;        }</p>
+
+<p>        if (m        {            ch = m            m        }        else        {            //sends eof char            if (m            {                ch = eofChar;                m                return true;            }</p>
+
+<p>            ch =             if (            {                if (m                {                    m                    size                    m                    m                }                else if (m                {                    m                    size                    m                    m                }                else                {                    //terminate lexical analysis                    m                }            }        }        assert(m        assert(m        return true;    }};</p>
+
+
+<p>template &lt; class DFATraits, class TokenizerStreamT &gt;struct Tokenizer{    TokenizerStreamT&amp; m</p>
+
+<p>    template&lt;class T&gt;    bool NextTokenNoInterleave(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)    {        lexeme.clear();        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {                tk = tk2;                lastGoodState = currentState;            }            lexeme += ch;        }        return (lastGoodState     }</p>
+
+<p>    bool NextTokenNoInterleave(typename DFATraits::TokenType&amp; tk)    {        int lastGoodState = -1;        int currentState = 0;        typename TokenizerStreamT::CharType ch;        while (m        {            currentState = DFATraits::GetNext(currentState, ch);            if (currentState == -1)            {                m                break;            }            typename DFATraits::TokenType tk2;            if (DFATraits::GetTokenFromState(currentState, tk2))            {                tk = tk2;                lastGoodState = currentState;            }        }        return (lastGoodState     }</p>
+
+<p>public:</p>
+
+<p>    typedef typename DFATraits::TokenType TokenType;</p>
+
+<p>    Tokenizer(TokenizerStreamT&amp; charEnumerator) : m    {    }</p>
+
+<p>    template&lt;class T&gt;    bool NextToken(T&amp; lexeme, typename DFATraits::TokenType&amp; tk)    {        for (;;)        {            if (                return false;            if (                return true;        }    }</p>
+
+<p>    bool NextToken(typename DFATraits::TokenType&amp; tk)    {        for (;;)        {            if (                return false;            if (                return true;        }    }  };</p>
+
+<p>}}}
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

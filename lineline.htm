@@ -1,0 +1,143 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<h2> Line segment intersection formula</h2>
+
+<p>Given the lines segment a and b.</p>
+
+<pre>
+ line a
+ (ax0, ay0)--------(ax1, ay1)
+
+ line b
+ (bx0, by0)--------(bx1, by1)
+</pre>
+
+<p>And the parametric equation for line a and b.</p>
+
+<pre>
+
+  ax(ta) = ax0 + (ax1 - ax0) * ta;
+  ay(ta) = ay0 + (ay1 - ay0) * ta;
+
+  bx(tb) = bx0 + (bx1 - bx0) * tb;
+  by(tb) = by0 + (by1 - by0) * tb;
+  
+</pre>
+
+<p>Renaming</p>
+<pre>
+  (ax1 - ax0) for adx 
+  (ay1 - ay0) for ady
+  (bx1 - bx0) for bdx
+  (by1 - by0) for bdy
+</pre>
+
+<pre>
+  ax(ta) = ax0 + adx * ta;
+  ay(ta) = ay0 + ady * ta;
+
+  bx(tb) = bx0 + bdx * tb;
+  by(tb) = by0 + bdy * tb;  
+</pre>
+
+<p>Making </p>
+
+<pre>
+  ax(ta) = bx(tb);
+  ay(ta) = by(tb);
+</pre>
+
+<pre>
+  ax0 + adx * ta = bx0 + bdx * tb;  #1
+  ay0 + ady * ta = by0 + bdy * tb;  #2
+</pre>
+
+<p>Isolating ta in </p>
+<pre>
+         (bx0 + (bdx*tb) - ax0)
+    ta = ----------------------
+                  adx
+</pre>
+
+<p>Now replace ta in </p>
+<pre>
+          ady*(bx0 + (bdx*tb) - ax0)
+     ay0 + -------------------------- = by0 + (bdy*tb)
+                     adx
+</pre>
+
+<p>Isolation tb</p>
+
+<pre>
+         ((adx*(by0 - ay0)) + (ady*(ax0 - bx0)))
+    tb = ---------------------------------------
+                 ((ady*bdx) - (bdy*adx))
+</pre>
+
+
+
+
+<p>Now we have everthing.</p>
+
+<p>The lines will intercept if    0 &gt;= ta &lt;= 1 and    0 &gt;= tb &lt;= 1</p>
+
+
+<pre>
+
+    var adx = (ax1 - ax0);
+    var ady = (ay1 - ay0);
+
+    var bdx = (bx1 - bx0);
+    var bdy = (by1 - by0);
+
+    <span class="keyword">if</span> (((ady * bdx) - (bdy * adx)) == <span class="number">0</span>)
+    {
+       <span class="comment">//no intersection 
+</span>    }
+
+
+    <span class="keyword">if</span> (adx == <span class="number">0</span>)
+    {
+       <span class="comment">//no intersection 
+</span>    }
+
+    var tb = ((adx * (by0 - ay0)) + (ady * (ax0 - bx0))) / ((ady * bdx) - (bdy * adx));
+    var ta = (bx0 + (bdx * tb) - ax0) / adx;
+
+    
+    <span class="comment">// intersection position 
+</span>    var ax = ax0 + adx * ta;
+    var ay = ay0 + ady * ta;
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

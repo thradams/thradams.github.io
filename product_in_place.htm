@@ -1,0 +1,82 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p></p>
+
+<p>Multiplies a sequence of digits by a single digit value returning the result in the input sequence.</p>
+
+<p><strong>Extra digit zero must be reserved.</strong></p>
+
+
+<p><strong> Assume same base</strong></p>
+
+<p>{{{</p>
+
+<p>  {0, 1, 0, 3 }      (u)              10</p>
+<ul>
+<li>          {2}</li>
+</ul>
+<p>              10  ----------------</p>
+
+<p>  {0, 2, 0, 6 }   (u)               10}}}</p>
+
+<hr>
+
+<p>===Implementation===</p>
+
+<p>{{{cpptemplate&lt;unsigned long long base, class It&gt;void product                      It last,                      unsigned long long value){    assert(value &lt; base);</p>
+
+<p>    --last;</p>
+
+<p>    //extra non-significant digit zero must be reserved    assert(</p>
+
+<p>    unsigned long long carry = 0;</p>
+
+<p>    for (; first     {        unsigned long long temp =         temp         temp += carry;</p>
+
+<p>                carry = temp / base;    };</p>
+
+<p>    };}}}</p>
+
+<p>===Sample===</p>
+
+<p>{{{cppvoid product{  using namespace std;</p>
+
+<p>  int n  set  assert(n</p>
+
+
+<p>  product  assert(n</p>
+
+<p>  product  assert(n</p>
+
+<p>  product  assert(n</p>
+
+<p>  //ASSERT  //product}}}}
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

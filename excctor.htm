@@ -1,0 +1,73 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Exceptions in constructors</h2>
+
+<p>Everything you need to know about exceptions in the class constructor is:</p>
+
+<p><strong>If you throw an exception in your constructor, your destructor will never be called.</strong></p>
+
+<p>Everything else is done automatically for you.</p>
+
+<p>So:</p>
+<pre>
+
+<span class="keyword">class</span> X
+{
+    Object * m_p1;
+    Object * m_p2;
+
+    <span class="comment">//don't do this
+</span>    X()
+    {
+        m_p1 = <span class="keyword">new</span> Object;
+        m_p2 = <span class="keyword">new</span> Object; <span class="comment">// LineB
+</span>    }
+
+    <span class="comment">//do this!
+</span>    X()
+    {
+        std::auto_ptr&lt;Object&gt; sp1(<span class="keyword">new</span> Object);
+        std::auto_ptr&lt;Object&gt; sp2(<span class="keyword">new</span> Object);
+        m_p1 = sp1.release();
+        m_p2 = sp2.release();
+    }
+
+    ~X()
+    {
+        <span class="keyword">delete</span> m_p1;
+        <span class="keyword">delete</span> m_p2;
+    }
+};
+</pre>
+
+<p>Why the first one is wrong?\\Because if some exception occurs in the 'LineB' in the Object constructor or in the new operator the ~X destructor will never be called.So we will have a memory leak in m</p>
+
+<p>Is it a good idea to throw in constructor?Yes. Because you will have a simpler class invariant
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

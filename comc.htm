@@ -1,0 +1,114 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>Public interfaces allows complete decoupling of implementation.</p>
+
+
+<p>Interface.h</p>
+
+<pre>
+
+pragma once
+
+<span class="comment">/*
+ * Public Interface.
+ * 
+*/</span>
+
+<span class="keyword">struct</span> Interface;
+
+<span class="keyword">typedef</span> <span class="keyword">struct</span> InterfaceVtbl
+{
+  <span class="keyword">void</span> (*Release)(Interface * This);
+};
+
+<span class="keyword">struct</span> Interface
+{
+  InterfaceVtbl * lpVtbl;
+};
+
+<span class="keyword">inline</span> <span class="keyword">void</span> Interface_Release(Interface *p)
+{
+  p-&gt;lpVtbl-&gt;Release(p);
+}
+
+</pre>
+
+
+<p>Object.h</p>
+
+<pre>
+  <span class="keyword">#pragma</span> once
+  Interface * Object_New();
+</pre>
+
+
+<p>Object.c</p>
+
+<pre>
+
+<span class="keyword">struct</span> Object
+{
+  InterfaceVtbl * lpVtbl;
+};
+
+<span class="keyword">void</span> Object_Release(Interface *p)
+{  
+  free((Object*)p);
+}
+
+Interface * Object_New()
+{
+  <span class="comment">/*vtable*/</span>
+  <span class="keyword">static</span> <span class="keyword">struct</span> InterfaceVtbl vtbl = { &amp;Object_Release };
+
+  Object * p = (Object*)malloc(<span class="keyword">sizeof</span>(Object));
+  p-&gt;lpVtbl = &amp;vtbl;
+
+  <span class="keyword">return</span> (Interface*)p;
+}
+
+</pre>
+
+
+<pre>
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+  Interface * p = Object_New();
+  Interface_Release(p);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

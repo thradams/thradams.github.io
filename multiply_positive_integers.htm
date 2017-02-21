@@ -1,0 +1,316 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<h3>Multiplication</h3>
+
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span> &lt; <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base,
+             <span class="keyword">class</span> LeftIterator,
+             <span class="keyword">class</span> RightIterator,
+             <span class="keyword">class</span> OutIterator &gt;
+    <span class="keyword">void</span> multiply(LeftIterator left_first,
+                  LeftIterator left_last,
+                  RightIterator right_first,
+                  RightIterator right_last,
+                  OutIterator out_first,
+                  OutIterator out_last)
+
+</pre>
+
+
+<p>Multiplies two digit-sequence with represents the number in the same base.</p>
+
+<h3>Sample</h3>
+<pre>
+Input:
+      { <span class="number">1</span> <span class="number">9</span> <span class="number">9</span>}
+              <span class="number">10</span>
+        { <span class="number">1</span> <span class="number">2</span>}
+              <span class="number">10</span>
+{ <span class="number">5</span> <span class="number">5</span> <span class="number">5</span> <span class="number">5</span> <span class="number">5</span> <span class="number">5</span>}
+              <span class="number">10</span>
+Output:
+      { <span class="number">1</span> <span class="number">9</span> <span class="number">9</span>}
+              <span class="number">10</span>
+        { <span class="number">1</span> <span class="number">2</span>}
+              <span class="number">10</span>
+{ <span class="number">0</span> <span class="number">0</span> <span class="number">2</span> <span class="number">3</span> <span class="number">8</span> <span class="number">8</span>}
+              <span class="number">10</span>
+
+</pre>
+
+
+<hr>
+<h3>Sample</h3>
+
+<pre>
+<span class="keyword">void</span> multiply_test()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    <span class="keyword">int</span> u[] = { <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span> , <span class="number">0</span> };  <span class="comment">// u = 103 base == 10
+</span>    <span class="keyword">int</span> v[] = { <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">0</span> };   <span class="comment">// v =  20 base == 10
+</span>    <span class="keyword">int</span> r[] = { <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> };
+    multiply&lt;<span class="number">10</span>&gt;(begin(u), sig_digit_end(begin(u), end(u)),
+                 begin(v), sig_digit_end(begin(v), end(v)),
+                 begin(r), end(r));
+    assert(r[<span class="number">5</span>] == <span class="number">0</span> &amp;&amp; r[<span class="number">4</span>] == <span class="number">0</span> &amp;&amp; r[<span class="number">3</span>] == <span class="number">2</span> &amp;&amp; r[<span class="number">2</span>] == <span class="number">0</span> &amp;&amp; r[<span class="number">1</span>] == <span class="number">6</span> &amp;&amp; r[<span class="number">0</span>] == <span class="number">0</span>);
+}
+</pre>
+
+<hr>
+<h3>Implementation</h3>
+
+<pre>
+
+<span class="keyword">template</span> &lt; <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base,
+         <span class="keyword">class</span> LeftIterator,
+         <span class="keyword">class</span> RightIterator,
+         <span class="keyword">class</span> OutIterator &gt;
+<span class="keyword">void</span> multiply(LeftIterator left_first,
+              LeftIterator left_last,
+              RightIterator right_first,
+              RightIterator right_last,
+              OutIterator out_first,
+              OutIterator out_last)
+{
+    <span class="keyword">static_assert</span>(base &gt; <span class="number">1</span>, <span class="string">&quot;base must be &gt; 1&quot;</span>);
+    <span class="comment">//base sanity check
+</span>    assert(check_digits&lt;base&gt;(left_first, left_last));
+    assert(check_digits&lt;base&gt;(right_first, right_last));
+
+    assert(out_last - out_first &gt;= (left_last - left_first) + (right_last - right_first));
+    assert(left_last - left_first == sig_digits(left_first, left_last));
+    assert(right_last - right_first == sig_digits(right_first, right_last));
+
+    <span class="keyword">const</span> size_t left_digits = left_last - left_first;
+    <span class="keyword">const</span> size_t right_digits = right_last - right_first;
+
+    <span class="keyword">for</span> (size_t j = <span class="number">0</span>; j &lt; right_digits; ++j)
+    {
+        <span class="keyword">if</span> (right_first[j] == <span class="number">0</span>)
+        {
+            <span class="keyword">continue</span>;
+        }
+
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> k = <span class="number">0</span>;
+
+        <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; left_digits; ++i)
+        {
+            <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> ui = left_first[i];
+            <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> vj = right_first[j];
+            <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> rij = j &gt; <span class="number">0</span> ? out_first[i + j] : <span class="number">0</span>;
+            <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> current = ui * vj + rij + k;
+            out_first[i + j] = current % base;
+            k = current / base ;
+        }
+
+        out_first[j + left_digits] = k;
+    }
+
+    <span class="comment">//fills leading zeroes
+</span>    out_first += right_digits <span class="number">-1</span> + left_digits;
+    <span class="keyword">for</span> (;out_first != out_last;++out_first)
+    {
+      *out_first = <span class="number">0</span>;
+    }
+}
+</pre>
+
+<hr>
+<h3>Multiply in place by a single digit</h3>
+
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+    <span class="keyword">void</span> multiply_in_place(It first,
+                           It last,
+                           <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value)
+
+</pre>
+
+
+<p>Multiples a digit-sequence by a single digit returning the result in a digit-sequence.</p>
+
+<p>Extra leading zero must be reserved.</p>
+<hr>
+<h3>Sample</h3>
+<pre>
+Input:
+    { 0 1 9 9}
+              10
+           {5}
+              10
+
+Output:
+    { 0 9 9 5}
+              10
+           {5}
+              10
+</pre>
+<hr>
+<pre>
+
+<span class="keyword">void</span> multiply_test2()
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> std;
+    <span class="keyword">int</span> n[] = { <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span> , <span class="number">0</span> };  <span class="comment">//103
+</span>    multiply_in_place&lt;<span class="number">10</span>&gt;(begin(n), end(n), <span class="number">2</span>); <span class="comment">//103 * 2
+</span>    assert(n[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">2</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">6</span>);
+    multiply_in_place&lt;<span class="number">10</span>&gt;(begin(n), end(n), <span class="number">3</span>); <span class="comment">//206 * 3
+</span>    assert(n[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">6</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">1</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">8</span>);
+    multiply_in_place&lt;<span class="number">10</span>&gt;(begin(n), end(n), <span class="number">1</span>); <span class="comment">//618 * 1
+</span>    assert(n[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">6</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">1</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">8</span>);
+    multiply_in_place&lt;<span class="number">10</span>&gt;(begin(n), end(n), <span class="number">2</span>); <span class="comment">//1236
+</span>    assert(n[<span class="number">3</span>] == <span class="number">1</span> &amp;&amp; n[<span class="number">2</span>] == <span class="number">2</span> &amp;&amp; n[<span class="number">1</span>] == <span class="number">3</span> &amp;&amp; n[<span class="number">0</span>] == <span class="number">6</span>);
+    <span class="comment">//assert
+</span>    <span class="comment">//multiply&lt;10&gt;(begin(n), end(n), 2); //1236 * 2
+</span>    <span class="comment">//assert(n[3] == 1 &amp;&amp; n[2] == 2 &amp;&amp; n[1] == 3 &amp;&amp; n[0] == 6);
+</span>    <span class="keyword">int</span> m[] = { <span class="number">3</span>, <span class="number">0</span>, <span class="number">1</span> , <span class="number">0</span> };  <span class="comment">//103
+</span>    multiply_in_place&lt;<span class="number">10</span>&gt;(begin(m), end(m), <span class="number">0</span>); <span class="comment">//103 * 0
+</span>    assert(m[<span class="number">3</span>] == <span class="number">0</span> &amp;&amp; m[<span class="number">2</span>] == <span class="number">0</span> &amp;&amp; m[<span class="number">1</span>] == <span class="number">0</span> &amp;&amp; m[<span class="number">0</span>] == <span class="number">0</span>);
+}
+
+</pre>
+
+<hr>
+<h3>Implementation</h3>
+<pre>
+    <span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+    <span class="keyword">void</span> multiply_in_place(It first,
+                           It last,
+                           <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value)
+    {
+        <span class="keyword">static_assert</span>(base &gt; <span class="number">1</span>, <span class="string">&quot;base must be &gt; 1&quot;</span>);
+        <span class="comment">//base sanity check
+</span>        assert(check_digits&lt;base&gt;(first, last));
+        assert(value &lt; base);
+        --last;
+        <span class="comment">//extra non-significant digit zero must be reserved!
+</span>        assert(*last == <span class="number">0</span>);
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> carry = <span class="number">0</span>;
+
+        <span class="keyword">for</span> (; first != last; ++first)
+        {
+            <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> temp = *first;
+            temp *= value;
+            temp += carry;
+            *first = temp % base;
+            carry = temp / base;
+        };
+
+        *first = carry;
+    };
+</pre>
+
+
+
+
+<hr>
+<h4>Multiplies by a single digit</h4>
+
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> base, <span class="keyword">class</span> LeftIterator, <span class="keyword">class</span> OutIterator&gt;
+    <span class="keyword">void</span> multiply(LeftIterator left_first,
+                  LeftIterator left_last,
+                  <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value,
+                  OutIterator out_first,
+                  OutIterator out_last)
+
+</pre>
+
+<hr>
+<h3>Sample</h3>
+<pre>
+Input:
+    { 0 1 9 9}
+              10
+
+           {5}
+              10
+
+{ 1 1 1 1 1 1}
+              10
+Output:
+    { 0 1 9 9}
+              10
+           {5}
+              10
+------------------
+{ 0 0 0 9 9 5}
+              10
+
+
+</pre>
+<hr>
+<h3>Implementation</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> base,
+         <span class="keyword">class</span> LeftIterator,
+         <span class="keyword">class</span> OutIterator&gt;
+<span class="keyword">void</span> multiply(LeftIterator left_first,
+              LeftIterator left_last,
+              <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> value,
+              OutIterator out_first,
+              OutIterator out_last)
+{
+    <span class="keyword">static_assert</span>(base &gt; <span class="number">1</span>, <span class="string">&quot;base must be &gt; 1&quot;</span>);
+    <span class="comment">//base sanity check
+</span>    assert(check_digits&lt;base&gt;(left_first, left_last));
+    assert(value &lt; base);
+    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> carry = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (; left_first != left_last; ++left_first)
+    {
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> u = *left_first;
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> temp = u * value + carry;
+        *out_first++ = temp % base;
+        carry = temp / base;
+    };
+
+    *out_first = carry;
+
+    ++out_first;
+
+    <span class="comment">//fills leading zeroes
+</span>    <span class="keyword">while</span> (out_first != out_last)
+    {
+        *out_first++ = <span class="number">0</span>;
+    }
+};
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

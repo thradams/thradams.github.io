@@ -1,0 +1,114 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<p>==Almost immutable string==</p>
+
+<p>(scratch)</p>
+
+<p>{{{cpp</p>
+
+<p>class string{  const char</p>
+
+<p>  string &amp; operator = (const string&amp;);  string &amp; operator = (string&amp;&amp; s);</p>
+
+<p>public:</p>
+
+<p>  typedef const char</p>
+
+<p>  string();    </p>
+
+<p>  //copy from  string(const string&amp; s);      explicit string(const char</p>
+
+<p>  //To move from  explicit string(char  explicit string(const char  string(string&amp;&amp;);</p>
+
+<p>  ~string();</p>
+
+<p>  const  const  size</p>
+
+<p>  const char at(size  bool empty() const;  operator const char};</p>
+
+
+<p>inline char{  if (source == nullptr)    return nullptr;</p>
+
+<p>  char</p>
+
+<p>  if (temp == nullptr)    throw std::bad</p>
+
+<p>  strcpy(temp, source);  return temp;}</p>
+
+
+<p>string::string() : m{}</p>
+
+<p>string::string(const string&amp; s) : m{  m}</p>
+
+<p>string::string(char{          psz = nullptr;}</p>
+
+<p>string::string(const char{          psz = nullptr;}</p>
+
+<p>string::string(const char{  if (psz     m}</p>
+
+<p>string::string(string&amp;&amp; s) : m{  s.m}</p>
+
+<p>string::~string(){  if (m    free((void}</p>
+
+
+<p>string::const{  return m}</p>
+
+<p>string::const{  return m}</p>
+
+
+<p>size{  return (m}</p>
+
+<p>bool string::empty() const {  return lenght() == 0;}</p>
+
+<p>string::operator const char{  return m}</p>
+
+<p>const char string::at(size{   return m}</p>
+
+<p>inline int Diference(const string&amp; s1, const string&amp; s2){  // -1 s1 &lt; s2  //  0 s1 == s2  //  1 s1 &gt; s2</p>
+
+<p>  if (s1     return strcmp(s1, s2);</p>
+
+<p>  if  (s1 == nullptr &amp;&amp; s2     return -1;</p>
+
+<p>  if  (s1     return 1;</p>
+
+<p>  return 0;}</p>
+
+<p>inline bool operator &lt; (const string&amp; s1, const string&amp; s2){    return Diference(s1, s2) == -1;}</p>
+
+<p>inline bool operator &gt; (const string&amp; s1, const string&amp; s2){    return Diference(s1, s2) == 1;}</p>
+
+<p>inline bool operator == (const string&amp; s1, const string&amp; s2){    return Diference(s1, s2) == 0;}</p>
+
+<p>inline bool operator {    return Diference(s1, s2) }</p>
+
+<p>}}}
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

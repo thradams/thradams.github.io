@@ -1,0 +1,65 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>Generating a temporary file name on Windows.</p>
+
+
+<pre>
+<span class="keyword">bool</span> GetTempFileName(std::<span class="keyword2">wstring</span>&amp; ws )
+{
+    ws.clear();<span class="comment">//out
+</span>
+    TCHAR szTempFileName[MAX_PATH];  
+    TCHAR lpTempPathBuffer[MAX_PATH];
+    <span class="keyword">char</span>  chBuffer[BUFSIZE]; 
+
+     <span class="comment">//  Gets the temp path env string (no guarantee it's a valid path).
+</span>    <span class="keyword">auto</span> dwRetVal = GetTempPath(MAX_PATH,          <span class="comment">// length of the buffer
+</span>                           lpTempPathBuffer); <span class="comment">// buffer for path 
+</span>    <span class="keyword">if</span> (dwRetVal &gt; MAX_PATH || (dwRetVal == <span class="number">0</span>))
+    {
+       <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+
+    <span class="comment">//  Generates a temporary file name. 
+</span>    <span class="keyword">auto</span> uRetVal = GetTempFileName(lpTempPathBuffer, <span class="comment">// directory for tmp files
+</span>                              TEXT(<span class="string">&quot;DEMO&quot;</span>),     <span class="comment">// temp file name prefix 
+</span>                              <span class="number">0</span>,                <span class="comment">// create unique name 
+</span>                              szTempFileName);  <span class="comment">// buffer for name 
+</span>    <span class="keyword">if</span> (uRetVal == <span class="number">0</span>)
+    {
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+    ws = szTempFileName;
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

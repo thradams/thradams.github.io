@@ -1,0 +1,590 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2>Turbo C console functions</h2>
+
+<p>For those missing the old conio.h from Turbo C, here is an implementation for windows.</p>
+
+<p>I would like to complete this code (as you can see there are some functions not implemented) and create a version for linux as well.</p>
+
+<p>See also <a href="memory">memory.htm</a> to include the bit functions.</p>
+
+<p>Download source : </p>
+
+<p>Some help about conio</p>
+
+
+<pre>
+<span class="comment">//
+</span><span class="comment">// Copyright (C) 2008, Thiago Adams (thiago.adams@gmail.com)
+</span><span class="comment">// Permission to copy, use, modify, sell and distribute this software
+</span><span class="comment">// is granted provided this copyright notice appears in all copies.
+</span><span class="comment">// This software is provided &quot;as is&quot; without express or implied
+</span><span class="comment">// warranty, and with no claim as to its suitability for any purpose.
+</span><span class="comment">//
+</span><span class="keyword">#ifndef</span> __CONSOLE_HEADER__
+<span class="keyword">#define</span> __CONSOLE_HEADER__
+
+<span class="keyword">namespace</span> console
+{
+  <span class="keyword">enum</span> COLORS
+  {
+    BLACK        =  <span class="number">0</span>,
+    BLUE         =  <span class="number">1</span>,
+    GREEN        =  <span class="number">2</span>,
+    CYAN         =  <span class="number">3</span>,
+    RED          =  <span class="number">4</span>,
+    MAGENTA      =  <span class="number">5</span>,
+    BROWN        =  <span class="number">6</span>,
+    LIGHTGRAY    =  <span class="number">7</span>,
+    DARKGRAY     =  <span class="number">8</span>,
+    LIGHTBLUE    =  <span class="number">9</span>,
+    LIGHTGREEN   = <span class="number">10</span>,
+    LIGHTCYAN    = <span class="number">11</span>,
+    LIGHTRED     = <span class="number">12</span>,
+    LIGHTMAGENTA = <span class="number">13</span>,
+    YELLOW       = <span class="number">14</span>,
+    WHITE        = <span class="number">15</span>,
+    BLINK        = <span class="number">128</span>
+  };
+  
+  <span class="keyword">enum</span> CURSORTYPE
+  {
+    _NOCURSOR,<span class="comment">//     (turns off the cursor)
+</span>    _SOLIDCURSOR,<span class="comment">//  (solid block cursor)
+</span>    _NORMALCURSOR <span class="comment">// (normal underscore cursor)
+</span>  };
+
+  <span class="keyword">struct</span> text_info 
+  {
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winleft;        <span class="comment">/* left window coordinate */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> wintop;         <span class="comment">/* top window coordinate */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winright;       <span class="comment">/* right window coordinate */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winbottom;      <span class="comment">/* bottom window coordinate */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> attribute;      <span class="comment">/* text attribute */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> normattr;       <span class="comment">/* normal attribute */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> currmode;       <span class="comment">/* current video mode:
+                                  BW40, BW80, C40, C80, or C4350 */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> screenheight;   <span class="comment">/* text screen's height */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> screenwidth;    <span class="comment">/* text screen's width */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> curx;           <span class="comment">/* x-coordinate in current window */</span>
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> cury;           <span class="comment">/* y-coordinate in current window */</span>
+  };
+
+  <span class="keyword">char</span> *cgets(<span class="keyword">char</span> *buffer);
+
+  <span class="keyword">void</span> clreol(<span class="keyword">void</span>);
+  <span class="keyword">void</span> clrscr();
+  <span class="keyword">int</span> cputs(<span class="keyword">const</span> <span class="keyword">char</span> *str);
+
+  <span class="keyword">void</span> delline(<span class="keyword">void</span>);
+  <span class="keyword">int</span> getch(<span class="keyword">void</span>);
+  <span class="keyword">int</span> getche(<span class="keyword">void</span>);
+  
+  <span class="keyword">char</span> *getpass(<span class="keyword">const</span> <span class="keyword">char</span> *prompt);
+  <span class="keyword">int</span> gettext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">void</span>*destin);
+  <span class="keyword">void</span> gettextinfo(<span class="keyword">struct</span> text_info *r);
+  <span class="keyword">void</span> gotoxy(<span class="keyword">int</span> x, <span class="keyword">int</span> y);
+  <span class="keyword">void</span> highvideo();     
+
+  <span class="keyword">void</span> insline(<span class="keyword">void</span>);
+  <span class="keyword">int</span> kbhit(<span class="keyword">void</span>);
+
+  <span class="keyword">void</span> lowvideo();      
+  <span class="keyword">int</span> movetext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">int</span> destleft, <span class="keyword">int</span> desttop);
+  <span class="keyword">void</span> normvideo();     
+  
+  <span class="keyword">int</span> putch(<span class="keyword">int</span> c);
+
+  <span class="keyword">int</span> puttext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">const</span> <span class="keyword">char</span>*source);  
+  <span class="keyword">void</span> _setcursortype(<span class="keyword">int</span> cur_t);
+  <span class="keyword">void</span> textattr(<span class="keyword">int</span> newattr);
+  <span class="keyword">int</span> textbackground(<span class="keyword">int</span> newcolor);
+  <span class="keyword">int</span> textcolor(<span class="keyword">int</span> newcolor);
+  <span class="keyword">int</span> ungetch(<span class="keyword">int</span> ch);
+  <span class="keyword">int</span> wherex();
+  <span class="keyword">int</span> wherey();
+  <span class="comment">//window    //TODO
+</span>} <span class="comment">// namespace console
+</span>
+<span class="keyword">#endif</span> <span class="comment">//__CONSOLE_HEADER__
+</span>
+Windows - Implementation
+
+<span class="keyword">#include</span> <span class="string">&quot;console.h&quot;</span>
+
+<span class="keyword">#include</span> &lt;conio.h&gt; <span class="comment">//from windows
+</span><span class="keyword">#include</span> &lt;cassert&gt;
+<span class="keyword">#include</span> &lt;windows.h&gt;
+
+<span class="keyword">namespace</span> console
+{
+    <span class="keyword">using</span> <span class="keyword">namespace</span> memory;
+
+    <span class="keyword">char</span> *_cgets(<span class="keyword">char</span> *buffer)
+    {
+        <span class="keyword">return</span> _cgets(buffer);
+    }
+
+    <span class="keyword">int</span> getch(<span class="keyword">void</span>)
+    {
+        <span class="keyword">return</span> _getch();
+    }
+
+    <span class="keyword">int</span> getche(<span class="keyword">void</span>)
+    {
+        <span class="keyword">return</span> _getche();
+    }
+
+    <span class="keyword">int</span> kbhit(<span class="keyword">void</span>)
+    {
+        <span class="keyword">return</span> _kbhit();
+    }
+
+    <span class="keyword">int</span> cputs(<span class="keyword">const</span> <span class="keyword">char</span> *str)
+    {
+        <span class="keyword">return</span> _cputs(str);
+    }
+
+    <span class="keyword">void</span> gettextinfo(text_info *r)
+    {
+        <span class="keyword">if</span> (r == <span class="number">0</span>)
+            <span class="keyword">return</span>;
+
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &amp;csbi);
+
+        r-&gt;attribute = csbi.wAttributes;
+        r-&gt;curx = csbi.dwCursorPosition.X;
+        r-&gt;cury = csbi.dwCursorPosition.Y;
+        r-&gt;screenwidth = csbi.dwMaximumWindowSize.X;
+        r-&gt;screenheight = csbi.dwMaximumWindowSize.X;
+        r-&gt;winleft = csbi.srWindow.Left;
+        r-&gt;wintop = csbi.srWindow.Top;
+        r-&gt;winright = csbi.srWindow.Right;
+        r-&gt;winbottom = csbi.srWindow.Bottom;
+        r-&gt;normattr = <span class="number">0</span>;
+        r-&gt;currmode = <span class="number">3</span>;
+    }
+
+    <span class="keyword">void</span> _setcursortype(<span class="keyword">int</span> cur_t)
+    {
+        CONSOLE_CURSOR_INFO ci;
+        <span class="keyword">switch</span> (cur_t)
+        {
+        <span class="keyword">case</span> _NOCURSOR:<span class="comment">//     (turns off the cursor)
+</span>            ci.bVisible = FALSE;
+            ci.dwSize = <span class="number">0</span>;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> _SOLIDCURSOR:<span class="comment">//  (solid block cursor)
+</span>            ci.bVisible = TRUE;
+            ci.dwSize = <span class="number">100</span>;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>:
+        <span class="keyword">case</span> _NORMALCURSOR: <span class="comment">// (normal underscore cursor)
+</span>            ci.bVisible = TRUE;
+            ci.dwSize = <span class="number">50</span>;
+            <span class="keyword">break</span>;
+        }
+        SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &amp;ci);
+    }
+
+    <span class="keyword">void</span> textattr(<span class="keyword">int</span> newattr)
+    {
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), newattr);
+    }
+
+    <span class="keyword">int</span> putch(<span class="keyword">int</span> c)
+    {
+        <span class="keyword">return</span> _putch(c);
+    }
+
+    <span class="keyword">void</span> clreol(<span class="keyword">void</span>)
+    {
+        <span class="comment">//clreol clears all characters from the cursor
+</span>        <span class="comment">//position to the end of the line within the
+</span>        <span class="comment">//current text window, without moving the
+</span>        <span class="comment">//cursor.
+</span>    }
+
+    <span class="keyword">char</span> *getpass(<span class="keyword">const</span> <span class="keyword">char</span> *prompt)
+    {
+        <span class="comment">//reads password
+</span>        <span class="comment">//  getpass reads a password from the system
+</span>        <span class="comment">//console, after prompting with the
+</span>        <span class="comment">//null-terminated string prompt and disabling
+</span>        <span class="comment">//the echo.
+</span>
+        <span class="comment">//It returns a pointer to a null-terminated
+</span>        <span class="comment">//string of up to eight characters (not
+</span>        <span class="comment">//counting the null terminator).
+</span>
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+
+    <span class="keyword">void</span> delline(<span class="keyword">void</span>)
+    {
+        <span class="comment">//tODO inserts blank line
+</span>    }
+
+    <span class="keyword">void</span> insline(<span class="keyword">void</span>)
+    {
+        <span class="comment">//tODO inserts blank line
+</span>    }
+
+    <span class="keyword">int</span> movetext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">int</span> destleft, <span class="keyword">int</span> desttop)
+    {
+        <span class="comment">//TODO
+</span>        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+
+    <span class="keyword">int</span> gettext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">void</span>*destin)
+    {
+        <span class="keyword">if</span> (destin == <span class="number">0</span>)
+            <span class="keyword">return</span> <span class="number">0</span>;
+        <span class="keyword">char</span> * pszText = (<span class="keyword">char</span> *) destin;
+
+        <span class="keyword">int</span> count = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = top; (k &lt;= bottom) &amp;&amp; (*pszText); k++)
+        {
+            <span class="keyword">for</span> (<span class="keyword">int</span> i = left; (i &lt;= right) &amp;&amp; (*pszText); i++)
+            {
+                COORD point = {SHORT(i), SHORT(k)
+                };
+
+                TCHAR ch;
+                DWORD c;
+                ReadConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), &amp;ch, <span class="number">1</span>, point, &amp;c);
+                *pszText = ch;
+                count++;
+                pszText++;
+            }
+        }
+        *pszText = <span class="number">0</span>;
+        <span class="keyword">return</span> count;
+    }
+
+    <span class="keyword">int</span> puttext(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom, <span class="keyword">const</span> <span class="keyword">char</span>*source)
+    {
+        <span class="keyword">if</span> (source == <span class="number">0</span>)
+            <span class="keyword">return</span> <span class="number">0</span>;
+        <span class="keyword">const</span> <span class="keyword">char</span> * pszText = (<span class="keyword">const</span> <span class="keyword">char</span> *) source;
+        text_info ti;
+        gettextinfo(&amp;ti);
+        <span class="keyword">int</span> count = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = top; (k &lt;= bottom) &amp;&amp; (*pszText); k++)
+        {
+            <span class="keyword">for</span> (<span class="keyword">int</span> i = left; (i &lt; right) &amp;&amp; (*pszText); i++)
+            {
+                gotoxy(i, k);
+                putch(*pszText);
+                count++;
+                pszText++;
+            }
+        }
+        gotoxy(ti.curx, ti.cury);
+        <span class="keyword">return</span> count;
+    }
+
+    <span class="keyword">int</span> textbackground(<span class="keyword">int</span> newcolor)
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        <span class="keyword">unsigned</span> <span class="keyword">char</span> wColor = ti.attribute;
+        <span class="keyword">unsigned</span> <span class="keyword">char</span> old = getbits(wColor, <span class="number">4</span>, <span class="number">4</span>);
+        setbits(wColor, <span class="number">4</span>, <span class="number">4</span>, newcolor);
+        textattr(wColor);
+        <span class="keyword">return</span> old;
+    }
+
+    <span class="keyword">int</span> textcolor(<span class="keyword">int</span> newcolor)
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        <span class="keyword">unsigned</span> <span class="keyword">char</span> wColor = ti.attribute;
+        <span class="keyword">int</span> old = getbits(wColor, <span class="number">0</span>, <span class="number">4</span>);
+        setbits(wColor, <span class="number">0</span>, <span class="number">4</span>, newcolor);
+        textattr(wColor);
+        <span class="keyword">return</span> old;
+    }
+
+    <span class="keyword">void</span> highvideo()
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        setbits(ti.attribute, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>);
+        textattr(ti.attribute);
+    }
+
+    <span class="keyword">void</span> lowvideo()
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        setbits(ti.attribute, <span class="number">3</span>, <span class="number">1</span>, <span class="number">0</span>);
+        textattr(ti.attribute);
+    }
+
+    <span class="keyword">void</span> normvideo()
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        setbits(ti.attribute, <span class="number">3</span>, <span class="number">1</span>, <span class="number">0</span>);
+        setbits(ti.attribute, <span class="number">7</span>, <span class="number">1</span>, <span class="number">0</span>);
+        textattr(ti.attribute);
+    }
+
+    <span class="keyword">int</span> wherex()
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        <span class="keyword">return</span> ti.curx;
+    }
+
+    <span class="keyword">int</span> wherey()
+    {
+        text_info ti;
+        gettextinfo(&amp;ti);
+        <span class="keyword">return</span> ti.cury;
+    }
+
+    <span class="keyword">void</span> gotoxy(<span class="keyword">int</span> x, <span class="keyword">int</span> y)
+    {
+        COORD point = {SHORT(x), SHORT(y)};
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), point);
+    }
+
+    <span class="keyword">void</span> clrscr()
+    {
+        COORD coordScreen = {<span class="number">0</span>, <span class="number">0</span>};
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> cCharsWritten;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        <span class="keyword">unsigned</span> <span class="keyword">long</span> dwConSize;
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        GetConsoleScreenBufferInfo(hConsole, &amp;csbi);
+        dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+        FillConsoleOutputCharacter(hConsole, TEXT(<span class="string">' '</span>), dwConSize, coordScreen, &amp;cCharsWritten);
+        GetConsoleScreenBufferInfo(hConsole, &amp;csbi);
+        FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &amp;cCharsWritten);
+        SetConsoleCursorPosition(hConsole, coordScreen);
+    }
+
+    <span class="keyword">int</span> ungetch(<span class="keyword">int</span> ch)
+    {
+        <span class="keyword">return</span> _ungetch(ch);
+    }
+
+} <span class="comment">// namespace console
+</span>
+}}}
+
+Utils
+{{{cpp
+
+<span class="keyword">void</span> Box(<span class="keyword">int</span> left, <span class="keyword">int</span> top, <span class="keyword">int</span> right, <span class="keyword">int</span> bottom,
+         <span class="keyword">int</span> color = console::WHITE,
+         <span class="keyword">char</span> pattern = <span class="string">' '</span>)
+{
+  <span class="keyword">int</span> i = console::textbackground(color); 
+  console::text_info ti;
+  console::gettextinfo(&amp;ti);
+  <span class="keyword">int</span> count = <span class="number">0</span>;
+  <span class="keyword">for</span> (<span class="keyword">int</span> k = top; (k &lt;= bottom); k++)
+  {
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = left; (i &lt; right); i++)
+    {
+      console::gotoxy(i, k);
+      console::putch(pattern);
+    }
+  }
+  console::gotoxy(ti.curx, ti.cury);
+  console::textbackground(i); 
+}
+</pre>
+
+
+<p></p>
+
+<p><a href="http://www.dosbox.com/">http://www.dosbox.com/</a></p>
+
+
+<p>Original Borland Turbo C header: CONIO.H</p>
+
+
+<pre>
+<span class="comment">/*  conio.h
+
+    Direct MSDOS console input/output.
+
+    Copyright (c) 1987, 1991 by Borland International
+    All Rights Reserved.
+*/</span>
+
+<span class="keyword">#if</span> !defined(__CONIO_H)
+<span class="keyword">#define</span> __CONIO_H
+
+<span class="keyword">#if</span> !defined(__DEFS_H)
+<span class="keyword">#include</span> &lt;_defs.h&gt;
+<span class="keyword">#endif</span>
+
+<span class="keyword">#define</span> _NOCURSOR      <span class="number">0</span>
+<span class="keyword">#define</span> _SOLIDCURSOR   <span class="number">1</span>
+<span class="keyword">#define</span> _NORMALCURSOR  <span class="number">2</span>
+
+<span class="keyword">struct</span> text_info {
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winleft;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> wintop;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winright;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> winbottom;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> attribute;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> normattr;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> currmode;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> screenheight;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> screenwidth;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> curx;
+    <span class="keyword">unsigned</span> <span class="keyword">char</span> cury;
+};
+
+<span class="keyword">enum</span> text_modes { LASTMODE=<span class="number">-1</span>, BW40=<span class="number">0</span>, C40, BW80, C80, MONO=<span class="number">7</span>, C4350=<span class="number">64</span> };
+
+<span class="keyword">#if</span> !defined(__COLORS)
+<span class="keyword">#define</span> __COLORS
+
+<span class="keyword">enum</span> COLORS {
+    BLACK,          <span class="comment">/* dark colors */</span>
+    BLUE,
+    GREEN,
+    CYAN,
+    RED,
+    MAGENTA,
+    BROWN,
+    LIGHTGRAY,
+    DARKGRAY,       <span class="comment">/* light colors */</span>
+    LIGHTBLUE,
+    LIGHTGREEN,
+    LIGHTCYAN,
+    LIGHTRED,
+    LIGHTMAGENTA,
+    YELLOW,
+    WHITE
+};
+<span class="keyword">#endif</span>
+
+<span class="keyword">#define</span> BLINK       <span class="number">128</span> <span class="comment">/* blink bit */</span>
+
+<span class="keyword">extern</span>   <span class="keyword">int</span> _Cdecl directvideo;
+<span class="keyword">extern</span>   <span class="keyword">int</span> _Cdecl _wscroll;
+
+<span class="keyword">#ifdef</span> __cplusplus
+<span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> {
+<span class="keyword">#endif</span>
+
+<span class="keyword">void</span>        _Cdecl clreol( <span class="keyword">void</span> );
+<span class="keyword">void</span>        _Cdecl clrscr( <span class="keyword">void</span> );
+<span class="keyword">void</span>        _Cdecl gotoxy( <span class="keyword">int</span> __x, <span class="keyword">int</span> __y );
+<span class="keyword">int</span>         _Cdecl wherex( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl wherey( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl getch( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl getche( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl kbhit( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl putch( <span class="keyword">int</span> __c );
+
+<span class="keyword">#ifndef</span> _PORT_DEFS
+<span class="keyword">int</span>         _Cdecl inp( <span class="keyword">unsigned</span> __portid );
+<span class="keyword">unsigned</span>    _Cdecl inpw( <span class="keyword">unsigned</span> __portid );
+<span class="keyword">int</span>         _Cdecl outp( <span class="keyword">unsigned</span> __portid, <span class="keyword">int</span> __value );
+<span class="keyword">unsigned</span>    _Cdecl outpw( <span class="keyword">unsigned</span> __portid, <span class="keyword">unsigned</span> __value );
+<span class="keyword">unsigned</span> <span class="keyword">char</span> _Cdecl inportb( <span class="keyword">int</span> __portid );
+<span class="keyword">void</span>        _Cdecl outportb( <span class="keyword">int</span> __portid, <span class="keyword">unsigned</span> <span class="keyword">char</span> __value );
+<span class="keyword">#endif</span>  <span class="comment">/* !_PORT_DEFS */</span>
+
+<span class="keyword">int</span>         _Cdecl inport( <span class="keyword">int</span> __portid );
+<span class="keyword">void</span>        _Cdecl outport( <span class="keyword">int</span> __portid, <span class="keyword">int</span> __value );
+
+<span class="keyword">void</span>        _Cdecl delline( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl gettext( <span class="keyword">int</span> __left, <span class="keyword">int</span> __top,
+                            <span class="keyword">int</span> __right, <span class="keyword">int</span> __bottom,
+                            <span class="keyword">void</span> *__destin);
+<span class="keyword">void</span>        _Cdecl gettextinfo (<span class="keyword">struct</span> text_info *__r );
+<span class="keyword">void</span>        _Cdecl highvideo( <span class="keyword">void</span> );
+<span class="keyword">void</span>        _Cdecl insline( <span class="keyword">void</span> );
+<span class="keyword">void</span>        _Cdecl lowvideo( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl movetext( <span class="keyword">int</span> __left, <span class="keyword">int</span> __top,
+                             <span class="keyword">int</span> __right, <span class="keyword">int</span> __bottom,
+                             <span class="keyword">int</span> __destleft, <span class="keyword">int</span> __desttop );
+<span class="keyword">void</span>        _Cdecl normvideo( <span class="keyword">void</span> );
+<span class="keyword">int</span>         _Cdecl puttext( <span class="keyword">int</span> __left, <span class="keyword">int</span> __top,
+                            <span class="keyword">int</span> __right, <span class="keyword">int</span> __bottom,
+                            <span class="keyword">void</span> *__source );
+<span class="keyword">void</span>        _Cdecl textattr( <span class="keyword">int</span> __newattr );
+<span class="keyword">void</span>        _Cdecl textbackground( <span class="keyword">int</span> __newcolor );
+<span class="keyword">void</span>        _Cdecl textcolor( <span class="keyword">int</span> __newcolor );
+<span class="keyword">void</span>        _Cdecl textmode( <span class="keyword">int</span> __newmode );
+<span class="keyword">void</span>        _Cdecl window( <span class="keyword">int</span> __left, <span class="keyword">int</span> __top, <span class="keyword">int</span> __right, <span class="keyword">int</span> __bottom);
+
+<span class="keyword">void</span>        _Cdecl _setcursortype( <span class="keyword">int</span> __cur_t );
+<span class="keyword">char</span> * _Cdecl cgets( <span class="keyword">char</span> *__str );
+<span class="keyword">int</span>         _Cdecl cprintf( <span class="keyword">const</span> <span class="keyword">char</span> *__format, ... );
+<span class="keyword">int</span>         _Cdecl cputs( <span class="keyword">const</span> <span class="keyword">char</span> *__str );
+<span class="keyword">int</span>         _Cdecl cscanf( <span class="keyword">const</span> <span class="keyword">char</span> *__format, ... );
+<span class="keyword">char</span> * _Cdecl getpass( <span class="keyword">const</span> <span class="keyword">char</span> *__prompt );
+<span class="keyword">int</span>         _Cdecl ungetch( <span class="keyword">int</span> __ch );
+
+<span class="keyword">#ifndef</span> _PORT_DEFS
+<span class="keyword">#define</span> _PORT_DEFS
+
+    <span class="comment">/* These are in-line functions.  These prototypes just clean up
+       some syntax checks and code generation.
+     */</span>
+<span class="keyword">unsigned</span> <span class="keyword">char</span> _Cdecl    __inportb__( <span class="keyword">int</span> __portid );
+<span class="keyword">unsigned</span> <span class="keyword">int</span> _Cdecl     __inportw__( <span class="keyword">int</span> __portid );
+<span class="keyword">void</span>        _Cdecl      __outportb__( <span class="keyword">int</span> __portid, <span class="keyword">unsigned</span> <span class="keyword">char</span> __value );
+<span class="keyword">void</span>        _Cdecl      __outportw__( <span class="keyword">int</span> __portid, <span class="keyword">unsigned</span> <span class="keyword">int</span> __value );
+
+<span class="keyword">#define</span> inportb         __inportb__
+<span class="keyword">#define</span> inportw         __inportw__
+<span class="keyword">#define</span> outportb        __outportb__
+<span class="keyword">#define</span> outportw        __outportw__
+
+<span class="keyword">#define</span> inp( portid )      __inportb__( portid )
+<span class="keyword">#define</span> outp( portid,v )  (__outportb__( portid,v ), (<span class="keyword">int</span>)_AL)
+<span class="keyword">#define</span> inpw( portid )     __inportw__( portid )
+<span class="keyword">#define</span> outpw( portid,v ) (__outportw__( portid,v ), (<span class="keyword">unsigned</span>)_AX)
+
+<span class="keyword">#endif</span>  <span class="comment">/* _PORT_DEFS */</span>
+
+<span class="keyword">#ifdef</span> __cplusplus
+}
+<span class="keyword">#endif</span>
+
+<span class="keyword">#endif</span>  <span class="comment">/* __CONIO_H */</span>
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
