@@ -120,7 +120,7 @@
 
 [Exception cost?](exceptionscost.md) June 2012
 
-[Math lib](MathLib.md) May 2012
+[Math lib](mathlib.md) May 2012
 
 [Minimum type to hold an unsigned](mumin.md) May 2012
 
