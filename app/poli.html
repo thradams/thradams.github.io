@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript HTML App</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+
+
+    <script>
+        function BtnClick()
+        {
+            var types = {};
+            try
+            {
+                var i = document.getElementById("input");
+                var str = i.textContent;
+                str = str.replace(/(\r\n|\n|\r)/gm, "");
+                types = JSON.parse(str);
+            }
+            catch (e)
+            {
+            }
+            var id = 0;
+            var text = "";
+            
+            for (var it in types)
+            {
+                var item = types[it];
+                if (item.length == 0)
+                {
+                    text += "#define " + it.toUpperCase() + "_ID " + id + "\r\n";
+                    id++;
+                }
+                else
+                {
+                }
+            }
+            /////
+            text += "\r\n";
+            
+            text += "\r\n";
+            
+            text += "\r\n";
+            for (var it in types)
+            {
+                var item = types[it];
+                if (item.length != 0)
+                {
+                    text += "typedef struct { int id; } " + it + ";\r\n";
+                    text += "\r\n";
+
+                    text += "/*casts for " + it + "/*\r\n\r\n";
+                    var set = {};
+                    GetListOfInstances(types, it, set);
+                    for (var itset in set)
+                    {
+
+                        //casts                        
+                        text += "#define " + it + "_As_" + itset + "(p)  ((p)->id == " + itset.toUpperCase() + "_ID ? (" + itset + "*) p : 0)\r\n";
+                        text += "#define " + itset + "_As_" + it + "(p) (p)\r\n";
+                        
+                        text += "\r\n";
+                    }
+                    text += "\r\n\r\n";
+                }
+            }
+            //
+            text += "\r\n";
+            text += "/*Function Sample*/ \r\n";
+            text += "\r\n";
+            for (var it in types)
+            {
+                var item = types[it];
+                if (item.length != 0)
+                {
+                    text += "void " + it + "_Delete(" + it + "* p)\r\n";
+                    text += "{\r\n";
+                    text += "  switch (p->id)\r\n";
+                    text += "  {\r\n";
+                    var set = {};
+                    GetListOfInstances(types, it, set);
+                    for (var itset in set)
+                    {
+                        text += "    case " + itset.toUpperCase() + "_ID:\r\n"; // + itset + "_Delete( (" + itset + "*) p);\r\n";
+                        text += "        " + itset + "_Delete((" + itset + "*) p);\r\n";
+                        text += "        break;\r\n";
+                        text += "\r\n";
+                    }
+                    text += "    }\r\n";
+                    text += "}\r\n";
+                    text += "\r\n\r\n";
+                }
+            }
+            document.getElementById('content').textContent = text;
+        }
+        function GetListOfInstances(types, typeName, set)
+        {
+            if (types[typeName].length == 0)
+            {
+                set[typeName] = 0;
+            }
+            else
+            {
+                var obj = types[typeName];
+                for (var i = 0; i < obj.length; i++)
+                {
+                    GetListOfInstances(types, obj[i], set);
+                }
+            }
+        }
+
+
+
+    </script>
+</head>
+
+<body>
+    <h1>Polimorphic class generator</h1>
+    <textarea id="input" style="width:100%; height:250px">
+        {
+        "Circle" : [],
+        "Rectangle" : [],
+        "Shape" : ["Circle", "Rectangle"]
+        }
+    </textarea>
+    <input type="button" onclick="BtnClick()" value="Generate" />
+    <pre id="content"></pre>
+</body>
+</html>
