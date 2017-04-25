@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Generator</title>
-   
+
     <script>
         function BtnClick()
         {
@@ -51,13 +51,21 @@
                     text += "/*casts for " + it + "/*\r\n\r\n";
                     var set = {};
                     GetListOfInstances(types, it, set);
+
                     for (var itset in set)
                     {
-
-                        //casts                        
-                        text += "#define " + it + "_As_" + itset + "(p)  ((p)->id == " + itset.toUpperCase() + "_ID ? (" + itset + "*) p : 0)\r\n";
-                        text += "#define " + itset + "_As_" + it + "(p) (p)\r\n";
-                        
+                        if (types[itset].length == 0)
+                        {
+                            text += "#define " + it + "_As_" + itset + "(p)  ((p)->id == " + itset.toUpperCase() + "_ID ? (" + itset + "*) p : 0)\r\n";
+                            text += "#define " + itset + "_As_" + it + "(p) (p)\r\n";
+                        }
+                        else
+                        {
+                            if (it != itset)
+                            {
+                                text += "#define " + it + "_As_" + itset + "(p)  (p)\r\n";
+                            }
+                        }
                         text += "\r\n";
                     }
                     text += "\r\n\r\n";
@@ -77,13 +85,17 @@
                     text += "  switch (p->id)\r\n";
                     text += "  {\r\n";
                     var set = {};
+                  
                     GetListOfInstances(types, it, set);
                     for (var itset in set)
                     {
-                        text += "    case " + itset.toUpperCase() + "_ID:\r\n"; // + itset + "_Delete( (" + itset + "*) p);\r\n";
-                        text += "        " + itset + "_Delete((" + itset + "*) p);\r\n";
-                        text += "        break;\r\n";
-                        text += "\r\n";
+                        if (types[itset].length == 0)
+                        {
+                            text += "    case " + itset.toUpperCase() + "_ID:\r\n"; // + itset + "_Delete( (" + itset + "*) p);\r\n";
+                            text += "        " + itset + "_Delete((" + itset + "*) p);\r\n";
+                            text += "        break;\r\n";
+                            text += "\r\n";
+                        }
                     }
                     text += "    }\r\n";
                     text += "}\r\n";
@@ -94,18 +106,19 @@
         }
         function GetListOfInstances(types, typeName, set)
         {
-            if (types[typeName].length == 0)
-            {
-                set[typeName] = 0;
-            }
-            else
-            {
                 var obj = types[typeName];
-                for (var i = 0; i < obj.length; i++)
+                if (obj)
                 {
-                    GetListOfInstances(types, obj[i], set);
+                    set[typeName] = obj.length;
+                    for (var i = 0; i < obj.length; i++)
+                    {
+                        GetListOfInstances(types, obj[i], set);
+                    }
                 }
-            }
+                else
+                {
+                    //nao foi declarado
+                }
         }
 
 
