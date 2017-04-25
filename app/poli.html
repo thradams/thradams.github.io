@@ -14,7 +14,7 @@
             try
             {
                 var i = document.getElementById("input");
-                var str = i.textContent;
+                var str = i.value;
                 str = str.replace(/(\r\n|\n|\r)/gm, "");
                 types = JSON.parse(str);
             }
