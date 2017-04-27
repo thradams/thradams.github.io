@@ -48,7 +48,7 @@
                     text += "typedef struct { int id; } " + it + ";\r\n";
                     text += "\r\n";
 
-                    text += "/*casts for " + it + "/*\r\n\r\n";
+                    text += "/*casts for " + it + "*/\r\n\r\n";
                     var set = {};
                     GetListOfInstances(types, it, set);
 
@@ -73,7 +73,7 @@
             }
             //
             text += "\r\n";
-            text += "/*Function Sample*/ \r\n";
+            text += "/*Sample*/ \r\n";
             text += "\r\n";
             for (var it in types)
             {
