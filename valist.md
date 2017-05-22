@@ -3,7 +3,7 @@
 (Visual Studio)
 
 
-```c
+```cpp
 
 
 #include <stdio.h>

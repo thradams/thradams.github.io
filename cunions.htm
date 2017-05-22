@@ -25,59 +25,60 @@
 
 
 <pre>
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
 
 
-typedef struct Box {
-  int BoxId;
-  int w, h;
+<span class="keyword">typedef</span> <span class="keyword">struct</span> Box {
+  <span class="keyword">int</span> BoxId;
+  <span class="keyword">int</span> w, h;
 } Box;
 
-typedef struct Circle {
-  int CircleId;
-  int r;
+<span class="keyword">typedef</span> <span class="keyword">struct</span> Circle {
+  <span class="keyword">int</span> CircleId;
+  <span class="keyword">int</span> r;
 } Circle;
 
-typedef union Shape {
+<span class="keyword">typedef</span> <span class="keyword">union</span> Shape {
   
-  int ShapeId;
+  <span class="keyword">int</span> ShapeId;
   Box;
   Circle;
 
 } Shape;
 
 
-void Circle_Print(Circle* pCircle)
+<span class="keyword">void</span> Circle_Print(Circle* pCircle)
 {
-  printf(&quot;r = %d\n&quot;, pCircle-&gt;r);
+  printf(<span class="string">&quot;r = %d\n&quot;</span>, pCircle-&gt;r);
 }
 
-int main(int argc, char** argv)
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)
 {
-  Box* pBox = malloc(sizeof(Box));
-  *pBox = (Box) { .BoxId = 1, .w = 1, .h = 2 };
+  Box* pBox = malloc(<span class="keyword">sizeof</span>(Box));
+  *pBox = (Box) { .BoxId = <span class="number">1</span>, .w = <span class="number">1</span>, .h = <span class="number">2</span> };
 
-  Circle* pCircle = malloc(sizeof(Box));
-  *pCircle = (Circle) { .CircleId = 2, .r = 3 };
+  Circle* pCircle = malloc(<span class="keyword">sizeof</span>(Box));
+  *pCircle = (Circle) { .CircleId = <span class="number">2</span>, .r = <span class="number">3</span> };
 
-  Shape* p[2] = { (Shape*)pBox, (Shape*)pCircle };
+  Shape* p[<span class="number">2</span>] = { (Shape*)pBox, (Shape*)pCircle };
 
-  for (int i = 0; i &lt; 2; i++) {
-    switch (p[i]-&gt;ShapeId) {
-    case 1:
-      printf(&quot;w = %d, h = %d\n&quot;, p[i]-&gt;w, p[i]-&gt;h);
-      break;
-    case 2:
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) {
+    <span class="keyword">switch</span> (p[i]-&gt;ShapeId) {
+    <span class="keyword">case</span> <span class="number">1</span>:
+      printf(<span class="string">&quot;w = %d, h = %d\n&quot;</span>, p[i]-&gt;w, p[i]-&gt;h);
+      <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">2</span>:
       Circle_Print((Circle*)p[i]);
-      printf(&quot;r = %d\n&quot;, p[i]-&gt;r);
-      break;
+      printf(<span class="string">&quot;r = %d\n&quot;</span>, p[i]-&gt;r);
+      <span class="keyword">break</span>;
     }
   }
 
-  return 0;
+  <span class="keyword">return</span> <span class="number">0</span>;
 }
 </pre>
+
 
 <!-- Page content end --> 
 </article> 

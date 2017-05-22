@@ -27,44 +27,45 @@
 <h2> Header</h2>
 
 <pre>
-#pragma once
-#include &lt;stdint.h&gt; 
-#include &lt;stdbool.h&gt;
+<span class="keyword">#pragma</span> once
+<span class="keyword">#include</span> &lt;stdint.h&gt; 
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
 
-typedef struct Bucket
+<span class="keyword">typedef</span> <span class="keyword">struct</span> Bucket
 {
-  struct Bucket* pNext;
-  unsigned int   Hash;
+  <span class="keyword">struct</span> Bucket* pNext;
+  <span class="keyword">unsigned</span> <span class="keyword">int</span>   Hash;
   uint32_t       Key;
-  void*          pValue;
+  <span class="keyword">void</span>*          pValue;
 } Bucket;
 
-typedef struct
+<span class="keyword">typedef</span> <span class="keyword">struct</span>
 {
   Bucket**     pBuckets;
-  unsigned int HashTableSize;
+  <span class="keyword">unsigned</span> <span class="keyword">int</span> HashTableSize;
   size_t       Count;
 } Map;
 
 
-#define MAP_INIT_100 { NULL, 100, 0 }
+<span class="keyword">#define</span> MAP_INIT_100 { NULL, <span class="number">100</span>, <span class="number">0</span> }
 
-void Map_Init(Map* p);
-void Map_Destroy(Map* p, void (*PF)(void*));
+<span class="keyword">void</span> Map_Init(Map* p);
+<span class="keyword">void</span> Map_Destroy(Map* p, <span class="keyword">void</span> (*PF)(<span class="keyword">void</span>*));
 
-int Map_SetAt(Map* pMap,
+<span class="keyword">int</span> Map_SetAt(Map* pMap,
               uint32_t Key,
-              void* pNewValue,
-              void** ppPreviousValue);
+              <span class="keyword">void</span>* pNewValue,
+              <span class="keyword">void</span>** ppPreviousValue);
 
-bool Map_Lookup(Map* pMap,
+<span class="keyword">bool</span> Map_Lookup(Map* pMap,
                 uint32_t  Key,
-                void** ppValue);
+                <span class="keyword">void</span>** ppValue);
 
-bool Map_RemoveKey(Map* pMap,
+<span class="keyword">bool</span> Map_RemoveKey(Map* pMap,
                    uint32_t Key,
-                   void** ppValue);
+                   <span class="keyword">void</span>** ppValue);
 </pre>
+
 <h2> Source</h2>
 
 <pre>

@@ -1,7 +1,7 @@
 
 ## Header
 
-```c
+```cpp
 #pragma once
 #include <stdint.h> 
 #include <stdbool.h>

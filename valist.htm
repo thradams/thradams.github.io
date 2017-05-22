@@ -31,19 +31,19 @@
 <pre>
 
 
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;stdarg.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdarg.h&gt;
 
 
-void F2(const char* fmt, va_list vl)
+<span class="keyword">void</span> F2(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list vl)
 {
-  int i = va_arg(vl, int);
-  double d = va_arg(vl, double);
-  printf(&quot;i = %d, d = %lf\n&quot;, i, d);
+  <span class="keyword">int</span> i = va_arg(vl, <span class="keyword">int</span>);
+  <span class="keyword">double</span> d = va_arg(vl, <span class="keyword">double</span>);
+  printf(<span class="string">&quot;i = %d, d = %lf\n&quot;</span>, i, d);
 }
 
-void F(const char* fmt, ...)
+<span class="keyword">void</span> F(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
 {
   va_list vl;
   va_start(vl, fmt);
@@ -51,37 +51,38 @@ void F(const char* fmt, ...)
   va_end(vl);
 }
 
-void va_list_free(va_list args)
+<span class="keyword">void</span> va_list_free(va_list args)
 {
   free(args);
 }
 
 
-va_list va_list_create(void* pmem, int i, double d)
+va_list va_list_create(<span class="keyword">void</span>* pmem, <span class="keyword">int</span> i, <span class="keyword">double</span> d)
 {
   va_list p = (va_list)pmem;
-  va_arg(p, int) = i;
-  va_arg(p, double) = d;
-  return (va_list)pmem;
+  va_arg(p, <span class="keyword">int</span>) = i;
+  va_arg(p, <span class="keyword">double</span>) = d;
+  <span class="keyword">return</span> (va_list)pmem;
 }
 
-va_list va_list_malloc(int i, double d)
+va_list va_list_malloc(<span class="keyword">int</span> i, <span class="keyword">double</span> d)
 {
-  void* pv = malloc(sizeof(int) + sizeof(double));
-  return va_list_create(pv, i, d);  
+  <span class="keyword">void</span>* pv = malloc(<span class="keyword">sizeof</span>(<span class="keyword">int</span>) + <span class="keyword">sizeof</span>(<span class="keyword">double</span>));
+  <span class="keyword">return</span> va_list_create(pv, i, d);  
 }
 
-int main()
+<span class="keyword">int</span> main()
 {
-  F(&quot;&quot;, 1, 2.0);
-  va_list args = va_list_malloc(1, 2.0);
-  F2(&quot;&quot;, args);
+  F(<span class="string">&quot;&quot;</span>, <span class="number">1</span>, <span class="number">2.0</span>);
+  va_list args = va_list_malloc(<span class="number">1</span>, <span class="number">2.0</span>);
+  F2(<span class="string">&quot;&quot;</span>, args);
   va_list_free(args);
-  return 0;
+  <span class="keyword">return</span> <span class="number">0</span>;
 }
 
 
 </pre>
+
 <pre>
 
 #include &quot;stdafx.h&quot;

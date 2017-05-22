@@ -1,5 +1,5 @@
 
-```c
+```cpp
 #include <stdio.h>
 #include <stdlib.h>
 
