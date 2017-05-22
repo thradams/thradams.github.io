@@ -1,0 +1,137 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> Creating va_list on the heap</h1>
+
+<p>(Visual Studio)</p>
+
+
+<pre>
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdarg.h&gt;
+
+
+void F2(const char* fmt, va_list vl)
+{
+  int i = va_arg(vl, int);
+  double d = va_arg(vl, double);
+  printf(&quot;i = %d, d = %lf\n&quot;, i, d);
+}
+
+void F(const char* fmt, ...)
+{
+  va_list vl;
+  va_start(vl, fmt);
+  F2(fmt, vl);
+  va_end(vl);
+}
+
+void va_list_free(va_list args)
+{
+  free(args);
+}
+
+
+va_list va_list_create(void* pmem, int i, double d)
+{
+  va_list p = (va_list)pmem;
+  va_arg(p, int) = i;
+  va_arg(p, double) = d;
+  return (va_list)pmem;
+}
+
+va_list va_list_malloc(int i, double d)
+{
+  void* pv = malloc(sizeof(int) + sizeof(double));
+  return va_list_create(pv, i, d);  
+}
+
+int main()
+{
+  F(&quot;&quot;, 1, 2.0);
+  va_list args = va_list_malloc(1, 2.0);
+  F2(&quot;&quot;, args);
+  va_list_free(args);
+  return 0;
+}
+
+
+</pre>
+<pre>
+
+#include &quot;stdafx.h&quot;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+
+typedef struct X {
+	char a1;
+	char a2;
+	double a3;
+	void* a4;
+	char a5;
+} X;
+#define X_INIT {'a', 'b', 1.2, (void*)3 , 'c'}
+
+#define _SLOTSIZEOF2(t)  ((sizeof(t) + sizeof(t) - 1) &amp; ~(sizeof(t) - 1))
+#define _APALIGN2(t,ap)  (((va_list)0 - (ap)) &amp; (sizeof(t) - 1))
+#define arg(ap, t) (*(t*)((ap += _SLOTSIZEOF2(t) + _APALIGN2(t,ap)) - _SLOTSIZEOF2(t)))
+
+void Use(void* pv)
+{
+	char* args = pv;
+	char a1 = arg(args, char);
+	char a2 = arg(args, char);
+	double a3 = arg(args, double);
+	void* a4 = arg(args, void*);
+	char a5  = arg(args, char);
+}
+
+int main()
+{
+	printf(&quot;%d %d %d %d %d\n&quot;,
+		  (int)offsetof(X, a1),
+		  (int)offsetof(X, a2),
+	      (int)offsetof(X, a3),
+	      (int)offsetof(X, a4),
+		  (int)offsetof(X, a5));
+
+	X x = X_INIT;
+	Use(&amp;x);
+
+    return 0;
+}
+
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

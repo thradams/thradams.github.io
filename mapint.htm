@@ -1,0 +1,310 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<h2> Header</h2>
+
+<pre>
+#pragma once
+#include &lt;stdint.h&gt; 
+#include &lt;stdbool.h&gt;
+
+typedef struct Bucket
+{
+  struct Bucket* pNext;
+  unsigned int   Hash;
+  uint32_t       Key;
+  void*          pValue;
+} Bucket;
+
+typedef struct
+{
+  Bucket**     pBuckets;
+  unsigned int HashTableSize;
+  size_t       Count;
+} Map;
+
+
+#define MAP_INIT_100 { NULL, 100, 0 }
+
+void Map_Init(Map* p);
+void Map_Destroy(Map* p, void (*PF)(void*));
+
+int Map_SetAt(Map* pMap,
+              uint32_t Key,
+              void* pNewValue,
+              void** ppPreviousValue);
+
+bool Map_Lookup(Map* pMap,
+                uint32_t  Key,
+                void** ppValue);
+
+bool Map_RemoveKey(Map* pMap,
+                   uint32_t Key,
+                   void** ppValue);
+</pre>
+<h2> Source</h2>
+
+<pre>
+#include &quot;Map.h&quot;
+#include &lt;string.h&gt;
+#define ASSERT(X)
+#include &lt;stdlib.h&gt;
+
+void Map_Reset(Map* pMap, void(*PF)(void*));
+
+void Map_Init(Map * p)
+{
+  Map temp = MAP_INIT_100;
+  *p = temp;
+}
+
+void Map_Destroy(Map* pMap, void(*PF)(void*))
+{
+  Map_Reset(pMap, PF);
+}
+
+
+static Bucket* FindBucket(
+  Map* pMap,
+  uint32_t Key,
+  unsigned int* nHashBucket,
+  unsigned int* HashValue);
+
+
+inline unsigned int HashKey(uint32_t  Key)
+{
+  // hash key to unsigned int value by pseudorandomizing transform
+  // (algorithm copied from STL string hash in xfunctional)
+  unsigned int uHashVal = 2166136261U;
+  unsigned int uFirst = 0;
+  unsigned int uLast = (unsigned int)sizeof(Key);
+  unsigned int uStride = 1 + uLast / 10;
+
+  for (; uFirst &lt; uLast; uFirst += uStride)
+  {
+    uHashVal = 16777619U * uHashVal ^ (unsigned int) ((char*) &amp;Key)[uFirst];
+  }
+
+  return (uHashVal);
+}
+
+
+void Map_Reset(Map* pMap, void(*PF)(void*))
+{
+  if (pMap-&gt;pBuckets != NULL)
+  {
+    for (unsigned int i = 0;
+      i &lt; pMap-&gt;HashTableSize;
+      i++)
+    {
+      Bucket* pBucket =
+        pMap-&gt;pBuckets[i];
+
+      while (pBucket != NULL)
+      {
+        Bucket* pCurrentBucket = pBucket;
+        pBucket = pBucket-&gt;pNext;
+        
+        if (PF) 
+        {
+          //call destructor of pValue
+          PF(pCurrentBucket-&gt;pValue);
+        }
+
+        //Delete Bucket pCurrentBucket
+        free(pCurrentBucket);
+      }
+    }
+
+    free(pMap-&gt;pBuckets);
+    pMap-&gt;pBuckets = NULL;
+    pMap-&gt;Count = 0;
+  }
+}
+
+
+static Bucket* FindBucket(
+  Map* pMap,
+  uint32_t Key,
+  unsigned int* nHashBucket,
+  unsigned int* HashValue)
+{
+  Bucket* pResult = NULL;
+
+  if (pMap-&gt;pBuckets == NULL)
+  {
+    *HashValue = 0;
+    *nHashBucket = 0;
+  }
+  else
+  {
+    *HashValue = HashKey(Key);
+    *nHashBucket = *HashValue % pMap-&gt;HashTableSize;
+
+    Bucket* pKeyValue =
+      pMap-&gt;pBuckets[*nHashBucket];
+
+    for (; pKeyValue != NULL; pKeyValue = pKeyValue-&gt;pNext)
+    {
+      if (pKeyValue-&gt;Hash == *HashValue &amp;&amp;
+        pKeyValue-&gt;Key == Key)
+      {
+        pResult = pKeyValue;
+        break;
+      }
+    }
+  }
+
+  return pResult;
+}
+
+bool Map_Lookup(Map* pMap,
+  uint32_t  Key,
+  void** ppValue)
+{
+  bool bResult = false;
+
+  unsigned int nHashBucket, HashValue;
+  Bucket* pBucket = FindBucket(pMap,
+    Key,
+    &amp;nHashBucket,
+    &amp;HashValue);
+
+  if (pBucket != NULL)
+  {
+    *ppValue = pBucket-&gt;pValue;
+    bResult = true;
+  }
+
+  return bResult;
+}
+
+bool Map_RemoveKey(Map* pMap,
+  uint32_t  Key,
+  void** ppValue)
+{
+  *ppValue = NULL;
+  bool bResult = false;
+
+  if (pMap-&gt;pBuckets != NULL)
+  {
+    unsigned int HashValue = HashKey(Key);
+
+    Bucket** ppBucketPrev =
+      &amp;pMap-&gt;pBuckets[HashValue % pMap-&gt;HashTableSize];
+
+    Bucket* pBucket = *ppBucketPrev;
+
+    for (; pBucket != NULL; pBucket = pBucket-&gt;pNext)
+    {
+      if ((pBucket-&gt;Hash == HashValue) &amp;&amp;
+        (pBucket-&gt;Key == Key))
+      {
+        // remove from list
+        *ppBucketPrev = pBucket-&gt;pNext;
+        *ppValue = pBucket-&gt;pValue;
+
+        //Delete Bucket pKeyValue
+        free(pBucket);
+
+        bResult = true;
+        break;
+      }
+
+      ppBucketPrev = &amp;pBucket-&gt;pNext;
+    }
+  }
+
+  return bResult;
+}
+
+int Map_SetAt(Map* pMap,
+  uint32_t Key,
+  void* newValue,
+  void** ppPreviousValue)
+{
+  int result = 0;
+  *ppPreviousValue = NULL;
+
+  if (pMap-&gt;pBuckets == NULL)
+  {
+    if (pMap-&gt;HashTableSize &lt; 1)
+    {
+      pMap-&gt;HashTableSize = 1;
+    }
+
+    Bucket** pNewBuckets =
+      (Bucket**)malloc(sizeof(Bucket*) * pMap-&gt;HashTableSize);
+
+    if (pNewBuckets != NULL)
+    {
+      memset(pNewBuckets, 0, sizeof(Bucket*) * pMap-&gt;HashTableSize);
+      pMap-&gt;pBuckets = pNewBuckets;
+    }
+  }
+
+  if (pMap-&gt;pBuckets != NULL)
+  {
+    unsigned int nHashBucket, HashValue;
+    Bucket* pBucket =
+      FindBucket(pMap,
+        Key,
+        &amp;nHashBucket,
+        &amp;HashValue);
+
+    if (pBucket == NULL)
+    {
+      pBucket = (Bucket*)malloc(sizeof(Bucket) * 1);
+      pBucket-&gt;Hash = HashValue;
+      pBucket-&gt;pValue = newValue;
+      pBucket-&gt;Key = Key;
+      pBucket-&gt;pNext = pMap-&gt;pBuckets[nHashBucket];
+      pMap-&gt;pBuckets[nHashBucket] = pBucket;
+      pMap-&gt;Count++;
+      result = 0;
+    }
+
+    else
+    {
+      result = 1;
+      *ppPreviousValue = pBucket-&gt;pValue;
+      pBucket-&gt;pValue = newValue;
+      pBucket-&gt;Key = Key;
+    }
+  }
+
+  return result;
+}
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
