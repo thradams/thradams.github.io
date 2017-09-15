@@ -12,33 +12,7 @@ _Thread_local jmp_buf* pCurrent = 0;
 
 #define THROW longjmp(*pCurrent, 1)
 
-#define ERROR_BLOCK \
-{\
-  jmp_buf* pCurrentOld = pCurrent; \
-  jmp_buf jmp; \
-  int er = setjmp(jmp); \
-  if (er == 0)\
-  {\
-    pCurrent = &jmp;
-  
-#define ERROR_PATH \
-    pCurrent = pCurrentOld; \
-  }\
-  else\
-  { \
-
-#define ERROR_PATH_END \
-    if (pCurrentOld)\
-    {\
-      pCurrent = pCurrentOld; \
-      longjmp(*pCurrentOld, 1);\
-    }\
-  }\
- }
-
 #define STOP_PROPAGATION pCurrentOld = 0
-
-
 
 #define __TRY \
 {\
