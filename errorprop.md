@@ -2,6 +2,7 @@
 "errorjmp.h"
 
 ```c
+
 #pragma once
 
 #include <setjmp.h>
@@ -11,8 +12,10 @@
 _Thread_local jmp_buf* pCurrent = 0;
 
 #define THROW longjmp(*pCurrent, 1)
+#define THROW_(x) longjmp(*pCurrent, x)
 
 #define STOP_PROPAGATION pCurrentOld = 0
+#define EXCEPT_ERROR er
 
 #define __TRY \
 {\
@@ -33,26 +36,28 @@ _Thread_local jmp_buf* pCurrent = 0;
     else
 
 #define __EXCEPT_END \
-    if (er == 1 && pCurrentOld)\
+    if (er != 0 && pCurrentOld)\
     {\
         pCurrent = pCurrentOld;\
-        longjmp(*pCurrentOld, 1);\
+        longjmp(*pCurrentOld, EXCEPT_ERROR);\
     }\
 }
+
 
 ```
 
 ```c
+
 
 #include <stdio.h>
 #include <string.h>
 #include "errorjmp.h"
 
 
-void F2()
-{
+void F2() 
+{ 
     printf("F2\n");
-    THROW;
+    THROW_(2);
 }
 
 void F1()
@@ -66,21 +71,14 @@ void F1()
     __EXCEPT
     {
         printf("__EXCEPT of F1\n");
-        STOP_PROPAGATION;
+        //STOP_PROPAGATION;
     }
     __EXCEPT_END
 }
 
-void F3()
-{
-    printf("F3\n");
-}
+void F3() { printf("F3\n"); }
 
-void F4()
-{
-    printf("F4\n");
-}
-
+void F4() {  printf("F4\n"); }
 
 int main(int argc, char *argv[])
 {
@@ -92,7 +90,7 @@ int main(int argc, char *argv[])
     }
     __EXCEPT
     {
-        printf("__EXCEPT of main\n");
+        printf("__EXCEPT of main %d\n", EXCEPT_ERROR);
     }
     __EXCEPT_END
 
