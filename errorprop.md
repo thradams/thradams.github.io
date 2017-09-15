@@ -1,27 +1,28 @@
 
+"errorjmp.h"
+
 ```c
 #pragma once
 
 #include <setjmp.h>
 
-typedef jmp_buf* errorjmp_t;
+#define _Thread_local _declspec(thread) 
 
-void errorjmp_set(errorjmp_t e) { longjmp(*e, 1); }
+_Thread_local jmp_buf* pCurrent = 0;
 
+#define THROW longjmp(*pCurrent, 1)
 
-#define ERROR_BLOCK(error) \
+#define ERROR_BLOCK \
 {\
-  errorjmp_t* pCurrent = (error); \
-  errorjmp_t  pCurrentOld; \
+  jmp_buf* pCurrentOld = pCurrent; \
   jmp_buf jmp; \
   int er = setjmp(jmp); \
   if (er == 0)\
   {\
-    pCurrentOld = *pCurrent; \
-    *pCurrent = &jmp;
+    pCurrent = &jmp;
   
-
-#define ERROR_PATH *pCurrent = pCurrentOld; \
+#define ERROR_PATH \
+    pCurrent = pCurrentOld; \
   }\
   else\
   { \
@@ -29,14 +30,41 @@ void errorjmp_set(errorjmp_t e) { longjmp(*e, 1); }
 #define ERROR_PATH_END \
     if (pCurrentOld)\
     {\
-      *pCurrent = pCurrentOld; \
+      pCurrent = pCurrentOld; \
       longjmp(*pCurrentOld, 1);\
     }\
   }\
  }
 
-#define STOP_PROPAGATION pCurrentOld = 0; *pCurrent = 0;
+#define STOP_PROPAGATION pCurrentOld = 0
 
+
+
+#define __TRY \
+{\
+    jmp_buf* pCurrentOld = pCurrent;\
+    jmp_buf jmp;\
+    int er = setjmp(jmp);\
+    if (er == 0)\
+    {\
+        pCurrent = &jmp;\
+    }\
+    if (er == 0)
+        
+#define __EXCEPT\
+    if (er == 0)\
+    {\
+        pCurrent = pCurrentOld;\
+    }\
+    else
+
+#define __EXCEPT_END \
+    if (er == 1 && pCurrentOld)\
+    {\
+        pCurrent = pCurrentOld;\
+        longjmp(*pCurrentOld, 1);\
+    }\
+}
 
 ```
 
@@ -46,49 +74,35 @@ void errorjmp_set(errorjmp_t e) { longjmp(*e, 1); }
 #include <string.h>
 #include "errorjmp.h"
 
-struct Error
-{
-    errorjmp_t errorjmp;
-    char buffer[200];
-};
 
-void Error_Set(struct Error* error, const char * s)
-{
-    strcpy(error->buffer, s);
-    errorjmp_set(error->errorjmp);
-}
-
-void F2(struct Error* error)
+void F2()
 {
     printf("F2\n");
-    Error_Set(error, "this error was set at F2");
+    THROW;
 }
 
-void F1(struct Error* error)
+void F1()
 {
-    //Error_Set(error, "this error was set at F1 before error block");
     printf("F1\n");
 
-    ERROR_BLOCK(&error->errorjmp)
-
-        //Error_Set(error, "this error was set at F1");
-        F2(error);
-
-    ERROR_PATH
-
-        printf("error path of F1\n");
-        //STOP_PROPAGATION(error)
-    ERROR_PATH_END
-
+    __TRY
+    {
+        F2();
+    }
+    __EXCEPT
+    {
+        printf("__EXCEPT of F1\n");
+        STOP_PROPAGATION;
+    }
+    __EXCEPT_END
 }
 
-void F3(struct Error* error)
+void F3()
 {
     printf("F3\n");
-    //Error_Set(error, "this error was set at F3");
 }
 
-void F4(struct Error* error)
+void F4()
 {
     printf("F4\n");
 }
@@ -96,26 +110,20 @@ void F4(struct Error* error)
 
 int main(int argc, char *argv[])
 {
-    struct Error error = { 0 };
-
-
-    ERROR_BLOCK(&error.errorjmp)
-        //Error_Set(&error, "a");
-        F1(&error);
-        F3(&error);
-        F4(&error);
-
-    ERROR_PATH
-
-        printf("%s", error.buffer);
-
-    ERROR_PATH_END
-
+    __TRY
+    {
+        F1();
+        F3();
+        F4();
+    }
+    __EXCEPT
+    {
+        printf("__EXCEPT of main\n");
+    }
+    __EXCEPT_END
 
     return 0;
 }
-
-
 
 
 
