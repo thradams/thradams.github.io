@@ -1,7 +1,7 @@
 
 "errorjmp.h"
 
-```c
+```cpp
 
 #pragma once
 
@@ -46,7 +46,7 @@ _Thread_local jmp_buf* pCurrent = 0;
 
 ```
 
-```c
+```cpp
 
 
 #include <stdio.h>
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
 ```
 
-```c
+```cpp
 #pragma once
 
 #include <setjmp.h>
@@ -127,7 +127,7 @@ _Thread_local int errorcode = 0;
 #define STOP_PROPAGATION errorcode= 0 
 ```
 
-```c
+```cpp
 
 #include <stdio.h>
 #include <string.h>
