@@ -6,9 +6,9 @@ Lines with " _"
 
 After that, if you run the code you can get a report
 
-'''cpp
+```cpp
 
-#include "stdafx.h"
+
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -101,4 +101,5 @@ int main(int argc, char **argv)
 }
 
 
-'''
+```
+
