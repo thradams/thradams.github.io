@@ -3,13 +3,13 @@ Some equations that can be used for x(t) and y(t) for moving objects with or wit
 ```
     F = m * a
 
-        f
-    a = -
-        m
+         f
+    a = ---
+         m
 
-          f
- y''(t) = -
-          m
+           f
+ y''(t) = ---
+           m
 
 ```
 
@@ -74,7 +74,7 @@ y'(0) = v0
 ```
 
 
-Drag (k != 0)
+Drag (k different than 0)
 
 ```
   y(t) = (c_1*m e^((k*t)/m))/k+c_2-(f*t)/k
@@ -82,9 +82,11 @@ Drag (k != 0)
 
   c_1 = f/k + v0
   c_2 = x0 - c_1*m/k
+
 ```
 
 No drag (k = 0)
+
 ```
 
  y(t) = x0 + v0*t + f*t^2/2*m
