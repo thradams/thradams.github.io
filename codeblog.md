@@ -2,6 +2,10 @@
 
 ## 2018
 
+[Error object](errorobj.md) March 2018
+
+[Local String Builder](localstrbuilder.md) Jan 2018
+
 ## 2017
 
 [try except](errorprop.md) Sep 2017
