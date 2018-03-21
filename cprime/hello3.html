@@ -102,52 +102,39 @@
 
 
   <h2>CPrime Online Playground</h2>
- 
+
 
   <span>Sample</span>
   <select onchange="OnChangeSelection(this.value)">
 
-      <option value="0">Select...</option>
-      <option value="0">Especial Functions</option>
-      <option value="1">Dynamic Array</option>
-      <option value="2">Linked List</option>
-      <option value="3">Initialization</option>
-      <option value="4">Polimorphism</option>
-      <option value="5">Lambdas</option>
+    <option value="0">Select...</option>
+    <option value="0">Especial Functions</option>
+    <option value="1">Dynamic Array</option>
+    <option value="2">Linked List</option>
+    <option value="3">Initialization</option>
+    <option value="4">Polimorphism</option>
+    <option value="5">Lambdas</option>
 
-    
+
 
   </select>
-  <p></p>
-  <pre id="editor" style="width:100%; height:350px">       
-typedef char * _auto String;           
-struct X
-{
-   String Name;
-   int i;
-};
-    
-struct X* X_Create() _default;
-    
-void X_Init(struct X* p) _default;
-void X_Destroy(struct X* p) _default;
-void X_Delete(struct X* p) _default;
-      
-int main()
-{      
-  return 1;
-}
 
+
+  <button class="mybutton">Compile</button>
+
+  <p></p>
+  <pre id="editor" style="width:100%; height:500px">       
+   int main()
+   {
+     return 0;
+   }
 </pre>
 
-  <br/>
-  <button class="mybutton">Compile</button>
-  <span>Project page => https://github.com/thradams/CPrime</span>
 
-  <h2>Output</h2>
-  <textarea class="emscripten" style="width:100%" id="output" rows="8"></textarea>
+  <span>https://github.com/thradams/CPrime</span>
 
-
+  <p>Output</p>
+  <textarea class="emscripten" style="width:100%" id="output" rows="5"></textarea>
 
   <script type='text/javascript'>
     var statusElement = document.getElementById('status');
@@ -253,28 +240,28 @@ int main()
     function OnChangeSelection(val) {
 
       var sample = [];
-var s = "";
+      var s = "";
       s += "       \n";
-s += "typedef char * _auto String;           \n";
-s += "struct X\n";
-s += "{\n";
-s += "   String Name;\n";
-s += "   int i;\n";
-s += "};\n";
-s += "    \n";
-s += "struct X* X_Create() _default;\n";
-s += "    \n";
-s += "void X_Init(struct X* p) _default;\n";
-s += "void X_Destroy(struct X* p) _default;\n";
-s += "void X_Delete(struct X* p) _default;\n";
-s += "      \n";
-s += "int main()\n";
-s += "{      \n";
-s += "  return 1;\n";
-s += "}\n";
-s += "\n";
-s += "\n";
-sample[0] = s;
+      s += "typedef char * _auto String;           \n";
+      s += "struct X\n";
+      s += "{\n";
+      s += "   String Name;\n";
+      s += "   int i;\n";
+      s += "};\n";
+      s += "    \n";
+      s += "struct X* X_Create() _default;\n";
+      s += "    \n";
+      s += "void X_Init(struct X* p) _default;\n";
+      s += "void X_Destroy(struct X* p) _default;\n";
+      s += "void X_Delete(struct X* p) _default;\n";
+      s += "      \n";
+      s += "int main()\n";
+      s += "{      \n";
+      s += "  return 1;\n";
+      s += "}\n";
+      s += "\n";
+      s += "\n";
+      sample[0] = s;
 
       s = "\n";
       s += "struct Item\n";
@@ -454,6 +441,12 @@ sample[0] = s;
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/c_cpp");
+
+    editor.setOptions({
+      fontFamily: "Consolas",
+      fontSize: "11pt"
+    });
+
   </script>
 
 
