@@ -60,14 +60,17 @@ The equations of this movement are:
 ```
 
 Where:
-{{{
+
+```
+
  v(t) : velocity
  x(t) : position
  x0   : initial position
  v0   : initial velocity
  a    : acceleration
  t    : time
-}}}
+
+```
 
 Some other results are useful:
 

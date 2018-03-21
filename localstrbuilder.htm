@@ -1,0 +1,214 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h2> LocalStrBuilder</h2>
+
+<pre>
+#pragma once
+
+#include &lt;stdlib.h&gt;
+
+#define LOCALSTRBUILDER_NCHARS 7
+
+typedef struct
+{
+  char* c_str;
+  int size;
+  int capacity;
+  char chars[LOCALSTRBUILDER_NCHARS + 1];
+
+} LocalStrBuilder;
+
+
+void LocalStrBuilder_Init(LocalStrBuilder* p);
+
+void LocalStrBuilder_Swap(LocalStrBuilder* pA, LocalStrBuilder* pB);
+
+void LocalStrBuilder_Destroy(LocalStrBuilder* p);
+
+void LocalStrBuilder_Reserve(LocalStrBuilder* p, int nelements);
+
+void LocalStrBuilder_Print(LocalStrBuilder* p);
+
+void LocalStrBuilder_Clear(LocalStrBuilder* p);
+
+void LocalStrBuilder_Grow(LocalStrBuilder* p, int nelements);
+
+void LocalStrBuilder_Append(LocalStrBuilder* p, const char* source);
+void LocalStrBuilder_AppendChar(LocalStrBuilder* p, char ch);
+void LocalStrBuilder_Set(LocalStrBuilder* p, const char* source);
+
+
+
+</pre>
+
+<pre>
+
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include &quot;LocalStrBuilder.h&quot;
+
+
+void LocalStrBuilder_Init(LocalStrBuilder* p)
+{
+  p-&gt;capacity = LOCALSTRBUILDER_NCHARS;
+  p-&gt;size = 0;
+  p-&gt;c_str = p-&gt;chars;
+}
+
+void LocalStrBuilder_Swap(LocalStrBuilder* pA, LocalStrBuilder* pB)
+{
+  int bA = (pA-&gt;c_str == pA-&gt;chars);
+  int bB = (pB-&gt;c_str == pB-&gt;chars);
+
+  LocalStrBuilder temp = *pA;
+  *pA = *pB;
+  *pB = temp;
+
+  if (bA)
+  {
+    pB-&gt;c_str = pB-&gt;chars;
+  }
+  if (bB)
+  {
+    pA-&gt;c_str = pA-&gt;chars;
+  }
+}
+
+void LocalStrBuilder_Destroy(LocalStrBuilder* p)
+{
+  if (p-&gt;c_str != p-&gt;chars)
+  {
+    free(p-&gt;c_str);
+  }
+}
+
+void LocalStrBuilder_Reserve(LocalStrBuilder* p, int nelements)
+{
+  if (nelements &gt; p-&gt;capacity)
+  {
+    char* pnew = NULL;
+    if (nelements &lt;= LOCALSTRBUILDER_NCHARS)
+    {
+      pnew = p-&gt;chars;
+      p-&gt;capacity = LOCALSTRBUILDER_NCHARS;
+      p-&gt;c_str = pnew;
+    }
+    else
+    {
+      if (p-&gt;capacity &lt;= LOCALSTRBUILDER_NCHARS)
+      {
+        pnew = (char*)malloc((nelements + 1) * sizeof(char));
+        memcpy(pnew, p-&gt;chars, LOCALSTRBUILDER_NCHARS);
+      }
+      else
+      {
+        pnew = (char*)realloc(p-&gt;c_str, (nelements + 1) * sizeof(char));
+      }
+
+      p-&gt;c_str = pnew;
+
+      if (p-&gt;size == 0)
+      {
+        pnew[0] = '\0';
+      }
+      p-&gt;capacity = nelements;
+    }
+  }
+}
+
+void LocalStrBuilder_Print(LocalStrBuilder* p)
+{
+  printf(&quot;size = %d, capacity = %d, c_str = '%s', internal buffer = %s \n&quot;,
+    (int)p-&gt;size,
+    (int)p-&gt;capacity,
+    p-&gt;c_str,
+    (p-&gt;c_str == p-&gt;chars ? &quot;yes&quot; : &quot;no&quot;));
+}
+
+void LocalStrBuilder_Clear(LocalStrBuilder* p)
+{
+  if (p-&gt;c_str)
+  {
+    p-&gt;c_str[0] = 0;
+  }
+  p-&gt;size = 0;
+}
+
+void LocalStrBuilder_Grow(LocalStrBuilder* p, int nelements)
+{
+  if (nelements &gt; p-&gt;capacity)
+  {
+    int new_nelements = p-&gt;capacity + p-&gt;capacity / 2;
+
+    if (new_nelements &lt; nelements)
+    {
+      new_nelements = nelements;
+    }
+
+    LocalStrBuilder_Reserve(p, new_nelements);
+  }
+}
+
+void LocalStrBuilder_Append(LocalStrBuilder* p, const char* source)
+{
+  while (*source)
+  {
+    LocalStrBuilder_AppendChar(p, *source);
+    source++;
+  }
+}
+
+
+void LocalStrBuilder_Set(LocalStrBuilder* p, const char* source)
+{
+  LocalStrBuilder_Clear(p);
+  while (*source)
+  {
+    LocalStrBuilder_AppendChar(p, *source);
+    source++;
+  }
+}
+
+
+
+void LocalStrBuilder_AppendChar(LocalStrBuilder* p, char ch)
+{
+  LocalStrBuilder_Grow(p, p-&gt;size + 1);
+
+  p-&gt;c_str[p-&gt;size] = ch;
+  p-&gt;c_str[p-&gt;size + 1] = 0;
+  p-&gt;size++;
+}
+
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

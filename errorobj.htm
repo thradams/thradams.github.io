@@ -1,0 +1,85 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> Error object</h1>
+
+<pre>
+
+#include &lt;stdio.h&gt;  
+#include &lt;stdarg.h&gt; 
+
+typedef struct 
+{
+  char Msg[300];
+} Error;
+
+inline bool Error_IsEmpty(Error* error)
+{
+  return error-&gt;Msg[0] == '0';
+}
+
+void Error_SetVa(Error * p, const char* fmt, va_list va)
+{
+  vsnprintf(p-&gt;Msg, sizeof(p-&gt;Msg), fmt, va); 
+}
+
+void Error_Set(Error * p, const char* fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(p-&gt;Msg, sizeof(p-&gt;Msg), fmt, args);
+  va_end(args);
+}
+
+
+</pre>
+
+<p>Usage:</p>
+
+<pre>
+
+bool F2(Error* error)
+{
+  Error_Set(error, &quot;error at f2 %d&quot;, 1);
+  return false;
+}
+
+
+int main()
+{
+    ErrorExtended error = { 0 };
+    F2(&amp;error);
+    
+    return 0;
+}
+
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
