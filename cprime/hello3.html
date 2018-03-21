@@ -102,30 +102,27 @@
   
 
   <h2>CPrime online</h2> 
-  
-  <pre id="editor"  style="width:100%; height:400px">
-       
-    typedef char * auto String;           
-    struct X
-    {
-        String Name;
-        int i;
-    };
+  <p>github.com/thradams/CPrime</p>
+  <pre id="editor"  style="width:100%; height:300px">       
+typedef char * _auto String;           
+struct X
+{
+   String Name;
+   int i;
+};
     
-    struct X* X_Create() _default;
+struct X* X_Create() _default;
     
-    void X_Init(struct X* p) _default;
-    void X_Destroy(struct X* p) _default;
-    void X_Delete(struct X* p) _default;
+void X_Init(struct X* p) _default;
+void X_Destroy(struct X* p) _default;
+void X_Delete(struct X* p) _default;
       
-    int main()
-    {      
-      return 1;
-    }
-  
-  
-  
-  </pre>
+int main()
+{      
+  return 1;
+}
+
+</pre>
 
   <br/>
   <button class="mybutton">Compile</button>
