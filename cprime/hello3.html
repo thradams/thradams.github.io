@@ -114,6 +114,7 @@
     <option value="3">Initialization</option>
     <option value="4">Polimorphism</option>
     <option value="5">Lambdas</option>
+    <option value="6">Strings</option>
 
 
 
@@ -423,6 +424,21 @@
       s += "}";
 
       sample[5] = s;
+
+      s = "       \n";
+      s += "\n";
+      s += "typedef char* _auto String;\n";
+      s += "\n";
+      s += "typedef struct \n";
+      s += "{\n";
+      s += "\tString * _auto _size(Size) pData;\n";
+      s += "\tint Size;\n";
+      s += "\tint Capacity;\n";
+      s += "} Strings;\n";
+      s += "\n";
+      s += "void Strings_PushBack(Strings* strings, String s) _default;\n";
+      s += "void Strings_Destroy(Strings* strings) _default;\n";
+      sample[6] = s;
 
       editor.setValue(sample[val], -1);
 
