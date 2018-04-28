@@ -1,6 +1,6 @@
 # Error object
 
-```c
+```cpp
 
 #include <stdio.h>  
 #include <stdarg.h> 

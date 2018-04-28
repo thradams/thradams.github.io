@@ -26,43 +26,44 @@
 <h2> LocalStrBuilder</h2>
 
 <pre>
-#pragma once
+<span class="keyword">#pragma</span> once
 
-#include &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
 
-#define LOCALSTRBUILDER_NCHARS 7
+<span class="keyword">#define</span> LOCALSTRBUILDER_NCHARS <span class="number">7</span>
 
-typedef struct
+<span class="keyword">typedef</span> <span class="keyword">struct</span>
 {
-  char* c_str;
-  int size;
-  int capacity;
-  char chars[LOCALSTRBUILDER_NCHARS + 1];
+  <span class="keyword">char</span>* c_str;
+  <span class="keyword">int</span> size;
+  <span class="keyword">int</span> capacity;
+  <span class="keyword">char</span> chars[LOCALSTRBUILDER_NCHARS + <span class="number">1</span>];
 
 } LocalStrBuilder;
 
 
-void LocalStrBuilder_Init(LocalStrBuilder* p);
+<span class="keyword">void</span> LocalStrBuilder_Init(LocalStrBuilder* p);
 
-void LocalStrBuilder_Swap(LocalStrBuilder* pA, LocalStrBuilder* pB);
+<span class="keyword">void</span> LocalStrBuilder_Swap(LocalStrBuilder* pA, LocalStrBuilder* pB);
 
-void LocalStrBuilder_Destroy(LocalStrBuilder* p);
+<span class="keyword">void</span> LocalStrBuilder_Destroy(LocalStrBuilder* p);
 
-void LocalStrBuilder_Reserve(LocalStrBuilder* p, int nelements);
+<span class="keyword">void</span> LocalStrBuilder_Reserve(LocalStrBuilder* p, <span class="keyword">int</span> nelements);
 
-void LocalStrBuilder_Print(LocalStrBuilder* p);
+<span class="keyword">void</span> LocalStrBuilder_Print(LocalStrBuilder* p);
 
-void LocalStrBuilder_Clear(LocalStrBuilder* p);
+<span class="keyword">void</span> LocalStrBuilder_Clear(LocalStrBuilder* p);
 
-void LocalStrBuilder_Grow(LocalStrBuilder* p, int nelements);
+<span class="keyword">void</span> LocalStrBuilder_Grow(LocalStrBuilder* p, <span class="keyword">int</span> nelements);
 
-void LocalStrBuilder_Append(LocalStrBuilder* p, const char* source);
-void LocalStrBuilder_AppendChar(LocalStrBuilder* p, char ch);
-void LocalStrBuilder_Set(LocalStrBuilder* p, const char* source);
+<span class="keyword">void</span> LocalStrBuilder_Append(LocalStrBuilder* p, <span class="keyword">const</span> <span class="keyword">char</span>* source);
+<span class="keyword">void</span> LocalStrBuilder_AppendChar(LocalStrBuilder* p, <span class="keyword">char</span> ch);
+<span class="keyword">void</span> LocalStrBuilder_Set(LocalStrBuilder* p, <span class="keyword">const</span> <span class="keyword">char</span>* source);
 
 
 
 </pre>
+
 
 <pre>
 

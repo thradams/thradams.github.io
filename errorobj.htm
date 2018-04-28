@@ -27,34 +27,35 @@
 
 <pre>
 
-#include &lt;stdio.h&gt;  
-#include &lt;stdarg.h&gt; 
+<span class="keyword">#include</span> &lt;stdio.h&gt;  
+<span class="keyword">#include</span> &lt;stdarg.h&gt; 
 
-typedef struct 
+<span class="keyword">typedef</span> <span class="keyword">struct</span> 
 {
-  char Msg[300];
+  <span class="keyword">char</span> Msg[<span class="number">300</span>];
 } Error;
 
-inline bool Error_IsEmpty(Error* error)
+<span class="keyword">inline</span> <span class="keyword">bool</span> Error_IsEmpty(Error* error)
 {
-  return error-&gt;Msg[0] == '0';
+  <span class="keyword">return</span> error-&gt;Msg[<span class="number">0</span>] == <span class="string">'0'</span>;
 }
 
-void Error_SetVa(Error * p, const char* fmt, va_list va)
+<span class="keyword">void</span> Error_SetVa(Error * p, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list va)
 {
-  vsnprintf(p-&gt;Msg, sizeof(p-&gt;Msg), fmt, va); 
+  vsnprintf(p-&gt;Msg, <span class="keyword">sizeof</span>(p-&gt;Msg), fmt, va); 
 }
 
-void Error_Set(Error * p, const char* fmt, ...)
+<span class="keyword">void</span> Error_Set(Error * p, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vsnprintf(p-&gt;Msg, sizeof(p-&gt;Msg), fmt, args);
+  vsnprintf(p-&gt;Msg, <span class="keyword">sizeof</span>(p-&gt;Msg), fmt, args);
   va_end(args);
 }
 
 
 </pre>
+
 
 <p>Usage:</p>
 

@@ -1,6 +1,6 @@
 ## LocalStrBuilder
 
-```c
+```cpp
 #pragma once
 
 #include <stdlib.h>
