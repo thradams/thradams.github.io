@@ -2,6 +2,8 @@
 
 ## 2018
 
+[osstream](osstream.md) May 2018
+
 [List files](listfiles.md) April 2018
 
 [Error object](errorobj.md) March 2018
