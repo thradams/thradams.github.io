@@ -1,5 +1,14 @@
 # All posts
 
+[Chronological view](Chronological.md)
+
+[Topics](topicview.md)
+
+
+
+
+
+
 ## 2018
 [New kind of polimorphism](poly3.md) October 2018
 
