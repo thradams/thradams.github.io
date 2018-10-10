@@ -1,6 +1,7 @@
 # All posts
 
 ## 2018
+[New kind of polimorphism](poly3.md) October 2018
 
 [osstream](osstream.md) May 2018
 
