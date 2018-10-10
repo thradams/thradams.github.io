@@ -1,6 +1,6 @@
 # All posts
 
-[Chronological view](Chronological.md)
+[Chronological view](chronological.md)
 
 [Topics](topicview.md)
 
