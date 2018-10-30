@@ -3,7 +3,7 @@
 
 ## Algorithm
 
-[Merge periods](periods.md) October 2008
+[Merge periods](periods.md) October 2018
 
 [Parse expressions](expr3.md) March 2016
 
