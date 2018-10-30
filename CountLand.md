@@ -39,6 +39,34 @@ I will apply an optimization and sort the list of boxes by maxY. Boxes with bigg
 
 ```
 
+          +      +            +
+          |      |            |
+          |      |            |
+    minX, |axY   |            |
+          |      |            |
+          v------X-------+    |
+          |      |       |    |
+          | 0    |       |    |
+          |      |       |    |
+          |      |       |    |
+          +------X-------+    |
+                 v            |                +----------+
+          minX, maxX          |    +           | 1        |
+                 +------------X------------+   |          |
+                 | 2     minX,|maxY        |   |          |
+                 |            v            |   +----------+
+                 |            +-------+    |
+                 |            | 3     |    |
+                 |            |       |    |         +-------------+
+                 |            +-------+    |         | 4           |
+                 |                         |         |             |
+                 |                         |         |             |
+                 +-------------------------+         |             |
+                                                     +-------------+
+
+                    +-------------+
+                    |     5       |
+                    +-------------+
 ```
 
 Using this optimization, each box will check intersection only with the boxes that have smaller indexes.
@@ -157,4 +185,6 @@ void Test()
 
 ```
 
+I make the ascii draw using:
+http://stable.ascii-flow.appspot.com/#Draw
 
