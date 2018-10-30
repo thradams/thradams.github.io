@@ -2,6 +2,9 @@
 
 
 ## 2018
+
+[Merge periods](periods.md) October 2008
+
 [New kind of polimorphism](poly3.md) October 2018
 
 [osstream](osstream.md) May 2018
