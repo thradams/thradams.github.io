@@ -98,7 +98,7 @@ double Distance(double px, double py,
 }
 ```
 
-###History
+### History
 
 * 28/03/2013 Bug fixed (parenteses added on  const double t )
 
