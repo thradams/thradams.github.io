@@ -1,8 +1,8 @@
 
 
-##Math library
+## Math library
 
-###Introduction
+### Introduction
 
 What does this library?
 
@@ -18,7 +18,7 @@ Natural numbers
 ```
 N = {0, 1, 2, ...}
 ```
-###How the library sees the numbers?
+### How the library sees the numbers?
 
 The library uses the [positional notation](http://en.wikipedia.org/wiki/Positional_notation)
 ```
@@ -35,7 +35,7 @@ e.g. The number 15 in decimal notation (base 10) is represented as:
         10
 ```
 
-###What is the number interface?
+### What is the number interface?
 Algorithms have access to the number representation using iterators.
 
 ```
@@ -49,7 +49,7 @@ Basic math lib algorithms will use this abstraction.
 
 [Algorithms](algorithms.md)
 
-###References
+### References
 
 * [http://en.cppreference.com/w/cpp/iterator](http://en.cppreference.com/w/cpp/iterator)
 * [http://en.wikipedia.org/wiki/Integer](http://en.wikipedia.org/wiki/Integer)
