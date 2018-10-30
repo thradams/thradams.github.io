@@ -1,9 +1,9 @@
 [MathLib Home](mathlib.md)
 
-##Math lib Algorithms
+## Math lib Algorithms
 
 
-###Non-modifying operations
+### Non-modifying operations
 
 [is_zero](is_zero.md)
 Returns true if digits represent zero.
@@ -20,7 +20,7 @@ Returns true if all digits are compatible with de base.
 [compare](compare_positive_integers.md)
 Compares two positive numbers
 
-###Arithmetic
+### Arithmetic
 
 [Addition](add_positive_integers.md)
 Add two numbers
@@ -41,7 +41,7 @@ Divide two numbers
 Returns the remainder of division
 
 
-###Conversion
+### Conversion
 [set_digits](set_digits.md)
 Fills the digits to represent some value.
 
