@@ -1,5 +1,7 @@
 # By Topics
 
+See [chronological view](chronological.md)
+
 
 ## Algorithm
 
