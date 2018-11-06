@@ -1,0 +1,250 @@
+## Arrays with size
+
+1 - Sample using C VLAs syntax
+
+
+```c
+int find(int key, int len, int a[len])
+{
+  for (int i = 0; i < len; i++)
+  {
+    if (a[i] == key)
+    {
+      return i;
+    }
+  }
+  return -1;
+}
+```
+
+2 - Sample using arrays with size
+
+```c
+  
+  int b[2][3] = { {0,1,2}, {3,4,5} };
+  int (*pb)[2][3] = &b;
+
+  int n, m;
+  int(*pb)[n][m] = 0;
+
+  //warning C6386: Buffer overrun while writing to 'p[8]':
+  //the writable size is '24' bytes, but '108' bytes might be
+  //written.
+  *pb[8][8] = 1;
+```
+
+
+3 - Sample allocating array of size buflen
+
+```c
+int main()
+{
+  int n = 10;
+  
+  int(*buf)[n] = malloc(sizeof(int) * n);
+  if (buf)
+  {
+    for (int i = 0; i < n; i++)
+    {
+      (*buf)[i] = i;
+    }
+  }
+  printf("size = %d", (int) sizeof(*buf)); //40
+  free(buf);
+}
+
+```
+
+Problem 1 - Return
+```c
+int(*)[n] Alloc(int n);
+
+//C++
+auto Alloc(int n) -> int(*)[n];
+```
+
+Problem 2 - structs
+
+```c
+struct X
+{
+  int n;
+  int a[n];
+};
+```
+
+Problem 3 - people don't use this
+```c
+ 
+ /*existing  code is like this*/
+
+ void F(int * a, int len);
+ 
+ int buflen = 3;
+ int * buf  = malloc(sizeof(int) * buflen);
+ buf[2] = 1;
+```
+
+My sugestion is to add like a type-qualifier for pointers and keep the current syntax.
+
+```c
+ int buflen = 3;
+ int *[buflen] buf = malloc(sizeof(int) * buflen);
+ buf[2] = 1;
+ //instead of 
+ //(*buf)[2] = 1;
+
+ //sizeof(*buf) == buflen
+```
+
+C11
+
+```c
+void bar(int myArray[static 10]);
+
+  int a[9];
+  bar(a);
+
+/*
+1>ConsoleApplication30.c(25,3): warning : array argument is too small; contains 9 elements, callee requires at least 10 [-Warray-bounds]
+*/
+
+bar(NULL);
+/*
+warning : null passed to a callee that requires a non-null argument [-Wnonnull]
+*/
+ 
+```
+
+clang test:
+
+```c
+void bar2(int myArray[static 15])
+{
+}
+
+void bar(int myArray[static 10])
+{
+  bar2(myArray);
+}
+//not checking
+```
+
+
+Traditional
+
+```c
+void F(int n, int m, int *a)
+{
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      printf(" %d ", a[i * m + k]);
+      
+    }
+    printf("\n");
+  }
+}
+
+int main()
+{
+  int n = 2;
+  int m = 3;
+  int *p = malloc(sizeof(int) * m * n);
+  int j  = 0;
+  
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      p[i * m + k] = j;
+      j++;
+    }
+  }
+
+  F(n, m, p);
+  
+  free(p);
+}
+
+```
+
+VLA
+
+```c
+
+void F(int n, int m, int a[n][m])
+{
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      printf(" %d ", a[i][k]);
+      
+    }
+    printf("\n");
+  }
+}
+
+int main()
+{
+  int n = 2;
+  int m = 3;
+  int (*p)[n][m] = malloc(sizeof * p);
+  int j  = 0;
+  
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      (*p)[i][k] = j;
+      j++;
+    }
+  }
+
+  F(n, m, *p);
+  
+  free(p);
+}
+
+```
+
+```c
+void F(int n, int m, int * [n][m] a)
+{
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      printf(" %d ", a[i * m + k]);
+      
+    }
+    printf("\n");
+  }
+}
+
+int main()
+{
+  int n = 2;
+  int m = 3;
+  
+  int *[n][m] p = malloc(sizeof(int) * m * n);
+
+  int j  = 0;
+  
+  for (int i = 0; i < n; i++)
+  {
+    for (int k = 0; k < m; k++)
+    {
+      p[i * m + k] = j;
+      j++;
+    }
+  }
+
+  F(n, m, p);
+  
+  free(p);
+}
+
+```
