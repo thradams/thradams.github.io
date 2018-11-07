@@ -275,3 +275,21 @@ int main()
 
 ```
 
+```c
+struct Item
+{
+  int i;
+};
+
+struct Items
+{
+  struct Item * /*auto*/ (* /*auto*/ Data)[0/*Size*/];
+  int Size;  
+};
+
+int main()
+{
+  struct Items items = { 0 };
+  (*items.Data)[0]->i = 1;
+}
+```
