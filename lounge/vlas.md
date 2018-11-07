@@ -65,6 +65,9 @@ auto Alloc(int n) -> int(*)[n];
 
 Problem 2 - structs
 
+"A structure or union cannot contain a member with a **variably modified type** because member names
+are not ordinary identifiers as defined in 6.2.3."
+
 ```c
 struct X
 {
