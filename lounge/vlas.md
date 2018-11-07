@@ -76,7 +76,7 @@ struct X
 };
 ```
 
-Problem 3 - people don't use this
+Problem 3 - people don't use this for dynamic arrays
 ```c
  
  /*existing  code is like this*/
@@ -86,18 +86,6 @@ Problem 3 - people don't use this
  int buflen = 3;
  int * buf  = malloc(sizeof(int) * buflen);
  buf[2] = 1;
-```
-
-My sugestion is to add like a type-qualifier for pointers and keep the current syntax.
-
-```c
- int buflen = 3;
- int *[buflen] buf = malloc(sizeof(int) * buflen);
- buf[2] = 1;
- //instead of 
- //(*buf)[2] = 1;
-
- //sizeof(*buf) == buflen
 ```
 
 C11
@@ -295,4 +283,16 @@ int main()
   struct Items items = { 0 };
   (*items.Data)[0]->i = 1;
 }
+```
+
+My sugestion is to add like a type-qualifier for pointers and keep the current syntax.
+
+```c
+ int buflen = 3;
+ int *[buflen] buf = malloc(sizeof(int) * buflen);
+ buf[2] = 1;
+ //instead of 
+ //(*buf)[2] = 1;
+
+ //sizeof(*buf) == buflen
 ```
