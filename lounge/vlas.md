@@ -1,6 +1,6 @@
-## Arrays with size
+# Arrays with size using VLA syntax
 
-1 - Sample using C VLAs syntax
+### 1 - Sample using C VLAs syntax
 
 
 ```c
@@ -17,7 +17,7 @@ int find(int key, int len, int a[len])
 }
 ```
 
-2 - Sample using arrays with size
+### 2 - Sample using arrays with size
 
 ```c
   
@@ -34,7 +34,7 @@ int find(int key, int len, int a[len])
 ```
 
 
-3 - Sample allocating array of size buflen
+### 3 - Sample allocating array of size buflen
 
 ```c
 int main()
@@ -55,7 +55,7 @@ int main()
 
 ```
 
-4 - Problem : return types
+### 4 - Problem : return types
 ```c
 int(*)[n] Alloc(int n);
 
@@ -63,7 +63,7 @@ int(*)[n] Alloc(int n);
 auto Alloc(int n) -> int(*)[n];
 ```
 
-5 - Problem: structs
+### 5 - Problem: structs
 
 "A structure or union cannot contain a member with a **variably modified type** because member names
 are not ordinary identifiers as defined in 6.2.3."
@@ -76,7 +76,7 @@ struct X
 };
 ```
 
-6 - Problem : people don't use this for dynamic arrays
+### 6 - Problem : people don't use this for dynamic arrays
 ```c
  
  /*existing  code is like this*/
@@ -88,7 +88,7 @@ struct X
  buf[2] = 1;
 ```
 
-7 - Some existing checks [static]
+### 7 - Some existing checks [static]
 
 ```c
 void bar(int myArray[static 10]);
@@ -107,7 +107,7 @@ warning : null passed to a callee that requires a non-null argument [-Wnonnull]
  
 ```
 
-8 - Not checking..
+### 8 - Not checking..
 
 ```c
 void bar2(int myArray[static 15])
@@ -122,7 +122,7 @@ void bar(int myArray[static 10])
 ```
 
 
-9 - Traditional 2 dimension dynamic arrays
+### 9 - Traditional 2 dimension dynamic arrays
 
 ```c
 void F(int n, int m, int *a)
@@ -160,7 +160,7 @@ int main()
 
 ```
 
-10 - Using VLA syntax
+### 10 - Using VLA syntax
 
 ```c
 
@@ -201,7 +201,7 @@ int main()
 ```
 
 
-11 - Bounds checkin for **existing** C
+### 11 - Bounds checkin for **existing** C
 
 ```c
 
@@ -227,7 +227,7 @@ int main()
 
 ```
 
-12 - Using the VLA syntax in structs in standard C
+### 12 - Using the VLA syntax in structs in standard C
 
 ```c
 struct Item
@@ -247,7 +247,7 @@ int main()
   (*items.Data)[0]->i = 1;
 }
 ```
-13 - Sugestion for syntax for annotating pointers and keeping the current syntax used by programmers
+### 13 - Sugestion for syntax for annotating pointers and keeping the current syntax used by programmers
 
 (like a type-qualifier for pointers and keep the current syntax.)
 
