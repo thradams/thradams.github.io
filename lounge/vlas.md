@@ -55,7 +55,7 @@ int main()
 
 ```
 
-Problem 1 - Return
+4 - Problem : return types
 ```c
 int(*)[n] Alloc(int n);
 
@@ -63,7 +63,7 @@ int(*)[n] Alloc(int n);
 auto Alloc(int n) -> int(*)[n];
 ```
 
-Problem 2 - structs
+5 - Problem: structs
 
 "A structure or union cannot contain a member with a **variably modified type** because member names
 are not ordinary identifiers as defined in 6.2.3."
@@ -76,7 +76,7 @@ struct X
 };
 ```
 
-Problem 3 - people don't use this for dynamic arrays
+6 - Problem : people don't use this for dynamic arrays
 ```c
  
  /*existing  code is like this*/
@@ -88,7 +88,7 @@ Problem 3 - people don't use this for dynamic arrays
  buf[2] = 1;
 ```
 
-C11
+7 - Some existing checks [static]
 
 ```c
 void bar(int myArray[static 10]);
@@ -97,7 +97,7 @@ void bar(int myArray[static 10]);
   bar(a);
 
 /*
-1>ConsoleApplication30.c(25,3): warning : array argument is too small; contains 9 elements, callee requires at least 10 [-Warray-bounds]
+warning : array argument is too small; contains 9 elements, callee requires at least 10 [-Warray-bounds]
 */
 
 bar(NULL);
@@ -107,7 +107,7 @@ warning : null passed to a callee that requires a non-null argument [-Wnonnull]
  
 ```
 
-clang test:
+8 - Not checking..
 
 ```c
 void bar2(int myArray[static 15])
@@ -118,11 +118,11 @@ void bar(int myArray[static 10])
 {
   bar2(myArray);
 }
-//not checking
+
 ```
 
 
-Traditional
+9 - Traditional 2 dimension dynamic arrays
 
 ```c
 void F(int n, int m, int *a)
@@ -131,8 +131,7 @@ void F(int n, int m, int *a)
   {
     for (int k = 0; k < m; k++)
     {
-      printf(" %d ", a[i * m + k]);
-      
+      printf(" %d ", a[i * m + k]); //calculated linear index      
     }
     printf("\n");
   }
@@ -161,7 +160,7 @@ int main()
 
 ```
 
-VLA
+10 - Using VLA syntax
 
 ```c
 
@@ -201,6 +200,68 @@ int main()
 
 ```
 
+
+11 - Bounds checkin for **existing** C
+
+```c
+
+int main()
+{
+  int n = 2;
+  int(*p)[n] = malloc(sizeof * p);
+  
+  n = 0;
+  for (int i = 0; i < n + 2; i++)
+  {
+      (*p)[i]= i;
+  }
+
+  n = 1;
+  for (int i = 0; i < n + 2; i++)
+  {
+    (*p)[i] = i;
+  }
+
+  free(p);
+}
+
+```
+
+12 - Using the VLA syntax in structs in standard C
+
+```c
+struct Item
+{
+  int i;
+};
+
+struct Items
+{
+  struct Item * /*auto*/ (* /*auto*/ Data)[0/*Size*/];
+  int Size;  
+};
+
+int main()
+{
+  struct Items items = { 0 };
+  (*items.Data)[0]->i = 1;
+}
+```
+13 - Sugestion for syntax for annotating pointers and keeping the current syntax used by programmers
+
+(like a type-qualifier for pointers and keep the current syntax.)
+
+```c
+ int buflen = 3;
+ int *[buflen] buf = malloc(sizeof(int) * buflen);
+ buf[2] = 1;
+ //instead of 
+ //(*buf)[2] = 1;
+
+ //sizeof(*buf) == buflen
+```
+
+
 ```c
 void F(int n, int m, int * [n][m] a)
 {
@@ -228,71 +289,14 @@ int main()
   {
     for (int k = 0; k < m; k++)
     {
-      p[i * m + k] = j;
+      p[i * m + k] = j; //same syntax
       j++;
     }
   }
 
-  F(n, m, p);
+  F(n, m, p); //cast to VLA syntax?
   
   free(p);
 }
 
-```
-
-Bounds checkin for C
-
-```c
-
-int main()
-{
-  int n = 2;
-  int(*p)[n] = malloc(sizeof * p);
-  
-  n = 0;
-  for (int i = 0; i < n + 2; i++)
-  {
-      (*p)[i]= i;
-  }
-
-  n = 1;
-  for (int i = 0; i < n + 2; i++)
-  {
-    (*p)[i] = i;
-  }
-
-  free(p);
-}
-
-```
-
-```c
-struct Item
-{
-  int i;
-};
-
-struct Items
-{
-  struct Item * /*auto*/ (* /*auto*/ Data)[0/*Size*/];
-  int Size;  
-};
-
-int main()
-{
-  struct Items items = { 0 };
-  (*items.Data)[0]->i = 1;
-}
-```
-
-My sugestion is to add like a type-qualifier for pointers and keep the current syntax.
-
-```c
- int buflen = 3;
- int *[buflen] buf = malloc(sizeof(int) * buflen);
- buf[2] = 1;
- //instead of 
- //(*buf)[2] = 1;
-
- //sizeof(*buf) == buflen
 ```
