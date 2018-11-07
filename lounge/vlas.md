@@ -248,3 +248,30 @@ int main()
 }
 
 ```
+
+Bounds checkin for C
+
+```c
+
+int main()
+{
+  int n = 2;
+  int(*p)[n] = malloc(sizeof * p);
+  
+  n = 0;
+  for (int i = 0; i < n + 2; i++)
+  {
+      (*p)[i]= i;
+  }
+
+  n = 1;
+  for (int i = 0; i < n + 2; i++)
+  {
+    (*p)[i] = i;
+  }
+
+  free(p);
+}
+
+```
+
