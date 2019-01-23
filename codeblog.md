@@ -75,7 +75,7 @@
 
 [Closures in C](cclosure.md) January 2015
 
-##2014
+## 2014
 
 [Interfaces like COM in C](comc.md) December 2014
 
@@ -277,7 +277,7 @@
 [Input function like in BASIC](basicinput.md) January 2009
 
 
-##2008
+## 2008
 
 [*Comparing two approaches to implement polymorphic collections](policol.md) November 2008 
 
@@ -294,7 +294,7 @@
 [Multimethods in C++](multimethods.md) August 2008
 
 
-##2007
+## 2007
 
 [My implementation of the std::tr1::function](function.md) December 2007
 
@@ -309,7 +309,7 @@
 [Creating COM objects directly from the dll](comdll.md) February 2007
 
 
-##2006
+## 2006
 
 [Find-Replace for standardstrings](finreplace.md) December 2006
 
@@ -319,7 +319,7 @@
 
 [Function wrapper testing the class invariant](fwrapper.md) February 2006
 
-##2005
+## 2005
 
 [River Crossing Puzzle](puzzle.md) October 2005
 
@@ -330,7 +330,7 @@
 [Using the Koenig lookup - Argument dependent name lookup (ADL)](koenig.md) 1 August 2005
 
 ----
-2004
+## 2004
 
 [gc - Simple class to detect memory leaks](gc.md) 24 December 2004
 
