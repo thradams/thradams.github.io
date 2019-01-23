@@ -1,3 +1,0 @@
-##Objetos em C
-
-
