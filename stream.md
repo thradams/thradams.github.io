@@ -2,42 +2,6 @@
 
 
 ```c
-
-Conversation opened. 2 messages. 1 message unread.
-
-Skip to content
-Using Gmail with screen readers
-
-11 of 43,761
-stream
-Inbox
-x
-Thiago
-x
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-17:59 (4 hours ago)
-to me
-
-
-3 Attachments
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-18:02 (4 hours ago)
-to me
-
-
-
-On Wed, 17 Apr 2019 at 17:59, Thiago Adams <thiago.adams@gmail.com> wrote:
-
-
-
--- 
-www.thradams.com
-3 Attachments
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -72,41 +36,6 @@ void Stream_Close(struct Stream* stream);
 ```
 
 ```c
-
-Conversation opened. 2 messages. 1 message unread.
-
-Skip to content
-Using Gmail with screen readers
-
-11 of 43,761
-stream
-Inbox
-x
-Thiago
-x
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-17:59 (4 hours ago)
-to me
-
-
-3 Attachments
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-18:02 (4 hours ago)
-to me
-
-
-
-On Wed, 17 Apr 2019 at 17:59, Thiago Adams <thiago.adams@gmail.com> wrote:
-
-
-
--- 
-www.thradams.com
-3 Attachments
 
 #include "Stream.h"
 
@@ -300,41 +229,6 @@ void Stream_Close(struct Stream* stream)
 
 
 ```c
-
-Conversation opened. 2 messages. 1 message unread.
-
-Skip to content
-Using Gmail with screen readers
-
-11 of 43,761
-stream
-Inbox
-x
-Thiago
-x
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-17:59 (4 hours ago)
-to me
-
-
-3 Attachments
-
-Thiago Adams <thiago.adams@gmail.com>
-Attachments
-18:02 (4 hours ago)
-to me
-
-
-
-On Wed, 17 Apr 2019 at 17:59, Thiago Adams <thiago.adams@gmail.com> wrote:
-
-
-
--- 
-www.thradams.com
-3 Attachments
 
 #include  "Stream.h"
 #include <assert.h>
