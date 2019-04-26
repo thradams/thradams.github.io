@@ -1,11 +1,11 @@
 
 ```c
-
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
 #include <assert.h>
 #include <stdbool.h>
+
 
 struct Stopwatch
 {
@@ -41,7 +41,7 @@ void Stopwatch_Start(struct Stopwatch* stopwatch)
         stopwatch->m_StartCount = clock();
     }
 
-    assert(IsRunning());
+    //assert(Stopwatch_IsRunning());
 }
 
 void Stopwatch_Stop(struct Stopwatch* stopwatch)
@@ -361,6 +361,7 @@ int find(const char* text)
 
 int find2(const char* text)
 {
+
     int result = -1;
     switch (text[0])
     {
@@ -445,6 +446,7 @@ int find2(const char* text)
     return result;
 }
 
+//#define GENERATE 1
 
 int linear_search_str(const char* sorted_array[],
     int n_elements,
@@ -495,6 +497,8 @@ int binary_search_str(const char* sorted_array[],
     return c == 0 ? -1 : mid;
 }
 
+//#define NITER 2147483647
+#define NITER 1000000000
 int main()
 {
 
@@ -511,7 +515,12 @@ int main()
         "_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local" };
 
     //Generate(keywords, sizeof(keywords) / sizeof(keywords[0]));
-#define NITER 90000000
+
+    
+    char search[122];// = "goto";
+    printf("Enter a C keyword:\n");
+    scanf("%[^\n]", search);
+
     struct Stopwatch s = { 0 };
 
 
@@ -520,50 +529,55 @@ int main()
 
 
     Stopwatch_Start(&s);
-    int r2;
+    int r2 = 0;
+
     for (int i = 0; i < NITER; i++)
     {
-        r2 = find2("goto");
+        r2 = find2(search);
     }
+
     Stopwatch_Stop(&s);
     printf("strcmp %d %d\n", r2, Stopwatch_GetElapsedTicks(&s));
     //////////////////
     Stopwatch_Start(&s);
-    int r1;
+    int r1 = 0;
     for (int i = 0; i < NITER; i++)
     {
-        r1 = find("goto");
+        r1 = find(search);
     }
     Stopwatch_Stop(&s);
     printf("switches %d %d\n", r1, Stopwatch_GetElapsedTicks(&s));
     ////////////
     Stopwatch_Start(&s);
-    int r3;
+    int r3 = 0;
     for (int i = 0; i < NITER; i++)
     {
-        r3 = binary_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), "goto");
+        r3 = binary_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
     }
     Stopwatch_Stop(&s);
     printf("Binary Search %d %d\n", r3, Stopwatch_GetElapsedTicks(&s));
 
     Stopwatch_Start(&s);
-    int r4;
+    int r4 = 0;
     for (int i = 0; i < NITER; i++)
     {
-        r4 = linear_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), "goto");
+        r4 = linear_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
     }
     Stopwatch_Stop(&s);
     printf("Linear %d %d\n", r4, Stopwatch_GetElapsedTicks(&s));
 
 }
 
+
 ```
 Output:
 ```
-strcmp 15 0
-switches 15 151
-Binary Search 15 1305
-Linear 15 4268
+Enter a C keyword:
+goto
+strcmp 15 6675
+switches 15 9969
+Binary Search 15 28252
+Linear 15 64063
 ```
 
 
