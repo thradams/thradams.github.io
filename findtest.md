@@ -1,4 +1,10 @@
 
+
+C code for generating string-switch
+
+Se [Online](switchgenerator.html)
+
+
 ```c
 #include <stdio.h>
 #include <string.h>

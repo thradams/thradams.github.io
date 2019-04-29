@@ -1,0 +1,1231 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>C code for generating string-switch</p>
+
+<p>Se <a href="switchgenerator.html">Online</a></p>
+
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;time.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+
+
+struct Stopwatch
+{
+    clock_t m_StartCount;
+    clock_t m_StopCount;
+};
+
+bool Stopwatch_IsRunning(struct Stopwatch* stopwatch)
+{
+    return stopwatch-&gt;m_StartCount != 0 &amp;&amp; stopwatch-&gt;m_StopCount == 0;
+}
+
+size_t GetFrequency() //in milliseconds
+{
+    return CLOCKS_PER_SEC / 1000;
+}
+
+void Stopwatch_Reset(struct Stopwatch* stopwatch)
+{
+    stopwatch-&gt;m_StopCount = 0;
+    stopwatch-&gt;m_StartCount = 0;
+
+
+}
+
+void Stopwatch_Start(struct Stopwatch* stopwatch)
+{
+    bool resume = (stopwatch-&gt;m_StartCount != 0);
+    if (resume)
+        stopwatch-&gt;m_StopCount = 0;
+    else
+    {
+        stopwatch-&gt;m_StartCount = clock();
+    }
+
+    //assert(Stopwatch_IsRunning());
+}
+
+void Stopwatch_Stop(struct Stopwatch* stopwatch)
+{
+    stopwatch-&gt;m_StopCount = clock();
+}
+
+clock_t Stopwatch_GetElapsedTicks(struct Stopwatch* stopwatch)
+{
+    if (Stopwatch_IsRunning(stopwatch))
+        return (clock() - stopwatch-&gt;m_StartCount);
+
+    return (stopwatch-&gt;m_StopCount - stopwatch-&gt;m_StartCount);
+}
+
+clock_t Stopwatch_GetElapsedMilliseconds(struct Stopwatch* stopwatch)
+{
+    return Stopwatch_GetElapsedTicks(stopwatch) / (CLOCKS_PER_SEC / 1000);
+}
+
+
+
+void GenerateCore(const char* keywords[], int first, int last, int level, int* count)
+{
+    int ident = (level + 1) * 2;
+    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
+    printf(&quot;%*c{\n&quot;, ident, ' ');
+
+    for (int i = first; i &lt;= last; i++)
+    {
+        int begin = i;
+        int end = begin;
+        for (int k = i + 1; k &lt;= last; k++)
+        {
+            if (keywords[k][level] == keywords[begin][level])
+            {
+                i++;
+                end++;
+            }
+            else
+                break;
+        }
+
+        //we have the range
+        if (begin == end)
+        {
+            //just one
+            printf(&quot;%*ccase '%c': /*%s*/ if (&quot;,
+                ident * 2, ' ', keywords[i][level], keywords[i]);
+
+            int len = strlen(keywords[i]);
+
+            int j = level + 1;
+            for (; j &lt; len; j++)
+            {
+                if (j != level + 1)
+                    printf(&quot;&amp;&amp;&quot;);
+
+                printf(&quot;text[%d]=='%c'&quot;, j, keywords[i][j]);
+            }
+            if (j != level + 1)
+                printf(&quot;&amp;&amp;&quot;);
+            printf(&quot;text[%d]=='\\0'&quot;, j);
+
+            printf(&quot;) result = %d; break;\n&quot;, *count);
+
+            (*count)++;
+        }
+        else
+        {
+            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
+            GenerateCore(keywords, begin, end, level + 1, count);
+            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+        }
+
+    }
+    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+
+    printf(&quot;%*c}\n&quot;, ident, ' ');
+}
+
+
+void GenerateCore1(const char* keywords[], int first, int last, int level, int* count)
+{
+    int ident = (level + 1) * 2;
+    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
+    printf(&quot;%*c{\n&quot;, ident, ' ');
+
+    for (int i = first; i &lt;= last; i++)
+    {
+        int begin = i;
+        int end = begin;
+        for (int k = i + 1; k &lt;= last; k++)
+        {
+            if (keywords[k][level] == keywords[begin][level])
+            {
+                i++;
+                end++;
+            }
+            else
+                break;
+        }
+
+        //we have the range
+        if (begin == end)
+        {
+            //just one
+            printf(&quot;%*ccase '%c': /*%s*/ if (strcmp(text, \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;, 
+                ident * 2, ' ', keywords[i][level], keywords[i],
+                keywords[i],
+                *count);
+
+            (*count)++;
+        }
+        else
+        {
+            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
+            GenerateCore1(keywords, begin, end, level + 1, count);
+            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+        }
+
+    }
+    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+
+    printf(&quot;%*c}\n&quot;, ident, ' ');
+}
+
+
+void GenerateCore10(const char* keywords[], int first, int last, int level, int* count)
+{
+    int ident = (level + 1) * 2;
+    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
+    printf(&quot;%*c{\n&quot;, ident, ' ');
+
+    for (int i = first; i &lt;= last; i++)
+    {
+        int begin = i;
+        int end = begin;
+        for (int k = i + 1; k &lt;= last; k++)
+        {
+            if (keywords[k][level] == keywords[begin][level])
+            {
+                i++;
+                end++;
+            }
+            else
+                break;
+        }
+
+        //we have the range
+        if (begin == end)
+        {
+            //just one
+            printf(&quot;%*ccase '%c': /*%s*/ if (strcmp(&amp;text[%d], \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;,
+                ident * 2, ' ', keywords[i][level], keywords[i],
+                level + 1, &amp;keywords[i][level + 1],
+                *count);
+
+            (*count)++;
+        }
+        else
+        {
+            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
+            GenerateCore10(keywords, begin, end, level + 1, count);
+            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+        }
+
+    }
+    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+
+    printf(&quot;%*c}\n&quot;, ident, ' ');
+}
+
+
+
+void GenerateCore2(const char* keywords[], int first, int last, int level, int* count)
+{
+    int ident = (level + 1) * 2;
+    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
+    printf(&quot;%*c{\n&quot;, ident, ' ');
+
+    for (int i = first; i &lt;= last; i++)
+    {
+        int begin = i;
+        int end = begin;
+        for (int k = i + 1; k &lt;= last; k++)
+        {
+            if (keywords[k][level] == keywords[begin][level])
+            {
+                i++;
+                end++;
+            }
+            else
+                break;
+        }
+
+        printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
+        for (int j = begin; j &lt;= end; j++)
+        {
+            printf(&quot;%*c&quot;, ident * 3, ' ');
+            if (j != begin)
+                printf(&quot;else &quot;);
+
+            printf(&quot;if (strcmp(\&quot;%s\&quot;, text) == 0) result = %d;\n&quot;, keywords[j], *count);
+
+            (*count)++;
+        }
+
+        printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+
+
+    }
+    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+
+    printf(&quot;%*c}\n&quot;, ident, ' ');
+}
+
+
+void Generate(const char* keywords[], int size)
+{
+    printf(&quot;int find(const char* text)\n&quot;);
+    printf(&quot;{\n&quot;);
+    int count = 0;
+    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
+    GenerateCore(keywords, 0, size - 1, 0, &amp;count);
+    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
+    printf(&quot;}\n&quot;);
+}
+
+void Generate2(const char* keywords[], int size)
+{
+    printf(&quot;int find2(const char* text)\n&quot;);
+    printf(&quot;{\n&quot;);
+    int count = 0;
+    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
+    GenerateCore2(keywords, 0, size - 1, 0, &amp;count);
+    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
+    printf(&quot;}\n&quot;);
+}
+
+void Generate1(const char* keywords[], int size)
+{
+    printf(&quot;int find1(const char* text)\n&quot;);
+    printf(&quot;{\n&quot;);
+    int count = 0;
+    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
+    GenerateCore1(keywords, 0, size - 1, 0, &amp;count);
+    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
+    printf(&quot;}\n&quot;);
+}
+
+
+int find(const char* text)
+{
+    int result = -1;
+    switch (text[0])
+    {
+    case 'a':
+        switch (text[1])
+        {
+        case 'l': /*alignof*/ if (text[2] == 'i' &amp;&amp; text[3] == 'g' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == 'o' &amp;&amp; text[6] == 'f' &amp;&amp; text[7] == '\0') result = 0; break;
+        case 'u': /*auto*/ if (text[2] == 't' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == '\0') result = 1; break;
+        default: break;
+        }
+        break;
+    case 'b': /*break*/ if (text[1] == 'r' &amp;&amp; text[2] == 'e' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'k' &amp;&amp; text[5] == '\0') result = 2; break;
+    case 'c':
+        switch (text[1])
+        {
+        case 'a': /*case*/ if (text[2] == 's' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == '\0') result = 3; break;
+        case 'h': /*char*/ if (text[2] == 'a' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == '\0') result = 4; break;
+        case 'o':
+            switch (text[2])
+            {
+            case 'n':
+                switch (text[3])
+                {
+                case 's': /*const*/ if (text[4] == 't' &amp;&amp; text[5] == '\0') result = 5; break;
+                case 't': /*continue*/ if (text[4] == 'i' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'u' &amp;&amp; text[7] == 'e' &amp;&amp; text[8] == '\0') result = 6; break;
+                default: break;
+                }
+                break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'd':
+        switch (text[1])
+        {
+        case 'e': /*default*/ if (text[2] == 'f' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'u' &amp;&amp; text[5] == 'l' &amp;&amp; text[6] == 't' &amp;&amp; text[7] == '\0') result = 7; break;
+        case 'o':
+            switch (text[2])
+            {
+            case ' ': /*do*/ if (text[3] == '\0') result = 8; break;
+            case 'u': /*double*/ if (text[3] == 'b' &amp;&amp; text[4] == 'l' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == '\0') result = 9; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'e':
+        switch (text[1])
+        {
+        case 'l': /*else*/ if (text[2] == 's' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == '\0') result = 10; break;
+        case 'n': /*enum*/ if (text[2] == 'u' &amp;&amp; text[3] == 'm' &amp;&amp; text[4] == '\0') result = 11; break;
+        case 'x': /*extern*/ if (text[2] == 't' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == '\0') result = 12; break;
+        default: break;
+        }
+        break;
+    case 'f':
+        switch (text[1])
+        {
+        case 'l': /*float*/ if (text[2] == 'o' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == '\0') result = 13; break;
+        case 'o': /*for*/ if (text[2] == 'r' &amp;&amp; text[3] == '\0') result = 14; break;
+        default: break;
+        }
+        break;
+    case 'g': /*goto*/ if (text[1] == 'o' &amp;&amp; text[2] == 't' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == '\0') result = 15; break;
+    case 'i':
+        switch (text[1])
+        {
+        case 'f': /*if*/ if (text[2] == '\0') result = 16; break;
+        case 'n':
+            switch (text[2])
+            {
+            case 'l': /*inline*/ if (text[3] == 'i' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == '\0') result = 17; break;
+            case 't': /*int*/ if (text[3] == '\0') result = 18; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'l': /*long*/ if (text[1] == 'o' &amp;&amp; text[2] == 'n' &amp;&amp; text[3] == 'g' &amp;&amp; text[4] == '\0') result = 19; break;
+    case 'r':
+        switch (text[1])
+        {
+        case 'e':
+            switch (text[2])
+            {
+            case 'g': /*register*/ if (text[3] == 'i' &amp;&amp; text[4] == 's' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'r' &amp;&amp; text[8] == '\0') result = 20; break;
+            case 's': /*restrict*/ if (text[3] == 't' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == 't' &amp;&amp; text[8] == '\0') result = 21; break;
+            case 't': /*return*/ if (text[3] == 'u' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == '\0') result = 22; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 's':
+        switch (text[1])
+        {
+        case 'h': /*short*/ if (text[2] == 'o' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == '\0') result = 23; break;
+        case 'i':
+            switch (text[2])
+            {
+            case 'g': /*signed*/ if (text[3] == 'n' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'd' &amp;&amp; text[6] == '\0') result = 24; break;
+            case 'z': /*sizeof*/ if (text[3] == 'e' &amp;&amp; text[4] == 'o' &amp;&amp; text[5] == 'f' &amp;&amp; text[6] == '\0') result = 25; break;
+            default: break;
+            }
+            break;
+        case 't':
+            switch (text[2])
+            {
+            case 'a': /*static*/ if (text[3] == 't' &amp;&amp; text[4] == 'i' &amp;&amp; text[5] == 'c' &amp;&amp; text[6] == '\0') result = 26; break;
+            case 'r': /*struct*/ if (text[3] == 'u' &amp;&amp; text[4] == 'c' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == '\0') result = 27; break;
+            default: break;
+            }
+            break;
+        case 'w': /*switch*/ if (text[2] == 'i' &amp;&amp; text[3] == 't' &amp;&amp; text[4] == 'c' &amp;&amp; text[5] == 'h' &amp;&amp; text[6] == '\0') result = 28; break;
+        default: break;
+        }
+        break;
+    case 't': /*typedef*/ if (text[1] == 'y' &amp;&amp; text[2] == 'p' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == 'd' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == 'f' &amp;&amp; text[7] == '\0') result = 29; break;
+    case 'u':
+        switch (text[1])
+        {
+        case 'n':
+            switch (text[2])
+            {
+            case 'i': /*union*/ if (text[3] == 'o' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == '\0') result = 30; break;
+            case 's': /*unsigned*/ if (text[3] == 'i' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'd' &amp;&amp; text[8] == '\0') result = 31; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'v':
+        switch (text[1])
+        {
+        case 'o':
+            switch (text[2])
+            {
+            case 'i': /*void*/ if (text[3] == 'd' &amp;&amp; text[4] == '\0') result = 32; break;
+            case 'l': /*volatile*/ if (text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'l' &amp;&amp; text[7] == 'e' &amp;&amp; text[8] == '\0') result = 33; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'w': /*while*/ if (text[1] == 'h' &amp;&amp; text[2] == 'i' &amp;&amp; text[3] == 'l' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == '\0') result = 34; break;
+    case '_':
+        switch (text[1])
+        {
+        case 'A':
+            switch (text[2])
+            {
+            case 'l': /*_Alignas*/ if (text[3] == 'i' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'a' &amp;&amp; text[7] == 's' &amp;&amp; text[8] == '\0') result = 35; break;
+            case 't': /*_Atomic*/ if (text[3] == 'o' &amp;&amp; text[4] == 'm' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == '\0') result = 36; break;
+            default: break;
+            }
+            break;
+        case 'B': /*_Bool*/ if (text[2] == 'o' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == 'l' &amp;&amp; text[5] == '\0') result = 37; break;
+        case 'C': /*_Complex*/ if (text[2] == 'o' &amp;&amp; text[3] == 'm' &amp;&amp; text[4] == 'p' &amp;&amp; text[5] == 'l' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'x' &amp;&amp; text[8] == '\0') result = 38; break;
+        case 'G': /*_Generic*/ if (text[2] == 'e' &amp;&amp; text[3] == 'n' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'r' &amp;&amp; text[6] == 'i' &amp;&amp; text[7] == 'c' &amp;&amp; text[8] == '\0') result = 39; break;
+        case 'I': /*_Imaginary*/ if (text[2] == 'm' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'n' &amp;&amp; text[7] == 'a' &amp;&amp; text[8] == 'r' &amp;&amp; text[9] == 'y' &amp;&amp; text[10] == '\0') result = 40; break;
+        case 'N': /*_Noreturn*/ if (text[2] == 'o' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == 'u' &amp;&amp; text[7] == 'r' &amp;&amp; text[8] == 'n' &amp;&amp; text[9] == '\0') result = 41; break;
+        case 'S': /*_Static_assert*/ if (text[2] == 't' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == '_' &amp;&amp; text[8] == 'a' &amp;&amp; text[9] == 's' &amp;&amp; text[10] == 's' &amp;&amp; text[11] == 'e' &amp;&amp; text[12] == 'r' &amp;&amp; text[13] == 't' &amp;&amp; text[14] == '\0') result = 42; break;
+        case 'T': /*_Thread_local*/ if (text[2] == 'h' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'a' &amp;&amp; text[6] == 'd' &amp;&amp; text[7] == '_' &amp;&amp; text[8] == 'l' &amp;&amp; text[9] == 'o' &amp;&amp; text[10] == 'c' &amp;&amp; text[11] == 'a' &amp;&amp; text[12] == 'l' &amp;&amp; text[13] == '\0') result = 43; break;
+        default: break;
+        }
+        break;
+    default: break;
+    }
+    return result;
+}
+
+
+int find2(const char* text)
+{
+
+    int result = -1;
+    switch (text[0])
+    {
+    case 'a':
+        if (strcmp(&quot;alignof&quot;, text) == 0) result = 0;
+        else if (strcmp(&quot;auto&quot;, text) == 0) result = 1;
+        break;
+    case 'b':
+        if (strcmp(&quot;break&quot;, text) == 0) result = 2;
+        break;
+    case 'c':
+        if (strcmp(&quot;case&quot;, text) == 0) result = 3;
+        else if (strcmp(&quot;char&quot;, text) == 0) result = 4;
+        else if (strcmp(&quot;const&quot;, text) == 0) result = 5;
+        else if (strcmp(&quot;continue&quot;, text) == 0) result = 6;
+        break;
+    case 'd':
+        if (strcmp(&quot;default&quot;, text) == 0) result = 7;
+        else if (strcmp(&quot;do&quot;, text) == 0) result = 8;
+        else if (strcmp(&quot;double&quot;, text) == 0) result = 9;
+        break;
+    case 'e':
+        if (strcmp(&quot;else&quot;, text) == 0) result = 10;
+        else if (strcmp(&quot;enum&quot;, text) == 0) result = 11;
+        else if (strcmp(&quot;extern&quot;, text) == 0) result = 12;
+        break;
+    case 'f':
+        if (strcmp(&quot;float&quot;, text) == 0) result = 13;
+        else if (strcmp(&quot;for&quot;, text) == 0) result = 14;
+        break;
+    case 'g':
+        if (strcmp(&quot;goto&quot;, text) == 0) result = 15;
+        break;
+    case 'i':
+        if (strcmp(&quot;if&quot;, text) == 0) result = 16;
+        else if (strcmp(&quot;inline&quot;, text) == 0) result = 17;
+        else if (strcmp(&quot;int&quot;, text) == 0) result = 18;
+        break;
+    case 'l':
+        if (strcmp(&quot;long&quot;, text) == 0) result = 19;
+        break;
+    case 'r':
+        if (strcmp(&quot;register&quot;, text) == 0) result = 20;
+        else if (strcmp(&quot;restrict&quot;, text) == 0) result = 21;
+        else if (strcmp(&quot;return&quot;, text) == 0) result = 22;
+        break;
+    case 's':
+        if (strcmp(&quot;short&quot;, text) == 0) result = 23;
+        else if (strcmp(&quot;signed&quot;, text) == 0) result = 24;
+        else if (strcmp(&quot;sizeof&quot;, text) == 0) result = 25;
+        else if (strcmp(&quot;static&quot;, text) == 0) result = 26;
+        else if (strcmp(&quot;struct&quot;, text) == 0) result = 27;
+        else if (strcmp(&quot;switch&quot;, text) == 0) result = 28;
+        break;
+    case 't':
+        if (strcmp(&quot;typedef&quot;, text) == 0) result = 29;
+        break;
+    case 'u':
+        if (strcmp(&quot;union&quot;, text) == 0) result = 30;
+        else if (strcmp(&quot;unsigned&quot;, text) == 0) result = 31;
+        break;
+    case 'v':
+        if (strcmp(&quot;void&quot;, text) == 0) result = 32;
+        else if (strcmp(&quot;volatile&quot;, text) == 0) result = 33;
+        break;
+    case 'w':
+        if (strcmp(&quot;while&quot;, text) == 0) result = 34;
+        break;
+    case '_':
+        if (strcmp(&quot;_Alignas&quot;, text) == 0) result = 35;
+        else if (strcmp(&quot;_Atomic&quot;, text) == 0) result = 36;
+        else if (strcmp(&quot;_Bool&quot;, text) == 0) result = 37;
+        else if (strcmp(&quot;_Complex&quot;, text) == 0) result = 38;
+        else if (strcmp(&quot;_Generic&quot;, text) == 0) result = 39;
+        else if (strcmp(&quot;_Imaginary&quot;, text) == 0) result = 40;
+        else if (strcmp(&quot;_Noreturn&quot;, text) == 0) result = 41;
+        else if (strcmp(&quot;_Static_assert&quot;, text) == 0) result = 42;
+        else if (strcmp(&quot;_Thread_local&quot;, text) == 0) result = 43;
+        break;
+    default: break;
+    }
+    return result;
+}
+
+//#define GENERATE 1
+
+int linear_search_str(const char* sorted_array[],
+    int n_elements,
+    const char* searchItem)
+{
+    int result = -1;
+    for (int i = 0; i &lt; n_elements; i++)
+    {
+        if (strcmp(sorted_array[i], searchItem) == 0)
+        {
+            result = i;
+            break;
+        }
+    }
+    return result;
+}
+
+int binary_search_str(const char* sorted_array[],
+    int n_elements,
+    const char* searchItem)
+{
+    int mid;
+    int c = 0;
+    int l = 0;
+    int u = n_elements - 1;
+
+    while (l &lt;= u)
+    {
+        mid = (l + u) / 2;
+
+        int cmp = strcmp(searchItem, sorted_array[mid]);
+
+        if (cmp == 0)
+        {
+            c = 1;
+            break;
+        }
+        else if (cmp &lt; 0)
+        {
+            u = mid - 1;
+        }
+        else
+        {
+            l = mid + 1;
+        }
+    }
+
+    return c == 0 ? -1 : mid;
+}
+
+
+void Generate3(const char* keywords[], int size)
+{
+    printf(&quot;int find3(const char* text)\n&quot;);
+    printf(&quot;{\n&quot;);
+
+    printf(&quot;int result = -1;\n&quot;
+        &quot;unsigned u = 0; \n&quot;
+        &quot;for (int j = 0; j &lt; 4 &amp;&amp; text[j]; j++)\n&quot;
+        &quot;{\n&quot;
+        &quot;  u |= ((unsigned)text[j]) &lt;&lt; (j * 8); \n&quot;
+        &quot;}\n&quot;);
+
+
+    printf(&quot;  switch (u)\n&quot;);
+    printf(&quot;  {\n&quot;);
+
+
+    for (int i = 0; i &lt; size; i++)
+    {
+        unsigned u = 0;
+        for (int j = 0; j &lt; 4 &amp;&amp; keywords[i][j]; j++)
+        {
+            u |= ((unsigned)keywords[i][j]) &lt;&lt; (j * 8);
+        }
+
+        printf(&quot;case 0x%04x: /*%s*/result = %d; break;\n&quot;, u % size, keywords[i], i);
+    }
+    printf(&quot;  }\n&quot;);
+    printf(&quot;  return result;\n&quot;);
+    printf(&quot;}\n&quot;);
+}
+
+
+
+int find3(const char* text)
+{
+    int result = -1;
+    unsigned u = 0;
+    
+    if (text[0])
+     u |= ((unsigned)text[0]) &lt;&lt; (0);
+    
+    if (text[1])
+        u |= ((unsigned)text[1]) &lt;&lt; 8;
+
+    if (text[2])
+        u |= ((unsigned)text[2]) &lt;&lt; 16;
+
+    if (text[3])
+        u |= ((unsigned)text[3]) &lt;&lt; 24;
+
+
+    switch (u)
+    {
+    case 0x67696c61: /*alignof*/result = 0; break;
+    case 0x6f747561: /*auto*/result = 1; break;
+    case 0x61657262: /*break*/result = 2; break;
+    case 0x65736163: /*case*/result = 3; break;
+    case 0x72616863: /*char*/result = 4; break;
+    case 0x736e6f63: /*const*/result = 5; break;
+    case 0x746e6f63: /*continue*/result = 6; break;
+    case 0x61666564: /*default*/result = 7; break;
+    case 0x6f64: /*do*/result = 8; break;
+    case 0x62756f64: /*double*/result = 9; break;
+    case 0x65736c65: /*else*/result = 10; break;
+    case 0x6d756e65: /*enum*/result = 11; break;
+    case 0x65747865: /*extern*/result = 12; break;
+    case 0x616f6c66: /*float*/result = 13; break;
+    case 0x726f66: /*for*/result = 14; break;
+    case 0x6f746f67: /*goto*/result = 15; break;
+    case 0x6669: /*if*/result = 16; break;
+    case 0x696c6e69: /*inline*/result = 17; break;
+    case 0x746e69: /*int*/result = 18; break;
+    case 0x676e6f6c: /*long*/result = 19; break;
+    case 0x69676572: /*register*/result = 20; break;
+    case 0x74736572: /*restrict*/result = 21; break;
+    case 0x75746572: /*return*/result = 22; break;
+    case 0x726f6873: /*short*/result = 23; break;
+    case 0x6e676973: /*signed*/result = 24; break;
+    case 0x657a6973: /*sizeof*/result = 25; break;
+    case 0x74617473: /*static*/result = 26; break;
+    case 0x75727473: /*struct*/result = 27; break;
+    case 0x74697773: /*switch*/result = 28; break;
+    case 0x65707974: /*typedef*/result = 29; break;
+    case 0x6f696e75: /*union*/result = 30; break;
+    case 0x69736e75: /*unsigned*/result = 31; break;
+    case 0x64696f76: /*void*/result = 32; break;
+    case 0x616c6f76: /*volatile*/result = 33; break;
+    case 0x6c696877: /*while*/result = 34; break;
+    case 0x696c415f: /*_Alignas*/result = 35; break;
+    case 0x6f74415f: /*_Atomic*/result = 36; break;
+    case 0x6f6f425f: /*_Bool*/result = 37; break;
+    case 0x6d6f435f: /*_Complex*/result = 38; break;
+    case 0x6e65475f: /*_Generic*/result = 39; break;
+    case 0x616d495f: /*_Imaginary*/result = 40; break;
+    case 0x726f4e5f: /*_Noreturn*/result = 41; break;
+    case 0x6174535f: /*_Static_assert*/result = 42; break;
+    case 0x7268545f: /*_Thread_local*/result = 43; break;
+    }
+    return result;
+}
+
+int find1(const char* text)
+{
+    int result = -1;
+    switch (text[0])
+    {
+    case 'a':
+        switch (text[1])
+        {
+        case 'l': /*alignof*/ if (strcmp(text, &quot;alignof&quot;) == 0) result = 0; break;
+        case 'u': /*auto*/ if (strcmp(text, &quot;auto&quot;) == 0) result = 1; break;
+        default: break;
+        }
+        break;
+    case 'b': /*break*/ if (strcmp(text, &quot;break&quot;) == 0) result = 2; break;
+    case 'c':
+        switch (text[1])
+        {
+        case 'a': /*case*/ if (strcmp(text, &quot;case&quot;) == 0) result = 3; break;
+        case 'h': /*char*/ if (strcmp(text, &quot;char&quot;) == 0) result = 4; break;
+        case 'o':
+            switch (text[2])
+            {
+            case 'n':
+                switch (text[3])
+                {
+                case 's': /*const*/ if (strcmp(text, &quot;const&quot;) == 0) result = 5; break;
+                case 't': /*continue*/ if (strcmp(text, &quot;continue&quot;) == 0) result = 6; break;
+                default: break;
+                }
+                break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'd':
+        switch (text[1])
+        {
+        case 'e': /*default*/ if (strcmp(text, &quot;default&quot;) == 0) result = 7; break;
+        case 'o':
+            switch (text[2])
+            {
+            case ' ': /*do*/ if (strcmp(text, &quot;do&quot;) == 0) result = 8; break;
+            case 'u': /*double*/ if (strcmp(text, &quot;double&quot;) == 0) result = 9; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'e':
+        switch (text[1])
+        {
+        case 'l': /*else*/ if (strcmp(text, &quot;else&quot;) == 0) result = 10; break;
+        case 'n': /*enum*/ if (strcmp(text, &quot;enum&quot;) == 0) result = 11; break;
+        case 'x': /*extern*/ if (strcmp(text, &quot;extern&quot;) == 0) result = 12; break;
+        default: break;
+        }
+        break;
+    case 'f':
+        switch (text[1])
+        {
+        case 'l': /*float*/ if (strcmp(text, &quot;float&quot;) == 0) result = 13; break;
+        case 'o': /*for*/ if (strcmp(text, &quot;for&quot;) == 0) result = 14; break;
+        default: break;
+        }
+        break;
+    case 'g': /*goto*/ if (strcmp(text, &quot;goto&quot;) == 0) result = 15; break;
+    case 'i':
+        switch (text[1])
+        {
+        case 'f': /*if*/ if (strcmp(text, &quot;if&quot;) == 0) result = 16; break;
+        case 'n':
+            switch (text[2])
+            {
+            case 'l': /*inline*/ if (strcmp(text, &quot;inline&quot;) == 0) result = 17; break;
+            case 't': /*int*/ if (strcmp(text, &quot;int&quot;) == 0) result = 18; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'l': /*long*/ if (strcmp(text, &quot;long&quot;) == 0) result = 19; break;
+    case 'r':
+        switch (text[1])
+        {
+        case 'e':
+            switch (text[2])
+            {
+            case 'g': /*register*/ if (strcmp(text, &quot;register&quot;) == 0) result = 20; break;
+            case 's': /*restrict*/ if (strcmp(text, &quot;restrict&quot;) == 0) result = 21; break;
+            case 't': /*return*/ if (strcmp(text, &quot;return&quot;) == 0) result = 22; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 's':
+        switch (text[1])
+        {
+        case 'h': /*short*/ if (strcmp(text, &quot;short&quot;) == 0) result = 23; break;
+        case 'i':
+            switch (text[2])
+            {
+            case 'g': /*signed*/ if (strcmp(text, &quot;signed&quot;) == 0) result = 24; break;
+            case 'z': /*sizeof*/ if (strcmp(text, &quot;sizeof&quot;) == 0) result = 25; break;
+            default: break;
+            }
+            break;
+        case 't':
+            switch (text[2])
+            {
+            case 'a': /*static*/ if (strcmp(text, &quot;static&quot;) == 0) result = 26; break;
+            case 'r': /*struct*/ if (strcmp(text, &quot;struct&quot;) == 0) result = 27; break;
+            default: break;
+            }
+            break;
+        case 'w': /*switch*/ if (strcmp(text, &quot;switch&quot;) == 0) result = 28; break;
+        default: break;
+        }
+        break;
+    case 't': /*typedef*/ if (strcmp(text, &quot;typedef&quot;) == 0) result = 29; break;
+    case 'u':
+        switch (text[1])
+        {
+        case 'n':
+            switch (text[2])
+            {
+            case 'i': /*union*/ if (strcmp(text, &quot;union&quot;) == 0) result = 30; break;
+            case 's': /*unsigned*/ if (strcmp(text, &quot;unsigned&quot;) == 0) result = 31; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'v':
+        switch (text[1])
+        {
+        case 'o':
+            switch (text[2])
+            {
+            case 'i': /*void*/ if (strcmp(text, &quot;void&quot;) == 0) result = 32; break;
+            case 'l': /*volatile*/ if (strcmp(text, &quot;volatile&quot;) == 0) result = 33; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'w': /*while*/ if (strcmp(text, &quot;while&quot;) == 0) result = 34; break;
+    case '_':
+        switch (text[1])
+        {
+        case 'A':
+            switch (text[2])
+            {
+            case 'l': /*_Alignas*/ if (strcmp(text, &quot;_Alignas&quot;) == 0) result = 35; break;
+            case 't': /*_Atomic*/ if (strcmp(text, &quot;_Atomic&quot;) == 0) result = 36; break;
+            default: break;
+            }
+            break;
+        case 'B': /*_Bool*/ if (strcmp(text, &quot;_Bool&quot;) == 0) result = 37; break;
+        case 'C': /*_Complex*/ if (strcmp(text, &quot;_Complex&quot;) == 0) result = 38; break;
+        case 'G': /*_Generic*/ if (strcmp(text, &quot;_Generic&quot;) == 0) result = 39; break;
+        case 'I': /*_Imaginary*/ if (strcmp(text, &quot;_Imaginary&quot;) == 0) result = 40; break;
+        case 'N': /*_Noreturn*/ if (strcmp(text, &quot;_Noreturn&quot;) == 0) result = 41; break;
+        case 'S': /*_Static_assert*/ if (strcmp(text, &quot;_Static_assert&quot;) == 0) result = 42; break;
+        case 'T': /*_Thread_local*/ if (strcmp(text, &quot;_Thread_local&quot;) == 0) result = 43; break;
+        default: break;
+        }
+        break;
+    default: break;
+    }
+    return result;
+}
+
+int find10(const char* text)
+{
+    int result = -1;
+    switch (text[0])
+    {
+    case 'a':
+        switch (text[1])
+        {
+        case 'l': /*alignof*/ if (strcmp(&amp;text[2], &quot;ignof&quot;) == 0) result = 0; break;
+        case 'u': /*auto*/ if (strcmp(&amp;text[2], &quot;to&quot;) == 0) result = 1; break;
+        default: break;
+        }
+        break;
+    case 'b': /*break*/ if (strcmp(&amp;text[1], &quot;reak&quot;) == 0) result = 2; break;
+    case 'c':
+        switch (text[1])
+        {
+        case 'a': /*case*/ if (strcmp(&amp;text[2], &quot;se&quot;) == 0) result = 3; break;
+        case 'h': /*char*/ if (strcmp(&amp;text[2], &quot;ar&quot;) == 0) result = 4; break;
+        case 'o':
+            switch (text[2])
+            {
+            case 'n':
+                switch (text[3])
+                {
+                case 's': /*const*/ if (strcmp(&amp;text[4], &quot;t&quot;) == 0) result = 5; break;
+                case 't': /*continue*/ if (strcmp(&amp;text[4], &quot;inue&quot;) == 0) result = 6; break;
+                default: break;
+                }
+                break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'd':
+        switch (text[1])
+        {
+        case 'e': /*default*/ if (strcmp(&amp;text[2], &quot;fault&quot;) == 0) result = 7; break;
+        case 'o':
+            switch (text[2])
+            {
+            case ' ': /*do*/ if (strcmp(&amp;text[3], &quot;&quot;) == 0) result = 8; break;
+            case 'u': /*double*/ if (strcmp(&amp;text[3], &quot;ble&quot;) == 0) result = 9; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'e':
+        switch (text[1])
+        {
+        case 'l': /*else*/ if (strcmp(&amp;text[2], &quot;se&quot;) == 0) result = 10; break;
+        case 'n': /*enum*/ if (strcmp(&amp;text[2], &quot;um&quot;) == 0) result = 11; break;
+        case 'x': /*extern*/ if (strcmp(&amp;text[2], &quot;tern&quot;) == 0) result = 12; break;
+        default: break;
+        }
+        break;
+    case 'f':
+        switch (text[1])
+        {
+        case 'l': /*float*/ if (strcmp(&amp;text[2], &quot;oat&quot;) == 0) result = 13; break;
+        case 'o': /*for*/ if (strcmp(&amp;text[2], &quot;r&quot;) == 0) result = 14; break;
+        default: break;
+        }
+        break;
+    case 'g': /*goto*/ if (strcmp(&amp;text[1], &quot;oto&quot;) == 0) result = 15; break;
+    case 'i':
+        switch (text[1])
+        {
+        case 'f': /*if*/ if (strcmp(&amp;text[2], &quot;&quot;) == 0) result = 16; break;
+        case 'n':
+            switch (text[2])
+            {
+            case 'l': /*inline*/ if (strcmp(&amp;text[3], &quot;ine&quot;) == 0) result = 17; break;
+            case 't': /*int*/ if (strcmp(&amp;text[3], &quot;&quot;) == 0) result = 18; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'l': /*long*/ if (strcmp(&amp;text[1], &quot;ong&quot;) == 0) result = 19; break;
+    case 'r':
+        switch (text[1])
+        {
+        case 'e':
+            switch (text[2])
+            {
+            case 'g': /*register*/ if (strcmp(&amp;text[3], &quot;ister&quot;) == 0) result = 20; break;
+            case 's': /*restrict*/ if (strcmp(&amp;text[3], &quot;trict&quot;) == 0) result = 21; break;
+            case 't': /*return*/ if (strcmp(&amp;text[3], &quot;urn&quot;) == 0) result = 22; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 's':
+        switch (text[1])
+        {
+        case 'h': /*short*/ if (strcmp(&amp;text[2], &quot;ort&quot;) == 0) result = 23; break;
+        case 'i':
+            switch (text[2])
+            {
+            case 'g': /*signed*/ if (strcmp(&amp;text[3], &quot;ned&quot;) == 0) result = 24; break;
+            case 'z': /*sizeof*/ if (strcmp(&amp;text[3], &quot;eof&quot;) == 0) result = 25; break;
+            default: break;
+            }
+            break;
+        case 't':
+            switch (text[2])
+            {
+            case 'a': /*static*/ if (strcmp(&amp;text[3], &quot;tic&quot;) == 0) result = 26; break;
+            case 'r': /*struct*/ if (strcmp(&amp;text[3], &quot;uct&quot;) == 0) result = 27; break;
+            default: break;
+            }
+            break;
+        case 'w': /*switch*/ if (strcmp(&amp;text[2], &quot;itch&quot;) == 0) result = 28; break;
+        default: break;
+        }
+        break;
+    case 't': /*typedef*/ if (strcmp(&amp;text[1], &quot;ypedef&quot;) == 0) result = 29; break;
+    case 'u':
+        switch (text[1])
+        {
+        case 'n':
+            switch (text[2])
+            {
+            case 'i': /*union*/ if (strcmp(&amp;text[3], &quot;on&quot;) == 0) result = 30; break;
+            case 's': /*unsigned*/ if (strcmp(&amp;text[3], &quot;igned&quot;) == 0) result = 31; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'v':
+        switch (text[1])
+        {
+        case 'o':
+            switch (text[2])
+            {
+            case 'i': /*void*/ if (strcmp(&amp;text[3], &quot;d&quot;) == 0) result = 32; break;
+            case 'l': /*volatile*/ if (strcmp(&amp;text[3], &quot;atile&quot;) == 0) result = 33; break;
+            default: break;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'w': /*while*/ if (strcmp(&amp;text[1], &quot;hile&quot;) == 0) result = 34; break;
+    case '_':
+        switch (text[1])
+        {
+        case 'A':
+            switch (text[2])
+            {
+            case 'l': /*_Alignas*/ if (strcmp(&amp;text[3], &quot;ignas&quot;) == 0) result = 35; break;
+            case 't': /*_Atomic*/ if (strcmp(&amp;text[3], &quot;omic&quot;) == 0) result = 36; break;
+            default: break;
+            }
+            break;
+        case 'B': /*_Bool*/ if (strcmp(&amp;text[2], &quot;ool&quot;) == 0) result = 37; break;
+        case 'C': /*_Complex*/ if (strcmp(&amp;text[2], &quot;omplex&quot;) == 0) result = 38; break;
+        case 'G': /*_Generic*/ if (strcmp(&amp;text[2], &quot;eneric&quot;) == 0) result = 39; break;
+        case 'I': /*_Imaginary*/ if (strcmp(&amp;text[2], &quot;maginary&quot;) == 0) result = 40; break;
+        case 'N': /*_Noreturn*/ if (strcmp(&amp;text[2], &quot;oreturn&quot;) == 0) result = 41; break;
+        case 'S': /*_Static_assert*/ if (strcmp(&amp;text[2], &quot;tatic_assert&quot;) == 0) result = 42; break;
+        case 'T': /*_Thread_local*/ if (strcmp(&amp;text[2], &quot;hread_local&quot;) == 0) result = 43; break;
+        default: break;
+        }
+        break;
+    default: break;
+    }
+    return result;
+}
+
+
+//#define NITER 2147483647
+#define NITER 1000000000
+int main()
+{
+    unsigned u = ('a' &lt;&lt; 0) + ('a' &lt;&lt; 1);
+
+    const char* keywords[] = {
+    &quot;alignof&quot;, &quot;auto&quot;, &quot;break&quot;, &quot;case&quot;,	&quot;char&quot;, &quot;const&quot;,
+        &quot;continue&quot;,	&quot;default&quot;,		&quot;do&quot;, &quot;double&quot;,	&quot;else&quot;,
+        &quot;enum&quot;,	&quot;extern&quot;, &quot;float&quot;, &quot;for&quot;,
+        &quot;goto&quot;, &quot;if&quot;, &quot;inline&quot;, &quot;int&quot;, &quot;long&quot;,
+        &quot;register&quot;, &quot;restrict&quot;, &quot;return&quot;, &quot;short&quot;,
+        &quot;signed&quot;, &quot;sizeof&quot;, &quot;static&quot;, &quot;struct&quot;,
+        &quot;switch&quot;, &quot;typedef&quot;, &quot;union&quot;, &quot;unsigned&quot;,
+        &quot;void&quot;, &quot;volatile&quot;, &quot;while&quot;, &quot;_Alignas&quot;,
+        &quot;_Atomic&quot;, &quot;_Bool&quot;, &quot;_Complex&quot;, &quot;_Generic&quot;,
+        &quot;_Imaginary&quot;, &quot;_Noreturn&quot;, &quot;_Static_assert&quot;, &quot;_Thread_local&quot; };
+
+    //Generate(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    //Generate1(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    //Generate2(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    //Generate3(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    //Generate4(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    
+
+    char search[122];// = &quot;goto&quot;;
+    printf(&quot;Enter a C keyword:\n&quot;);
+    scanf(&quot;%[^\n]&quot;, search);
+
+
+    //find3(search);
+    struct Stopwatch s = { 0 };
+
+
+    Stopwatch_Start(&amp;s);
+    int r2 = 0;
+
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r2 = find2(search);
+    }
+
+    Stopwatch_Stop(&amp;s);
+    printf(&quot;strcmp %d %d\n&quot;, r2, Stopwatch_GetElapsedTicks(&amp;s));
+
+    Stopwatch_Reset(&amp;s);
+
+    
+    //////////////////
+
+    Stopwatch_Start(&amp;s);
+    int r22 = 0;
+
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r22 = find1(search);
+    }
+
+    Stopwatch_Stop(&amp;s);
+    printf(&quot;switch + strcmp %d %d\n&quot;, r22, Stopwatch_GetElapsedTicks(&amp;s));
+    Stopwatch_Reset(&amp;s);
+
+    
+    //////////////////
+
+    Stopwatch_Start(&amp;s);
+    int r1 = 0;
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r1 = find(search);
+    }
+    Stopwatch_Stop(&amp;s);
+    Stopwatch_Reset(&amp;s);
+
+    printf(&quot;switches %d %d\n&quot;, r1, Stopwatch_GetElapsedTicks(&amp;s));
+    ////////////
+    Stopwatch_Start(&amp;s);
+    int r3 = 0;
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r3 = binary_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
+    }
+    Stopwatch_Stop(&amp;s);
+    printf(&quot;Binary Search %d %d\n&quot;, r3, Stopwatch_GetElapsedTicks(&amp;s));
+
+    Stopwatch_Reset(&amp;s);
+    Stopwatch_Start(&amp;s);
+    int r5 = 0;
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r5 = find3(search);
+    }
+    Stopwatch_Stop(&amp;s);
+    printf(&quot;Hash %d %d\n&quot;, r5, Stopwatch_GetElapsedTicks(&amp;s));
+
+    Stopwatch_Reset(&amp;s);
+    
+
+    Stopwatch_Start(&amp;s);
+    int r4 = 0;
+    for (int i = 0; i &lt; NITER; i++)
+    {
+        r4 = linear_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
+    }
+    Stopwatch_Stop(&amp;s);
+    Stopwatch_Reset(&amp;s);
+    printf(&quot;Linear %d %d\n&quot;, r4, Stopwatch_GetElapsedTicks(&amp;s));
+
+  
+}
+
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
