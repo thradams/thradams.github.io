@@ -11,6 +11,8 @@
 #include <Windows.h>
 #include <ctime>
 #include <map>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 enum Block
 {
@@ -728,7 +730,7 @@ std::map<std::wstring, time_t> GenerateMap(const std::wstring& path)
   {
     std::wstring filePath(path);
     filePath += pszFileName;
-    _stat filestat;
+    struct _stat filestat;
     _wstat(filePath.c_str(), &filestat);    
     map[filePath] = filestat.st_mtime;
   });
@@ -754,7 +756,7 @@ void GenerateAllFiles(std::map<std::wstring, time_t> &previousMap,
     if (itpos != previousMap.end())
     {    
       //achou..
-      _stat filestat;
+      struct _stat filestat;
       _wstat(filePath.c_str(), &filestat);
       bGenerate = filestat.st_mtime > itpos->second;
       if (bGenerate)

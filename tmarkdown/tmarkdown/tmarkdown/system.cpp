@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include "Strsafe.h"
 #include <cassert>
+#include <string>
 
 std::wstring GetPath(const std::wstring &file)
 {

@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <string>
 
 std::wstring GetPath(const std::wstring &file);
 
