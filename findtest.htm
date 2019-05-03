@@ -31,1196 +31,1322 @@
 
 
 <pre>
-#include &lt;stdio.h&gt;
-#include &lt;string.h&gt;
-#include &lt;time.h&gt;
-#include &lt;assert.h&gt;
-#include &lt;stdbool.h&gt;
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;time.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
 
 
-struct Stopwatch
+<span class="keyword">struct</span> Stopwatch
 {
     clock_t m_StartCount;
     clock_t m_StopCount;
 };
 
-bool Stopwatch_IsRunning(struct Stopwatch* stopwatch)
+<span class="keyword">bool</span> Stopwatch_IsRunning(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
-    return stopwatch-&gt;m_StartCount != 0 &amp;&amp; stopwatch-&gt;m_StopCount == 0;
+    <span class="keyword">return</span> stopwatch-&gt;m_StartCount != <span class="number">0</span> &amp;&amp; stopwatch-&gt;m_StopCount == <span class="number">0</span>;
 }
 
-size_t GetFrequency() //in milliseconds
-{
-    return CLOCKS_PER_SEC / 1000;
+size_t GetFrequency() <span class="comment">//in milliseconds
+</span>{
+    <span class="keyword">return</span> CLOCKS_PER_SEC / <span class="number">1000</span>;
 }
 
-void Stopwatch_Reset(struct Stopwatch* stopwatch)
+<span class="keyword">void</span> Stopwatch_Reset(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
-    stopwatch-&gt;m_StopCount = 0;
-    stopwatch-&gt;m_StartCount = 0;
+    stopwatch-&gt;m_StopCount = <span class="number">0</span>;
+    stopwatch-&gt;m_StartCount = <span class="number">0</span>;
 
 
 }
 
-void Stopwatch_Start(struct Stopwatch* stopwatch)
+<span class="keyword">void</span> Stopwatch_Start(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
-    bool resume = (stopwatch-&gt;m_StartCount != 0);
-    if (resume)
-        stopwatch-&gt;m_StopCount = 0;
-    else
+    <span class="keyword">bool</span> resume = (stopwatch-&gt;m_StartCount != <span class="number">0</span>);
+    <span class="keyword">if</span> (resume)
+        stopwatch-&gt;m_StopCount = <span class="number">0</span>;
+    <span class="keyword">else</span>
     {
         stopwatch-&gt;m_StartCount = clock();
     }
 
-    //assert(Stopwatch_IsRunning());
-}
+    <span class="comment">//assert(Stopwatch_IsRunning());
+</span>}
 
-void Stopwatch_Stop(struct Stopwatch* stopwatch)
+<span class="keyword">void</span> Stopwatch_Stop(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
     stopwatch-&gt;m_StopCount = clock();
 }
 
-clock_t Stopwatch_GetElapsedTicks(struct Stopwatch* stopwatch)
+clock_t Stopwatch_GetElapsedTicks(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
-    if (Stopwatch_IsRunning(stopwatch))
-        return (clock() - stopwatch-&gt;m_StartCount);
+    <span class="keyword">if</span> (Stopwatch_IsRunning(stopwatch))
+        <span class="keyword">return</span> (clock() - stopwatch-&gt;m_StartCount);
 
-    return (stopwatch-&gt;m_StopCount - stopwatch-&gt;m_StartCount);
+    <span class="keyword">return</span> (stopwatch-&gt;m_StopCount - stopwatch-&gt;m_StartCount);
 }
 
-clock_t Stopwatch_GetElapsedMilliseconds(struct Stopwatch* stopwatch)
+clock_t Stopwatch_GetElapsedMilliseconds(<span class="keyword">struct</span> Stopwatch* stopwatch)
 {
-    return Stopwatch_GetElapsedTicks(stopwatch) / (CLOCKS_PER_SEC / 1000);
+    <span class="keyword">return</span> Stopwatch_GetElapsedTicks(stopwatch) / (CLOCKS_PER_SEC / <span class="number">1000</span>);
 }
 
 
 
-void GenerateCore(const char* keywords[], int first, int last, int level, int* count)
+<span class="keyword">void</span> GenerateCore(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> level, <span class="keyword">int</span>* count)
 {
-    int ident = (level + 1) * 2;
-    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
-    printf(&quot;%*c{\n&quot;, ident, ' ');
+    <span class="keyword">int</span> ident = (level + <span class="number">1</span>) * <span class="number">2</span>;
+    printf(<span class="string">&quot;%*cswitch (text[%d])\n&quot;</span>, ident, <span class="string">' '</span>, level);
+    printf(<span class="string">&quot;%*c{\n&quot;</span>, ident, <span class="string">' '</span>);
 
-    for (int i = first; i &lt;= last; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = first; i &lt;= last; i++)
     {
-        int begin = i;
-        int end = begin;
-        for (int k = i + 1; k &lt;= last; k++)
+        <span class="keyword">int</span> begin = i;
+        <span class="keyword">int</span> end = begin;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = i + <span class="number">1</span>; k &lt;= last; k++)
         {
-            if (keywords[k][level] == keywords[begin][level])
+            <span class="keyword">if</span> (keywords[k][level] == keywords[begin][level])
             {
                 i++;
                 end++;
             }
-            else
-                break;
+            <span class="keyword">else</span>
+                <span class="keyword">break</span>;
         }
 
-        //we have the range
-        if (begin == end)
+        <span class="comment">//we have the range
+</span>        <span class="keyword">if</span> (begin == end)
         {
-            //just one
-            printf(&quot;%*ccase '%c': /*%s*/ if (&quot;,
-                ident * 2, ' ', keywords[i][level], keywords[i]);
+            <span class="comment">//just one
+</span>            printf(<span class="string">&quot;%*ccase '%c': /*%s*/ if (&quot;</span>,
+                ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level], keywords[i]);
 
-            int len = strlen(keywords[i]);
+            <span class="keyword">int</span> len = strlen(keywords[i]);
 
-            int j = level + 1;
-            for (; j &lt; len; j++)
+            <span class="keyword">int</span> j = level + <span class="number">1</span>;
+            <span class="keyword">for</span> (; j &lt; len; j++)
             {
-                if (j != level + 1)
-                    printf(&quot;&amp;&amp;&quot;);
+                <span class="keyword">if</span> (j != level + <span class="number">1</span>)
+                    printf(<span class="string">&quot;&amp;&amp;&quot;</span>);
 
-                printf(&quot;text[%d]=='%c'&quot;, j, keywords[i][j]);
+                printf(<span class="string">&quot;text[%d]=='%c'&quot;</span>, j, keywords[i][j]);
             }
-            if (j != level + 1)
-                printf(&quot;&amp;&amp;&quot;);
-            printf(&quot;text[%d]=='\\0'&quot;, j);
+            <span class="keyword">if</span> (j != level + <span class="number">1</span>)
+                printf(<span class="string">&quot;&amp;&amp;&quot;</span>);
+            printf(<span class="string">&quot;text[%d]=='\\0'&quot;</span>, j);
 
-            printf(&quot;) result = %d; break;\n&quot;, *count);
+            printf(<span class="string">&quot;) result = %d; break;\n&quot;</span>, *count);
 
             (*count)++;
         }
-        else
+        <span class="keyword">else</span>
         {
-            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
-            GenerateCore(keywords, begin, end, level + 1, count);
-            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+            printf(<span class="string">&quot;%*ccase '%c':\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level]);
+            GenerateCore(keywords, begin, end, level + <span class="number">1</span>, count);
+            printf(<span class="string">&quot;%*cbreak;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
         }
 
     }
-    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+    printf(<span class="string">&quot;%*cdefault : break;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
 
-    printf(&quot;%*c}\n&quot;, ident, ' ');
+    printf(<span class="string">&quot;%*c}\n&quot;</span>, ident, <span class="string">' '</span>);
 }
 
 
-void GenerateCore1(const char* keywords[], int first, int last, int level, int* count)
+<span class="keyword">void</span> GenerateCore1(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> level, <span class="keyword">int</span>* count)
 {
-    int ident = (level + 1) * 2;
-    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
-    printf(&quot;%*c{\n&quot;, ident, ' ');
+    <span class="keyword">int</span> ident = (level + <span class="number">1</span>) * <span class="number">2</span>;
+    printf(<span class="string">&quot;%*cswitch (text[%d])\n&quot;</span>, ident, <span class="string">' '</span>, level);
+    printf(<span class="string">&quot;%*c{\n&quot;</span>, ident, <span class="string">' '</span>);
 
-    for (int i = first; i &lt;= last; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = first; i &lt;= last; i++)
     {
-        int begin = i;
-        int end = begin;
-        for (int k = i + 1; k &lt;= last; k++)
+        <span class="keyword">int</span> begin = i;
+        <span class="keyword">int</span> end = begin;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = i + <span class="number">1</span>; k &lt;= last; k++)
         {
-            if (keywords[k][level] == keywords[begin][level])
+            <span class="keyword">if</span> (keywords[k][level] == keywords[begin][level])
             {
                 i++;
                 end++;
             }
-            else
-                break;
+            <span class="keyword">else</span>
+                <span class="keyword">break</span>;
         }
 
-        //we have the range
-        if (begin == end)
+        <span class="comment">//we have the range
+</span>        <span class="keyword">if</span> (begin == end)
         {
-            //just one
-            printf(&quot;%*ccase '%c': /*%s*/ if (strcmp(text, \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;, 
-                ident * 2, ' ', keywords[i][level], keywords[i],
+            <span class="comment">//just one
+</span>            printf(<span class="string">&quot;%*ccase '%c': /*%s*/ if (strcmp(text, \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;</span>, 
+                ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level], keywords[i],
                 keywords[i],
                 *count);
 
             (*count)++;
         }
-        else
+        <span class="keyword">else</span>
         {
-            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
-            GenerateCore1(keywords, begin, end, level + 1, count);
-            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+            printf(<span class="string">&quot;%*ccase '%c':\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level]);
+            GenerateCore1(keywords, begin, end, level + <span class="number">1</span>, count);
+            printf(<span class="string">&quot;%*cbreak;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
         }
 
     }
-    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+    printf(<span class="string">&quot;%*cdefault : break;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
 
-    printf(&quot;%*c}\n&quot;, ident, ' ');
+    printf(<span class="string">&quot;%*c}\n&quot;</span>, ident, <span class="string">' '</span>);
 }
 
 
-void GenerateCore10(const char* keywords[], int first, int last, int level, int* count)
+<span class="keyword">void</span> GenerateCore10(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> level, <span class="keyword">int</span>* count)
 {
-    int ident = (level + 1) * 2;
-    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
-    printf(&quot;%*c{\n&quot;, ident, ' ');
+    <span class="keyword">int</span> ident = (level + <span class="number">1</span>) * <span class="number">2</span>;
+    printf(<span class="string">&quot;%*cswitch (text[%d])\n&quot;</span>, ident, <span class="string">' '</span>, level);
+    printf(<span class="string">&quot;%*c{\n&quot;</span>, ident, <span class="string">' '</span>);
 
-    for (int i = first; i &lt;= last; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = first; i &lt;= last; i++)
     {
-        int begin = i;
-        int end = begin;
-        for (int k = i + 1; k &lt;= last; k++)
+        <span class="keyword">int</span> begin = i;
+        <span class="keyword">int</span> end = begin;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = i + <span class="number">1</span>; k &lt;= last; k++)
         {
-            if (keywords[k][level] == keywords[begin][level])
+            <span class="keyword">if</span> (keywords[k][level] == keywords[begin][level])
             {
                 i++;
                 end++;
             }
-            else
-                break;
+            <span class="keyword">else</span>
+                <span class="keyword">break</span>;
         }
 
-        //we have the range
-        if (begin == end)
+        <span class="comment">//we have the range
+</span>        <span class="keyword">if</span> (begin == end)
         {
-            //just one
-            printf(&quot;%*ccase '%c': /*%s*/ if (strcmp(&amp;text[%d], \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;,
-                ident * 2, ' ', keywords[i][level], keywords[i],
-                level + 1, &amp;keywords[i][level + 1],
+            <span class="comment">//just one
+</span>            printf(<span class="string">&quot;%*ccase '%c': /*%s*/ if (strcmp(&amp;text[%d], \&quot;%s\&quot;) == 0) result = %d; break;\n&quot;</span>,
+                ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level], keywords[i],
+                level + <span class="number">1</span>, &amp;keywords[i][level + <span class="number">1</span>],
                 *count);
 
             (*count)++;
         }
-        else
+        <span class="keyword">else</span>
         {
-            printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
-            GenerateCore10(keywords, begin, end, level + 1, count);
-            printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+            printf(<span class="string">&quot;%*ccase '%c':\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level]);
+            GenerateCore10(keywords, begin, end, level + <span class="number">1</span>, count);
+            printf(<span class="string">&quot;%*cbreak;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
         }
 
     }
-    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+    printf(<span class="string">&quot;%*cdefault : break;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
 
-    printf(&quot;%*c}\n&quot;, ident, ' ');
+    printf(<span class="string">&quot;%*c}\n&quot;</span>, ident, <span class="string">' '</span>);
 }
 
 
 
-void GenerateCore2(const char* keywords[], int first, int last, int level, int* count)
+<span class="keyword">void</span> GenerateCore2(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> level, <span class="keyword">int</span>* count)
 {
-    int ident = (level + 1) * 2;
-    printf(&quot;%*cswitch (text[%d])\n&quot;, ident, ' ', level);
-    printf(&quot;%*c{\n&quot;, ident, ' ');
+    <span class="keyword">int</span> ident = (level + <span class="number">1</span>) * <span class="number">2</span>;
+    printf(<span class="string">&quot;%*cswitch (text[%d])\n&quot;</span>, ident, <span class="string">' '</span>, level);
+    printf(<span class="string">&quot;%*c{\n&quot;</span>, ident, <span class="string">' '</span>);
 
-    for (int i = first; i &lt;= last; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = first; i &lt;= last; i++)
     {
-        int begin = i;
-        int end = begin;
-        for (int k = i + 1; k &lt;= last; k++)
+        <span class="keyword">int</span> begin = i;
+        <span class="keyword">int</span> end = begin;
+        <span class="keyword">for</span> (<span class="keyword">int</span> k = i + <span class="number">1</span>; k &lt;= last; k++)
         {
-            if (keywords[k][level] == keywords[begin][level])
+            <span class="keyword">if</span> (keywords[k][level] == keywords[begin][level])
             {
                 i++;
                 end++;
             }
-            else
-                break;
+            <span class="keyword">else</span>
+                <span class="keyword">break</span>;
         }
 
-        printf(&quot;%*ccase '%c':\n&quot;, ident * 2, ' ', keywords[i][level]);
-        for (int j = begin; j &lt;= end; j++)
+        printf(<span class="string">&quot;%*ccase '%c':\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>, keywords[i][level]);
+        <span class="keyword">for</span> (<span class="keyword">int</span> j = begin; j &lt;= end; j++)
         {
-            printf(&quot;%*c&quot;, ident * 3, ' ');
-            if (j != begin)
-                printf(&quot;else &quot;);
+            printf(<span class="string">&quot;%*c&quot;</span>, ident * <span class="number">3</span>, <span class="string">' '</span>);
+            <span class="keyword">if</span> (j != begin)
+                printf(<span class="string">&quot;else &quot;</span>);
 
-            printf(&quot;if (strcmp(\&quot;%s\&quot;, text) == 0) result = %d;\n&quot;, keywords[j], *count);
+            printf(<span class="string">&quot;if (strcmp(\&quot;%s\&quot;, text) == 0) result = %d;\n&quot;</span>, keywords[j], *count);
 
             (*count)++;
         }
 
-        printf(&quot;%*cbreak;\n&quot;, ident * 2, ' ');
+        printf(<span class="string">&quot;%*cbreak;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
 
 
     }
-    printf(&quot;%*cdefault : break;\n&quot;, ident * 2, ' ');
+    printf(<span class="string">&quot;%*cdefault : break;\n&quot;</span>, ident * <span class="number">2</span>, <span class="string">' '</span>);
 
-    printf(&quot;%*c}\n&quot;, ident, ' ');
+    printf(<span class="string">&quot;%*c}\n&quot;</span>, ident, <span class="string">' '</span>);
 }
 
 
-void Generate(const char* keywords[], int size)
+<span class="keyword">void</span> Generate(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> size)
 {
-    printf(&quot;int find(const char* text)\n&quot;);
-    printf(&quot;{\n&quot;);
-    int count = 0;
-    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
-    GenerateCore(keywords, 0, size - 1, 0, &amp;count);
-    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
-    printf(&quot;}\n&quot;);
+    printf(<span class="string">&quot;int find(const char* text)\n&quot;</span>);
+    printf(<span class="string">&quot;{\n&quot;</span>);
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    printf(<span class="string">&quot;%*cint result = -1;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    GenerateCore(keywords, <span class="number">0</span>, size - <span class="number">1</span>, <span class="number">0</span>, &amp;count);
+    printf(<span class="string">&quot;%*creturn result;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    printf(<span class="string">&quot;}\n&quot;</span>);
 }
 
-void Generate2(const char* keywords[], int size)
+<span class="keyword">void</span> Generate2(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> size)
 {
-    printf(&quot;int find2(const char* text)\n&quot;);
-    printf(&quot;{\n&quot;);
-    int count = 0;
-    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
-    GenerateCore2(keywords, 0, size - 1, 0, &amp;count);
-    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
-    printf(&quot;}\n&quot;);
+    printf(<span class="string">&quot;int find2(const char* text)\n&quot;</span>);
+    printf(<span class="string">&quot;{\n&quot;</span>);
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    printf(<span class="string">&quot;%*cint result = -1;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    GenerateCore2(keywords, <span class="number">0</span>, size - <span class="number">1</span>, <span class="number">0</span>, &amp;count);
+    printf(<span class="string">&quot;%*creturn result;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    printf(<span class="string">&quot;}\n&quot;</span>);
 }
 
-void Generate1(const char* keywords[], int size)
+<span class="keyword">void</span> Generate1(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> size)
 {
-    printf(&quot;int find1(const char* text)\n&quot;);
-    printf(&quot;{\n&quot;);
-    int count = 0;
-    printf(&quot;%*cint result = -1;\n&quot;, 2, ' ');
-    GenerateCore1(keywords, 0, size - 1, 0, &amp;count);
-    printf(&quot;%*creturn result;\n&quot;, 2, ' ');
-    printf(&quot;}\n&quot;);
+    printf(<span class="string">&quot;int find1(const char* text)\n&quot;</span>);
+    printf(<span class="string">&quot;{\n&quot;</span>);
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    printf(<span class="string">&quot;%*cint result = -1;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    GenerateCore1(keywords, <span class="number">0</span>, size - <span class="number">1</span>, <span class="number">0</span>, &amp;count);
+    printf(<span class="string">&quot;%*creturn result;\n&quot;</span>, <span class="number">2</span>, <span class="string">' '</span>);
+    printf(<span class="string">&quot;}\n&quot;</span>);
 }
 
 
-int find(const char* text)
+<span class="keyword">int</span> find(<span class="keyword">const</span> <span class="keyword">char</span>* text)
 {
-    int result = -1;
-    switch (text[0])
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">switch</span> (text[<span class="number">0</span>])
     {
-    case 'a':
-        switch (text[1])
+    <span class="keyword">case</span> <span class="string">'a'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*alignof*/ if (text[2] == 'i' &amp;&amp; text[3] == 'g' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == 'o' &amp;&amp; text[6] == 'f' &amp;&amp; text[7] == '\0') result = 0; break;
-        case 'u': /*auto*/ if (text[2] == 't' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == '\0') result = 1; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*alignof*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'g'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'f'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'\0'</span>) result = <span class="number">0</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*auto*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">1</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'b': /*break*/ if (text[1] == 'r' &amp;&amp; text[2] == 'e' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'k' &amp;&amp; text[5] == '\0') result = 2; break;
-    case 'c':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'b'</span>: <span class="comment">/*break*/</span> <span class="keyword">if</span> (text[<span class="number">1</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">2</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'k'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">2</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'c'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'a': /*case*/ if (text[2] == 's' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == '\0') result = 3; break;
-        case 'h': /*char*/ if (text[2] == 'a' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == '\0') result = 4; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*case*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">3</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*char*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">4</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'n':
-                switch (text[3])
+            <span class="keyword">case</span> <span class="string">'n'</span>:
+                <span class="keyword">switch</span> (text[<span class="number">3</span>])
                 {
-                case 's': /*const*/ if (text[4] == 't' &amp;&amp; text[5] == '\0') result = 5; break;
-                case 't': /*continue*/ if (text[4] == 'i' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'u' &amp;&amp; text[7] == 'e' &amp;&amp; text[8] == '\0') result = 6; break;
-                default: break;
+                <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*const*/</span> <span class="keyword">if</span> (text[<span class="number">4</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">5</span>; <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*continue*/</span> <span class="keyword">if</span> (text[<span class="number">4</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">6</span>; <span class="keyword">break</span>;
+                <span class="keyword">default</span>: <span class="keyword">break</span>;
                 }
-                break;
-            default: break;
+                <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'd':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'d'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e': /*default*/ if (text[2] == 'f' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'u' &amp;&amp; text[5] == 'l' &amp;&amp; text[6] == 't' &amp;&amp; text[7] == '\0') result = 7; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>: <span class="comment">/*default*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'f'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'\0'</span>) result = <span class="number">7</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case ' ': /*do*/ if (text[3] == '\0') result = 8; break;
-            case 'u': /*double*/ if (text[3] == 'b' &amp;&amp; text[4] == 'l' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == '\0') result = 9; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">' '</span>: <span class="comment">/*do*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'\0'</span>) result = <span class="number">8</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*double*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'b'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">9</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'e':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'e'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*else*/ if (text[2] == 's' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == '\0') result = 10; break;
-        case 'n': /*enum*/ if (text[2] == 'u' &amp;&amp; text[3] == 'm' &amp;&amp; text[4] == '\0') result = 11; break;
-        case 'x': /*extern*/ if (text[2] == 't' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == '\0') result = 12; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*else*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">10</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>: <span class="comment">/*enum*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'m'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">11</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'x'</span>: <span class="comment">/*extern*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">12</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'f':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'f'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*float*/ if (text[2] == 'o' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == '\0') result = 13; break;
-        case 'o': /*for*/ if (text[2] == 'r' &amp;&amp; text[3] == '\0') result = 14; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*float*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">13</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>: <span class="comment">/*for*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'\0'</span>) result = <span class="number">14</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'g': /*goto*/ if (text[1] == 'o' &amp;&amp; text[2] == 't' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == '\0') result = 15; break;
-    case 'i':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*goto*/</span> <span class="keyword">if</span> (text[<span class="number">1</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">2</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">15</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'i'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'f': /*if*/ if (text[2] == '\0') result = 16; break;
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'f'</span>: <span class="comment">/*if*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'\0'</span>) result = <span class="number">16</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*inline*/ if (text[3] == 'i' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == '\0') result = 17; break;
-            case 't': /*int*/ if (text[3] == '\0') result = 18; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*inline*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">17</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*int*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'\0'</span>) result = <span class="number">18</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'l': /*long*/ if (text[1] == 'o' &amp;&amp; text[2] == 'n' &amp;&amp; text[3] == 'g' &amp;&amp; text[4] == '\0') result = 19; break;
-    case 'r':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*long*/</span> <span class="keyword">if</span> (text[<span class="number">1</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">2</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'g'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">19</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'r'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*register*/ if (text[3] == 'i' &amp;&amp; text[4] == 's' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'r' &amp;&amp; text[8] == '\0') result = 20; break;
-            case 's': /*restrict*/ if (text[3] == 't' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == 't' &amp;&amp; text[8] == '\0') result = 21; break;
-            case 't': /*return*/ if (text[3] == 'u' &amp;&amp; text[4] == 'r' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == '\0') result = 22; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*register*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">20</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*restrict*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">21</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*return*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">22</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 's':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'s'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'h': /*short*/ if (text[2] == 'o' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == '\0') result = 23; break;
-        case 'i':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*short*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">23</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'i'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*signed*/ if (text[3] == 'n' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'd' &amp;&amp; text[6] == '\0') result = 24; break;
-            case 'z': /*sizeof*/ if (text[3] == 'e' &amp;&amp; text[4] == 'o' &amp;&amp; text[5] == 'f' &amp;&amp; text[6] == '\0') result = 25; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*signed*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'d'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">24</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'z'</span>: <span class="comment">/*sizeof*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'f'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">25</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 't':
-            switch (text[2])
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'t'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'a': /*static*/ if (text[3] == 't' &amp;&amp; text[4] == 'i' &amp;&amp; text[5] == 'c' &amp;&amp; text[6] == '\0') result = 26; break;
-            case 'r': /*struct*/ if (text[3] == 'u' &amp;&amp; text[4] == 'c' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == '\0') result = 27; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*static*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">26</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'r'</span>: <span class="comment">/*struct*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">27</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'w': /*switch*/ if (text[2] == 'i' &amp;&amp; text[3] == 't' &amp;&amp; text[4] == 'c' &amp;&amp; text[5] == 'h' &amp;&amp; text[6] == '\0') result = 28; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*switch*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'h'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'\0'</span>) result = <span class="number">28</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 't': /*typedef*/ if (text[1] == 'y' &amp;&amp; text[2] == 'p' &amp;&amp; text[3] == 'e' &amp;&amp; text[4] == 'd' &amp;&amp; text[5] == 'e' &amp;&amp; text[6] == 'f' &amp;&amp; text[7] == '\0') result = 29; break;
-    case 'u':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*typedef*/</span> <span class="keyword">if</span> (text[<span class="number">1</span>] == <span class="string">'y'</span> &amp;&amp; text[<span class="number">2</span>] == <span class="string">'p'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'d'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'f'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'\0'</span>) result = <span class="number">29</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'u'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*union*/ if (text[3] == 'o' &amp;&amp; text[4] == 'n' &amp;&amp; text[5] == '\0') result = 30; break;
-            case 's': /*unsigned*/ if (text[3] == 'i' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'd' &amp;&amp; text[8] == '\0') result = 31; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*union*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">30</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*unsigned*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'g'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'d'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">31</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'v':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'v'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*void*/ if (text[3] == 'd' &amp;&amp; text[4] == '\0') result = 32; break;
-            case 'l': /*volatile*/ if (text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'l' &amp;&amp; text[7] == 'e' &amp;&amp; text[8] == '\0') result = 33; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*void*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'d'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'\0'</span>) result = <span class="number">32</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*volatile*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">33</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'w': /*while*/ if (text[1] == 'h' &amp;&amp; text[2] == 'i' &amp;&amp; text[3] == 'l' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == '\0') result = 34; break;
-    case '_':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*while*/</span> <span class="keyword">if</span> (text[<span class="number">1</span>] == <span class="string">'h'</span> &amp;&amp; text[<span class="number">2</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">34</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'_'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'A':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'A'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*_Alignas*/ if (text[3] == 'i' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'n' &amp;&amp; text[6] == 'a' &amp;&amp; text[7] == 's' &amp;&amp; text[8] == '\0') result = 35; break;
-            case 't': /*_Atomic*/ if (text[3] == 'o' &amp;&amp; text[4] == 'm' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == '\0') result = 36; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*_Alignas*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'g'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">35</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*_Atomic*/</span> <span class="keyword">if</span> (text[<span class="number">3</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'m'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'\0'</span>) result = <span class="number">36</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'B': /*_Bool*/ if (text[2] == 'o' &amp;&amp; text[3] == 'o' &amp;&amp; text[4] == 'l' &amp;&amp; text[5] == '\0') result = 37; break;
-        case 'C': /*_Complex*/ if (text[2] == 'o' &amp;&amp; text[3] == 'm' &amp;&amp; text[4] == 'p' &amp;&amp; text[5] == 'l' &amp;&amp; text[6] == 'e' &amp;&amp; text[7] == 'x' &amp;&amp; text[8] == '\0') result = 38; break;
-        case 'G': /*_Generic*/ if (text[2] == 'e' &amp;&amp; text[3] == 'n' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'r' &amp;&amp; text[6] == 'i' &amp;&amp; text[7] == 'c' &amp;&amp; text[8] == '\0') result = 39; break;
-        case 'I': /*_Imaginary*/ if (text[2] == 'm' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 'g' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'n' &amp;&amp; text[7] == 'a' &amp;&amp; text[8] == 'r' &amp;&amp; text[9] == 'y' &amp;&amp; text[10] == '\0') result = 40; break;
-        case 'N': /*_Noreturn*/ if (text[2] == 'o' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 't' &amp;&amp; text[6] == 'u' &amp;&amp; text[7] == 'r' &amp;&amp; text[8] == 'n' &amp;&amp; text[9] == '\0') result = 41; break;
-        case 'S': /*_Static_assert*/ if (text[2] == 't' &amp;&amp; text[3] == 'a' &amp;&amp; text[4] == 't' &amp;&amp; text[5] == 'i' &amp;&amp; text[6] == 'c' &amp;&amp; text[7] == '_' &amp;&amp; text[8] == 'a' &amp;&amp; text[9] == 's' &amp;&amp; text[10] == 's' &amp;&amp; text[11] == 'e' &amp;&amp; text[12] == 'r' &amp;&amp; text[13] == 't' &amp;&amp; text[14] == '\0') result = 42; break;
-        case 'T': /*_Thread_local*/ if (text[2] == 'h' &amp;&amp; text[3] == 'r' &amp;&amp; text[4] == 'e' &amp;&amp; text[5] == 'a' &amp;&amp; text[6] == 'd' &amp;&amp; text[7] == '_' &amp;&amp; text[8] == 'l' &amp;&amp; text[9] == 'o' &amp;&amp; text[10] == 'c' &amp;&amp; text[11] == 'a' &amp;&amp; text[12] == 'l' &amp;&amp; text[13] == '\0') result = 43; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'B'</span>: <span class="comment">/*_Bool*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'\0'</span>) result = <span class="number">37</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'C'</span>: <span class="comment">/*_Complex*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'m'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'p'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'x'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">38</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'G'</span>: <span class="comment">/*_Generic*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'\0'</span>) result = <span class="number">39</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'I'</span>: <span class="comment">/*_Imaginary*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'m'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'g'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">9</span>] == <span class="string">'y'</span> &amp;&amp; text[<span class="number">10</span>] == <span class="string">'\0'</span>) result = <span class="number">40</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'N'</span>: <span class="comment">/*_Noreturn*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'u'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'n'</span> &amp;&amp; text[<span class="number">9</span>] == <span class="string">'\0'</span>) result = <span class="number">41</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'S'</span>: <span class="comment">/*_Static_assert*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'i'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'_'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">9</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">10</span>] == <span class="string">'s'</span> &amp;&amp; text[<span class="number">11</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">12</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">13</span>] == <span class="string">'t'</span> &amp;&amp; text[<span class="number">14</span>] == <span class="string">'\0'</span>) result = <span class="number">42</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'T'</span>: <span class="comment">/*_Thread_local*/</span> <span class="keyword">if</span> (text[<span class="number">2</span>] == <span class="string">'h'</span> &amp;&amp; text[<span class="number">3</span>] == <span class="string">'r'</span> &amp;&amp; text[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; text[<span class="number">5</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">6</span>] == <span class="string">'d'</span> &amp;&amp; text[<span class="number">7</span>] == <span class="string">'_'</span> &amp;&amp; text[<span class="number">8</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">9</span>] == <span class="string">'o'</span> &amp;&amp; text[<span class="number">10</span>] == <span class="string">'c'</span> &amp;&amp; text[<span class="number">11</span>] == <span class="string">'a'</span> &amp;&amp; text[<span class="number">12</span>] == <span class="string">'l'</span> &amp;&amp; text[<span class="number">13</span>] == <span class="string">'\0'</span>) result = <span class="number">43</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    default: break;
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>: <span class="keyword">break</span>;
     }
-    return result;
+    <span class="keyword">return</span> result;
 }
 
 
-int find2(const char* text)
+<span class="keyword">int</span> find2(<span class="keyword">const</span> <span class="keyword">char</span>* text)
 {
 
-    int result = -1;
-    switch (text[0])
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">switch</span> (text[<span class="number">0</span>])
     {
-    case 'a':
-        if (strcmp(&quot;alignof&quot;, text) == 0) result = 0;
-        else if (strcmp(&quot;auto&quot;, text) == 0) result = 1;
-        break;
-    case 'b':
-        if (strcmp(&quot;break&quot;, text) == 0) result = 2;
-        break;
-    case 'c':
-        if (strcmp(&quot;case&quot;, text) == 0) result = 3;
-        else if (strcmp(&quot;char&quot;, text) == 0) result = 4;
-        else if (strcmp(&quot;const&quot;, text) == 0) result = 5;
-        else if (strcmp(&quot;continue&quot;, text) == 0) result = 6;
-        break;
-    case 'd':
-        if (strcmp(&quot;default&quot;, text) == 0) result = 7;
-        else if (strcmp(&quot;do&quot;, text) == 0) result = 8;
-        else if (strcmp(&quot;double&quot;, text) == 0) result = 9;
-        break;
-    case 'e':
-        if (strcmp(&quot;else&quot;, text) == 0) result = 10;
-        else if (strcmp(&quot;enum&quot;, text) == 0) result = 11;
-        else if (strcmp(&quot;extern&quot;, text) == 0) result = 12;
-        break;
-    case 'f':
-        if (strcmp(&quot;float&quot;, text) == 0) result = 13;
-        else if (strcmp(&quot;for&quot;, text) == 0) result = 14;
-        break;
-    case 'g':
-        if (strcmp(&quot;goto&quot;, text) == 0) result = 15;
-        break;
-    case 'i':
-        if (strcmp(&quot;if&quot;, text) == 0) result = 16;
-        else if (strcmp(&quot;inline&quot;, text) == 0) result = 17;
-        else if (strcmp(&quot;int&quot;, text) == 0) result = 18;
-        break;
-    case 'l':
-        if (strcmp(&quot;long&quot;, text) == 0) result = 19;
-        break;
-    case 'r':
-        if (strcmp(&quot;register&quot;, text) == 0) result = 20;
-        else if (strcmp(&quot;restrict&quot;, text) == 0) result = 21;
-        else if (strcmp(&quot;return&quot;, text) == 0) result = 22;
-        break;
-    case 's':
-        if (strcmp(&quot;short&quot;, text) == 0) result = 23;
-        else if (strcmp(&quot;signed&quot;, text) == 0) result = 24;
-        else if (strcmp(&quot;sizeof&quot;, text) == 0) result = 25;
-        else if (strcmp(&quot;static&quot;, text) == 0) result = 26;
-        else if (strcmp(&quot;struct&quot;, text) == 0) result = 27;
-        else if (strcmp(&quot;switch&quot;, text) == 0) result = 28;
-        break;
-    case 't':
-        if (strcmp(&quot;typedef&quot;, text) == 0) result = 29;
-        break;
-    case 'u':
-        if (strcmp(&quot;union&quot;, text) == 0) result = 30;
-        else if (strcmp(&quot;unsigned&quot;, text) == 0) result = 31;
-        break;
-    case 'v':
-        if (strcmp(&quot;void&quot;, text) == 0) result = 32;
-        else if (strcmp(&quot;volatile&quot;, text) == 0) result = 33;
-        break;
-    case 'w':
-        if (strcmp(&quot;while&quot;, text) == 0) result = 34;
-        break;
-    case '_':
-        if (strcmp(&quot;_Alignas&quot;, text) == 0) result = 35;
-        else if (strcmp(&quot;_Atomic&quot;, text) == 0) result = 36;
-        else if (strcmp(&quot;_Bool&quot;, text) == 0) result = 37;
-        else if (strcmp(&quot;_Complex&quot;, text) == 0) result = 38;
-        else if (strcmp(&quot;_Generic&quot;, text) == 0) result = 39;
-        else if (strcmp(&quot;_Imaginary&quot;, text) == 0) result = 40;
-        else if (strcmp(&quot;_Noreturn&quot;, text) == 0) result = 41;
-        else if (strcmp(&quot;_Static_assert&quot;, text) == 0) result = 42;
-        else if (strcmp(&quot;_Thread_local&quot;, text) == 0) result = 43;
-        break;
-    default: break;
+    <span class="keyword">case</span> <span class="string">'a'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;alignof&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">0</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;auto&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">1</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'b'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;break&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">2</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'c'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;case&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">3</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;char&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">4</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;const&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">5</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;continue&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">6</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'d'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;default&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">7</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;do&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">8</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;double&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">9</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'e'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;else&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">10</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;enum&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">11</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;extern&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">12</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'f'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;float&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">13</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;for&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">14</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'g'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;goto&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">15</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'i'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;if&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">16</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;inline&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">17</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;int&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">18</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'l'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;long&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">19</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'r'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;register&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">20</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;restrict&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">21</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;return&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">22</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'s'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;short&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">23</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;signed&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">24</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;sizeof&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">25</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;static&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">26</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;struct&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">27</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;switch&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">28</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'t'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;typedef&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">29</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'u'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;union&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">30</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;unsigned&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">31</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'v'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;void&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">32</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;volatile&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">33</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'w'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;while&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">34</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'_'</span>:
+        <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Alignas&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">35</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Atomic&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">36</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Bool&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">37</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Complex&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">38</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Generic&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">39</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Imaginary&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">40</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Noreturn&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">41</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Static_assert&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">42</span>;
+        <span class="keyword">else</span> <span class="keyword">if</span> (strcmp(<span class="string">&quot;_Thread_local&quot;</span>, text) == <span class="number">0</span>) result = <span class="number">43</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>: <span class="keyword">break</span>;
     }
-    return result;
+    <span class="keyword">return</span> result;
 }
 
-//#define GENERATE 1
-
-int linear_search_str(const char* sorted_array[],
-    int n_elements,
-    const char* searchItem)
+<span class="comment">//#define GENERATE 1
+</span>
+<span class="keyword">int</span> linear_search_str(<span class="keyword">const</span> <span class="keyword">char</span>* sorted_array[],
+    <span class="keyword">int</span> n_elements,
+    <span class="keyword">const</span> <span class="keyword">char</span>* searchItem)
 {
-    int result = -1;
-    for (int i = 0; i &lt; n_elements; i++)
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n_elements; i++)
     {
-        if (strcmp(sorted_array[i], searchItem) == 0)
+        <span class="keyword">if</span> (strcmp(sorted_array[i], searchItem) == <span class="number">0</span>)
         {
             result = i;
-            break;
+            <span class="keyword">break</span>;
         }
     }
-    return result;
+    <span class="keyword">return</span> result;
 }
 
-int binary_search_str(const char* sorted_array[],
-    int n_elements,
-    const char* searchItem)
+<span class="keyword">int</span> binary_search_str(<span class="keyword">const</span> <span class="keyword">char</span>* sorted_array[],
+    <span class="keyword">int</span> n_elements,
+    <span class="keyword">const</span> <span class="keyword">char</span>* searchItem)
 {
-    int mid;
-    int c = 0;
-    int l = 0;
-    int u = n_elements - 1;
+    <span class="keyword">int</span> mid;
+    <span class="keyword">int</span> c = <span class="number">0</span>;
+    <span class="keyword">int</span> l = <span class="number">0</span>;
+    <span class="keyword">int</span> u = n_elements - <span class="number">1</span>;
 
-    while (l &lt;= u)
+    <span class="keyword">while</span> (l &lt;= u)
     {
-        mid = (l + u) / 2;
+        mid = (l + u) / <span class="number">2</span>;
 
-        int cmp = strcmp(searchItem, sorted_array[mid]);
+        <span class="keyword">int</span> cmp = strcmp(searchItem, sorted_array[mid]);
 
-        if (cmp == 0)
+        <span class="keyword">if</span> (cmp == <span class="number">0</span>)
         {
-            c = 1;
-            break;
+            c = <span class="number">1</span>;
+            <span class="keyword">break</span>;
         }
-        else if (cmp &lt; 0)
+        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)
         {
-            u = mid - 1;
+            u = mid - <span class="number">1</span>;
         }
-        else
+        <span class="keyword">else</span>
         {
-            l = mid + 1;
+            l = mid + <span class="number">1</span>;
         }
     }
 
-    return c == 0 ? -1 : mid;
+    <span class="keyword">return</span> c == <span class="number">0</span> ? <span class="number">-1</span> : mid;
 }
 
 
-void Generate3(const char* keywords[], int size)
+<span class="keyword">void</span> Generate3(<span class="keyword">const</span> <span class="keyword">char</span>* keywords[], <span class="keyword">int</span> size)
 {
-    printf(&quot;int find3(const char* text)\n&quot;);
-    printf(&quot;{\n&quot;);
+    printf(<span class="string">&quot;int find3(const char* text)\n&quot;</span>);
+    printf(<span class="string">&quot;{\n&quot;</span>);
 
-    printf(&quot;int result = -1;\n&quot;
-        &quot;unsigned u = 0; \n&quot;
-        &quot;for (int j = 0; j &lt; 4 &amp;&amp; text[j]; j++)\n&quot;
-        &quot;{\n&quot;
-        &quot;  u |= ((unsigned)text[j]) &lt;&lt; (j * 8); \n&quot;
-        &quot;}\n&quot;);
-
-
-    printf(&quot;  switch (u)\n&quot;);
-    printf(&quot;  {\n&quot;);
+    printf(<span class="string">&quot;int result = -1;\n&quot;</span>
+        <span class="string">&quot;unsigned u = 0; \n&quot;</span>
+        <span class="string">&quot;for (int j = 0; j &lt; 4 &amp;&amp; text[j]; j++)\n&quot;</span>
+        <span class="string">&quot;{\n&quot;</span>
+        <span class="string">&quot;  u |= ((unsigned)text[j]) &lt;&lt; (j * 8); \n&quot;</span>
+        <span class="string">&quot;}\n&quot;</span>);
 
 
-    for (int i = 0; i &lt; size; i++)
+    printf(<span class="string">&quot;  switch (u)\n&quot;</span>);
+    printf(<span class="string">&quot;  {\n&quot;</span>);
+
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i++)
     {
-        unsigned u = 0;
-        for (int j = 0; j &lt; 4 &amp;&amp; keywords[i][j]; j++)
+        <span class="keyword">unsigned</span> u = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">4</span> &amp;&amp; keywords[i][j]; j++)
         {
-            u |= ((unsigned)keywords[i][j]) &lt;&lt; (j * 8);
+            u |= ((<span class="keyword">unsigned</span>)keywords[i][j]) &lt;&lt; (j * <span class="number">8</span>);
         }
 
-        printf(&quot;case 0x%04x: /*%s*/result = %d; break;\n&quot;, u % size, keywords[i], i);
+        printf(<span class="string">&quot;case 0x%04x: /*%s*/result = %d; break;\n&quot;</span>, u % size, keywords[i], i);
     }
-    printf(&quot;  }\n&quot;);
-    printf(&quot;  return result;\n&quot;);
-    printf(&quot;}\n&quot;);
+    printf(<span class="string">&quot;  }\n&quot;</span>);
+    printf(<span class="string">&quot;  return result;\n&quot;</span>);
+    printf(<span class="string">&quot;}\n&quot;</span>);
 }
 
 
 
-int find3(const char* text)
+<span class="keyword">int</span> find3(<span class="keyword">const</span> <span class="keyword">char</span>* text)
 {
-    int result = -1;
-    unsigned u = 0;
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">unsigned</span> u = <span class="number">0</span>;
     
-    if (text[0])
-     u |= ((unsigned)text[0]) &lt;&lt; (0);
+    <span class="keyword">if</span> (text[<span class="number">0</span>])
+     u |= ((<span class="keyword">unsigned</span>)text[<span class="number">0</span>]) &lt;&lt; (<span class="number">0</span>);
     
-    if (text[1])
-        u |= ((unsigned)text[1]) &lt;&lt; 8;
+    <span class="keyword">if</span> (text[<span class="number">1</span>])
+        u |= ((<span class="keyword">unsigned</span>)text[<span class="number">1</span>]) &lt;&lt; <span class="number">8</span>;
 
-    if (text[2])
-        u |= ((unsigned)text[2]) &lt;&lt; 16;
+    <span class="keyword">if</span> (text[<span class="number">2</span>])
+        u |= ((<span class="keyword">unsigned</span>)text[<span class="number">2</span>]) &lt;&lt; <span class="number">16</span>;
 
-    if (text[3])
-        u |= ((unsigned)text[3]) &lt;&lt; 24;
+    <span class="keyword">if</span> (text[<span class="number">3</span>])
+        u |= ((<span class="keyword">unsigned</span>)text[<span class="number">3</span>]) &lt;&lt; <span class="number">24</span>;
 
 
-    switch (u)
+    <span class="keyword">switch</span> (u)
     {
-    case 0x67696c61: /*alignof*/result = 0; break;
-    case 0x6f747561: /*auto*/result = 1; break;
-    case 0x61657262: /*break*/result = 2; break;
-    case 0x65736163: /*case*/result = 3; break;
-    case 0x72616863: /*char*/result = 4; break;
-    case 0x736e6f63: /*const*/result = 5; break;
-    case 0x746e6f63: /*continue*/result = 6; break;
-    case 0x61666564: /*default*/result = 7; break;
-    case 0x6f64: /*do*/result = 8; break;
-    case 0x62756f64: /*double*/result = 9; break;
-    case 0x65736c65: /*else*/result = 10; break;
-    case 0x6d756e65: /*enum*/result = 11; break;
-    case 0x65747865: /*extern*/result = 12; break;
-    case 0x616f6c66: /*float*/result = 13; break;
-    case 0x726f66: /*for*/result = 14; break;
-    case 0x6f746f67: /*goto*/result = 15; break;
-    case 0x6669: /*if*/result = 16; break;
-    case 0x696c6e69: /*inline*/result = 17; break;
-    case 0x746e69: /*int*/result = 18; break;
-    case 0x676e6f6c: /*long*/result = 19; break;
-    case 0x69676572: /*register*/result = 20; break;
-    case 0x74736572: /*restrict*/result = 21; break;
-    case 0x75746572: /*return*/result = 22; break;
-    case 0x726f6873: /*short*/result = 23; break;
-    case 0x6e676973: /*signed*/result = 24; break;
-    case 0x657a6973: /*sizeof*/result = 25; break;
-    case 0x74617473: /*static*/result = 26; break;
-    case 0x75727473: /*struct*/result = 27; break;
-    case 0x74697773: /*switch*/result = 28; break;
-    case 0x65707974: /*typedef*/result = 29; break;
-    case 0x6f696e75: /*union*/result = 30; break;
-    case 0x69736e75: /*unsigned*/result = 31; break;
-    case 0x64696f76: /*void*/result = 32; break;
-    case 0x616c6f76: /*volatile*/result = 33; break;
-    case 0x6c696877: /*while*/result = 34; break;
-    case 0x696c415f: /*_Alignas*/result = 35; break;
-    case 0x6f74415f: /*_Atomic*/result = 36; break;
-    case 0x6f6f425f: /*_Bool*/result = 37; break;
-    case 0x6d6f435f: /*_Complex*/result = 38; break;
-    case 0x6e65475f: /*_Generic*/result = 39; break;
-    case 0x616d495f: /*_Imaginary*/result = 40; break;
-    case 0x726f4e5f: /*_Noreturn*/result = 41; break;
-    case 0x6174535f: /*_Static_assert*/result = 42; break;
-    case 0x7268545f: /*_Thread_local*/result = 43; break;
+    <span class="keyword">case</span> <span class="number">0</span>x67696c<span class="number">61</span>: <span class="comment">/*alignof*/</span>result = <span class="number">0</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">747561</span>: <span class="comment">/*auto*/</span>result = <span class="number">1</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x61657262: <span class="comment">/*break*/</span>result = <span class="number">2</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x65736163: <span class="comment">/*case*/</span>result = <span class="number">3</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x72616863: <span class="comment">/*char*/</span>result = <span class="number">4</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x736e<span class="number">6</span>f63: <span class="comment">/*const*/</span>result = <span class="number">5</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x746e<span class="number">6</span>f63: <span class="comment">/*continue*/</span>result = <span class="number">6</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x61666564: <span class="comment">/*default*/</span>result = <span class="number">7</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">64</span>: <span class="comment">/*do*/</span>result = <span class="number">8</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x62756f<span class="number">64</span>: <span class="comment">/*double*/</span>result = <span class="number">9</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x65736c<span class="number">65</span>: <span class="comment">/*else*/</span>result = <span class="number">10</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6d<span class="number">756e6</span><span class="number">5</span>: <span class="comment">/*enum*/</span>result = <span class="number">11</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x65747865: <span class="comment">/*extern*/</span>result = <span class="number">12</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x616f<span class="number">6</span>c66: <span class="comment">/*float*/</span>result = <span class="number">13</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x726f<span class="number">66</span>: <span class="comment">/*for*/</span>result = <span class="number">14</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">746</span>f67: <span class="comment">/*goto*/</span>result = <span class="number">15</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6669: <span class="comment">/*if*/</span>result = <span class="number">16</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x696c<span class="number">6e6</span><span class="number">9</span>: <span class="comment">/*inline*/</span>result = <span class="number">17</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x746e<span class="number">69</span>: <span class="comment">/*int*/</span>result = <span class="number">18</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x676e<span class="number">6</span>f6c: <span class="comment">/*long*/</span>result = <span class="number">19</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x69676572: <span class="comment">/*register*/</span>result = <span class="number">20</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x74736572: <span class="comment">/*restrict*/</span>result = <span class="number">21</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x75746572: <span class="comment">/*return*/</span>result = <span class="number">22</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x726f<span class="number">6873</span>: <span class="comment">/*short*/</span>result = <span class="number">23</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6e<span class="number">676973</span>: <span class="comment">/*signed*/</span>result = <span class="number">24</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x657a<span class="number">6973</span>: <span class="comment">/*sizeof*/</span>result = <span class="number">25</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x74617473: <span class="comment">/*static*/</span>result = <span class="number">26</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x75727473: <span class="comment">/*struct*/</span>result = <span class="number">27</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x74697773: <span class="comment">/*switch*/</span>result = <span class="number">28</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x65707974: <span class="comment">/*typedef*/</span>result = <span class="number">29</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">696e7</span><span class="number">5</span>: <span class="comment">/*union*/</span>result = <span class="number">30</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x69736e<span class="number">75</span>: <span class="comment">/*unsigned*/</span>result = <span class="number">31</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x64696f<span class="number">76</span>: <span class="comment">/*void*/</span>result = <span class="number">32</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x616c<span class="number">6</span>f76: <span class="comment">/*volatile*/</span>result = <span class="number">33</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6c<span class="number">696877</span>: <span class="comment">/*while*/</span>result = <span class="number">34</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x696c<span class="number">415</span>f: <span class="comment">/*_Alignas*/</span>result = <span class="number">35</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">74415</span>f: <span class="comment">/*_Atomic*/</span>result = <span class="number">36</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6f<span class="number">6</span>f425f: <span class="comment">/*_Bool*/</span>result = <span class="number">37</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6d<span class="number">6</span>f435f: <span class="comment">/*_Complex*/</span>result = <span class="number">38</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6e<span class="number">65475</span>f: <span class="comment">/*_Generic*/</span>result = <span class="number">39</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x616d<span class="number">495</span>f: <span class="comment">/*_Imaginary*/</span>result = <span class="number">40</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x726f<span class="number">4e5</span>f: <span class="comment">/*_Noreturn*/</span>result = <span class="number">41</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x6174535f: <span class="comment">/*_Static_assert*/</span>result = <span class="number">42</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">0</span>x7268545f: <span class="comment">/*_Thread_local*/</span>result = <span class="number">43</span>; <span class="keyword">break</span>;
     }
-    return result;
+    <span class="keyword">return</span> result;
 }
 
-int find1(const char* text)
+<span class="keyword">int</span> find1(<span class="keyword">const</span> <span class="keyword">char</span>* text)
 {
-    int result = -1;
-    switch (text[0])
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">switch</span> (text[<span class="number">0</span>])
     {
-    case 'a':
-        switch (text[1])
+    <span class="keyword">case</span> <span class="string">'a'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*alignof*/ if (strcmp(text, &quot;alignof&quot;) == 0) result = 0; break;
-        case 'u': /*auto*/ if (strcmp(text, &quot;auto&quot;) == 0) result = 1; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*alignof*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;alignof&quot;</span>) == <span class="number">0</span>) result = <span class="number">0</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*auto*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;auto&quot;</span>) == <span class="number">0</span>) result = <span class="number">1</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'b': /*break*/ if (strcmp(text, &quot;break&quot;) == 0) result = 2; break;
-    case 'c':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'b'</span>: <span class="comment">/*break*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;break&quot;</span>) == <span class="number">0</span>) result = <span class="number">2</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'c'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'a': /*case*/ if (strcmp(text, &quot;case&quot;) == 0) result = 3; break;
-        case 'h': /*char*/ if (strcmp(text, &quot;char&quot;) == 0) result = 4; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*case*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;case&quot;</span>) == <span class="number">0</span>) result = <span class="number">3</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*char*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;char&quot;</span>) == <span class="number">0</span>) result = <span class="number">4</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'n':
-                switch (text[3])
+            <span class="keyword">case</span> <span class="string">'n'</span>:
+                <span class="keyword">switch</span> (text[<span class="number">3</span>])
                 {
-                case 's': /*const*/ if (strcmp(text, &quot;const&quot;) == 0) result = 5; break;
-                case 't': /*continue*/ if (strcmp(text, &quot;continue&quot;) == 0) result = 6; break;
-                default: break;
+                <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*const*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;const&quot;</span>) == <span class="number">0</span>) result = <span class="number">5</span>; <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*continue*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;continue&quot;</span>) == <span class="number">0</span>) result = <span class="number">6</span>; <span class="keyword">break</span>;
+                <span class="keyword">default</span>: <span class="keyword">break</span>;
                 }
-                break;
-            default: break;
+                <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'd':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'d'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e': /*default*/ if (strcmp(text, &quot;default&quot;) == 0) result = 7; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>: <span class="comment">/*default*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;default&quot;</span>) == <span class="number">0</span>) result = <span class="number">7</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case ' ': /*do*/ if (strcmp(text, &quot;do&quot;) == 0) result = 8; break;
-            case 'u': /*double*/ if (strcmp(text, &quot;double&quot;) == 0) result = 9; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">' '</span>: <span class="comment">/*do*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;do&quot;</span>) == <span class="number">0</span>) result = <span class="number">8</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*double*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;double&quot;</span>) == <span class="number">0</span>) result = <span class="number">9</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'e':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'e'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*else*/ if (strcmp(text, &quot;else&quot;) == 0) result = 10; break;
-        case 'n': /*enum*/ if (strcmp(text, &quot;enum&quot;) == 0) result = 11; break;
-        case 'x': /*extern*/ if (strcmp(text, &quot;extern&quot;) == 0) result = 12; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*else*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;else&quot;</span>) == <span class="number">0</span>) result = <span class="number">10</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>: <span class="comment">/*enum*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;enum&quot;</span>) == <span class="number">0</span>) result = <span class="number">11</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'x'</span>: <span class="comment">/*extern*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;extern&quot;</span>) == <span class="number">0</span>) result = <span class="number">12</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'f':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'f'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*float*/ if (strcmp(text, &quot;float&quot;) == 0) result = 13; break;
-        case 'o': /*for*/ if (strcmp(text, &quot;for&quot;) == 0) result = 14; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*float*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;float&quot;</span>) == <span class="number">0</span>) result = <span class="number">13</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>: <span class="comment">/*for*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;for&quot;</span>) == <span class="number">0</span>) result = <span class="number">14</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'g': /*goto*/ if (strcmp(text, &quot;goto&quot;) == 0) result = 15; break;
-    case 'i':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*goto*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;goto&quot;</span>) == <span class="number">0</span>) result = <span class="number">15</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'i'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'f': /*if*/ if (strcmp(text, &quot;if&quot;) == 0) result = 16; break;
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'f'</span>: <span class="comment">/*if*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;if&quot;</span>) == <span class="number">0</span>) result = <span class="number">16</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*inline*/ if (strcmp(text, &quot;inline&quot;) == 0) result = 17; break;
-            case 't': /*int*/ if (strcmp(text, &quot;int&quot;) == 0) result = 18; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*inline*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;inline&quot;</span>) == <span class="number">0</span>) result = <span class="number">17</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*int*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;int&quot;</span>) == <span class="number">0</span>) result = <span class="number">18</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'l': /*long*/ if (strcmp(text, &quot;long&quot;) == 0) result = 19; break;
-    case 'r':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*long*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;long&quot;</span>) == <span class="number">0</span>) result = <span class="number">19</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'r'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*register*/ if (strcmp(text, &quot;register&quot;) == 0) result = 20; break;
-            case 's': /*restrict*/ if (strcmp(text, &quot;restrict&quot;) == 0) result = 21; break;
-            case 't': /*return*/ if (strcmp(text, &quot;return&quot;) == 0) result = 22; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*register*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;register&quot;</span>) == <span class="number">0</span>) result = <span class="number">20</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*restrict*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;restrict&quot;</span>) == <span class="number">0</span>) result = <span class="number">21</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*return*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;return&quot;</span>) == <span class="number">0</span>) result = <span class="number">22</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 's':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'s'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'h': /*short*/ if (strcmp(text, &quot;short&quot;) == 0) result = 23; break;
-        case 'i':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*short*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;short&quot;</span>) == <span class="number">0</span>) result = <span class="number">23</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'i'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*signed*/ if (strcmp(text, &quot;signed&quot;) == 0) result = 24; break;
-            case 'z': /*sizeof*/ if (strcmp(text, &quot;sizeof&quot;) == 0) result = 25; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*signed*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;signed&quot;</span>) == <span class="number">0</span>) result = <span class="number">24</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'z'</span>: <span class="comment">/*sizeof*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;sizeof&quot;</span>) == <span class="number">0</span>) result = <span class="number">25</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 't':
-            switch (text[2])
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'t'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'a': /*static*/ if (strcmp(text, &quot;static&quot;) == 0) result = 26; break;
-            case 'r': /*struct*/ if (strcmp(text, &quot;struct&quot;) == 0) result = 27; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*static*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;static&quot;</span>) == <span class="number">0</span>) result = <span class="number">26</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'r'</span>: <span class="comment">/*struct*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;struct&quot;</span>) == <span class="number">0</span>) result = <span class="number">27</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'w': /*switch*/ if (strcmp(text, &quot;switch&quot;) == 0) result = 28; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*switch*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;switch&quot;</span>) == <span class="number">0</span>) result = <span class="number">28</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 't': /*typedef*/ if (strcmp(text, &quot;typedef&quot;) == 0) result = 29; break;
-    case 'u':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*typedef*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;typedef&quot;</span>) == <span class="number">0</span>) result = <span class="number">29</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'u'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*union*/ if (strcmp(text, &quot;union&quot;) == 0) result = 30; break;
-            case 's': /*unsigned*/ if (strcmp(text, &quot;unsigned&quot;) == 0) result = 31; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*union*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;union&quot;</span>) == <span class="number">0</span>) result = <span class="number">30</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*unsigned*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;unsigned&quot;</span>) == <span class="number">0</span>) result = <span class="number">31</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'v':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'v'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*void*/ if (strcmp(text, &quot;void&quot;) == 0) result = 32; break;
-            case 'l': /*volatile*/ if (strcmp(text, &quot;volatile&quot;) == 0) result = 33; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*void*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;void&quot;</span>) == <span class="number">0</span>) result = <span class="number">32</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*volatile*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;volatile&quot;</span>) == <span class="number">0</span>) result = <span class="number">33</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'w': /*while*/ if (strcmp(text, &quot;while&quot;) == 0) result = 34; break;
-    case '_':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*while*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;while&quot;</span>) == <span class="number">0</span>) result = <span class="number">34</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'_'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'A':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'A'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*_Alignas*/ if (strcmp(text, &quot;_Alignas&quot;) == 0) result = 35; break;
-            case 't': /*_Atomic*/ if (strcmp(text, &quot;_Atomic&quot;) == 0) result = 36; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*_Alignas*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Alignas&quot;</span>) == <span class="number">0</span>) result = <span class="number">35</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*_Atomic*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Atomic&quot;</span>) == <span class="number">0</span>) result = <span class="number">36</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'B': /*_Bool*/ if (strcmp(text, &quot;_Bool&quot;) == 0) result = 37; break;
-        case 'C': /*_Complex*/ if (strcmp(text, &quot;_Complex&quot;) == 0) result = 38; break;
-        case 'G': /*_Generic*/ if (strcmp(text, &quot;_Generic&quot;) == 0) result = 39; break;
-        case 'I': /*_Imaginary*/ if (strcmp(text, &quot;_Imaginary&quot;) == 0) result = 40; break;
-        case 'N': /*_Noreturn*/ if (strcmp(text, &quot;_Noreturn&quot;) == 0) result = 41; break;
-        case 'S': /*_Static_assert*/ if (strcmp(text, &quot;_Static_assert&quot;) == 0) result = 42; break;
-        case 'T': /*_Thread_local*/ if (strcmp(text, &quot;_Thread_local&quot;) == 0) result = 43; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'B'</span>: <span class="comment">/*_Bool*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Bool&quot;</span>) == <span class="number">0</span>) result = <span class="number">37</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'C'</span>: <span class="comment">/*_Complex*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Complex&quot;</span>) == <span class="number">0</span>) result = <span class="number">38</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'G'</span>: <span class="comment">/*_Generic*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Generic&quot;</span>) == <span class="number">0</span>) result = <span class="number">39</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'I'</span>: <span class="comment">/*_Imaginary*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Imaginary&quot;</span>) == <span class="number">0</span>) result = <span class="number">40</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'N'</span>: <span class="comment">/*_Noreturn*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Noreturn&quot;</span>) == <span class="number">0</span>) result = <span class="number">41</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'S'</span>: <span class="comment">/*_Static_assert*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Static_assert&quot;</span>) == <span class="number">0</span>) result = <span class="number">42</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'T'</span>: <span class="comment">/*_Thread_local*/</span> <span class="keyword">if</span> (strcmp(text, <span class="string">&quot;_Thread_local&quot;</span>) == <span class="number">0</span>) result = <span class="number">43</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    default: break;
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>: <span class="keyword">break</span>;
     }
-    return result;
+    <span class="keyword">return</span> result;
 }
 
-int find10(const char* text)
+<span class="keyword">int</span> find10(<span class="keyword">const</span> <span class="keyword">char</span>* text)
 {
-    int result = -1;
-    switch (text[0])
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">switch</span> (text[<span class="number">0</span>])
     {
-    case 'a':
-        switch (text[1])
+    <span class="keyword">case</span> <span class="string">'a'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*alignof*/ if (strcmp(&amp;text[2], &quot;ignof&quot;) == 0) result = 0; break;
-        case 'u': /*auto*/ if (strcmp(&amp;text[2], &quot;to&quot;) == 0) result = 1; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*alignof*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;ignof&quot;</span>) == <span class="number">0</span>) result = <span class="number">0</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*auto*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;to&quot;</span>) == <span class="number">0</span>) result = <span class="number">1</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'b': /*break*/ if (strcmp(&amp;text[1], &quot;reak&quot;) == 0) result = 2; break;
-    case 'c':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'b'</span>: <span class="comment">/*break*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">1</span>], <span class="string">&quot;reak&quot;</span>) == <span class="number">0</span>) result = <span class="number">2</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'c'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'a': /*case*/ if (strcmp(&amp;text[2], &quot;se&quot;) == 0) result = 3; break;
-        case 'h': /*char*/ if (strcmp(&amp;text[2], &quot;ar&quot;) == 0) result = 4; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*case*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;se&quot;</span>) == <span class="number">0</span>) result = <span class="number">3</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*char*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;ar&quot;</span>) == <span class="number">0</span>) result = <span class="number">4</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'n':
-                switch (text[3])
+            <span class="keyword">case</span> <span class="string">'n'</span>:
+                <span class="keyword">switch</span> (text[<span class="number">3</span>])
                 {
-                case 's': /*const*/ if (strcmp(&amp;text[4], &quot;t&quot;) == 0) result = 5; break;
-                case 't': /*continue*/ if (strcmp(&amp;text[4], &quot;inue&quot;) == 0) result = 6; break;
-                default: break;
+                <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*const*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">4</span>], <span class="string">&quot;t&quot;</span>) == <span class="number">0</span>) result = <span class="number">5</span>; <span class="keyword">break</span>;
+                <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*continue*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">4</span>], <span class="string">&quot;inue&quot;</span>) == <span class="number">0</span>) result = <span class="number">6</span>; <span class="keyword">break</span>;
+                <span class="keyword">default</span>: <span class="keyword">break</span>;
                 }
-                break;
-            default: break;
+                <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'd':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'d'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e': /*default*/ if (strcmp(&amp;text[2], &quot;fault&quot;) == 0) result = 7; break;
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>: <span class="comment">/*default*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;fault&quot;</span>) == <span class="number">0</span>) result = <span class="number">7</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case ' ': /*do*/ if (strcmp(&amp;text[3], &quot;&quot;) == 0) result = 8; break;
-            case 'u': /*double*/ if (strcmp(&amp;text[3], &quot;ble&quot;) == 0) result = 9; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">' '</span>: <span class="comment">/*do*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;&quot;</span>) == <span class="number">0</span>) result = <span class="number">8</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'u'</span>: <span class="comment">/*double*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;ble&quot;</span>) == <span class="number">0</span>) result = <span class="number">9</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'e':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'e'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*else*/ if (strcmp(&amp;text[2], &quot;se&quot;) == 0) result = 10; break;
-        case 'n': /*enum*/ if (strcmp(&amp;text[2], &quot;um&quot;) == 0) result = 11; break;
-        case 'x': /*extern*/ if (strcmp(&amp;text[2], &quot;tern&quot;) == 0) result = 12; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*else*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;se&quot;</span>) == <span class="number">0</span>) result = <span class="number">10</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>: <span class="comment">/*enum*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;um&quot;</span>) == <span class="number">0</span>) result = <span class="number">11</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'x'</span>: <span class="comment">/*extern*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;tern&quot;</span>) == <span class="number">0</span>) result = <span class="number">12</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'f':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'f'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'l': /*float*/ if (strcmp(&amp;text[2], &quot;oat&quot;) == 0) result = 13; break;
-        case 'o': /*for*/ if (strcmp(&amp;text[2], &quot;r&quot;) == 0) result = 14; break;
-        default: break;
+        <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*float*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;oat&quot;</span>) == <span class="number">0</span>) result = <span class="number">13</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'o'</span>: <span class="comment">/*for*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;r&quot;</span>) == <span class="number">0</span>) result = <span class="number">14</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'g': /*goto*/ if (strcmp(&amp;text[1], &quot;oto&quot;) == 0) result = 15; break;
-    case 'i':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*goto*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">1</span>], <span class="string">&quot;oto&quot;</span>) == <span class="number">0</span>) result = <span class="number">15</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'i'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'f': /*if*/ if (strcmp(&amp;text[2], &quot;&quot;) == 0) result = 16; break;
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'f'</span>: <span class="comment">/*if*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;&quot;</span>) == <span class="number">0</span>) result = <span class="number">16</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*inline*/ if (strcmp(&amp;text[3], &quot;ine&quot;) == 0) result = 17; break;
-            case 't': /*int*/ if (strcmp(&amp;text[3], &quot;&quot;) == 0) result = 18; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*inline*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;ine&quot;</span>) == <span class="number">0</span>) result = <span class="number">17</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*int*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;&quot;</span>) == <span class="number">0</span>) result = <span class="number">18</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'l': /*long*/ if (strcmp(&amp;text[1], &quot;ong&quot;) == 0) result = 19; break;
-    case 'r':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*long*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">1</span>], <span class="string">&quot;ong&quot;</span>) == <span class="number">0</span>) result = <span class="number">19</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'r'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'e':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'e'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*register*/ if (strcmp(&amp;text[3], &quot;ister&quot;) == 0) result = 20; break;
-            case 's': /*restrict*/ if (strcmp(&amp;text[3], &quot;trict&quot;) == 0) result = 21; break;
-            case 't': /*return*/ if (strcmp(&amp;text[3], &quot;urn&quot;) == 0) result = 22; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*register*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;ister&quot;</span>) == <span class="number">0</span>) result = <span class="number">20</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*restrict*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;trict&quot;</span>) == <span class="number">0</span>) result = <span class="number">21</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*return*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;urn&quot;</span>) == <span class="number">0</span>) result = <span class="number">22</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 's':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'s'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'h': /*short*/ if (strcmp(&amp;text[2], &quot;ort&quot;) == 0) result = 23; break;
-        case 'i':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'h'</span>: <span class="comment">/*short*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;ort&quot;</span>) == <span class="number">0</span>) result = <span class="number">23</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'i'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'g': /*signed*/ if (strcmp(&amp;text[3], &quot;ned&quot;) == 0) result = 24; break;
-            case 'z': /*sizeof*/ if (strcmp(&amp;text[3], &quot;eof&quot;) == 0) result = 25; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'g'</span>: <span class="comment">/*signed*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;ned&quot;</span>) == <span class="number">0</span>) result = <span class="number">24</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'z'</span>: <span class="comment">/*sizeof*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;eof&quot;</span>) == <span class="number">0</span>) result = <span class="number">25</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 't':
-            switch (text[2])
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'t'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'a': /*static*/ if (strcmp(&amp;text[3], &quot;tic&quot;) == 0) result = 26; break;
-            case 'r': /*struct*/ if (strcmp(&amp;text[3], &quot;uct&quot;) == 0) result = 27; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'a'</span>: <span class="comment">/*static*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;tic&quot;</span>) == <span class="number">0</span>) result = <span class="number">26</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'r'</span>: <span class="comment">/*struct*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;uct&quot;</span>) == <span class="number">0</span>) result = <span class="number">27</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'w': /*switch*/ if (strcmp(&amp;text[2], &quot;itch&quot;) == 0) result = 28; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*switch*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;itch&quot;</span>) == <span class="number">0</span>) result = <span class="number">28</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 't': /*typedef*/ if (strcmp(&amp;text[1], &quot;ypedef&quot;) == 0) result = 29; break;
-    case 'u':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*typedef*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">1</span>], <span class="string">&quot;ypedef&quot;</span>) == <span class="number">0</span>) result = <span class="number">29</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'u'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'n':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'n'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*union*/ if (strcmp(&amp;text[3], &quot;on&quot;) == 0) result = 30; break;
-            case 's': /*unsigned*/ if (strcmp(&amp;text[3], &quot;igned&quot;) == 0) result = 31; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*union*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;on&quot;</span>) == <span class="number">0</span>) result = <span class="number">30</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'s'</span>: <span class="comment">/*unsigned*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;igned&quot;</span>) == <span class="number">0</span>) result = <span class="number">31</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'v':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'v'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'o':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'o'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'i': /*void*/ if (strcmp(&amp;text[3], &quot;d&quot;) == 0) result = 32; break;
-            case 'l': /*volatile*/ if (strcmp(&amp;text[3], &quot;atile&quot;) == 0) result = 33; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'i'</span>: <span class="comment">/*void*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;d&quot;</span>) == <span class="number">0</span>) result = <span class="number">32</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*volatile*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;atile&quot;</span>) == <span class="number">0</span>) result = <span class="number">33</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    case 'w': /*while*/ if (strcmp(&amp;text[1], &quot;hile&quot;) == 0) result = 34; break;
-    case '_':
-        switch (text[1])
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'w'</span>: <span class="comment">/*while*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">1</span>], <span class="string">&quot;hile&quot;</span>) == <span class="number">0</span>) result = <span class="number">34</span>; <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'_'</span>:
+        <span class="keyword">switch</span> (text[<span class="number">1</span>])
         {
-        case 'A':
-            switch (text[2])
+        <span class="keyword">case</span> <span class="string">'A'</span>:
+            <span class="keyword">switch</span> (text[<span class="number">2</span>])
             {
-            case 'l': /*_Alignas*/ if (strcmp(&amp;text[3], &quot;ignas&quot;) == 0) result = 35; break;
-            case 't': /*_Atomic*/ if (strcmp(&amp;text[3], &quot;omic&quot;) == 0) result = 36; break;
-            default: break;
+            <span class="keyword">case</span> <span class="string">'l'</span>: <span class="comment">/*_Alignas*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;ignas&quot;</span>) == <span class="number">0</span>) result = <span class="number">35</span>; <span class="keyword">break</span>;
+            <span class="keyword">case</span> <span class="string">'t'</span>: <span class="comment">/*_Atomic*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">3</span>], <span class="string">&quot;omic&quot;</span>) == <span class="number">0</span>) result = <span class="number">36</span>; <span class="keyword">break</span>;
+            <span class="keyword">default</span>: <span class="keyword">break</span>;
             }
-            break;
-        case 'B': /*_Bool*/ if (strcmp(&amp;text[2], &quot;ool&quot;) == 0) result = 37; break;
-        case 'C': /*_Complex*/ if (strcmp(&amp;text[2], &quot;omplex&quot;) == 0) result = 38; break;
-        case 'G': /*_Generic*/ if (strcmp(&amp;text[2], &quot;eneric&quot;) == 0) result = 39; break;
-        case 'I': /*_Imaginary*/ if (strcmp(&amp;text[2], &quot;maginary&quot;) == 0) result = 40; break;
-        case 'N': /*_Noreturn*/ if (strcmp(&amp;text[2], &quot;oreturn&quot;) == 0) result = 41; break;
-        case 'S': /*_Static_assert*/ if (strcmp(&amp;text[2], &quot;tatic_assert&quot;) == 0) result = 42; break;
-        case 'T': /*_Thread_local*/ if (strcmp(&amp;text[2], &quot;hread_local&quot;) == 0) result = 43; break;
-        default: break;
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'B'</span>: <span class="comment">/*_Bool*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;ool&quot;</span>) == <span class="number">0</span>) result = <span class="number">37</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'C'</span>: <span class="comment">/*_Complex*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;omplex&quot;</span>) == <span class="number">0</span>) result = <span class="number">38</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'G'</span>: <span class="comment">/*_Generic*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;eneric&quot;</span>) == <span class="number">0</span>) result = <span class="number">39</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'I'</span>: <span class="comment">/*_Imaginary*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;maginary&quot;</span>) == <span class="number">0</span>) result = <span class="number">40</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'N'</span>: <span class="comment">/*_Noreturn*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;oreturn&quot;</span>) == <span class="number">0</span>) result = <span class="number">41</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'S'</span>: <span class="comment">/*_Static_assert*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;tatic_assert&quot;</span>) == <span class="number">0</span>) result = <span class="number">42</span>; <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="string">'T'</span>: <span class="comment">/*_Thread_local*/</span> <span class="keyword">if</span> (strcmp(&amp;text[<span class="number">2</span>], <span class="string">&quot;hread_local&quot;</span>) == <span class="number">0</span>) result = <span class="number">43</span>; <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
         }
-        break;
-    default: break;
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>: <span class="keyword">break</span>;
     }
-    return result;
+    <span class="keyword">return</span> result;
+}
+
+<span class="comment">//#include &lt;string.h&gt;
+</span><span class="comment">//#include &lt;stdio.h&gt;
+</span>
+<span class="keyword">unsigned</span> hash(<span class="keyword">unsigned</span> d, <span class="keyword">const</span> <span class="keyword">char</span>* str, <span class="keyword">int</span> str_length) {
+    <span class="keyword">if</span> (d == <span class="number">0</span>) { d = <span class="number">0</span>x811c<span class="number">9</span>dc5; }
+    <span class="keyword">for</span> (<span class="keyword">unsigned</span> i = <span class="number">0</span>; i &lt; str_length; i++) {
+        <span class="comment">// http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+</span>        <span class="comment">// http://isthe.com/chongo/src/fnv/hash_32.c
+</span>        <span class="comment">// multiply by the 32 bit FNV magic prime mod 2^32
+</span>        d += (d &lt;&lt; <span class="number">1</span>) + (d &lt;&lt; <span class="number">4</span>) + (d &lt;&lt; <span class="number">7</span>) + (d &lt;&lt; <span class="number">8</span>) + (d &lt;&lt; <span class="number">24</span>);
+        <span class="comment">// xor the bottom with the current octet
+</span>        d ^= str[i];
+    }
+    <span class="keyword">return</span> d &amp; <span class="number">0</span>x7fffffff;
+}
+
+<span class="keyword">unsigned</span> lookup(<span class="keyword">int</span> G[], <span class="keyword">int</span> G_length, <span class="keyword">int</span> V[], <span class="keyword">int</span> V_length, <span class="keyword">const</span> <span class="keyword">char</span>* key)
+{
+    <span class="keyword">unsigned</span> d = G[hash(<span class="number">0</span>, key, strlen(key)) % G_length];
+    <span class="keyword">if</span> (d &lt; <span class="number">0</span>) <span class="keyword">return</span> V[<span class="number">0</span> - d - <span class="number">1</span>];
+    <span class="keyword">return</span> V[hash(d, key, strlen(key)) % V_length];
+};
+
+<span class="keyword">#define</span> undefined <span class="number">0</span>xFFFFFFFF
+
+<span class="keyword">int</span> findhash(<span class="keyword">const</span> <span class="keyword">char</span>* keyword)
+{
+    <span class="keyword">int</span> G[] =
+    {
+     undefined, undefined, <span class="number">-44</span>, <span class="number">-42</span>, <span class="number">9</span>, <span class="number">-39</span>, <span class="number">-38</span>, <span class="number">-34</span>,
+     undefined, <span class="number">1</span>, <span class="number">-27</span>, undefined, <span class="number">-25</span>, <span class="number">1</span>, <span class="number">-23</span>, undefined,
+     undefined, <span class="number">-13</span>, undefined, <span class="number">2</span>, undefined, undefined,
+     <span class="number">1</span>, <span class="number">1</span>, <span class="number">3</span>, undefined, <span class="number">1</span>, <span class="number">-9</span>, <span class="number">-6</span>, <span class="number">-3</span>, <span class="number">11</span>, <span class="number">1</span>, <span class="number">-10</span>, <span class="number">3</span>, <span class="number">-16</span>,
+     <span class="number">-20</span>, <span class="number">-26</span>, undefined, <span class="number">-30</span>, undefined, <span class="number">1</span>, undefined,
+     undefined, <span class="number">1</span>
+    };
+
+    <span class="keyword">int</span> G_length = <span class="keyword">sizeof</span>(G) / <span class="keyword">sizeof</span>(G[<span class="number">0</span>]);
+
+    <span class="keyword">int</span> V[] = {
+    <span class="number">19</span>, <span class="number">5</span>, <span class="number">24</span>, <span class="number">42</span>, <span class="number">27</span>, <span class="number">32</span>, <span class="number">16</span>, <span class="number">1</span>, <span class="number">33</span>, <span class="number">39</span>, <span class="number">11</span>,
+    <span class="number">37</span>, <span class="number">26</span>, <span class="number">25</span>, <span class="number">15</span>, <span class="number">10</span>, <span class="number">38</span>, <span class="number">29</span>, <span class="number">12</span>, <span class="number">36</span>, <span class="number">44</span>,
+    <span class="number">22</span>, <span class="number">6</span>, <span class="number">20</span>, <span class="number">35</span>, <span class="number">17</span>, <span class="number">3</span>, <span class="number">41</span>, <span class="number">31</span>, <span class="number">21</span>, <span class="number">30</span>, <span class="number">4</span>,
+    <span class="number">8</span>, <span class="number">13</span>, <span class="number">2</span>, <span class="number">43</span>, <span class="number">40</span>, <span class="number">9</span>, <span class="number">14</span>, <span class="number">34</span>, <span class="number">7</span>, <span class="number">23</span>, <span class="number">28</span>, <span class="number">18</span>
+    };
+    <span class="keyword">int</span> V_length = <span class="keyword">sizeof</span>(V) / <span class="keyword">sizeof</span>(V[<span class="number">0</span>]);
+
+    <span class="keyword">unsigned</span> r = lookup(G, G_length, V, V_length, keyword);
+
+    <span class="comment">//printf(&quot;%d&quot;, r);
+</span>    <span class="keyword">return</span> r;
+}
+<span class="keyword">int</span> Day(<span class="keyword">const</span> <span class="keyword">char</span>* key)
+{
+    <span class="keyword">int</span> result = <span class="number">-1</span>;
+    <span class="keyword">switch</span> (key[<span class="number">0</span>])
+    {
+    <span class="keyword">case</span> <span class="comment">/*Friday*/</span> <span class="string">'F'</span>:
+        <span class="keyword">if</span> (key[<span class="number">1</span>] == <span class="string">'r'</span> &amp;&amp; key[<span class="number">2</span>] == <span class="string">'i'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'\0'</span>) {
+            result = <span class="number">0</span>;
+        }
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="comment">/*Monday*/</span> <span class="string">'M'</span>:
+        <span class="keyword">if</span> (key[<span class="number">1</span>] == <span class="string">'o'</span> &amp;&amp; key[<span class="number">2</span>] == <span class="string">'n'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'\0'</span>) {
+            result = <span class="number">1</span>;
+        }
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'S'</span>:
+        <span class="keyword">switch</span> (key[<span class="number">1</span>])
+        {
+        <span class="keyword">case</span> <span class="comment">/*Saturday*/</span> <span class="string">'a'</span>:
+            <span class="keyword">if</span> (key[<span class="number">2</span>] == <span class="string">'t'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'u'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'r'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">7</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">8</span>] == <span class="string">'\0'</span>) {
+                result = <span class="number">2</span>;
+            }
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="comment">/*Sunday*/</span> <span class="string">'u'</span>:
+            <span class="keyword">if</span> (key[<span class="number">2</span>] == <span class="string">'n'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'\0'</span>) {
+                result = <span class="number">3</span>;
+            }
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
+        }
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="string">'T'</span>:
+        <span class="keyword">switch</span> (key[<span class="number">1</span>])
+        {
+        <span class="keyword">case</span> <span class="comment">/*Thursday*/</span> <span class="string">'h'</span>:
+            <span class="keyword">if</span> (key[<span class="number">2</span>] == <span class="string">'u'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'r'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'s'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">7</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">8</span>] == <span class="string">'\0'</span>) {
+                result = <span class="number">4</span>;
+            }
+            <span class="keyword">break</span>;
+        <span class="keyword">case</span> <span class="comment">/*Tuesday*/</span> <span class="string">'u'</span>:
+            <span class="keyword">if</span> (key[<span class="number">2</span>] == <span class="string">'e'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'s'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">7</span>] == <span class="string">'\0'</span>) {
+                result = <span class="number">5</span>;
+            }
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>: <span class="keyword">break</span>;
+        }
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="comment">/*Wednesday*/</span> <span class="string">'W'</span>:
+        <span class="keyword">if</span> (key[<span class="number">1</span>] == <span class="string">'e'</span> &amp;&amp; key[<span class="number">2</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">3</span>] == <span class="string">'n'</span> &amp;&amp; key[<span class="number">4</span>] == <span class="string">'e'</span> &amp;&amp; key[<span class="number">5</span>] == <span class="string">'s'</span> &amp;&amp; key[<span class="number">6</span>] == <span class="string">'d'</span> &amp;&amp; key[<span class="number">7</span>] == <span class="string">'a'</span> &amp;&amp; key[<span class="number">8</span>] == <span class="string">'y'</span> &amp;&amp; key[<span class="number">9</span>] == <span class="string">'\0'</span>) {
+            result = <span class="number">6</span>;
+        }
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>: <span class="keyword">break</span>;
+    }
+    <span class="keyword">return</span> result;
 }
 
 
-//#define NITER 2147483647
-#define NITER 1000000000
-int main()
+<span class="comment">//#define NITER 2147483647
+</span><span class="keyword">#define</span> NITER (<span class="number">2147483646</span>)
+<span class="keyword">int</span> main()
 {
-    unsigned u = ('a' &lt;&lt; 0) + ('a' &lt;&lt; 1);
-
-    const char* keywords[] = {
-    &quot;alignof&quot;, &quot;auto&quot;, &quot;break&quot;, &quot;case&quot;,	&quot;char&quot;, &quot;const&quot;,
-        &quot;continue&quot;,	&quot;default&quot;,		&quot;do&quot;, &quot;double&quot;,	&quot;else&quot;,
-        &quot;enum&quot;,	&quot;extern&quot;, &quot;float&quot;, &quot;for&quot;,
-        &quot;goto&quot;, &quot;if&quot;, &quot;inline&quot;, &quot;int&quot;, &quot;long&quot;,
-        &quot;register&quot;, &quot;restrict&quot;, &quot;return&quot;, &quot;short&quot;,
-        &quot;signed&quot;, &quot;sizeof&quot;, &quot;static&quot;, &quot;struct&quot;,
-        &quot;switch&quot;, &quot;typedef&quot;, &quot;union&quot;, &quot;unsigned&quot;,
-        &quot;void&quot;, &quot;volatile&quot;, &quot;while&quot;, &quot;_Alignas&quot;,
-        &quot;_Atomic&quot;, &quot;_Bool&quot;, &quot;_Complex&quot;, &quot;_Generic&quot;,
-        &quot;_Imaginary&quot;, &quot;_Noreturn&quot;, &quot;_Static_assert&quot;, &quot;_Thread_local&quot; };
-
-    //Generate(keywords, sizeof(keywords) / sizeof(keywords[0]));
-    //Generate1(keywords, sizeof(keywords) / sizeof(keywords[0]));
-    //Generate2(keywords, sizeof(keywords) / sizeof(keywords[0]));
-    //Generate3(keywords, sizeof(keywords) / sizeof(keywords[0]));
-    //Generate4(keywords, sizeof(keywords) / sizeof(keywords[0]));
+    
     
 
-    char search[122];// = &quot;goto&quot;;
-    printf(&quot;Enter a C keyword:\n&quot;);
-    scanf(&quot;%[^\n]&quot;, search);
+    <span class="keyword">const</span> <span class="keyword">char</span>* keywords[] = {
+    <span class="string">&quot;alignof&quot;</span>, <span class="string">&quot;auto&quot;</span>, <span class="string">&quot;break&quot;</span>, <span class="string">&quot;case&quot;</span>,	<span class="string">&quot;char&quot;</span>, <span class="string">&quot;const&quot;</span>,
+        <span class="string">&quot;continue&quot;</span>,	<span class="string">&quot;default&quot;</span>,		<span class="string">&quot;do&quot;</span>, <span class="string">&quot;double&quot;</span>,	<span class="string">&quot;else&quot;</span>,
+        <span class="string">&quot;enum&quot;</span>,	<span class="string">&quot;extern&quot;</span>, <span class="string">&quot;float&quot;</span>, <span class="string">&quot;for&quot;</span>,
+        <span class="string">&quot;goto&quot;</span>, <span class="string">&quot;if&quot;</span>, <span class="string">&quot;inline&quot;</span>, <span class="string">&quot;int&quot;</span>, <span class="string">&quot;long&quot;</span>,
+        <span class="string">&quot;register&quot;</span>, <span class="string">&quot;restrict&quot;</span>, <span class="string">&quot;return&quot;</span>, <span class="string">&quot;short&quot;</span>,
+        <span class="string">&quot;signed&quot;</span>, <span class="string">&quot;sizeof&quot;</span>, <span class="string">&quot;static&quot;</span>, <span class="string">&quot;struct&quot;</span>,
+        <span class="string">&quot;switch&quot;</span>, <span class="string">&quot;typedef&quot;</span>, <span class="string">&quot;union&quot;</span>, <span class="string">&quot;unsigned&quot;</span>,
+        <span class="string">&quot;void&quot;</span>, <span class="string">&quot;volatile&quot;</span>, <span class="string">&quot;while&quot;</span>, <span class="string">&quot;_Alignas&quot;</span>,
+        <span class="string">&quot;_Atomic&quot;</span>, <span class="string">&quot;_Bool&quot;</span>, <span class="string">&quot;_Complex&quot;</span>, <span class="string">&quot;_Generic&quot;</span>,
+        <span class="string">&quot;_Imaginary&quot;</span>, <span class="string">&quot;_Noreturn&quot;</span>, <span class="string">&quot;_Static_assert&quot;</span>, <span class="string">&quot;_Thread_local&quot;</span> };
+
+    <span class="comment">//Generate(keywords, sizeof(keywords) / sizeof(keywords[0]));
+</span>    <span class="comment">//Generate1(keywords, sizeof(keywords) / sizeof(keywords[0]));
+</span>    <span class="comment">//Generate2(keywords, sizeof(keywords) / sizeof(keywords[0]));
+</span>    <span class="comment">//Generate3(keywords, sizeof(keywords) / sizeof(keywords[0]));
+</span>    <span class="comment">//Generate4(keywords, sizeof(keywords) / sizeof(keywords[0]));
+</span>    
+
+    <span class="keyword">char</span> search[<span class="number">122</span>];<span class="comment">// = &quot;goto&quot;;
+</span>    printf(<span class="string">&quot;Enter a C keyword:\n&quot;</span>);
+    scanf(<span class="string">&quot;%[^\n]&quot;</span>, search);
 
 
-    //find3(search);
-    struct Stopwatch s = { 0 };
+    <span class="comment">//find3(search);
+</span>    <span class="keyword">struct</span> Stopwatch s = { <span class="number">0</span> };
 
 
     Stopwatch_Start(&amp;s);
-    int r2 = 0;
+    <span class="keyword">int</span> r2 = <span class="number">0</span>;
 
-    for (int i = 0; i &lt; NITER; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
         r2 = find2(search);
     }
 
     Stopwatch_Stop(&amp;s);
-    printf(&quot;strcmp %d %d\n&quot;, r2, Stopwatch_GetElapsedTicks(&amp;s));
+    printf(<span class="string">&quot;strcmp %d %d\n&quot;</span>, r2, Stopwatch_GetElapsedTicks(&amp;s));
 
     Stopwatch_Reset(&amp;s);
 
     
-    //////////////////
-
+    <span class="comment">//////////////////
+</span>
     Stopwatch_Start(&amp;s);
-    int r22 = 0;
+    <span class="keyword">int</span> r22 = <span class="number">0</span>;
 
-    for (int i = 0; i &lt; NITER; i++)
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
         r22 = find1(search);
     }
 
     Stopwatch_Stop(&amp;s);
-    printf(&quot;switch + strcmp %d %d\n&quot;, r22, Stopwatch_GetElapsedTicks(&amp;s));
+    printf(<span class="string">&quot;switch + strcmp %d %d\n&quot;</span>, r22, Stopwatch_GetElapsedTicks(&amp;s));
     Stopwatch_Reset(&amp;s);
 
     
-    //////////////////
-
+    <span class="comment">//////////////////
+</span>
     Stopwatch_Start(&amp;s);
-    int r1 = 0;
-    for (int i = 0; i &lt; NITER; i++)
+    <span class="keyword">int</span> r1 = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
         r1 = find(search);
     }
     Stopwatch_Stop(&amp;s);
-    Stopwatch_Reset(&amp;s);
+    
+    printf(<span class="string">&quot;switches %d %d\n&quot;</span>, r1, Stopwatch_GetElapsedTicks(&amp;s));
 
-    printf(&quot;switches %d %d\n&quot;, r1, Stopwatch_GetElapsedTicks(&amp;s));
-    ////////////
-    Stopwatch_Start(&amp;s);
-    int r3 = 0;
-    for (int i = 0; i &lt; NITER; i++)
+    Stopwatch_Reset(&amp;s);
+    <span class="comment">////////////
+</span>    Stopwatch_Start(&amp;s);
+    <span class="keyword">int</span> r3 = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
-        r3 = binary_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
+        r3 = binary_search_str(keywords, <span class="keyword">sizeof</span>(keywords) / <span class="keyword">sizeof</span>(keywords[<span class="number">0</span>]), search);
     }
     Stopwatch_Stop(&amp;s);
-    printf(&quot;Binary Search %d %d\n&quot;, r3, Stopwatch_GetElapsedTicks(&amp;s));
+    printf(<span class="string">&quot;Binary Search %d %d\n&quot;</span>, r3, Stopwatch_GetElapsedTicks(&amp;s));
 
     Stopwatch_Reset(&amp;s);
     Stopwatch_Start(&amp;s);
-    int r5 = 0;
-    for (int i = 0; i &lt; NITER; i++)
+    <span class="keyword">int</span> r5 = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
         r5 = find3(search);
     }
     Stopwatch_Stop(&amp;s);
-    printf(&quot;Hash %d %d\n&quot;, r5, Stopwatch_GetElapsedTicks(&amp;s));
+    printf(<span class="string">&quot;Hash %d %d\n&quot;</span>, r5, Stopwatch_GetElapsedTicks(&amp;s));
 
-    Stopwatch_Reset(&amp;s);
     
-
+    <span class="comment">///////////
+</span>    Stopwatch_Reset(&amp;s);
     Stopwatch_Start(&amp;s);
-    int r4 = 0;
-    for (int i = 0; i &lt; NITER; i++)
+    <span class="keyword">int</span> r6 = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
     {
-        r4 = linear_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
+        r6 = findhash(search);
     }
     Stopwatch_Stop(&amp;s);
+    
+    printf(<span class="string">&quot;Haash %d %d\n&quot;</span>, r6, Stopwatch_GetElapsedTicks(&amp;s));
     Stopwatch_Reset(&amp;s);
-    printf(&quot;Linear %d %d\n&quot;, r4, Stopwatch_GetElapsedTicks(&amp;s));
+    <span class="comment">////////////
+</span>
+    Stopwatch_Start(&amp;s);
+    <span class="keyword">int</span> r4 = <span class="number">0</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; NITER; i++)
+    {
+        r4 = linear_search_str(keywords, <span class="keyword">sizeof</span>(keywords) / <span class="keyword">sizeof</span>(keywords[<span class="number">0</span>]), search);
+    }
+    Stopwatch_Stop(&amp;s);
+    
+    printf(<span class="string">&quot;Linear %d %d\n&quot;</span>, r4, Stopwatch_GetElapsedTicks(&amp;s));
+    Stopwatch_Reset(&amp;s);
 
-  
 }
 
 
+
 </pre>
+
 
 
 

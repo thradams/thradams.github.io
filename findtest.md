@@ -5,7 +5,8 @@ C code for generating string-switch
 Se [Online](switchgenerator.html)
 
 
-```c
+```cpp
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -1082,12 +1083,122 @@ int find10(const char* text)
     return result;
 }
 
+//#include <string.h>
+//#include <stdio.h>
+
+unsigned hash(unsigned d, const char* str, int str_length) {
+    if (d == 0) { d = 0x811c9dc5; }
+    for (unsigned i = 0; i < str_length; i++) {
+        // http://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+        // http://isthe.com/chongo/src/fnv/hash_32.c
+        // multiply by the 32 bit FNV magic prime mod 2^32
+        d += (d << 1) + (d << 4) + (d << 7) + (d << 8) + (d << 24);
+        // xor the bottom with the current octet
+        d ^= str[i];
+    }
+    return d & 0x7fffffff;
+}
+
+unsigned lookup(int G[], int G_length, int V[], int V_length, const char* key)
+{
+    unsigned d = G[hash(0, key, strlen(key)) % G_length];
+    if (d < 0) return V[0 - d - 1];
+    return V[hash(d, key, strlen(key)) % V_length];
+};
+
+#define undefined 0xFFFFFFFF
+
+int findhash(const char* keyword)
+{
+    int G[] =
+    {
+     undefined, undefined, -44, -42, 9, -39, -38, -34,
+     undefined, 1, -27, undefined, -25, 1, -23, undefined,
+     undefined, -13, undefined, 2, undefined, undefined,
+     1, 1, 3, undefined, 1, -9, -6, -3, 11, 1, -10, 3, -16,
+     -20, -26, undefined, -30, undefined, 1, undefined,
+     undefined, 1
+    };
+
+    int G_length = sizeof(G) / sizeof(G[0]);
+
+    int V[] = {
+    19, 5, 24, 42, 27, 32, 16, 1, 33, 39, 11,
+    37, 26, 25, 15, 10, 38, 29, 12, 36, 44,
+    22, 6, 20, 35, 17, 3, 41, 31, 21, 30, 4,
+    8, 13, 2, 43, 40, 9, 14, 34, 7, 23, 28, 18
+    };
+    int V_length = sizeof(V) / sizeof(V[0]);
+
+    unsigned r = lookup(G, G_length, V, V_length, keyword);
+
+    //printf("%d", r);
+    return r;
+}
+int Day(const char* key)
+{
+    int result = -1;
+    switch (key[0])
+    {
+    case /*Friday*/ 'F':
+        if (key[1] == 'r' && key[2] == 'i' && key[3] == 'd' && key[4] == 'a' && key[5] == 'y' && key[6] == '\0') {
+            result = 0;
+        }
+        break;
+    case /*Monday*/ 'M':
+        if (key[1] == 'o' && key[2] == 'n' && key[3] == 'd' && key[4] == 'a' && key[5] == 'y' && key[6] == '\0') {
+            result = 1;
+        }
+        break;
+    case 'S':
+        switch (key[1])
+        {
+        case /*Saturday*/ 'a':
+            if (key[2] == 't' && key[3] == 'u' && key[4] == 'r' && key[5] == 'd' && key[6] == 'a' && key[7] == 'y' && key[8] == '\0') {
+                result = 2;
+            }
+            break;
+        case /*Sunday*/ 'u':
+            if (key[2] == 'n' && key[3] == 'd' && key[4] == 'a' && key[5] == 'y' && key[6] == '\0') {
+                result = 3;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case 'T':
+        switch (key[1])
+        {
+        case /*Thursday*/ 'h':
+            if (key[2] == 'u' && key[3] == 'r' && key[4] == 's' && key[5] == 'd' && key[6] == 'a' && key[7] == 'y' && key[8] == '\0') {
+                result = 4;
+            }
+            break;
+        case /*Tuesday*/ 'u':
+            if (key[2] == 'e' && key[3] == 's' && key[4] == 'd' && key[5] == 'a' && key[6] == 'y' && key[7] == '\0') {
+                result = 5;
+            }
+            break;
+        default: break;
+        }
+        break;
+    case /*Wednesday*/ 'W':
+        if (key[1] == 'e' && key[2] == 'd' && key[3] == 'n' && key[4] == 'e' && key[5] == 's' && key[6] == 'd' && key[7] == 'a' && key[8] == 'y' && key[9] == '\0') {
+            result = 6;
+        }
+        break;
+    default: break;
+    }
+    return result;
+}
+
 
 //#define NITER 2147483647
-#define NITER 1000000000
+#define NITER (2147483646)
 int main()
 {
-    unsigned u = ('a' << 0) + ('a' << 1);
+    
+    
 
     const char* keywords[] = {
     "alignof", "auto", "break", "case",	"char", "const",
@@ -1155,9 +1266,10 @@ int main()
         r1 = find(search);
     }
     Stopwatch_Stop(&s);
-    Stopwatch_Reset(&s);
-
+    
     printf("switches %d %d\n", r1, Stopwatch_GetElapsedTicks(&s));
+
+    Stopwatch_Reset(&s);
     ////////////
     Stopwatch_Start(&s);
     int r3 = 0;
@@ -1178,8 +1290,20 @@ int main()
     Stopwatch_Stop(&s);
     printf("Hash %d %d\n", r5, Stopwatch_GetElapsedTicks(&s));
 
-    Stopwatch_Reset(&s);
     
+    ///////////
+    Stopwatch_Reset(&s);
+    Stopwatch_Start(&s);
+    int r6 = 0;
+    for (int i = 0; i < NITER; i++)
+    {
+        r6 = findhash(search);
+    }
+    Stopwatch_Stop(&s);
+    
+    printf("Haash %d %d\n", r6, Stopwatch_GetElapsedTicks(&s));
+    Stopwatch_Reset(&s);
+    ////////////
 
     Stopwatch_Start(&s);
     int r4 = 0;
@@ -1188,11 +1312,12 @@ int main()
         r4 = linear_search_str(keywords, sizeof(keywords) / sizeof(keywords[0]), search);
     }
     Stopwatch_Stop(&s);
-    Stopwatch_Reset(&s);
+    
     printf("Linear %d %d\n", r4, Stopwatch_GetElapsedTicks(&s));
+    Stopwatch_Reset(&s);
 
-  
 }
+
 
 
 ```
