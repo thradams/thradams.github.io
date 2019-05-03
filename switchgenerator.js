@@ -96,7 +96,7 @@ function Generate(keywords) {
 
 
 function OnButtonGenerate() {
-    var words = document.getElementById('input').value.match(/\b(\w+)\b/g)    
+    var words = JSON.parse(document.getElementById('input').value);    
     var r = Generate(words);
     document.getElementById('output').value = r;
 }
