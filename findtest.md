@@ -13,7 +13,7 @@ Se [Online](switchgenerator.html)
 #include <assert.h>
 #include <stdbool.h>
 
-
+ 
 struct Stopwatch
 {
     clock_t m_StartCount;
