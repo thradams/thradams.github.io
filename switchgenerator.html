@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
+<title>Switch Generator</title>
 
 
 <style type='text/css'>
@@ -17,9 +17,11 @@
 </head>
 <body>
 
-<h1>C string switch generator</h1>
-Given a list of strings it generates a C switch case.</br>
-Let's say you want to create a swith for day of weeks:
+    <h1>C string switch generator</h1>
+    Given a list of strings it generates a C switch case.</br>
+    Let's say you want to create a swith for day of weeks:
+
+
 <pre>
     switch (key)
     {
@@ -32,18 +34,22 @@ Let's say you want to create a swith for day of weeks:
         case "Saturday": break;
     }
 </pre>
-<Button onclick="OnButtonGenerate()">Generate</Button>
-</br>
-</br>
-Input:
+    <Button onclick="OnButtonGenerate()">Generate</Button>
+    </br>
+    <input type="checkbox" id="zero" value="true">Match whole word<br>
+
+    </br>
+    </br>
+    Input:
 <textarea id="input" rows="4" style="width: 100%">
 ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 </textarea>
 
-Ouput:
-<textarea class='OutTextArea' id="output" rows="40"  style="width: 100%"></textarea>
+    Ouput:
+<textarea class='OutTextArea' id="output" rows="40" style="width: 100%"></textarea>
 
-<script src="switchgenerator.js"></script>
+    <script src="switchgenerator.js"></script>
 
+    <a href="http://thradams.com/findtest.htm">http://thradams.com/findtest.htm</a>
 </body>
 </html>

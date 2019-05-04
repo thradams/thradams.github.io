@@ -2,7 +2,7 @@
 var count = 0;
 var s = "";
 
-function GenerateCore(keywords, first, last, level) {
+function GenerateCore(keywords, first, last, level, b) {
     var ident = (level + 1) * 2;
 
     s += ' '.repeat(ident);
@@ -42,9 +42,13 @@ function GenerateCore(keywords, first, last, level) {
 
                 s += `key[${j}]=='${keywords[i].charAt(j)}'`;
             }
+			
+			if (b)
+			{
             if (j != level + 1)
                 s += " && ";
             s += `key[${j}]=='\\0'`;
+			}
             s += `) {\n`;
             
             s += ' '.repeat(ident );
@@ -76,7 +80,7 @@ function GenerateCore(keywords, first, last, level) {
     s += "}\n";
 }
 
-function Generate(keywords) {
+function Generate(keywords, b) {
     keywords.sort();
     s = "";
     s += "int find(const char* key)\n";
@@ -85,7 +89,7 @@ function Generate(keywords) {
     var ident = 2;
     s += ' '.repeat(ident);
     s += "int result = -1;\n";
-    GenerateCore(keywords, 0, keywords.length - 1, 0);
+    GenerateCore(keywords, 0, keywords.length - 1, 0, b);
 
     s += ' '.repeat(ident); s
     s += "return result;\n";
@@ -96,7 +100,8 @@ function Generate(keywords) {
 
 
 function OnButtonGenerate() {
+    var b = document.getElementById('zero').checked;
     var words = JSON.parse(document.getElementById('input').value);    
-    var r = Generate(words);
+    var r = Generate(words, b);
     document.getElementById('output').value = r;
 }
