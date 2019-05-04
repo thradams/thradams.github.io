@@ -3,6 +3,8 @@
 
 ## 2019
 
+[Exchange json](exchangejson.md) May 2019
+
 [Memory check](checkmem.md) April 2019
 
 [Find Test](findtest.md) April 2019

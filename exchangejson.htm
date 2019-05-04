@@ -1,0 +1,96 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+
+<span class="keyword">struct</span> Data
+{
+	<span class="keyword">void</span> (*ExchangeInt)(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p);
+};
+
+<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p), <span class="keyword">void</span>* object);
+
+
+<span class="keyword">struct</span> ReadPropertyData
+{
+	<span class="keyword">struct</span> Data data;
+	<span class="keyword">const</span> <span class="keyword">char</span>* key;
+	<span class="keyword">const</span> <span class="keyword">char</span>* value;
+};
+
+
+<span class="keyword">void</span> ReadPropertyData_ExchangeInt(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p)
+{
+	<span class="keyword">struct</span> ReadPropertyData* pData = (<span class="keyword">struct</span> ReadPropertyData*)data;
+	<span class="keyword">if</span> (strcmp(name, pData-&gt;key) == <span class="number">0</span>)
+	{
+		*p = atoi(pData-&gt;value);
+	}
+}
+
+
+
+<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p), <span class="keyword">void</span> * object)
+{
+	<span class="keyword">struct</span> ReadPropertyData data = { ReadPropertyData_ExchangeInt , <span class="string">&quot;key1&quot;</span>, <span class="string">&quot;1&quot;</span> };
+	data.value = <span class="string">&quot;1&quot;</span>;
+	Exchange(&amp;data.data, object);
+}
+
+
+<span class="keyword">struct</span> X
+{
+	<span class="keyword">int</span> i;
+	<span class="keyword">int</span> i2;
+	<span class="keyword">char</span>* text;
+};
+
+
+<span class="keyword">void</span> ExchangeX(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p)
+{
+	<span class="keyword">struct</span> X* x = (<span class="keyword">struct</span> X*)p;
+	data-&gt;ExchangeInt(data, <span class="string">&quot;key1&quot;</span>, &amp;x-&gt;i);
+	data-&gt;ExchangeInt(data, <span class="string">&quot;key2&quot;</span>, &amp;x-&gt;i2);
+}
+
+<span class="keyword">int</span> main()
+{
+	<span class="keyword">struct</span> X x;
+	JsonLoad(<span class="string">&quot;teste.json&quot;</span>, ExchangeX, &amp;x);
+}
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
