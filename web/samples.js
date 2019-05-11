@@ -350,3 +350,88 @@ int main()
 }
 `;
 
+sample["Polimorphic container"] = 
+`
+
+struct Box {
+    int id = 1;
+};
+
+struct Box* Box_Create();
+void Box_Delete(struct Box* pBox);
+void Box_Draw(struct Box* pBox);
+
+struct Circle {
+    int id = 2;
+};
+
+struct Circle* Circle_Create();
+void Circle_Delete(struct Circle* pCircle);
+void Circle_Draw(struct Circle* pCircle);
+
+struct <Box | Circle> Shape
+{
+    int id;
+};
+
+void Shape_Delete(struct Shape* pShape);
+void Shape_Draw(struct Shape* pShape);
+
+struct Shapes
+{
+	struct Shape * auto * auto [Size] pData;
+	int Size;
+	int Capacity;
+};
+
+void Shapes_PushBack(struct Shapes* pShapes, struct Shape* pShape);
+void Shapes_Destroy(struct Shapes* pShapes);
+
+
+int main(int argc, char **argv)
+{
+	struct Shapes shapes = {};
+
+	Shapes_PushBack(&shapes, (struct Shape*) Box_Create());
+	Shapes_PushBack(&shapes, (struct Shape*)Circle_Create());
+	Shapes_PushBack(&shapes, (struct Shape*)Box_Create());
+
+	for (int i = 0; i < shapes.Size; i++)
+	{
+       Shape_Draw(shapes.pData[i]);
+	}
+
+	Shapes_Destroy(&shapes);
+	return 0;
+}
+
+
+void Circle_Draw(struct Circle* pCircle)
+{
+    printf("Circle");
+}
+
+void Circle_Draw(struct Circle* pCircle)
+{
+    printf("Circle");
+}
+
+// === Instantiations ===
+
+struct Box* Box_Create() default;
+
+void Box_Delete(struct Box* pBox) default;
+
+struct Circle* Circle_Create() default;
+
+void Circle_Delete(struct Circle* pCircle) default;
+
+void Shape_Delete(struct Shape* pShape) default;
+
+void Shape_Draw(struct Shape* pShape) default;
+
+void Shapes_PushBack(struct Shapes* pShapes, struct Shape* pShape) default;
+
+void Shapes_Destroy(struct Shapes* pShapes) default;
+`;
+
