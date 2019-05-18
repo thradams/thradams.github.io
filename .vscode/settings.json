@@ -1,0 +1,16 @@
+{
+    "files.exclude": {
+        "./tmardown.*": true,
+        "*.bat": true,
+        "*.exe": true,
+        "*.htm": true,
+        "*.html": true,
+        "*.jpg": true,
+        "*.png": true,
+        "*.PNG": true,
+        "*.zip": true,
+        "**/.figs": true,
+        "**/.web": true,
+        "**/htm": true
+    }
+}
