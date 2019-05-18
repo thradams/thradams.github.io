@@ -24,70 +24,824 @@
 
 
 
+<p>Stream.h</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;stddef.h&gt;
+
+<span class="keyword">struct</span> Stream
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* data; <span class="comment">//utf8 encoded
+</span>
+    <span class="keyword">wchar_t</span> CurrentChar;
+    <span class="keyword">int</span> CurrentLine;
+    <span class="keyword">int</span> CurrentCol;
+    <span class="keyword">int</span> CurrentBytePos;
+    <span class="keyword">int</span> NextBytePos;
+};
+
+
+<span class="keyword">#define</span> STREAM_INIT {<span class="number">0</span>}
+
+
+<span class="keyword">wchar_t</span> Stream_Match(<span class="keyword">struct</span> Stream* stream);
+
+
+<span class="keyword">void</span> Stream_Close(<span class="keyword">struct</span> Stream* stream);
+
+<span class="keyword">void</span> Stream_Attach(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> Stream_Set(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> Stream_Open(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path);
+<span class="keyword">wchar_t</span> Stream_LookAhead(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream);
+<span class="keyword">wchar_t</span> Stream_LookAhead2(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream, <span class="keyword">wchar_t</span>* ch2);
+
+
+
+</pre>
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;sys/types.h&gt;
+<span class="keyword">#include</span> &lt;sys/stat.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+
+<span class="keyword">#include</span> <span class="string">&quot;Stream.h&quot;</span>
+
+
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+<span class="keyword">#define</span> stat _stat
+<span class="keyword">#define</span> strdup _strdup
+<span class="keyword">#endif</span>
+
+
+<span class="keyword">void</span> Stream_Attach(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    Stream_Close(stream);
+    stream-&gt;data = text;        
+}
+
+<span class="keyword">bool</span> Stream_Set(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    <span class="keyword">char</span>* data = strdup(text);
+    <span class="keyword">if</span> (data)
+    {
+        Stream_Attach(stream, data);
+    }
+    <span class="keyword">return</span> data != NULL;
+}
+
+<span class="keyword">bool</span> Stream_Open(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path)
+{
+    <span class="keyword">bool</span> result = <span class="keyword">false</span>;
+    <span class="keyword">struct</span> stat info;
+    <span class="keyword">int</span> r = stat(
+        path,
+        &amp;info);
+    <span class="keyword">if</span> (r == <span class="number">0</span>)
+    {
+        <span class="keyword">char</span>* data = (<span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * info.st_size + <span class="number">1</span>);
+        <span class="keyword">if</span> (data != NULL)
+        {
+            FILE* file = fopen(path, <span class="string">&quot;r&quot;</span>);
+            <span class="keyword">if</span> (file != NULL)
+            {
+                <span class="comment">//SKIP BOM
+</span>                <span class="keyword">if</span> (info.st_size &gt;= <span class="number">3</span>)
+                {
+                    fread(data, <span class="number">1</span>, <span class="number">3</span>, file);
+                    <span class="keyword">if</span> (data[<span class="number">0</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xEF &amp;&amp;
+                        data[<span class="number">1</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBB &amp;&amp;
+                        data[<span class="number">2</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBF)
+                    {
+                        size_t n = fread(data, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[n] = <span class="number">0</span>;
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        size_t n = fread(data + <span class="number">3</span>, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[<span class="number">3</span> + n] = <span class="number">0</span>;
+                    }
+                }
+                <span class="keyword">else</span>
+                {
+                    size_t n = fread(data, <span class="number">1</span>, info.st_size, file);
+                    data[n] = <span class="number">0</span>;
+                }
+
+                fclose(file);
+                result = <span class="keyword">true</span>;
+                Stream_Attach(stream, data);
+            }
+        }
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">static</span> <span class="keyword">wchar_t</span> ReadNextChar(<span class="keyword">const</span> <span class="keyword">char</span>* data, <span class="keyword">int</span> currentPos, <span class="keyword">int</span>* bytes)
+{
+    <span class="comment">//https://www.ietf.org/rfc/rfc3629.txt
+</span>    <span class="comment">//https://www.fileformat.info/info/unicode/utf8.htm
+</span>
+	<span class="keyword">int</span> pos = currentPos;
+
+    <span class="keyword">unsigned</span> u = EOF;
+    
+    <span class="keyword">if</span> (data != NULL)
+    {
+        <span class="keyword">int</span> c = data[pos];
+
+        <span class="keyword">if</span> (c == <span class="string">'\0'</span> <span class="comment">/*EOF*/</span>)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>x80) == <span class="number">0</span>)
+        {
+            pos++;
+            u = c;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span>
+        {
+            pos++;
+            u = (c &amp; <span class="number">0</span>xE0) == <span class="number">0</span>xC0 ? (c &amp; <span class="number">0</span>x1F)
+                : (c &amp; <span class="number">0</span>xF0) == <span class="number">0</span>xE0 ? (c &amp; <span class="number">0</span>x0F)
+                : (c &amp; <span class="number">0</span>xF8) == <span class="number">0</span>xF0 ? (c &amp; <span class="number">0</span>x07)
+                : <span class="number">0</span>;
+
+            <span class="keyword">if</span> (u == <span class="number">0</span>)
+            {
+                u = EOF;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">for</span> (;;)
+                {
+                    c = data[pos];
+                    pos++;
+
+                    <span class="keyword">if</span> (c == EOF)
+                    {
+                        <span class="keyword">break</span>;
+                    }
+                    <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+                    {
+                        u = (u &lt;&lt; <span class="number">6</span>) | (c &amp; <span class="number">0</span>x3F);
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        pos--;
+                        <span class="keyword">break</span>;
+                    }
+                }
+            }
+        }
+    }
+
+    *bytes = pos - currentPos;
+    <span class="keyword">return</span> u;
+}
+
+<span class="keyword">wchar_t</span> Stream_LookAhead(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream)
+{
+	<span class="keyword">int</span> bytes = <span class="number">0</span>;
+	<span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+	<span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> Stream_LookAhead2(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream, <span class="keyword">wchar_t</span>* ch2)
+{
+	*ch2 = WEOF;
+
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+    <span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+	<span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+	{
+		*ch2 = ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos + bytes, &amp;bytes);
+	}
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> Stream_Match(<span class="keyword">struct</span> Stream* stream)
+{
+    <span class="comment">//if (stream-&gt;CurrentChar)
+</span>
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+	<span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+
+    <span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+    {
+		<span class="keyword">if</span> (stream-&gt;CurrentLine == <span class="number">0</span>)
+		{
+			stream-&gt;CurrentLine = <span class="number">1</span>;
+		}
+
+        stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+        stream-&gt;NextBytePos += bytes;
+        stream-&gt;CurrentCol++;
+        
+        <span class="keyword">if</span> (ch == <span class="string">'\n'</span>) <span class="comment">//fopen on windows automatically removes \r
+</span>        {
+            stream-&gt;CurrentLine++;
+            stream-&gt;CurrentCol = <span class="number">0</span>;
+        }
+		stream-&gt;CurrentChar = ch;
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == (<span class="keyword">wchar_t</span>)EOF)
+	{
+		<span class="keyword">if</span> (stream-&gt;CurrentBytePos != stream-&gt;NextBytePos)
+		{
+			stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+			stream-&gt;CurrentCol++;
+			stream-&gt;CurrentChar = ch;
+		}
+	}
+    
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">void</span> Stream_Close(<span class="keyword">struct</span> Stream* stream)
+{
+    free((<span class="keyword">void</span>*)stream-&gt;data);
+    stream-&gt;CurrentCol = <span class="number">0</span>;
+    stream-&gt;CurrentLine = <span class="number">0</span>;
+    stream-&gt;NextBytePos = <span class="number">0</span>;
+    stream-&gt;CurrentBytePos = <span class="number">0</span>;
+	stream-&gt;CurrentChar = <span class="number">0</span>;
+}
+
+
+
+</pre>
+
+
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">#include</span> <span class="string">&quot;Stream.h&quot;</span>
+
+<span class="keyword">enum</span> JSTokens
+{
+  TK_JS_NONE,
+  TK_JS_LEFT_CURLY_BRACKET,
+  TK_JS_RIGHT_CURLY_BRACKET,
+  TK_JS_LEFT_SQUARE_BRACKET,
+  TK_JS_RIGHT_SQUARE_BRACKET,
+  TK_JS_COMMA,
+  TK_JS_COLON,
+  TK_JS_STRING,
+  TK_JS_NUMBER,
+  TK_JS_TRUE,
+  TK_JS_FALSE,
+  TK_JS_NULL,
+  TK_JS_EOF,
+};
+
+<span class="keyword">struct</span> JsonScanner
+{
+  <span class="keyword">struct</span> Stream Stream;
+  <span class="keyword">enum</span> JSTokens Token;
+  <span class="keyword">int</span> LexemeStart;
+  <span class="keyword">int</span> LexemeSize;  
+};
+
+<span class="keyword">#define</span> JSONSCANNER_INIT ((<span class="keyword">struct</span> JsonScanner){STREAM_INIT, TK_JS_NONE, <span class="number">0</span>, <span class="number">0</span>})
+
+<span class="keyword">void</span> JsonScanner_Destroy(<span class="keyword">struct</span> JsonScanner* scanner);
+
+<span class="keyword">enum</span> JSTokens JsonScanner_Match(<span class="keyword">struct</span> JsonScanner* scanner);
+<span class="keyword">void</span> JsonScanner_Destroy(<span class="keyword">struct</span> JsonScanner* scanner);
+<span class="keyword">bool</span> JsonScanner_Set(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* sinkString);
+<span class="keyword">void</span> JsonScanner_Attach(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* sinkString);
+<span class="keyword">bool</span> JsonScanner_Open(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* path);
+
+</pre>
+
+
+
+
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;JsonScanner.h&quot;</span>
+<span class="keyword">#include</span> &lt;assert.h&gt;
+
+
+<span class="keyword">bool</span> JsonScanner_Open(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* path)
+{
+	JsonScanner_Destroy(scanner);
+	*scanner = JSONSCANNER_INIT;
+	<span class="keyword">bool</span> b = Stream_Open(&amp;scanner-&gt;Stream, path);
+	<span class="keyword">if</span> (b)
+	{
+		Stream_Match(&amp;scanner-&gt;Stream);
+	}
+
+	<span class="keyword">return</span> b;
+}
+
+<span class="keyword">bool</span> JsonScanner_Set(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* json)
+{
+	JsonScanner_Destroy(scanner);
+	*scanner = JSONSCANNER_INIT;
+	<span class="keyword">bool</span> b = Stream_Set(&amp;scanner-&gt;Stream, json);
+	<span class="keyword">if</span> (b) 
+	{
+		Stream_Match(&amp;scanner-&gt;Stream);
+	}
+	<span class="keyword">return</span> b;
+}
+
+<span class="keyword">void</span> JsonScanner_Attach(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">const</span> <span class="keyword">char</span>* json)
+{
+	JsonScanner_Destroy(scanner);
+	*scanner = JSONSCANNER_INIT;
+	Stream_Attach(&amp;scanner-&gt;Stream, json);
+	Stream_Match(&amp;scanner-&gt;Stream);
+}
+
+<span class="keyword">void</span> JsonScanner_Destroy(<span class="keyword">struct</span> JsonScanner* scanner)
+{
+	Stream_Close(&amp;scanner-&gt;Stream);
+}
+
+<span class="keyword">static</span> <span class="keyword">wchar_t</span> MatchChar(<span class="keyword">struct</span> JsonScanner* scanner)
+{
+	scanner-&gt;LexemeSize++;
+	<span class="keyword">return</span> Stream_Match(&amp;scanner-&gt;Stream);
+}
+
+<span class="keyword">static</span> <span class="keyword">wchar_t</span> MatchCharWith(<span class="keyword">struct</span> JsonScanner* scanner, <span class="keyword">wchar_t</span> wch)
+{
+	<span class="keyword">wchar_t</span> ch = scanner-&gt;Stream.CurrentChar;
+	<span class="keyword">if</span> (ch == wch)
+	{
+		scanner-&gt;LexemeSize++;
+		Stream_Match(&amp;scanner-&gt;Stream);
+		ch = scanner-&gt;Stream.CurrentChar;
+	}
+	<span class="keyword">else</span>
+	{
+		<span class="comment">//unexpected
+</span>	}
+	<span class="keyword">return</span> ch;
+}
+
+<span class="keyword">enum</span> JSTokens JsonScanner_Match(<span class="keyword">struct</span> JsonScanner* scanner)
+{
+	<span class="keyword">wchar_t</span> ch = scanner-&gt;Stream.CurrentChar;
+
+	<span class="keyword">while</span> (ch == <span class="string">' '</span> || ch == <span class="string">'\n'</span> || ch == <span class="string">'\r'</span> || ch == <span class="string">'\t'</span>)
+	{
+		Stream_Match(&amp;scanner-&gt;Stream);
+		ch = scanner-&gt;Stream.CurrentChar;
+	}
+
+	scanner-&gt;LexemeStart = scanner-&gt;Stream.CurrentBytePos;
+	scanner-&gt;LexemeSize = <span class="number">0</span>;
+
+	scanner-&gt;Token = TK_JS_NONE;
+	ch = scanner-&gt;Stream.CurrentChar;
+
+	<span class="keyword">if</span> (ch == <span class="string">'{'</span>)
+	{
+		scanner-&gt;Token = TK_JS_LEFT_CURLY_BRACKET;
+		MatchChar(scanner);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'}'</span>)
+	{
+		scanner-&gt;Token = TK_JS_RIGHT_CURLY_BRACKET;
+		MatchChar(scanner);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'['</span>)
+	{
+		scanner-&gt;Token = TK_JS_LEFT_SQUARE_BRACKET;
+		MatchChar(scanner);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">']'</span>)
+	{
+		scanner-&gt;Token = TK_JS_RIGHT_SQUARE_BRACKET;
+		MatchChar(scanner);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'f'</span>)<span class="comment">//false
+</span>	{
+		scanner-&gt;Token = TK_JS_FALSE;
+		MatchCharWith(scanner, L<span class="string">'f'</span>);
+		MatchCharWith(scanner, L<span class="string">'a'</span>);
+		MatchCharWith(scanner, L<span class="string">'l'</span>);
+		MatchCharWith(scanner, L<span class="string">'s'</span>);
+		MatchCharWith(scanner, L<span class="string">'e'</span>);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'t'</span>)<span class="comment">//true
+</span>	{
+		scanner-&gt;Token = TK_JS_TRUE;
+		MatchCharWith(scanner, L<span class="string">'t'</span>);
+		MatchCharWith(scanner, L<span class="string">'r'</span>);
+		MatchCharWith(scanner, L<span class="string">'u'</span>);
+		MatchCharWith(scanner, L<span class="string">'e'</span>);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'n'</span>)<span class="comment">//null
+</span>	{
+		scanner-&gt;Token = TK_JS_NULL;
+		MatchCharWith(scanner, L<span class="string">'n'</span>);
+		MatchCharWith(scanner, L<span class="string">'u'</span>);
+		MatchCharWith(scanner, L<span class="string">'l'</span>);
+		MatchCharWith(scanner, L<span class="string">'l'</span>);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'&quot;'</span>)
+	{
+		scanner-&gt;Token = TK_JS_STRING;
+
+		scanner-&gt;LexemeStart++;
+
+		Stream_Match(&amp;scanner-&gt;Stream);
+		ch = scanner-&gt;Stream.CurrentChar;
+
+		<span class="keyword">for</span> (;;)
+		{
+			<span class="keyword">if</span> (ch == L<span class="string">'\\'</span>)
+			{
+				<span class="comment">//scape
+</span>				ch = MatchChar(scanner);
+
+				<span class="keyword">switch</span> (ch)
+				{
+				<span class="keyword">case</span> <span class="string">'&quot;'</span>:
+				<span class="keyword">case</span> <span class="string">'/'</span>:
+				<span class="keyword">case</span> <span class="string">'\\'</span>:
+				<span class="keyword">case</span> <span class="string">'b'</span>:
+				<span class="keyword">case</span> <span class="string">'f'</span>:
+				<span class="keyword">case</span> <span class="string">'n'</span>:
+				<span class="keyword">case</span> <span class="string">'r'</span>:
+				<span class="keyword">case</span> <span class="string">'t'</span>:
+					ch = MatchChar(scanner);
+					<span class="keyword">break</span>;
+				<span class="keyword">default</span>:
+					<span class="keyword">break</span>;
+				}
+			}
+			<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'&quot;'</span>)
+			{
+				Stream_Match(&amp;scanner-&gt;Stream);
+				ch = scanner-&gt;Stream.CurrentChar;
+				<span class="keyword">break</span>;
+			}
+			<span class="keyword">else</span>
+			{
+				<span class="comment">//qualquer coisa  
+</span>				ch = MatchChar(scanner);
+			}
+		}
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">':'</span>)
+	{
+		ch = MatchChar(scanner);
+		scanner-&gt;Token = TK_JS_COLON;
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">','</span>)
+	{
+		scanner-&gt;Token = TK_JS_COMMA;
+		ch = MatchChar(scanner);
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'-'</span> || (ch &gt;= <span class="string">'0'</span> &amp;&amp; ch &lt;= <span class="string">'9'</span>))
+	{
+		scanner-&gt;Token = TK_JS_NUMBER;
+
+		ch = MatchChar(scanner);
+
+
+		<span class="keyword">while</span> (ch &gt;= L<span class="string">'0'</span> &amp;&amp; ch &lt;= L<span class="string">'9'</span>)
+		{
+			ch = MatchChar(scanner);
+		}
+
+		<span class="keyword">if</span> (ch == L<span class="string">'.'</span>)
+		{
+			ch = MatchChar(scanner);
+
+			<span class="keyword">while</span> (ch &gt;= L<span class="string">'0'</span> &amp;&amp; ch &lt;= L<span class="string">'9'</span>)
+			{
+				ch = MatchChar(scanner);
+			}
+		}
+
+		<span class="keyword">if</span> (ch == L<span class="string">'E'</span> || ch == L<span class="string">'e'</span>)
+		{
+			ch = MatchChar(scanner);
+
+			<span class="keyword">if</span> (ch == L<span class="string">'+'</span> || ch == L<span class="string">'-'</span>)
+			{
+				ch = MatchChar(scanner);
+			}
+
+			<span class="keyword">while</span> (ch &gt;= L<span class="string">'0'</span> &amp;&amp; ch &lt;= L<span class="string">'9'</span>)
+			{
+				ch = MatchChar(scanner);
+			}
+		}
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == <span class="string">'\0'</span>)
+	{
+		scanner-&gt;Token = TK_JS_EOF;
+	}
+	<span class="keyword">else</span>
+	{
+		<span class="comment">//error
+</span>	}
+	<span class="keyword">return</span> scanner-&gt;Token;
+}
+
+
+
+
+</pre>
+
+
+
+
+<pre>
+<span class="keyword">#pragma</span> once
+
+<span class="keyword">struct</span> Data
+{
+  <span class="keyword">void</span> (*ExchangeBool)(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">bool</span>* p);
+  <span class="keyword">void</span> (*ExchangeInt)(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p);
+  <span class="keyword">void</span> (*ExchangeText)(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">char</span>* p, <span class="keyword">int</span> count);
+};
+
+<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file, 
+              <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p), 
+              <span class="keyword">void</span>* object);
+
+
+<span class="keyword">int</span> LoadCommandLine(<span class="keyword">int</span> argc,
+  <span class="keyword">char</span>* argv[],
+  <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p),
+  <span class="keyword">void</span>* object);
+
+<span class="comment">/*
+How to use:
+
+struct X {
+  int id;
+  bool bFlag;
+  char name[10];
+};
+
+void ExchangeX(struct Data* data, void* p)
+{
+  struct X* x = (struct X*)p;
+  data-&gt;ExchangeInt(data, &quot;id&quot;, &amp;x-&gt;id);
+  data-&gt;ExchangeText(data, &quot;name&quot;, x-&gt;name, 10);
+  data-&gt;ExchangeBool(data, &quot;flag&quot;, &amp;x-&gt;bFlag);
+}
+
+
+struct X x = {0};
+
+//test.json file is:
+//
+//{
+//  &quot;id&quot; :  1,
+//  &quot;name&quot;: &quot;teste&quot;,
+//  &quot;flag&quot;  : true
+//}
+
+JsonLoad(&quot;test.json&quot;, ExchangeX, &amp;x);
+
+//In case you have this command line:
+//--id 1 --name teste --flag
+
+LoadCommandLine(argc, argv,  ExchangeX, &amp;x);
+
+*/</span>
+
+
+</pre>
+
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;JsonExchange.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;JsonScanner.h&quot;</span>
+
+<span class="keyword">struct</span> ReadPropertyData
+{
+  <span class="keyword">struct</span> Data data;
+  <span class="keyword">enum</span> JSTokens token;
+  <span class="keyword">const</span> <span class="keyword">char</span>* key;
+  <span class="keyword">int</span> keyLen;
+  <span class="keyword">const</span> <span class="keyword">char</span>* value;
+  <span class="keyword">int</span> valueLen;
+  <span class="keyword">bool</span> bStop;
+
+};
+
+
+<span class="keyword">static</span> <span class="keyword">void</span> ReadPropertyData_ExchangeBool(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">bool</span>* p)
+{
+  <span class="keyword">struct</span> ReadPropertyData* pData = (<span class="keyword">struct</span> ReadPropertyData*)data;
+  <span class="keyword">if</span> (!pData-&gt;bStop &amp;&amp;
+    strncmp(name, pData-&gt;key, pData-&gt;keyLen) == <span class="number">0</span>)
+  {
+    pData-&gt;bStop = <span class="keyword">true</span>;
+    *p = pData-&gt;token == TK_JS_TRUE;
+  }
+}
+
+<span class="keyword">static</span> <span class="keyword">void</span> ReadPropertyData_ExchangeInt(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p)
+{
+  <span class="keyword">struct</span> ReadPropertyData* pData = (<span class="keyword">struct</span> ReadPropertyData*)data;
+  <span class="keyword">if</span> (!pData-&gt;bStop &amp;&amp;
+    pData-&gt;value != NULL &amp;&amp;
+    strncmp(name, pData-&gt;key, pData-&gt;keyLen) == <span class="number">0</span>)
+  {
+    pData-&gt;bStop = <span class="keyword">true</span>;
+    *p = atoi(pData-&gt;value);
+  }
+}
+
+<span class="keyword">static</span> <span class="keyword">void</span> ReadPropertyData_ExchangeString(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">char</span>* p, <span class="keyword">int</span> count)
+{
+  <span class="keyword">struct</span> ReadPropertyData* pData = (<span class="keyword">struct</span> ReadPropertyData*)data;
+  <span class="keyword">if</span> (!pData-&gt;bStop &amp;&amp;
+    pData-&gt;value != NULL &amp;&amp;
+    strncmp(name, pData-&gt;key, pData-&gt;keyLen) == <span class="number">0</span>)
+  {
+    pData-&gt;bStop = <span class="keyword">true</span>;
+    <span class="keyword">int</span> n = pData-&gt;valueLen &lt; count - <span class="number">1</span> ? pData-&gt;valueLen : count - <span class="number">1</span>;
+    strncpy(p, pData-&gt;value, n);
+    p[n] = <span class="number">0</span>;
+
+  }
+}
+
+
+
+<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file,
+  <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p),
+  <span class="keyword">void</span>* object)
+{
+  <span class="keyword">struct</span> ReadPropertyData data = { <span class="number">0</span> };
+
+  data.data.ExchangeBool = ReadPropertyData_ExchangeBool;
+  data.data.ExchangeInt = ReadPropertyData_ExchangeInt;
+  data.data.ExchangeText = ReadPropertyData_ExchangeString;
+
+  <span class="keyword">struct</span> JsonScanner scanner = JSONSCANNER_INIT;
+  <span class="keyword">if</span> (JsonScanner_Open(&amp;scanner, file))
+  {
+    JsonScanner_Match(&amp;scanner); <span class="comment">//TK_NONE
+</span>    <span class="keyword">enum</span> JSTokens tk = JsonScanner_Match(&amp;scanner); <span class="comment">//{
+</span>
+    <span class="keyword">for</span> (;;)
+    {
+      data.key = &amp;scanner.Stream.data[scanner.LexemeStart];
+      data.keyLen = scanner.LexemeSize;
+      tk = JsonScanner_Match(&amp;scanner); <span class="comment">//name
+</span>      tk = JsonScanner_Match(&amp;scanner); <span class="comment">//:
+</span>      data.value = &amp;scanner.Stream.data[scanner.LexemeStart];
+      data.valueLen = scanner.LexemeSize;
+      data.token = tk;
+      tk = JsonScanner_Match(&amp;scanner); <span class="comment">//value
+</span>
+      data.bStop = <span class="keyword">false</span>;
+      Exchange(&amp;data.data, object);
+
+      <span class="keyword">if</span> (tk != TK_JS_COMMA)
+        <span class="keyword">break</span>;
+      tk = JsonScanner_Match(&amp;scanner); <span class="comment">//value
+</span>    }
+  }
+
+
+}
+
+<span class="keyword">int</span> LoadCommandLine(<span class="keyword">int</span> argc,
+  <span class="keyword">char</span>* argv[],
+  <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p),
+  <span class="keyword">void</span>* object)
+{
+  <span class="keyword">struct</span> ReadPropertyData data = { <span class="number">0</span> };
+
+  data.data.ExchangeBool = ReadPropertyData_ExchangeBool;
+  data.data.ExchangeInt = ReadPropertyData_ExchangeInt;
+  data.data.ExchangeText = ReadPropertyData_ExchangeString;
+
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; argc;)
+  {
+    data.bStop = <span class="keyword">false</span>;
+
+    <span class="keyword">if</span> (argv[i][<span class="number">0</span>] == <span class="string">'-'</span> &amp;&amp; argv[i][<span class="number">1</span>] == <span class="string">'-'</span>)
+    {
+      data.key = &amp;argv[i][<span class="number">2</span>];
+      data.keyLen = strlen(&amp;argv[i][<span class="number">2</span>]);
+
+      <span class="comment">//Este null evita que seja tentado em propriedades
+</span>      <span class="comment">//nao boleanas
+</span>      data.value = NULL;
+      data.valueLen = <span class="number">0</span>;
+      data.token = TK_JS_TRUE;
+
+      <span class="comment">//Tenta como se fosse um flag
+</span>      Exchange(&amp;data.data, object);
+
+      <span class="keyword">if</span> (data.bStop)
+      {
+        <span class="comment">//conseguiu como um flag
+</span>        i++;
+      }
+      <span class="keyword">else</span>
+      {
+        <span class="comment">//nao era flag le mais um para pegar valor
+</span>        i++;
+        <span class="keyword">if</span> (i &lt; argv)
+        {
+          data.value = argv[i];
+          data.valueLen = strlen(argv[i]);
+          data.token = TK_JS_NONE;
+          Exchange(&amp;data.data, object);
+          i++;
+        }
+      }
+    }
+    <span class="keyword">else</span>
+    {
+      i++;
+    }
+  }
+}
+
+
+
+</pre>
+
+
 <pre>
 
 <span class="keyword">#include</span> &lt;stdio.h&gt;
 <span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
 <span class="keyword">#include</span> &lt;stdlib.h&gt;
 
-
-<span class="keyword">struct</span> Data
-{
-	<span class="keyword">void</span> (*ExchangeInt)(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p);
-};
-
-<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p), <span class="keyword">void</span>* object);
-
-
-<span class="keyword">struct</span> ReadPropertyData
-{
-	<span class="keyword">struct</span> Data data;
-	<span class="keyword">const</span> <span class="keyword">char</span>* key;
-	<span class="keyword">const</span> <span class="keyword">char</span>* value;
-};
-
-
-<span class="keyword">void</span> ReadPropertyData_ExchangeInt(<span class="keyword">struct</span> Data* data, <span class="keyword">const</span> <span class="keyword">char</span>* name, <span class="keyword">int</span>* p)
-{
-	<span class="keyword">struct</span> ReadPropertyData* pData = (<span class="keyword">struct</span> ReadPropertyData*)data;
-	<span class="keyword">if</span> (strcmp(name, pData-&gt;key) == <span class="number">0</span>)
-	{
-		*p = atoi(pData-&gt;value);
-	}
-}
-
-
-
-<span class="keyword">void</span> JsonLoad(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> (*Exchange)(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p), <span class="keyword">void</span> * object)
-{
-	<span class="keyword">struct</span> ReadPropertyData data = { ReadPropertyData_ExchangeInt , <span class="string">&quot;key1&quot;</span>, <span class="string">&quot;1&quot;</span> };
-	data.value = <span class="string">&quot;1&quot;</span>;
-	Exchange(&amp;data.data, object);
-}
-
+<span class="keyword">#include</span> <span class="string">&quot;JsonExchange.h&quot;</span>
 
 <span class="keyword">struct</span> X
 {
-	<span class="keyword">int</span> i;
-	<span class="keyword">int</span> i2;
-	<span class="keyword">char</span>* text;
+  <span class="keyword">int</span> id;
+  <span class="keyword">bool</span> bFlag;
+  <span class="keyword">char</span> name[<span class="number">10</span>];
 };
 
 
 <span class="keyword">void</span> ExchangeX(<span class="keyword">struct</span> Data* data, <span class="keyword">void</span>* p)
 {
-	<span class="keyword">struct</span> X* x = (<span class="keyword">struct</span> X*)p;
-	data-&gt;ExchangeInt(data, <span class="string">&quot;key1&quot;</span>, &amp;x-&gt;i);
-	data-&gt;ExchangeInt(data, <span class="string">&quot;key2&quot;</span>, &amp;x-&gt;i2);
+  <span class="keyword">struct</span> X* x = (<span class="keyword">struct</span> X*)p;
+  data-&gt;ExchangeInt(data, <span class="string">&quot;id&quot;</span>, &amp;x-&gt;id);
+  data-&gt;ExchangeText(data, <span class="string">&quot;name&quot;</span>, x-&gt;name, <span class="number">10</span>);
+  data-&gt;ExchangeBool(data, <span class="string">&quot;flag&quot;</span>, &amp;x-&gt;bFlag);
 }
 
-<span class="keyword">int</span> main()
+<span class="keyword">void</span> Test3()
 {
-	<span class="keyword">struct</span> X x;
-	JsonLoad(<span class="string">&quot;teste.json&quot;</span>, ExchangeX, &amp;x);
+  <span class="keyword">struct</span> X x = {<span class="number">0</span>};
+  JsonLoad(<span class="string">&quot;test.json&quot;</span>, ExchangeX, &amp;x);
 }
 
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+  <span class="comment">//struct User user = { 0 };
+</span>  <span class="comment">//ParseJsonObject(&quot;user.json&quot;, &amp;User, &amp;user);
+</span>  <span class="comment">//Test2();
+</span>  Test3();
+
+  <span class="keyword">struct</span> X x = {<span class="number">0</span>};
+  LoadCommandLine(argc, argv,  ExchangeX, &amp;x);
+  
+}
 </pre>
+
+
 
 <!-- Page content end --> 
 </article> 
