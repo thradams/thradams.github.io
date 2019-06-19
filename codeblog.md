@@ -3,6 +3,9 @@
 
 ## 2019
 
+
+[Unit Testing Sockets] (socketmock.md) June 2019
+
 [Exchange json](exchangejson.md) May 2019
 
 [Memory check](checkmem.md) April 2019
