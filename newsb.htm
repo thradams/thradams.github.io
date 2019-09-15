@@ -1,0 +1,168 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>String formatter that allocates memory when necessary.</p>
+
+<pre>
+#pragma once
+
+#include &lt;stdbool.h&gt;
+#include &lt;stdarg.h&gt;
+
+struct sb
+{
+    char* c_str;
+    int size;
+    int capacity;
+    bool heap;
+} ;
+
+#define SB_INIT(N)  {.size = 0, .capacity = N, .c_str = (char[N + 1]){0}, .heap = 0 }
+
+void sb_free(struct sb* p);
+int sb_reserve(struct sb* p, int nelements);
+int sb_printf(struct sb* stream, const char* fmt, ...);
+int ss_vafprintf(struct sb* stream, const char* fmt, va_list args);
+
+</pre>
+
+<pre>
+
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include &quot;sb.h&quot;
+
+void sb_free(struct sb* p)
+{
+    if (p-&gt;heap)
+        free(p-&gt;c_str);
+}
+
+int sb_reserve(struct sb* p, int nelements)
+{
+    int result = 0;
+    if (nelements &gt; p-&gt;capacity)
+    {
+        char* pnew = NULL;
+        if (!p-&gt;heap)
+        {
+            pnew = (char*)malloc((nelements + 1) * sizeof(char));
+            if (pnew)
+            {
+                memcpy(pnew, p-&gt;c_str, nelements);
+                p-&gt;heap = true;
+            }
+        }
+        else
+        {
+            pnew = (char*)realloc(p-&gt;c_str, (nelements + 1) * sizeof(char));
+        }
+        if (pnew)
+        {
+            p-&gt;c_str = pnew;
+            p-&gt;capacity = nelements;
+            result = p-&gt;capacity;
+        }
+    }
+    else
+    {
+        result = p-&gt;capacity;
+    }
+
+    return result;
+}
+
+
+
+int ss_vafprintf(struct sb* stream, const char* fmt, va_list args)
+{
+    va_list tmpa;
+    va_copy(tmpa, args);
+
+    int size = vsnprintf(stream-&gt;c_str, stream-&gt;capacity, fmt, tmpa);
+
+    va_end(tmpa);
+
+    if (size &lt; 0)
+    {
+        return -1;
+    }
+
+    if (size &gt; stream-&gt;capacity)
+    {
+        if (sb_reserve(stream, size) == 0)
+        {
+            return -1;
+        }
+
+        size = vsprintf(stream-&gt;c_str, fmt, args);
+        if (size &gt; 0)
+        {
+            stream-&gt;size = size;
+        }
+    }
+   
+
+
+    return size;
+}
+
+int sb_printf(struct sb* stream, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    int size = ss_vafprintf(stream, fmt, args);
+    va_end(args);
+    return size;
+}
+
+</pre>
+
+<pre>
+#include &lt;stdio.h&gt;
+#include &quot;sb.h&quot;
+
+int main()
+{
+    struct sb sb = SB_INIT(10);
+
+    sb_printf(&amp;sb, &quot;%s&quot;, &quot;test&quot;);
+
+    sb_printf(&amp;sb, &quot;%s&quot;, &quot;big string test&quot;);
+
+    sb_printf(&amp;sb, &quot;%s&quot;, &quot;small&quot;);
+
+    sb_reserve(&amp;sb, 400);
+
+    sb_free(&amp;sb);
+}
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
