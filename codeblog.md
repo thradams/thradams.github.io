@@ -3,6 +3,8 @@
 
 ## 2019
 
+[String replace](stringreplace.md) September 2019
+
 [String builder with stack optimization](newsb.md) September 2019
 
 [Unit Testing Sockets](socketmock.md) June 2019
