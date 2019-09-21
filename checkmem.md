@@ -31,7 +31,6 @@ void PrintLeaksDbg();
 
 ```cpp
 
-
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -48,7 +47,7 @@ struct Mem
     size_t line;
 };
 
-struct Mem* pRoot = 0;
+struct Mem* pHead = 0;
 
 void* MallocDbg(int line, const char* file, size_t size)
 {
@@ -58,17 +57,13 @@ void* MallocDbg(int line, const char* file, size_t size)
         p->line = line;
         p->file = file;
         p->pPrev = 0;
-        p->pNext = 0;
-        if (pRoot)
+        p->pNext = pHead;
+
+        if (pHead)
         {
-            p->pPrev = pRoot;
-            p->pNext = pRoot->pNext;
-            pRoot->pNext = p;
+            pHead->pPrev = p;
         }
-        else
-        {
-            pRoot = p;
-        }
+        pHead = p;        
         p = ((char*)p) + sizeof(struct Mem);
     }
 
@@ -80,12 +75,32 @@ void* ReallocDbg(int line, const char* file, void* p, size_t s)
     struct Mem* pMem = 0;
     if (p)
     {
+        
         pMem = (struct Mem*)((char*)p - sizeof(struct Mem));
+        
+
         pMem = (struct Mem*)(realloc)(pMem, sizeof(struct Mem) + s);
         if (pMem)
         {
+            //update line and source
             pMem->line = line;
             pMem->file = file;
+            
+            if (pMem->pPrev)
+            {
+                pMem->pPrev->pNext = pMem;
+            }
+            
+            if (pMem->pNext)
+            {
+                pMem->pNext->pPrev = pMem;
+            }
+
+            if (pHead == (struct Mem*)((char*)p - sizeof(struct Mem)))
+            {
+                pHead = pMem;
+            }
+
             pMem = ((char*)pMem) + sizeof(struct Mem);
         }
     }
@@ -102,9 +117,9 @@ void FreeDbg(void* p)
     {
         struct Mem* pMem = (struct Mem*)((char*)p - sizeof(struct Mem));
 
-        if (pMem == pRoot)
+        if (pMem == pHead)
         {
-            pRoot = pRoot->pNext;
+            pHead = pHead->pNext;
         }
         else
         {
@@ -117,13 +132,14 @@ void FreeDbg(void* p)
 
 void PrintLeaksDbg()
 {
-    struct Mem* p = pRoot;
+    struct Mem* p = pHead;
     while (p)
     {
         printf("%s %d\n", p->file, p->line);
         p = p->pNext;
     }
 }
+
 
 
 ```
