@@ -26,27 +26,28 @@
 <p>String formatter that allocates memory when necessary.</p>
 
 <pre>
-#pragma once
+<span class="keyword">#pragma</span> once
 
-#include &lt;stdbool.h&gt;
-#include &lt;stdarg.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;stdarg.h&gt;
 
-struct sb
+<span class="keyword">struct</span> sb
 {
-    char* c_str;
-    int size;
-    int capacity;
-    bool heap;
+    <span class="keyword">char</span>* c_str;
+    <span class="keyword">int</span> size;
+    <span class="keyword">int</span> capacity;
+    <span class="keyword">bool</span> heap;
 } ;
 
-#define SB_INIT(N)  {.size = 0, .capacity = N, .c_str = (char[N + 1]){0}, .heap = 0 }
+<span class="keyword">#define</span> SB_INIT(N)  {.size = <span class="number">0</span>, .capacity = N, .c_str = (<span class="keyword">char</span>[N + <span class="number">1</span>]){<span class="number">0</span>}, .heap = <span class="number">0</span> }
 
-void sb_free(struct sb* p);
-int sb_reserve(struct sb* p, int nelements);
-int sb_printf(struct sb* stream, const char* fmt, ...);
-int ss_vafprintf(struct sb* stream, const char* fmt, va_list args);
+<span class="keyword">void</span> sb_free(<span class="keyword">struct</span> sb* p);
+<span class="keyword">int</span> sb_reserve(<span class="keyword">struct</span> sb* p, <span class="keyword">int</span> nelements);
+<span class="keyword">int</span> sb_printf(<span class="keyword">struct</span> sb* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...);
+<span class="keyword">int</span> ss_vafprintf(<span class="keyword">struct</span> sb* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list args);
 
 </pre>
+
 
 <pre>
 

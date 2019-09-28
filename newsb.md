@@ -1,6 +1,6 @@
 String formatter that allocates memory when necessary.
 
-```c
+```cpp
 #pragma once
 
 #include <stdbool.h>
