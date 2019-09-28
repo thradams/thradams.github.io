@@ -4,38 +4,33 @@ This function is an alternative for repetive calls of  free(p); p = strdup(s);
 
 ```cpp
 
-char* strrep1(char* dest, const char* source)
-{    
-    char* p = realloc(dest, strlen(source) + 1);
-    if (p != NULL) {   
-        strcpy(p, source);
-    }   
-    return p;
-}
 
-char* strrep2(char* dest, const char* source)
-{
-    char* p = malloc(strlen(source) + 1);
-    if (p != NULL)
-    {
-        free(dest);
-        strcpy(p, source);
-    }
-    else
-    {
-        //returns the source unchanged
-        p = source;
-    }
-    return p;
-}
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-size_t strrep3(char** dest, const char* source)
+struct Person
 {
-    size_t sourcelen = strlen(source);    
+    char* name;
+};
+
+char* strnt(const char* source)
+{
+    size_t sourcelen = strlen(source);
     char* p = malloc(sourcelen + 1);
     if (p != NULL)
     {
-        free(*dest);
+        strcpy(p, source);
+    }
+    return p;
+}
+
+size_t strrep(char** dest, const char* source)
+{
+    size_t sourcelen = strlen(source);
+    char* p = realloc(*dest, sourcelen + 1);
+    if (p != NULL)
+    {
         *dest = p;
         strcpy(p, source);
     }
@@ -46,6 +41,21 @@ size_t strrep3(char** dest, const char* source)
 
     return sourcelen;
 }
+
+int main()
+{
+    char* name = strnt("test");
+    struct Person person = { 0 };
+    strrep(&person.name, "new name");
+    strrep(&person.name, "new name2");
+    
+    strrep(&name, "new name3");
+    
+
+    free(person.name);
+    free(name);
+}
+
 
 ```
 

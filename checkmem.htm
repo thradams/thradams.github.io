@@ -34,13 +34,14 @@
 <p>If there are remaing itens, they are leaks.</p>
 
 <pre>
-
-
 <span class="keyword">#pragma</span> once
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">#ifdef</span> _DEBUG
 
 <span class="keyword">void</span>* MallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, size_t size);
-<span class="keyword">void</span> FreeDbg(<span class="keyword">void</span> *p);
-<span class="keyword">void</span>* ReallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> *p, size_t s);
+<span class="keyword">void</span> FreeDbg(<span class="keyword">void</span>* p);
+<span class="keyword">void</span>* ReallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span>* p, size_t s);
 
 <span class="keyword">void</span> PrintLeaksDbg();
 
@@ -48,6 +49,8 @@
 <span class="keyword">#define</span> free(p) FreeDbg((p))
 <span class="keyword">#define</span> realloc(p, s) ReallocDbg(__LINE__, __FILE__, (p), (s))
 
+<span class="keyword">#endif</span> <span class="comment">// DEBUG
+</span>
 
 </pre>
 
@@ -57,93 +60,115 @@
 <span class="keyword">#include</span> &lt;stdlib.h&gt;
 <span class="keyword">#include</span> &lt;stdio.h&gt;
 
+<span class="keyword">void</span>* MallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, size_t size);
+<span class="keyword">void</span> FreeDbg(<span class="keyword">void</span>* p);
+<span class="keyword">void</span>* ReallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span>* p, size_t s);
+<span class="keyword">void</span> PrintLeaksDbg();
+
 <span class="keyword">struct</span> Mem
 {
-  <span class="keyword">struct</span> Mem* pPrev;
-  <span class="keyword">struct</span> Mem* pNext;
-  <span class="keyword">const</span> <span class="keyword">char</span>* file;
-  size_t line;
+    <span class="keyword">struct</span> Mem* pPrev;
+    <span class="keyword">struct</span> Mem* pNext;
+    <span class="keyword">const</span> <span class="keyword">char</span>* file;
+    size_t line;
 };
 
-<span class="keyword">struct</span> Mem* pRoot = <span class="number">0</span>;
+<span class="keyword">struct</span> Mem* pHead = <span class="number">0</span>;
 
 <span class="keyword">void</span>* MallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, size_t size)
 {
-  <span class="keyword">struct</span> Mem* p = (<span class="keyword">struct</span> Mem*) malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem) + size);
-  p-&gt;line = line;
-  p-&gt;file = file;
-  p-&gt;pPrev = <span class="number">0</span>;
-  p-&gt;pNext = <span class="number">0</span>;
-  <span class="keyword">if</span> (pRoot)
-  {
-    p-&gt;pPrev = pRoot;
-    p-&gt;pNext = pRoot-&gt;pNext;
-    pRoot-&gt;pNext = p;
-  }
-  <span class="keyword">else</span>
-  {
-    pRoot = p;
-  }
-  <span class="keyword">return</span> ((<span class="keyword">char</span>*)p) + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem);
+    <span class="keyword">struct</span> Mem* p = (<span class="keyword">struct</span> Mem*) (malloc)(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem) + size);
+    <span class="keyword">if</span> (p)
+    {
+        p-&gt;line = line;
+        p-&gt;file = file;
+        p-&gt;pPrev = <span class="number">0</span>;
+        p-&gt;pNext = pHead;
+
+        <span class="keyword">if</span> (pHead)
+        {
+            pHead-&gt;pPrev = p;
+        }
+        pHead = p;        
+        p = ((<span class="keyword">char</span>*)p) + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem);
+    }
+
+    <span class="keyword">return</span> p;
 }
 
-<span class="keyword">void</span>* ReallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span> *p, size_t s)
+<span class="keyword">void</span>* ReallocDbg(<span class="keyword">int</span> line, <span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">void</span>* p, size_t s)
 {
-  <span class="keyword">struct</span> Mem* pMem = (<span class="keyword">struct</span> Mem*)((<span class="keyword">char</span>*)p - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem));
-  pMem = (<span class="keyword">struct</span> Mem*)realloc(pMem, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem) + s);
-  pMem-&gt;line = line;
-  pMem-&gt;file = file;
-  <span class="keyword">return</span> ((<span class="keyword">char</span>*)pMem) + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem);
+    <span class="keyword">struct</span> Mem* pMem = <span class="number">0</span>;
+    <span class="keyword">if</span> (p)
+    {
+        
+        pMem = (<span class="keyword">struct</span> Mem*)((<span class="keyword">char</span>*)p - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem));
+        
+
+        pMem = (<span class="keyword">struct</span> Mem*)(realloc)(pMem, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem) + s);
+        <span class="keyword">if</span> (pMem)
+        {
+            <span class="comment">//update line and source
+</span>            pMem-&gt;line = line;
+            pMem-&gt;file = file;
+            
+            <span class="keyword">if</span> (pMem-&gt;pPrev)
+            {
+                pMem-&gt;pPrev-&gt;pNext = pMem;
+            }
+            
+            <span class="keyword">if</span> (pMem-&gt;pNext)
+            {
+                pMem-&gt;pNext-&gt;pPrev = pMem;
+            }
+
+            <span class="keyword">if</span> (pHead == (<span class="keyword">struct</span> Mem*)((<span class="keyword">char</span>*)p - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem)))
+            {
+                pHead = pMem;
+            }
+
+            pMem = ((<span class="keyword">char</span>*)pMem) + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem);
+        }
+    }
+    <span class="keyword">else</span>
+    {
+        pMem = MallocDbg(line, file, s);
+    }
+    <span class="keyword">return</span> pMem;
 }
 
-<span class="keyword">void</span> FreeDbg(<span class="keyword">void</span> *p)
+<span class="keyword">void</span> FreeDbg(<span class="keyword">void</span>* p)
 {
-  <span class="keyword">struct</span> Mem* pMem = (<span class="keyword">struct</span> Mem*)((<span class="keyword">char</span>*)p - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem));
+    <span class="keyword">if</span> (p)
+    {
+        <span class="keyword">struct</span> Mem* pMem = (<span class="keyword">struct</span> Mem*)((<span class="keyword">char</span>*)p - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> Mem));
 
-  <span class="keyword">if</span> (pMem == pRoot)
-  {
-    pRoot = pRoot-&gt;pNext;
-  }
-  <span class="keyword">else</span>
-  {
-    pMem-&gt;pPrev-&gt;pNext = pMem-&gt;pNext;
-  }
+        <span class="keyword">if</span> (pMem == pHead)
+        {
+            pHead = pHead-&gt;pNext;
+        }
+        <span class="keyword">else</span>
+        {
+            pMem-&gt;pPrev-&gt;pNext = pMem-&gt;pNext;
+        }
 
-  free(pMem);
+        (free)(pMem);
+    }
 }
 
 <span class="keyword">void</span> PrintLeaksDbg()
 {
-  <span class="keyword">struct</span> Mem* p = pRoot;
-  <span class="keyword">while</span> (p)
-  {
-    printf(<span class="string">&quot;%s %d\n&quot;</span>, p-&gt;file, p-&gt;line);
-    p = p-&gt;pNext;
-  }
-}
-</pre>
-
-
-
-<p>Sample:</p>
-
-<pre>
-
-<span class="keyword">#include</span> <span class="string">&quot;m.h&quot;</span>
-
-<span class="keyword">int</span> main()
-{
-  <span class="keyword">int</span> *p1 = (<span class="keyword">int</span> *)malloc(<span class="keyword">sizeof</span>(<span class="keyword">int</span>));
-  p1 = (<span class="keyword">int</span> *)realloc(p1, <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">10</span>);
-  <span class="keyword">int</span> *p2 = (<span class="keyword">int</span> *)malloc(<span class="keyword">sizeof</span>(<span class="keyword">int</span>));
-  free(p2);
-  PrintLeaksDbg();
-  <span class="keyword">return</span> <span class="number">0</span>;
+    <span class="keyword">struct</span> Mem* p = pHead;
+    <span class="keyword">while</span> (p)
+    {
+        printf(<span class="string">&quot;%s %d\n&quot;</span>, p-&gt;file, p-&gt;line);
+        p = p-&gt;pNext;
+    }
 }
 
---
-</pre>
 
+
+</pre>
 
 
 <!-- Page content end --> 
