@@ -84,3 +84,21 @@ int main()
 }
 ```
 
+```cpp
+initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using free+malloc took 551
+new 6000000; same 0
+
+initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using free+malloc+copy took 773
+new 6000000; same 0
+
+initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using realloc took 1007
+new 5374303; same 625697
+
+
+```
