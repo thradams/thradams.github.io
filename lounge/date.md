@@ -92,8 +92,23 @@ unsigned weekday_from_days(int z)
   return (unsigned)(z >= -4 ? (z + 4) % 7 : (z + 5) % 7 + 6);
 }
 
+time_t date_to_time(date_t d)
+{
+  return d * (60 * 60 * 24);
+}
+
+date_t time_to_date(time_t t)
+{
+  return t / (60 * 60 * 24);
+}
+
 int main()
 {
+  time_t t = time(NULL);
+  int year0, month0, day0;
+  civil_from_days(time_to_date(t), &year0, &month0, &day0);
+
+
   //1970 - 01 - 01
   int d = 1;
   int m = 1;
@@ -144,6 +159,7 @@ int main()
   }
   printf("ok");
 }
+
 
 
 ```
