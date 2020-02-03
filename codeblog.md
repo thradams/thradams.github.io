@@ -1,5 +1,10 @@
 # Chronological view
 
+## 2020
+
+[if with initializer and defer](ifinit.md) January 2020
+
+[Date and time](date.md) January 2020
 
 ## 2019
 

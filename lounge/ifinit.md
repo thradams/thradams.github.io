@@ -1,10 +1,16 @@
-```c
+Macro emulating a new feature for the C language that allow
+if with initialization and  "defer"
 
+
+One macro also emulating c++ 17 if initializer
+
+```cpp
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define defer(init, defer) for(init, *ptemp=(void*)1; ptemp; (defer), ptemp=0)
 
 #define _if(init, condition) for(init, *ptemp=(void*)1; (condition) && ptemp; ptemp=0)
 
@@ -12,7 +18,6 @@
 
 int main()
 {
-
 
   _if(char* s = malloc(10), s)
   {
@@ -31,3 +36,13 @@ int main()
 
 
 ```
+
+References:
+
+C++ if
+https://en.cppreference.com/w/cpp/language/if
+
+
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html
+
+proposal P00305r0
