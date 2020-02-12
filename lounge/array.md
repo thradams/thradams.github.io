@@ -97,3 +97,74 @@ int main()
 
 ```
 
+
+
+```cpp
+#include <stdio.h>
+#include <stdlib.h>
+
+
+#define ArrayOf(T)\
+{\
+    T* pData;\
+    int Size;\
+    int Capacity;\
+}
+
+int reserve(void** ppItems, size_t size, size_t* capacity, size_t sz)
+{
+  if (size > * capacity)
+  {
+    int n = *capacity * 2;
+    if (n == 0)
+    {
+      n = 1;
+    }
+    void* pnew = *ppItems;
+    pnew = (void*)realloc(pnew, n * sz);
+    if (pnew)
+    {
+      *ppItems = pnew;
+      *capacity = n;
+    }
+  }
+  return 1;
+}
+
+#define Push(pItems, i)\
+do {\
+    if (reserve((void**)&((pItems)->pData), (pItems)->Size + 1, &((pItems)->Capacity), sizeof((pItems)->pData[0])))\
+    {\
+      (pItems)->pData[(pItems)->Size] = i;\
+      (pItems)->Size++;\
+    }\
+} while(0)
+
+struct Y
+{
+  int i;
+};
+
+struct Items
+{
+  struct Y* p;
+  int count;
+};
+
+void Load(struct Items* p)
+{
+  struct ArrayOf(struct Y) a = {0};
+  Push(&a, (struct Y) {.i = 1});
+  p->count = a.Size;
+  p->p = a.pData;
+}
+
+int main()
+{
+  struct Items items = {0};
+  Load(&items);  
+  free(items.p);
+}
+
+
+```
