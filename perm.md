@@ -77,6 +77,16 @@ void f2(const char* s, int indexesUsed[], int usedCount, int count, int groupSiz
   }
 }
 
+int NumCombinations(int size, int groupSize)
+{
+  int result = 1;
+  for (int i = 0; i < groupSize; i++)
+  {
+    result = result * (size - i);
+  }
+  return result;
+}
+
 
 int main()
 {
