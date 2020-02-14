@@ -1,4 +1,5 @@
 # Permutations
+February 2020
 
 Given a string (for instance "abcd") and a group size (for instance 2) we generate all combinations.
 
