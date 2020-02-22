@@ -1,36 +1,6 @@
+Usage:
 
 ```cpp
-
-#include <stdio.h>
-#include <stdlib.h>
-
-#define ArrayOf(T) { T* data; int size; int capacity; }
-
-#define ArrayPush(A, V)\
-do {\
-    if ((A)->size + 1 > (A)->capacity)\
-    {\
-        int n = (A)->capacity * 2;\
-        if (n == 0)\
-        {\
-            n = 1;\
-        }\
-        void* pnew = (A)->data;\
-        pnew = realloc(pnew, n * sizeof((A)->data[0]));\
-        if (pnew)\
-        {\
-            (A)->data = pnew;\
-            (A)->capacity = n;\
-            (A)->data[(A)->size] = (V); \
-            (A)->size++;\
-        }\
-    } else \
-    {\
-      (A)->data[(A)->size] = (V);\
-      (A)->size++;\
-    }\
-}while(0)
-
 
 struct X
 {
@@ -95,6 +65,43 @@ int main()
     }
     printf("]\n");
 }
+```
+
+Source:
+
+```cpp
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define ArrayOf(T) { T* data; int size; int capacity; }
+
+#define ArrayPush(A, V)\
+do {\
+    if ((A)->size + 1 > (A)->capacity)\
+    {\
+        int n = (A)->capacity * 2;\
+        if (n == 0)\
+        {\
+            n = 1;\
+        }\
+        void* pnew = (A)->data;\
+        pnew = realloc(pnew, n * sizeof((A)->data[0]));\
+        if (pnew)\
+        {\
+            (A)->data = pnew;\
+            (A)->capacity = n;\
+            (A)->data[(A)->size] = (V); \
+            (A)->size++;\
+        }\
+    } else \
+    {\
+      (A)->data[(A)->size] = (V);\
+      (A)->size++;\
+    }\
+}while(0)
+
+
 
 
 ```
