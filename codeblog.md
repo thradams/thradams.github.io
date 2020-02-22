@@ -2,6 +2,8 @@
 
 ## 2020
 
+[quick and dirty dynamic array](darray.md) February 2020
+
 [Permutations](perm.md) February 2020
 
 [if with initializer and defer](ifinit.md) January 2020
