@@ -96,3 +96,57 @@ int main()
 
 ```
 
+Bit set
+
+```cpp
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void f2(const char* s,
+        int indexesUsed[],
+        int usedSet, 
+        int usedCount, 
+        int count, 
+        int groupSize)
+{
+    if (usedCount == groupSize)
+    {
+        for (int i = 0; i < usedCount; i++)
+        {
+            printf("%c", s[indexesUsed[i]]);
+        }
+        printf("\n");
+        return;
+    }
+    for (int i = 0; i < count; i++)
+    {
+        if (!((usedSet & (1 << i)) != 0))
+        {
+            usedSet = usedSet | (1 << i) ;
+            indexesUsed[usedCount] = i;
+            f2(s, indexesUsed, usedSet, usedCount + 1, count, groupSize);
+            usedSet &= ~(1 << i);
+        }
+    }
+}
+
+int NumCombinations(int size, int groupSize)
+{
+    int result = 1;
+    for (int i = 0; i < groupSize; i++)
+    {
+        result = result * (size - i);
+    }
+    return result;
+}
+
+
+int main()
+{
+    int used[32] = { -1 };
+    int usedSet = 0;
+    f2("abcd", used, usedSet,0 , sizeof("abcd") - 1, 4);
+ }
+
+```
