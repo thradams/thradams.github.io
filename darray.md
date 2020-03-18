@@ -109,9 +109,26 @@ do {\
 ```cpp
 
 
+
 #define array_size(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[0]) : 0)
 #define array_capacity(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[1]) : 0)
 #define array_free(a) if (a) free((((int*)((char*)(a) - sizeof(int) * 2))))
+
+#define array_reserve(p, newcapacity) \
+  do {\
+    int* pints = p ? ((int*)((char*)(p) - sizeof(int) * 2)) : 0;\
+    int capacity = pints ? pints[1] : 0;\
+    int size = pints ? pints[0] : 0;\
+    if (newcapacity > capacity) {\
+      pints = (int*)realloc(pints, sizeof(int) * 2 + newcapacity * sizeof(p[0]));\
+      if (pints) {\
+         p = ((void*)((char*)(pints) + sizeof(int) * 2));\
+         pints[0] = size;\
+         pints[1] = newcapacity;\
+      }\
+    }\
+  } while (0)
+
 
 #define array_push(p, value) \
   do {\
@@ -144,6 +161,9 @@ int main()
 {
     struct X* pX = { 0 };
     
+    array_reserve(pX, 1100);
+    printf("%d %d", array_size(pX), array_capacity(pX));
+
     array_push(pX, (struct X) {.i = 1});
     array_push(pX, (struct X) {.i = 2});
     
@@ -153,6 +173,7 @@ int main()
     }
     array_free(pX);
 }
+
 
 
 ```
