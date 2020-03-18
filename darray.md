@@ -108,16 +108,16 @@ do {\
 
 ```cpp
 
-#define getdata(a) ((a) ? ((void*)((char*)(a) + sizeof(int) * 2)) : a)
-#define getptr(a) ((a) ? ((int*)((char*)(a) - sizeof(int) * 2)) : 0)
-#define getsize(a)  ((a) ? (getptr(a)[0]) : 0)
-#define capacity(a)  ((a) ? (getptr(a)[1]) : 0)
 
-#define push(p, value) \
+#define array_size(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[0]) : 0)
+#define array_capacity(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[1]) : 0)
+#define array_free(a) if (a) free((((int*)((char*)(a) - sizeof(int) * 2))))
+
+#define array_push(p, value) \
   do {\
-    int* pints = (int*)getptr(p);\
-    int size = getsize(p);\
-    int capacity = capacity(p);\
+    int* pints = p ? ((int*)((char*)(p) - sizeof(int) * 2)) : 0;\
+    int size = pints ? pints[0] : 0;\
+    int capacity = pints ? pints[1] : 0;\
     if (size + 1 > capacity) {\
       int n = capacity * 2;\
       if (n == 0) {\
@@ -125,7 +125,7 @@ do {\
       }\
       pints = (int*)realloc(pints, sizeof(int) * 2 + n * sizeof(p[0]));\
       if (pints) {\
-         p = getdata(pints);\
+         p = ((void*)((char*)(pints) + sizeof(int) * 2));\
          pints[0] = size;\
          pints[1] = n;\
       }\
@@ -142,25 +142,18 @@ struct X
 
 int main()
 {
-    char* p = { 0 };
-    
-    push(p, 'a');
-    push(p, 'b');
-    push(p, 0);
-
-    free(getptr(p));
-
-
     struct X* pX = { 0 };
-    push(pX, (struct X) {.i = 1});
-    push(pX, (struct X) {.i = 2});
     
-    for (int i = 0; i < getsize(pX); i++)
+    array_push(pX, (struct X) {.i = 1});
+    array_push(pX, (struct X) {.i = 2});
+    
+    for (int i = 0; i < array_size(pX); i++)
     {
         printf("%d\n", pX[i].i);
     }
-    free(getptr(pX));
+    array_free(pX);
 }
+
 
 ```
 
