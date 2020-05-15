@@ -52,23 +52,86 @@ int main() {
 ```
 
 This initialization works for global static variables.
-
-There is no 'constructor' runtime function.
+There is no runtime function called like C++ constructor.
+Diferently from C++, we only accept constants. 
 
 ### Overloaded functions
+
+Overload functions are especial functions with name mangling.
 
 ```c
 void draw(struct X* p) overload;
 ```
 
-Reference:
+See reference:
 https://clang.llvm.org/docs/AttributeReference.html#overloadable
+
+## Template functions
+
+User can write template functions using the keyword typename.
+
+Sample
+
+```c
+void swap(typename* a, typename* b)
+{
+   decltype(a) temp = *a;
+   *a = *b;
+   *b = temp;
+}
+
+int main()
+{
+  struct X x1;
+  struct X x2;
+  
+  swap(&x1, &x2);
+}
+```
+
+The compiler has some built-in template functions.
+
+```c
+typename new(typename value)
+{
+   decltype(value)* p  = malloc(sizeof * p);
+   if (p)
+   {
+     *p = value;
+   }
+   return p;
+}
+
+void delete(typename * p)
+{
+   if (p)
+   {
+      destroy(p)
+      free(p);
+   }
+}
+
+void destroy(typename * p)
+{
+  /*
+    this function cannot be written just by
+    parametrization
+    
+    this is an especial function.
+    
+    The default implementation of destroy calls each destroy of each member
+    recursivally.
+
+  */
+}
+```
+
 
 ### Operator new
 
-The compiler auto generates the implementation of the new operator.
+The new operator calls the default template function new.
 
-The usage (syntax):
+Syntax:
 
 ```cpp
 
@@ -82,50 +145,10 @@ int main() {
 
 ```
 
-The default implementation is equivalent of:
-
-```cpp
-struct T* new(struct T initValue)
-{
-  struct T* p = malloc(sizeof initValue);
-  if (p)
-  {
-    *p = initValue;
-  }
-  return p;
-}
-```
-
-It does not throw. There is no runtime (appart of malloc) error.
-
-We can create a overload function that overrides the new operator. 
-
-```cpp
-
-struct T* new(struct T initValue) overload
-{
-  struct T* p = malloc(sizeof * p);
-  if (p)
-  {
-    *p = initValue;
-  }
-  return p;
-}
-```
-
-New operator does works for arrays.  (although  I think it is not  used too much)
-
-```cpp
-int main() {
-  char * str = new((char[200]){}); 
-}
-```
-
-
 
 ## Operator destroy
 
-The compiler has an auto generated destroy function that is called at the end of scope.
+The compiler calls the template function destroy at the end of scope.
 
 ```cpp
 struct Person {
@@ -138,15 +161,12 @@ int main() {
 
 } //destroy(x) called
 ```
-We can override destroy using the overload  function syntax
 
-```c
-void destroy(struct Person* person) overload;
-```
+The default template functions can be overrided. Just add your own.
 
 ## NOT Calling destroy at the end of scope
 
-To to this, add the type modifier view.
+To to this, add the type modifier __view__.
 
 Sample:
 
@@ -164,34 +184,10 @@ int main() {
 
 ```
 
-
-
-## Operator delete
-
-The compiler has an auto generated delete function that destroy the object that the pointer points to and also free the memory.
-
-```cpp
-struct Person {
-    char * name = NULL;
-};
-
-int main() {
-   struct Person* pX = new (struct Person){};
-   delete(pX);
-}
-```
-We can override delete using the overload function syntax
-
-```c
-void delete(struct Person* person) overload;
-```
-
-
-
 ## Auto pointers
 
 Pointers can be qualified with auto.
-When a pointer qualified with auto is destroyed it deletes the object it points to.
+When a pointer qualified with auto is destroyed it calls the delete template function.
 
 ```cpp
 
@@ -205,36 +201,6 @@ int main()
   
 } //delete(pX) is called
 
-```
-
-The compiler has a default implementation for any pointer qualified with auto that is equivalent of
-
-```cpp
-void operator destroy(T * auto p)
-{
-  if (p)
-  {
-    destroy(*p);
-    free(p);
-  }
-}
-```
-
-To destroy the content of a non auto pointer we can cast.
-
-```cpp
-  struct X* pX = new (struct X){};
-  ...
-  destroy( (struct X* auto) pX);  
-```
-
-Or call destroy for the content and them free.
-
-```cpp
-  struct X* pX = new (struct X){};
-  ...
-  destroy(*pX);  
-  free(pX);
 ```
 
 We can imagine that all pointer are by default 'view' and other types are by default 'auto'.
@@ -361,7 +327,7 @@ int main()
 
 ```cpp
 
- void operator push(auto a[auto], auto item)
+ void push(typename a[auto], typename item)
  {
     if (a.size + 1 > a.capacity)
     {
