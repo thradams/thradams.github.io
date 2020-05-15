@@ -178,3 +178,69 @@ int main()
 
 ```
 
+
+```c
+#pragma once
+#include <stdlib.h>
+
+struct ptrarray
+{
+    void** data; int size, capacity;
+};
+
+#define Array(item) array_##item
+#define DECLARE_ARRAY(item) struct Array(item) { struct item** data; int size, capacity; }
+
+#define array_push(a, v) ptrarray_push((struct ptrarray*) a, v)
+
+static inline ptrarray_push(struct ptrarray* a, void* value)
+{
+    if (a->size + 1 > a->capacity)
+    {
+        int n = a->capacity * 2;
+        if (n == 0)
+        {
+            n = 1;
+        }
+        void** pnew = a->data;
+        pnew = (void**)realloc(pnew, n * sizeof(void*));
+        if (pnew)
+        {
+            a->data = pnew;
+            a->capacity = n;
+        }
+    }
+    a->data[a->size] = value;
+    a->size++;
+}
+
+```
+```c
+#include "array.h"
+
+struct X
+{
+    int i;
+};
+
+DECLARE_ARRAY(X);
+
+void F(struct Array(X)* a)
+{
+    struct X* p = malloc(sizeof * p);
+    p->i = 1;
+    array_push(a, p);    
+}
+int main()
+{
+    struct Array(X) a = {0};
+    struct X* p = malloc(sizeof * p);
+    p->i = 1;
+    array_push(&a, p);
+    F(&a);
+}
+
+
+
+
+```
