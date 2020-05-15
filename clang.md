@@ -252,8 +252,8 @@ int main()
 {
   struct <Box | Circle> * auto shapes[2] = {};
   
-  shapes[0] = new (struct Box){};
-  shapes[1] = new (struct Circle){};
+  shapes[0] = new ((struct Box){});
+  shapes[1] = new ((struct Circle){});
   
   for (int i = 0; i < 2; i++)
   {    
