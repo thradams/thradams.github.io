@@ -92,7 +92,7 @@ int main()
 The compiler has some built-in template functions.
 
 ```c
-typename new(typename value)
+typename auto * new(typename value)
 {
    decltype(value)* p  = malloc(sizeof * p);
    if (p)
@@ -102,7 +102,7 @@ typename new(typename value)
    return p;
 }
 
-void delete(typename * p)
+void delete(typename * auto p)
 {
    if (p)
    {
@@ -127,11 +127,8 @@ void destroy(typename * p)
 ```
 
 
-### Operator new
+### Using new and delete
 
-The new operator calls the default template function new.
-
-Syntax:
 
 ```cpp
 
@@ -140,13 +137,13 @@ struct X {
 };
 
 int main() {
-  struct X* pX = new (struct X) {};
+  struct X* pX = new ((struct X) {});
+  delete(pX);
 }
 
 ```
 
-
-## Operator destroy
+## The template function destroy is called at the end of scope
 
 The compiler calls the template function destroy at the end of scope.
 
@@ -161,8 +158,6 @@ int main() {
 
 } //destroy(x) called
 ```
-
-The default template functions can be overrided. Just add your own.
 
 ## NOT Calling destroy at the end of scope
 
@@ -203,32 +198,7 @@ int main()
 
 ```
 
-We can imagine that all pointer are by default 'view' and other types are by default 'auto'.
-
-
-
-## Struct members
-
-The default implementation of destroy calls each member recursivally.
-
-So
-
-```cpp
-
-struct Y {
-  int i;
-};
-
-struct X
-{ 
-  struct Y y1;
-  view struct Y y2;  
-};
-
-int main() {
-  auto struct X x = {};  
-}  //only destroy(x.y1) is called 
-````
+We can imagine that all pointer are by default __view__ and other types are by default __auto__.
 
 
 ## if with initializer 
@@ -245,11 +215,8 @@ Same of C++.  Togueter with auto it creates an interting pattern.
 
 ````
 
-## overriding destroy for existing types
+## Strong typedef
 
-typedefs are only alias in C. But for the operators they are considered.
-For instance, let's say FILE is a typedef for int. We can override
-the operator and that doen't means that any int will call this function.
 
 ```cpp
 
@@ -262,15 +229,12 @@ int main()
 {
   if (FILE* auto f = fopen("file.txt", "r"), f)
   {
-  }
+  }//destroy(f)
 } 
 ```
 
 ## Lambdas 
 Similar of C++.
-
-Lambdas without capture will be function pointers.
-Lambdas with capture (to be defined)
 
 
 ## Polimorphism
@@ -282,11 +246,8 @@ appropriated operator in runtime according with the type.
 
 Sample:
 ```cpp
-
-
  
-struct Box
-{
+struct Box {
     const int id = 1; //discriminant
 };
 
@@ -348,7 +309,7 @@ int main()
     a.size++;
  }
  
- int a[auto]; //synonym of struct some_name_mangling  { int * data; int size; int capacity;}
+ int a[auto];
  push(a, 1);
  
  a.data[0] = 1; //ok
