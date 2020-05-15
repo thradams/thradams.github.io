@@ -215,26 +215,8 @@ Same of C++.  Togueter with auto it creates an interting pattern.
 
 ````
 
-## Strong typedef
-
-```cpp
-
-void destroy (FILE * auto f) overload
-{
-  fclose(f);
-}
-
-int main()
-{
-  if (FILE* auto f = fopen("file.txt", "r"), f)
-  {
-  }//destroy(f)
-} 
-```
-
 ## Lambdas 
 Similar of C++.
-
 
 ## Polimorphism
 
