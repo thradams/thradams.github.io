@@ -2,10 +2,9 @@
 
 Updated 15 May 2020
 
-# Objetive
+## Objetive
 
-Add minimum possible set of features to remove boilerplate code from C.
-
+Add the minimum possible set of features to remove boilerplate code from C.
 
 When reading this document consider that the features are additions into C and not changes in C++.
 
