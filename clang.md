@@ -206,7 +206,7 @@ Same of C++.  Togueter with auto it creates an interting pattern.
 
 ```cpp
 
-  if (struct X* auto pX = new (struct X){}, p)
+  if (struct X* auto pX = new((struct X){}), p)
   {
     //pX in scope AND != NULL
     ..
@@ -216,7 +216,6 @@ Same of C++.  Togueter with auto it creates an interting pattern.
 ````
 
 ## Strong typedef
-
 
 ```cpp
 
@@ -316,6 +315,21 @@ int main()
  a[0] = 1; //ok
  
 ```
+## Parametrized structs
+
+Just like C++.
+
+```c
+template<class T1, class T2> struct map
+{  
+ T1 data1;
+ T2 data2;
+};
+
+struct map<int, string> map;
+
+```
+
 
 ## Standard build system 
 Pragma source is a way to make source files discoverable respecting platform configuration.
