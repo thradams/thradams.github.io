@@ -1,6 +1,6 @@
 # The language between C and C++ I would like to have
 
-Updated 12 march 2020
+Updated 15 May 2020
 
 When reading this document consider that the features are additions into C and not changes in C++.
 
@@ -36,7 +36,33 @@ int main() {
   struct X x; //same as C today (unitialized)
 }
 ```
-The initialization is static. (!= from C++)
+
+```cpp
+int main() { 
+   struct X x1[2] = {};    
+   
+   //same as C99
+   struct X x2[2] = {{.x = 1, .y = 1 }, {.x = 1, .y = 1 } }; 
+}
+
+
+int main() {
+  struct X x; //same as C today (unitialized)
+}
+```
+
+This initialization works for global static variables.
+
+There is no 'constructor' runtime function.
+
+### Overloaded functions
+
+```c
+void draw(struct X* p) overload;
+```
+
+Reference:
+https://clang.llvm.org/docs/AttributeReference.html#overloadable
 
 ### Operator new
 
@@ -56,10 +82,10 @@ int main() {
 
 ```
 
-The default implementation is :
+The default implementation is equivalent of:
 
 ```cpp
-struct T* operator new(struct T initValue)
+struct T* new(struct T initValue)
 {
   struct T* p = malloc(sizeof initValue);
   if (p)
@@ -72,17 +98,11 @@ struct T* operator new(struct T initValue)
 
 It does not throw. There is no runtime (appart of malloc) error.
 
-
-We can override this operator. For instance to use a custom malloc or just
-to intercept the call and do some other operation.
-The default implementation can be explicitly called usind
+We can create a overload function that overrides the new operator. 
 
 ```cpp
-struct T* p = default new(initValue);
-```
 
-```cpp
-struct T* operator new(struct T initValue)
+struct T* new(struct T initValue) overload
 {
   struct T* p = malloc(sizeof * p);
   if (p)
@@ -93,58 +113,85 @@ struct T* operator new(struct T initValue)
 }
 ```
 
-New operator works for arrays: (Any compound literal)
+New operator does works for arrays.  (although  I think it is not  used too much)
 
 ```cpp
-
 int main() {
-  char * str = new((char[200]){});
+  char * str = new((char[200]){}); 
 }
 ```
 
+
+
 ## Operator destroy
 
-The compiler has an auto generated operator destroy that can be overrided
-for some especific type.
-
+The compiler has an auto generated destroy function that is called at the end of scope.
 
 ```cpp
 struct Person {
     char * name = NULL;
 };
 
-//overriding destroy for a variable of type struct X auto
-void operator destroy(struct X x) {
-  free(x.name);
-}
-
 int main() {
 
-   struct X x;
-   //...
-   destroy(x);
-}
+   struct Person x;
+
+} //destroy(x) called
+```
+We can override destroy using the overload  function syntax
+
+```c
+void destroy(struct Person* person) overload;
 ```
 
-In the same way of new, the default destroy will call the default implementation
-that does nothing for basic types.  The useful generation of destroy is associated
-with the keyword auto that will see in the next topics.
+## NOT Calling destroy at the end of scope
 
-## Calling destroy at the end of scope
+To to this, add the type modifier view.
 
-Destroy is not called automatically at the end of scope unless you qualify your variable as 'auto'.
+Sample:
 
 ```cpp
+
 int main() {
-   auto struct X x; 
+
+   struct X x1[10];
    
-} //destroy(x) is called
+   view struct X x2[2]; 
+   
+   x1[0] = x2[1]; 
+   
+} //ONLY destroy of x1[0] ... x1[9] is called
 
 ```
+
+
+
+## Operator delete
+
+The compiler has an auto generated delete function that destroy the object that the pointer points to and also free the memory.
+
+```cpp
+struct Person {
+    char * name = NULL;
+};
+
+int main() {
+   struct Person* pX = new (struct Person){};
+   delete(pX);
+}
+```
+We can override delete using the overload function syntax
+
+```c
+void delete(struct Person* person) overload;
+```
+
+
 
 ## Auto pointers
 
-Pointers can be qualified with auto, it means that the pointer is the onwer of the pointed object.
+Pointers can be qualified with auto.
+When a pointer qualified with auto is destroyed it deletes the object it points to.
 
 ```cpp
 
@@ -156,7 +203,7 @@ int main()
 {
   struct X* auto pX = new (struct X){};
   
-} //destroy(pX) is called
+} //delete(pX) is called
 
 ```
 
@@ -190,7 +237,11 @@ Or call destroy for the content and them free.
   free(pX);
 ```
 
-## Auto in struct members
+We can imagine that all pointer are by default 'view' and other types are by default 'auto'.
+
+
+
+## Struct members
 
 The default implementation of destroy calls each member recursivally.
 
@@ -204,17 +255,14 @@ struct Y {
 
 struct X
 { 
-  auto struct Y y;
-  struct Y * auto pY;
+  struct Y y1;
+  view struct Y y2;  
 };
 
 int main() {
   auto struct X x = {};  
-} 
+}  //only destroy(x.y1) is called 
 ````
-destroy(x) is called at the end of scope. 
-
-The default implementation will call destroy(x.y) and destroy(x.pY);
 
 
 ## if with initializer 
@@ -239,7 +287,7 @@ the operator and that doen't means that any int will call this function.
 
 ```cpp
 
-void operator destroy (FILE * auto f)
+void destroy (FILE * auto f) overload
 {
   fclose(f);
 }
@@ -250,32 +298,6 @@ int main()
   {
   }
 } 
-
-````
-# Operator move (source)
-Copies source to dest and clear source.
-
-```cpp
- struct X * auto pX1 = new (struct X){};
- struct X * auto pX2 = {};
- 
- pX2 = move(pX1);
-
- //Same as:
- pX2 = pX1;
- pX1 = NULL;
-
-```
-# Operator swap (a, b)
-
-Copy a to b and b to a.
-
-```cpp
-  
-  T t = a;
-  a = b;
-  b = t
-  
 ```
 
 ## Lambdas 
@@ -284,49 +306,6 @@ Similar of C++.
 Lambdas without capture will be function pointers.
 Lambdas with capture (to be defined)
 
-## Custom operator
-
-We can create other operators that basically are functions that can be overriden.
-They are not normal functions because they have name mangling (like c++) or internal
-linkage (like static inline functions)
-
-They are useful do  create some operation that is applied for many types with the same 
-meaning.
-
-```cpp
-
-struct Box {
-    int id = 1;
-};
-
-void operator draw(struct Box* pBox) {
-    printf("Box");
-}
-
-struct Circle {
-    int id = 2;
-};
-
-void operator draw(struct Circle* pCircle) {
-    printf("Circle");
-}
-
-int main()
-{
-  struct Box box = {};
-  struct Circle circle = {};
-  
-  draw(&box);
-  draw(&cicle);
-}
-
-```
-This can be used in math operations for instance.
-operators are diferent from functions. the parameters are like references.
-
-## Generic Operators
-
-Considered.
 
 ## Polimorphism
 
@@ -345,7 +324,7 @@ struct Box
     const int id = 1; //discriminant
 };
 
-void operator draw(struct Box* pBox) {
+void draw(struct Box* pBox) overload {
     printf("Box");
 }
 
@@ -353,13 +332,13 @@ struct Circle {
     const int id = 2; //discriminant
 };
 
-void operator draw(struct Circle* pCircle) {
+void draw(struct Circle* pCircle) overload {
     printf("Circle");
 }
 
 int main()
 {
-  auto struct <Box | Circle> * auto shapes[2] = {};
+  struct <Box | Circle> * auto shapes[2] = {};
   
   shapes[0] = new (struct Box){};
   shapes[1] = new (struct Circle){};
@@ -367,8 +346,8 @@ int main()
   for (int i = 0; i < 2; i++)
   {    
     //runtime selecion according with the discriminant
+    //auto generated  draw for shape
     draw(shapes[i]); 
-    //draw must be an operator in box and circle othewise error
     
     //when types have a common discriminant it is available
     printf("%d", shapes[i].id);
