@@ -1,0 +1,363 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> The language between C and C++ I would like to have</h1>
+
+<p>Updated 15 May 2020</p>
+
+<h2> Objetive</h2>
+
+<p>Add the minimum possible set of features to remove boilerplate code from C.</p>
+
+<p>When reading this document consider that the features are additions into C and not changes in C++.</p>
+
+<h2> Member initializer</h2>
+
+<pre>
+
+<span class="keyword">struct</span> X {
+   <span class="keyword">int</span> i = <span class="number">1</span>;
+   <span class="keyword">struct</span> Point pt = { .x = <span class="number">1</span>, .y = <span class="number">1</span> };
+};
+
+</pre>
+
+
+<h2> Empty Initializer/Compound literal</h2>
+
+<pre>
+<span class="keyword">int</span> main() {
+   
+   <span class="comment">//new syntax
+</span>   <span class="keyword">struct</span> X x = {};    
+   <span class="comment">//same as C99
+</span>   <span class="keyword">struct</span> X x = { . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
+   
+   <span class="comment">//new syntax
+</span>   x = (<span class="keyword">struct</span> X){};    
+   <span class="comment">//same as C99
+</span>   x = (<span class="keyword">struct</span> X){ . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
+}
+
+
+<span class="keyword">int</span> main() {
+  <span class="keyword">struct</span> X x; <span class="comment">//same as C today (unitialized)
+</span>}
+</pre>
+
+
+<pre>
+<span class="keyword">int</span> main() { 
+   <span class="keyword">struct</span> X x1[<span class="number">2</span>] = {};    
+   
+   <span class="comment">//same as C99
+</span>   <span class="keyword">struct</span> X x2[<span class="number">2</span>] = {{.x = <span class="number">1</span>, .y = <span class="number">1</span> }, {.x = <span class="number">1</span>, .y = <span class="number">1</span> } }; 
+}
+
+
+<span class="keyword">int</span> main() {
+  <span class="keyword">struct</span> X x; <span class="comment">//same as C today (unitialized)
+</span>}
+</pre>
+
+
+<p>This initialization works for global static variables.There is no runtime function called like C++ constructor.Diferently from C++, we only accept constants. </p>
+
+<h3> Overloaded functions</h3>
+
+<p>Overload functions are especial functions with name mangling.</p>
+
+<pre>
+void draw(struct X* p) overload;
+</pre>
+
+<p>See reference:<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
+
+<h2> Template functions</h2>
+
+<p>User can write template functions using the keyword typename.</p>
+
+<p>Sample</p>
+
+<pre>
+void swap(typename* a, typename* b)
+{
+   decltype(a) temp = *a;
+   *a = *b;
+   *b = temp;
+}
+
+int main()
+{
+  struct X x1;
+  struct X x2;
+  
+  swap(&amp;x1, &amp;x2);
+}
+</pre>
+
+<p>The compiler has some built-in template functions.</p>
+
+<pre>
+typename auto * new(typename value)
+{
+   decltype(value)* p  = malloc(sizeof * p);
+   if (p)
+   {
+     *p = value;
+   }
+   return p;
+}
+
+void delete(typename * auto p)
+{
+   if (p)
+   {
+      destroy(p)
+      free(p);
+   }
+}
+
+void destroy(typename * p)
+{
+  /*
+    this function cannot be written just by
+    parametrization
+    
+    this is an especial function.
+    
+    The default implementation of destroy calls each destroy of each member
+    recursivally.
+
+  */
+}
+</pre>
+
+
+<h3> Using new and delete</h3>
+
+
+<pre>
+
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * name = NULL;
+};
+
+<span class="keyword">int</span> main() {
+  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X) {});
+  <span class="keyword">delete</span>(pX);
+}
+
+</pre>
+
+
+<h2> The template function destroy is called at the end of scope</h2>
+
+<p>The compiler calls the template function destroy at the end of scope.</p>
+
+<pre>
+<span class="keyword">struct</span> Person {
+    <span class="keyword">char</span> * name = NULL;
+};
+
+<span class="keyword">int</span> main() {
+
+   <span class="keyword">struct</span> Person x;
+
+} <span class="comment">//destroy(x) called
+</span></pre>
+
+
+<h2> NOT Calling destroy at the end of scope</h2>
+
+<p>To to this, add the type modifier <i>view</i>.</p>
+
+<p>Sample:</p>
+
+<pre>
+
+<span class="keyword">int</span> main() {
+
+   <span class="keyword">struct</span> X x1[<span class="number">10</span>];
+   
+   view <span class="keyword">struct</span> X x2[<span class="number">2</span>]; 
+   
+   x1[<span class="number">0</span>] = x2[<span class="number">1</span>]; 
+   
+} <span class="comment">//ONLY destroy of x1[0] ... x1[9] is called
+</span>
+</pre>
+
+
+<h2> Auto pointers</h2>
+
+<p>Pointers can be qualified with auto.When a pointer qualified with auto is destroyed it calls the delete template function.</p>
+
+<pre>
+
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * name = NULL;
+};
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X){};
+  
+} <span class="comment">//delete(pX) is called
+</span>
+</pre>
+
+
+<p>We can imagine that all pointer are by default <i>view</i> and other types are by default <i>auto</i>.</p>
+
+
+<h2> if with initializer </h2>
+<p>Same of C++.  Togueter with auto it creates an interting pattern.</p>
+
+<pre>
+
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X){}), p)
+  {
+    <span class="comment">//pX in scope AND != NULL
+</span>    ..
+  }
+  <span class="comment">//pX not in scope
+</span>
+</pre>
+<p>`</p>
+
+<h2> Lambdas </h2>
+<p>Similar of C++.</p>
+
+<h2> Polimorphism</h2>
+
+<p>Pointers that can point to a especific set of types.</p>
+
+<p>If you set of types have a common discriminant we also can select theappropriated operator in runtime according with the type.</p>
+
+<p>Sample:</p>
+<pre>
+ 
+<span class="keyword">struct</span> Box {
+    <span class="keyword">const</span> <span class="keyword">int</span> id = <span class="number">1</span>; <span class="comment">//discriminant
+</span>};
+
+<span class="keyword">void</span> draw(<span class="keyword">struct</span> Box* pBox) overload {
+    printf(<span class="string">&quot;Box&quot;</span>);
+}
+
+<span class="keyword">struct</span> Circle {
+    <span class="keyword">const</span> <span class="keyword">int</span> id = <span class="number">2</span>; <span class="comment">//discriminant
+</span>};
+
+<span class="keyword">void</span> draw(<span class="keyword">struct</span> Circle* pCircle) overload {
+    printf(<span class="string">&quot;Circle&quot;</span>);
+}
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> &lt;Box | Circle&gt; * <span class="keyword">auto</span> shapes[<span class="number">2</span>] = {};
+  
+  shapes[<span class="number">0</span>] = <span class="keyword">new</span> ((<span class="keyword">struct</span> Box){});
+  shapes[<span class="number">1</span>] = <span class="keyword">new</span> ((<span class="keyword">struct</span> Circle){});
+  
+  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++)
+  {    
+    <span class="comment">//runtime selecion according with the discriminant
+</span>    <span class="comment">//auto generated  draw for shape
+</span>    draw(shapes[i]); 
+    
+    <span class="comment">//when types have a common discriminant it is available
+</span>    printf(<span class="string">&quot;%d&quot;</span>, shapes[i].id);
+  }
+  
+}
+
+</pre>
+
+
+<h2> Resizable arrays</h2>
+
+<pre>
+
+ <span class="keyword">void</span> push(<span class="keyword">typename</span> a[<span class="keyword">auto</span>], <span class="keyword">typename</span> item)
+ {
+    <span class="keyword">if</span> (a.size + <span class="number">1</span> &gt; a.capacity)
+    {
+        <span class="keyword">int</span> n = a.capacity * <span class="number">2</span>;
+        <span class="keyword">if</span> (n == <span class="number">0</span>)
+        {
+            n = <span class="number">1</span>;
+        }
+        <span class="keyword">decltype</span>(a.data[<span class="number">0</span>]) * pnew = a.data;
+        pnew = realloc(pnew, n * <span class="keyword">sizeof</span>(a[<span class="number">0</span>]));
+        <span class="keyword">if</span> (pnew)
+        {
+            pItems-&gt;data = pnew;
+            pItems-&gt;capacity = n;
+        }
+    }
+    a.data[a.size] = item;
+    a.size++;
+ }
+ 
+ <span class="keyword">int</span> a[<span class="keyword">auto</span>];
+ push(a, <span class="number">1</span>);
+ 
+ a.data[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
+</span> a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
+</span> 
+</pre>
+
+<h2> Parametrized structs</h2>
+
+<p>Just like C++.</p>
+
+<pre>
+template&lt;class T1, class T2&gt; struct map
+{  
+ T1 data1;
+ T2 data2;
+};
+
+struct map&lt;int, string&gt; map;
+
+</pre>
+
+
+<h2> Standard build system </h2>
+<p>Pragma source is a way to make source files discoverable respecting platform configuration.This allow compilers and other tools like lint finds the source code in a standard way.</p>
+
+<p><a href="pragmasource.htm">Pragma source</a></p>
+
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

@@ -1,0 +1,280 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<p>Usage:</p>
+
+<pre>
+
+<span class="keyword">struct</span> X
+{
+    <span class="keyword">int</span> i;
+};
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> ArrayOf(<span class="keyword">int</span>) a = { <span class="number">0</span> };
+   
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10</span>; j++)
+    {
+        ArrayPush(&amp;a, j);
+    }
+
+    printf(<span class="string">&quot;[&quot;</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.size; i++)
+    {
+        <span class="keyword">if</span> (i &gt; <span class="number">0</span>)
+            printf(<span class="string">&quot;, &quot;</span>);
+        printf(<span class="string">&quot;%d &quot;</span>, a.data[i]);
+    }
+    printf(<span class="string">&quot;]\n&quot;</span>);
+
+    <span class="keyword">struct</span> ArrayOf(<span class="keyword">struct</span> X) a2 = { <span class="number">0</span> };
+
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10</span>; j++)
+    {
+        ArrayPush(&amp;a2, (<span class="keyword">struct</span> X) {.i = j});
+    }
+
+    printf(<span class="string">&quot;[&quot;</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.size; i++)
+    {
+        <span class="keyword">if</span> (i &gt; <span class="number">0</span>)
+            printf(<span class="string">&quot;, &quot;</span>);
+        printf(<span class="string">&quot;.i=%d &quot;</span>, a2.data[i].i);
+    }
+    printf(<span class="string">&quot;]\n&quot;</span>);
+
+    <span class="keyword">struct</span> ArrayOf(<span class="keyword">struct</span> X*) a3 = { <span class="number">0</span> };
+
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10</span>; j++)
+    {
+        <span class="keyword">struct</span> X* p = malloc(<span class="keyword">sizeof</span> * p);
+        <span class="keyword">if</span> (p)
+        {
+            *p = (<span class="keyword">struct</span> X){ .i = j };
+            ArrayPush(&amp;a3, p);
+        }
+    }
+
+    printf(<span class="string">&quot;[&quot;</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a3.size; i++)
+    {
+        <span class="keyword">if</span> (i &gt; <span class="number">0</span>)
+            printf(<span class="string">&quot;, &quot;</span>);
+        printf(<span class="string">&quot;.i=%d &quot;</span>, a3.data[i]-&gt;i);
+    }
+    printf(<span class="string">&quot;]\n&quot;</span>);
+}
+</pre>
+
+
+<p>Source:</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">#define</span> ArrayOf(T) { T* data; <span class="keyword">int</span> size; <span class="keyword">int</span> capacity; }
+
+<span class="keyword">#define</span> ArrayPush(A, V)\
+<span class="keyword">do</span> {\
+    <span class="keyword">if</span> ((A)-&gt;size + <span class="number">1</span> &gt; (A)-&gt;capacity)\
+    {\
+        <span class="keyword">int</span> n = (A)-&gt;capacity * <span class="number">2</span>;\
+        <span class="keyword">if</span> (n == <span class="number">0</span>)\
+        {\
+            n = <span class="number">1</span>;\
+        }\
+        <span class="keyword">void</span>* pnew = (A)-&gt;data;\
+        pnew = realloc(pnew, n * <span class="keyword">sizeof</span>((A)-&gt;data[<span class="number">0</span>]));\
+        <span class="keyword">if</span> (pnew)\
+        {\
+            (A)-&gt;data = pnew;\
+            (A)-&gt;capacity = n;\
+            (A)-&gt;data[(A)-&gt;size] = (V); \
+            (A)-&gt;size++;\
+        }\
+    } <span class="keyword">else</span> \
+    {\
+      (A)-&gt;data[(A)-&gt;size] = (V);\
+      (A)-&gt;size++;\
+    }\
+}<span class="keyword">while</span>(<span class="number">0</span>)
+
+
+
+
+</pre>
+
+
+<pre>
+
+
+
+<span class="keyword">#define</span> array_size(a)  ((a) ? (((<span class="keyword">int</span>*)((<span class="keyword">char</span>*)(a) - <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>))[<span class="number">0</span>]) : <span class="number">0</span>)
+<span class="keyword">#define</span> array_capacity(a)  ((a) ? (((<span class="keyword">int</span>*)((<span class="keyword">char</span>*)(a) - <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>))[<span class="number">1</span>]) : <span class="number">0</span>)
+<span class="keyword">#define</span> array_free(a) <span class="keyword">if</span> (a) free((((<span class="keyword">int</span>*)((<span class="keyword">char</span>*)(a) - <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>))))
+
+<span class="keyword">#define</span> array_reserve(p, newcapacity) \
+  <span class="keyword">do</span> {\
+    <span class="keyword">int</span>* pints = p ? ((<span class="keyword">int</span>*)((<span class="keyword">char</span>*)(p) - <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>)) : <span class="number">0</span>;\
+    <span class="keyword">int</span> capacity = pints ? pints[<span class="number">1</span>] : <span class="number">0</span>;\
+    <span class="keyword">int</span> size = pints ? pints[<span class="number">0</span>] : <span class="number">0</span>;\
+    <span class="keyword">if</span> (newcapacity &gt; capacity) {\
+      pints = (<span class="keyword">int</span>*)realloc(pints, <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span> + newcapacity * <span class="keyword">sizeof</span>(p[<span class="number">0</span>]));\
+      <span class="keyword">if</span> (pints) {\
+         p = ((<span class="keyword">void</span>*)((<span class="keyword">char</span>*)(pints) + <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>));\
+         pints[<span class="number">0</span>] = size;\
+         pints[<span class="number">1</span>] = newcapacity;\
+      }\
+    }\
+  } <span class="keyword">while</span> (<span class="number">0</span>)
+
+
+<span class="keyword">#define</span> array_push(p, value) \
+  <span class="keyword">do</span> {\
+    <span class="keyword">int</span>* pints = p ? ((<span class="keyword">int</span>*)((<span class="keyword">char</span>*)(p) - <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>)) : <span class="number">0</span>;\
+    <span class="keyword">int</span> size = pints ? pints[<span class="number">0</span>] : <span class="number">0</span>;\
+    <span class="keyword">int</span> capacity = pints ? pints[<span class="number">1</span>] : <span class="number">0</span>;\
+    <span class="keyword">if</span> (size + <span class="number">1</span> &gt; capacity) {\
+      <span class="keyword">int</span> n = capacity * <span class="number">2</span>;\
+      <span class="keyword">if</span> (n == <span class="number">0</span>) {\
+         n = <span class="number">1</span>;\
+      }\
+      pints = (<span class="keyword">int</span>*)realloc(pints, <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span> + n * <span class="keyword">sizeof</span>(p[<span class="number">0</span>]));\
+      <span class="keyword">if</span> (pints) {\
+         p = ((<span class="keyword">void</span>*)((<span class="keyword">char</span>*)(pints) + <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * <span class="number">2</span>));\
+         pints[<span class="number">0</span>] = size;\
+         pints[<span class="number">1</span>] = n;\
+      }\
+    }\
+   p[size] = value;\
+   pints[<span class="number">0</span>]++;\
+  } <span class="keyword">while</span> (<span class="number">0</span>)
+
+
+<span class="keyword">struct</span> X
+{
+    <span class="keyword">int</span> i;
+};
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> X* pX = { <span class="number">0</span> };
+    
+    array_reserve(pX, <span class="number">1100</span>);
+    printf(<span class="string">&quot;%d %d&quot;</span>, array_size(pX), array_capacity(pX));
+
+    array_push(pX, (<span class="keyword">struct</span> X) {.i = <span class="number">1</span>});
+    array_push(pX, (<span class="keyword">struct</span> X) {.i = <span class="number">2</span>});
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; array_size(pX); i++)
+    {
+        printf(<span class="string">&quot;%d\n&quot;</span>, pX[i].i);
+    }
+    array_free(pX);
+}
+
+
+
+</pre>
+
+
+
+<pre>
+#pragma once
+#include &lt;stdlib.h&gt;
+
+struct ptrarray
+{
+    void** data; int size, capacity;
+};
+
+#define Array(item) array_##item
+#define DECLARE_ARRAY(item) struct Array(item) { struct item** data; int size, capacity; }
+
+#define array_push(a, v) ptrarray_push((struct ptrarray*) a, v)
+
+static inline ptrarray_push(struct ptrarray* a, void* value)
+{
+    if (a-&gt;size + 1 &gt; a-&gt;capacity)
+    {
+        int n = a-&gt;capacity * 2;
+        if (n == 0)
+        {
+            n = 1;
+        }
+        void** pnew = a-&gt;data;
+        pnew = (void**)realloc(pnew, n * sizeof(void*));
+        if (pnew)
+        {
+            a-&gt;data = pnew;
+            a-&gt;capacity = n;
+        }
+    }
+    a-&gt;data[a-&gt;size] = value;
+    a-&gt;size++;
+}
+
+</pre>
+<pre>
+#include &quot;array.h&quot;
+
+struct X
+{
+    int i;
+};
+
+DECLARE_ARRAY(X);
+
+void F(struct Array(X)* a)
+{
+    struct X* p = malloc(sizeof * p);
+    p-&gt;i = 1;
+    array_push(a, p);    
+}
+int main()
+{
+    struct Array(X) a = {0};
+    struct X* p = malloc(sizeof * p);
+    p-&gt;i = 1;
+    array_push(&amp;a, p);
+    F(&amp;a);
+}
+
+
+
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
