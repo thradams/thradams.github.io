@@ -29,7 +29,7 @@
 
 <h2> Objetive</h2>
 
-<p>Add the minimum possible set of features to remove boilerplate code from C.</p>
+<p>Remove boilerplate code adding few features. Make features inside the compilernot libraries.</p>
 
 <p>When reading this document consider that the features are additions into C and not changes in C++.</p>
 
@@ -52,11 +52,13 @@
    
    <span class="comment">//new syntax
 </span>   <span class="keyword">struct</span> X x = {};    
+
    <span class="comment">//same as C99
 </span>   <span class="keyword">struct</span> X x = { . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
    
    <span class="comment">//new syntax
 </span>   x = (<span class="keyword">struct</span> X){};    
+
    <span class="comment">//same as C99
 </span>   x = (<span class="keyword">struct</span> X){ . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
 }
@@ -95,68 +97,9 @@ void draw(struct X* p) overload;
 
 <p>See reference:<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
 
-<h2> Template functions</h2>
-
-<p>User can write template functions using the keyword typename.</p>
-
-<p>Sample</p>
-
-<pre>
-void swap(typename* a, typename* b)
-{
-   decltype(a) temp = *a;
-   *a = *b;
-   *b = temp;
-}
-
-int main()
-{
-  struct X x1;
-  struct X x2;
-  
-  swap(&amp;x1, &amp;x2);
-}
-</pre>
-
-<p>The compiler has some built-in template functions.</p>
-
-<pre>
-typename auto * new(typename value)
-{
-   decltype(value)* p  = malloc(sizeof * p);
-   if (p)
-   {
-     *p = value;
-   }
-   return p;
-}
-
-void delete(typename * auto p)
-{
-   if (p)
-   {
-      destroy(p)
-      free(p);
-   }
-}
-
-void destroy(typename * p)
-{
-  /*
-    this function cannot be written just by
-    parametrization
-    
-    this is an especial function.
-    
-    The default implementation of destroy calls each destroy of each member
-    recursivally.
-
-  */
-}
-</pre>
 
 
-<h3> Using new and delete</h3>
+<h3> New and delete operators</h3>
 
 
 <pre>
@@ -166,16 +109,29 @@ void destroy(typename * p)
 };
 
 <span class="keyword">int</span> main() {
-  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X) {});
-  <span class="keyword">delete</span>(pX);
+  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X) {};
+  <span class="keyword">delete</span> pX;
 }
 
 </pre>
 
+<p>new and delete operators can be overrided </p>
 
-<h2> The template function destroy is called at the end of scope</h2>
+<pre>
 
-<p>The compiler calls the template function destroy at the end of scope.</p>
+<span class="keyword">void</span> <span class="keyword">delete</span>(<span class="keyword">struct</span> X* p) {    
+};
+
+<span class="keyword">void</span> <span class="keyword">new</span>(<span class="keyword">struct</span> X* p) {    
+};
+
+</pre>
+
+
+
+<h2> Operator destroy</h2>
+
+<p>The compiler calls the destroy at the end of scope.</p>
 
 <pre>
 <span class="keyword">struct</span> Person {
@@ -186,8 +142,18 @@ void destroy(typename * p)
 
    <span class="keyword">struct</span> Person x;
 
-} <span class="comment">//destroy(x) called
-</span></pre>
+}
+</pre>
+
+
+<p>destroy cannot be overriden (more details will follow)but there is one &quot;event&quot; destroy that is called and theuser can add some code on it.</p>
+
+<pre>
+<span class="keyword">void</span> destroy(<span class="keyword">struct</span> X* p) {    
+};
+
+</pre>
+
 
 
 <h2> NOT Calling destroy at the end of scope</h2>
@@ -213,7 +179,7 @@ void destroy(typename * p)
 
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto.When a pointer qualified with auto is destroyed it calls the delete template function.</p>
+<p>Pointers can be qualified with auto.When am auto pointer scope ends it call the operator delete on it.</p>
 
 <pre>
 
@@ -232,13 +198,21 @@ void destroy(typename * p)
 
 <p>We can imagine that all pointer are by default <i>view</i> and other types are by default <i>auto</i>.</p>
 
+<h2> More operators</h2>
+
+<p>swap, reset are also operators  that could be added.</p>
+
+<p>Templates could be added but I prefer to keep the abstractionsat language level so the have a fixed and universal jop.</p>
+
+
+
 
 <h2> if with initializer </h2>
 <p>Same of C++.  Togueter with auto it creates an interting pattern.</p>
 
 <pre>
 
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X){}), p)
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X){}, p)
   {
     <span class="comment">//pX in scope AND != NULL
 </span>    ..
@@ -255,7 +229,7 @@ void destroy(typename * p)
 
 <p>Pointers that can point to a especific set of types.</p>
 
-<p>If you set of types have a common discriminant we also can select theappropriated operator in runtime according with the type.</p>
+<p>If you set of types have a common discriminant we also can select the appropriated operator in runtime according with the type.</p>
 
 <p>Sample:</p>
 <pre>
@@ -298,52 +272,36 @@ void destroy(typename * p)
 </pre>
 
 
-<h2> Resizable arrays</h2>
+<h2> Resizable arrays [auto]</h2>
+
+<p>We have some magic functions push and reserve for resizable arrays.</p>
+
+
+<p>Resizeble arrays are equivalent of </p>
+
 
 <pre>
+Eg: <span class="keyword">int</span> a[<span class="keyword">auto</span>];
 
- <span class="keyword">void</span> push(<span class="keyword">typename</span> a[<span class="keyword">auto</span>], <span class="keyword">typename</span> item)
- {
-    <span class="keyword">if</span> (a.size + <span class="number">1</span> &gt; a.capacity)
-    {
-        <span class="keyword">int</span> n = a.capacity * <span class="number">2</span>;
-        <span class="keyword">if</span> (n == <span class="number">0</span>)
-        {
-            n = <span class="number">1</span>;
-        }
-        <span class="keyword">decltype</span>(a.data[<span class="number">0</span>]) * pnew = a.data;
-        pnew = realloc(pnew, n * <span class="keyword">sizeof</span>(a[<span class="number">0</span>]));
-        <span class="keyword">if</span> (pnew)
-        {
-            pItems-&gt;data = pnew;
-            pItems-&gt;capacity = n;
-        }
-    }
-    a.data[a.size] = item;
-    a.size++;
- }
+<span class="keyword">struct</span>  some_name
+{
+  <span class="keyword">int</span> * data;
+  <span class="keyword">int</span> size;
+  <span class="keyword">int</span> capacity;
+}
+</pre>
+
+
+<pre>
  
  <span class="keyword">int</span> a[<span class="keyword">auto</span>];
- push(a, <span class="number">1</span>);
  
+ push(a, <span class="number">1</span>);
+ reserve(a, <span class="number">10</span>);
+
  a.data[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> 
-</pre>
-
-<h2> Parametrized structs</h2>
-
-<p>Just like C++.</p>
-
-<pre>
-template&lt;class T1, class T2&gt; struct map
-{  
- T1 data1;
- T2 data2;
-};
-
-struct map&lt;int, string&gt; map;
-
 </pre>
 
 
