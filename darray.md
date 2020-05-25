@@ -244,3 +244,72 @@ int main()
 
 
 ```
+
+```cpp
+
+#include <stdlib.h>
+
+struct Item
+{
+    int i;
+    struct Item* /*@auto*/ pNext;
+};
+#define ITEM_INIT (struct Item){0}
+
+void Item_Delete(struct Item* pItem) /*@default*/
+{
+    if (pItem)
+    {
+        Item_Delete(pItem->pNext);
+        free((void*)pItem);
+    }
+}
+
+#define DECLARE_LIST(T) struct list_##T { struct T * pHead, *pTail; };
+
+#define ListOf(T) list_##T
+
+DECLARE_LIST(Item)
+
+
+
+#define list_push(pItems, pItem)\
+    if ((pItems)->pHead == 0)\
+    {\
+        (pItems)->pHead = pItem;\
+    }\
+    else\
+    {\
+        (pItems)->pTail->pNext = pItem;\
+    }\
+    (pItems)->pTail = pItem
+
+
+#define list_destroy(list, F)\
+  while ((list)->pHead) {\
+     void* p = (list)->pHead->pNext;\
+     (F)((list)->pHead);\
+     (list)->pHead = p;\
+  }\
+  (list)->pTail = 0
+
+#define new(p)  malloc(sizeof * (p)); if (p) (*(p)) =
+
+
+int main()
+{
+    struct ListOf(Item) list = { 0 };
+    struct Item* pItem = new(pItem) ITEM_INIT;
+
+    list_push(&list, pItem);
+    
+    struct Item* pItem2 = malloc(sizeof * pItem);
+    *pItem2 = (struct Item){ 0 };
+    list_push(&list, pItem2);
+
+    list_destroy(&list, free);
+
+   
+}
+
+```
