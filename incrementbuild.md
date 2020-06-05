@@ -21,16 +21,7 @@ enum token {
     TK_END
 };
 
-/**
- * Encode a code point using UTF-8
- *
- * @author Ondřej Hruška <ondra@ondrovo.com>
- * @license MIT
- *
- * @param out - output buffer (min 5 characters), will be 0-terminated
- * @param utf - code point 0-0x10FFFF
- * @return number of bytes on success, 0 on failure (also produces U+FFFD, which uses 3 bytes)
- */
+
 int utf8_encode(char* out, int utf)
 {
     if (utf <= 0x7F) {
