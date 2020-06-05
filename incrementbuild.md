@@ -1,4 +1,11 @@
 
+
+This code opens a file and searchs for  BUILD_NUMBER followed by spaces and integer. Then increments the number
+and saves the file.
+
+It can be used for automated build.
+
+
 ```cpp
 #include "stream.h"
 
