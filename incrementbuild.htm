@@ -1,0 +1,598 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+
+<p>This code opens a file and searchs for  BUILDand saves the file.</p>
+
+<p>It can be used for automated build.</p>
+
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;stream.h&quot;</span>
+
+<span class="keyword">#include</span> <span class="string">&quot;osstream.h&quot;</span>
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+<span class="keyword">enum</span> token {
+    TK_NUMBER,
+    TK_IDENTIFIER,
+    TK_SPACES,
+    TK_OTHER,
+
+    TK_END
+};
+
+
+<span class="keyword">int</span> utf8_encode(<span class="keyword">char</span>* out, <span class="keyword">int</span> utf)
+{
+    <span class="keyword">if</span> (utf &lt;= <span class="number">0</span>x7F) {
+        <span class="comment">// Plain ASCII
+</span>        out[<span class="number">0</span>] = (<span class="keyword">char</span>)utf;
+        out[<span class="number">1</span>] = <span class="number">0</span>;
+        <span class="keyword">return</span> <span class="number">1</span>;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (utf &lt;= <span class="number">0</span>x07FF) {
+        <span class="comment">// 2-byte unicode
+</span>        out[<span class="number">0</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">6</span>) &amp; <span class="number">0</span>x1F) | <span class="number">0</span>xC0);
+        out[<span class="number">1</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">0</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">2</span>] = <span class="number">0</span>;
+        <span class="keyword">return</span> <span class="number">2</span>;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (utf &lt;= <span class="number">0</span>xFFFF) {
+        <span class="comment">// 3-byte unicode
+</span>        out[<span class="number">0</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">12</span>) &amp; <span class="number">0</span>x0F) | <span class="number">0</span>xE0);
+        out[<span class="number">1</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">6</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">2</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">0</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">3</span>] = <span class="number">0</span>;
+        <span class="keyword">return</span> <span class="number">3</span>;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (utf &lt;= <span class="number">0</span>x10FFFF) {
+        <span class="comment">// 4-byte unicode
+</span>        out[<span class="number">0</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">18</span>) &amp; <span class="number">0</span>x07) | <span class="number">0</span>xF0);
+        out[<span class="number">1</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">12</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">2</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">6</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">3</span>] = (<span class="keyword">char</span>)(((utf &gt;&gt; <span class="number">0</span>) &amp; <span class="number">0</span>x3F) | <span class="number">0</span>x80);
+        out[<span class="number">4</span>] = <span class="number">0</span>;
+        <span class="keyword">return</span> <span class="number">4</span>;
+    }
+    <span class="keyword">else</span> {
+        <span class="comment">// error - use replacement character
+</span>        out[<span class="number">0</span>] = (<span class="keyword">char</span>)<span class="number">0</span>xEF;
+        out[<span class="number">1</span>] = (<span class="keyword">char</span>)<span class="number">0</span>xBF;
+        out[<span class="number">2</span>] = (<span class="keyword">char</span>)<span class="number">0</span>xBD;
+        out[<span class="number">3</span>] = <span class="number">0</span>;
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+}
+
+<span class="keyword">enum</span> token read_token(<span class="keyword">struct</span> stream* s, <span class="keyword">char</span>* buffer)
+{
+    <span class="keyword">if</span> (s-&gt;CurrentChar == (<span class="keyword">wchar_t</span>)(<span class="number">-1</span>))
+    {
+        <span class="keyword">return</span> TK_END;
+    }
+
+    <span class="keyword">enum</span> token tk = TK_OTHER;
+    <span class="keyword">if</span> (s-&gt;CurrentChar &gt;= <span class="string">'0'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'9'</span>)
+    {
+        tk = TK_NUMBER;
+        <span class="keyword">while</span> (s-&gt;CurrentChar &gt;= <span class="string">'0'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'9'</span>)
+        {
+            *buffer = (<span class="keyword">char</span>)s-&gt;CurrentChar;
+            buffer++;
+            stream_match(s);
+        }
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (s-&gt;CurrentChar == <span class="string">' '</span>)
+    {
+        tk = TK_SPACES;
+        <span class="keyword">while</span> (s-&gt;CurrentChar == <span class="string">' '</span>)        
+        {
+            *buffer = (<span class="keyword">char</span>)s-&gt;CurrentChar;
+            buffer++;
+            stream_match(s);
+        }
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> ((s-&gt;CurrentChar &gt;= <span class="string">'a'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'z'</span>) ||
+             (s-&gt;CurrentChar &gt;= <span class="string">'A'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'Z'</span>) ||
+             s-&gt;CurrentChar == <span class="string">'_'</span>)
+    {
+        tk = TK_IDENTIFIER;
+        <span class="keyword">while</span> ((s-&gt;CurrentChar &gt;= <span class="string">'a'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'z'</span>) ||
+               (s-&gt;CurrentChar &gt;= <span class="string">'A'</span> &amp;&amp; s-&gt;CurrentChar &lt;= <span class="string">'Z'</span>) ||
+               s-&gt;CurrentChar == <span class="string">'_'</span>) 
+        {
+            *buffer = (<span class="keyword">char</span>)s-&gt;CurrentChar;
+            buffer++;
+            stream_match(s);
+        }
+    }
+    <span class="keyword">else</span>
+    {
+        <span class="keyword">int</span> count = utf8_encode(buffer, s-&gt;CurrentChar);
+        buffer += count;        
+        stream_match(s);
+    }
+
+    *buffer = <span class="number">0</span>;
+    <span class="keyword">return</span> tk;
+}
+
+<span class="keyword">void</span> increment_build(<span class="keyword">const</span> <span class="keyword">char</span>* input)
+{
+    <span class="keyword">struct</span> stream s = { <span class="number">0</span> };
+    <span class="keyword">struct</span> osstream os = { <span class="number">0</span> };
+
+    <span class="keyword">if</span> (stream_fopen(&amp;s, input))
+    {
+        stream_match(&amp;s);
+
+        <span class="keyword">char</span> buffer[<span class="number">400</span>];
+        <span class="keyword">enum</span> token tk = read_token(&amp;s, buffer);
+        <span class="keyword">if</span> (tk != TK_END)
+        {
+            osstream_printf(&amp;os, <span class="string">&quot;%s&quot;</span>, buffer);
+        }
+        <span class="keyword">while</span> (tk != TK_END)
+        {
+
+
+            tk = read_token(&amp;s, buffer);
+            <span class="keyword">if</span> (tk == TK_IDENTIFIER &amp;&amp; strcmp(buffer, <span class="string">&quot;BUILD_NUMBER&quot;</span>) == <span class="number">0</span>)
+            {
+                osstream_printf(&amp;os, <span class="string">&quot;%s&quot;</span>, buffer);
+                tk = read_token(&amp;s, buffer);
+
+                osstream_printf(&amp;os, <span class="string">&quot;%s&quot;</span>, buffer);
+
+                tk = read_token(&amp;s, buffer);
+                <span class="keyword">int</span> n = atoi(buffer);
+                n++;
+                osstream_printf(&amp;os, <span class="string">&quot;%d&quot;</span>, n);
+            }
+            <span class="keyword">else</span> <span class="keyword">if</span> (tk != TK_END)
+            {
+                osstream_printf(&amp;os, <span class="string">&quot;%s&quot;</span>, buffer);
+            }
+        }
+    }
+
+    stream_close(&amp;s);
+
+    FILE* f = fopen(input, <span class="string">&quot;w&quot;</span>);
+    <span class="keyword">if</span> (f != NULL)
+    {
+        fprintf(f, <span class="string">&quot;%s&quot;</span>, os.c_str);
+        fclose(f);
+    }
+    osstream_close(&amp;os);
+
+}
+
+
+</pre>
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="comment">//#include &lt;sys/types.h&gt;
+</span><span class="comment">//#include &lt;sys/stat.h&gt;
+</span><span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;stddef.h&gt;
+
+<span class="keyword">struct</span> stream
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* data; <span class="comment">//utf8 encoded
+</span>
+    <span class="keyword">wchar_t</span> CurrentChar;
+    <span class="keyword">int</span> CurrentLine;
+    <span class="keyword">int</span> CurrentCol;
+    <span class="keyword">int</span> CurrentBytePos;
+    <span class="keyword">int</span> NextBytePos;
+};
+
+
+<span class="keyword">#define</span> STREAM_INIT {<span class="number">0</span>}
+
+
+<span class="keyword">wchar_t</span> stream_match(<span class="keyword">struct</span> stream* stream);
+
+
+<span class="keyword">void</span> stream_close(<span class="keyword">struct</span> stream* stream);
+
+<span class="keyword">void</span> stream_attach(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> stream_set(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> stream_fopen(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path);
+<span class="keyword">wchar_t</span> stream_look_ahead(<span class="keyword">const</span> <span class="keyword">struct</span> stream* stream);
+<span class="keyword">wchar_t</span> stream_look_ahead_twice(<span class="keyword">const</span> <span class="keyword">struct</span> stream* stream, <span class="keyword">wchar_t</span>* ch2);
+
+</pre>
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;sys/types.h&gt;
+<span class="keyword">#include</span> &lt;sys/stat.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+
+<span class="keyword">#include</span> <span class="string">&quot;stream.h&quot;</span>
+
+
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+<span class="keyword">#define</span> stat _stat
+<span class="keyword">#define</span> strdup _strdup
+<span class="keyword">#endif</span>
+
+
+<span class="keyword">void</span> stream_attach(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    stream_close(stream);
+    stream-&gt;data = text;
+}
+
+<span class="keyword">bool</span> stream_set(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    <span class="keyword">char</span>* data = strdup(text);
+    <span class="keyword">if</span> (data)
+    {
+        stream_attach(stream, data);
+    }
+    <span class="keyword">return</span> data != NULL;
+}
+
+<span class="keyword">bool</span> stream_fopen(<span class="keyword">struct</span> stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path)
+{
+    <span class="keyword">bool</span> result = <span class="keyword">false</span>;
+    <span class="keyword">struct</span> stat info;
+    <span class="keyword">int</span> r = stat(
+        path,
+        &amp;info);
+    <span class="keyword">if</span> (r == <span class="number">0</span>)
+    {
+        <span class="keyword">char</span>* data = (<span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * info.st_size + <span class="number">1</span>);
+        <span class="keyword">if</span> (data != NULL)
+        {
+            FILE* file = fopen(path, <span class="string">&quot;r&quot;</span>);
+            <span class="keyword">if</span> (file != NULL)
+            {
+                <span class="comment">//SKIP BOM
+</span>                <span class="keyword">if</span> (info.st_size &gt;= <span class="number">3</span>)
+                {
+                    fread(data, <span class="number">1</span>, <span class="number">3</span>, file);
+                    <span class="keyword">if</span> (data[<span class="number">0</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xEF &amp;&amp;
+                        data[<span class="number">1</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBB &amp;&amp;
+                        data[<span class="number">2</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBF)
+                    {
+                        size_t n = fread(data, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[n] = <span class="number">0</span>;
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        size_t n = fread(data + <span class="number">3</span>, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[<span class="number">3</span> + n] = <span class="number">0</span>;
+                    }
+                }
+                <span class="keyword">else</span>
+                {
+                    size_t n = fread(data, <span class="number">1</span>, info.st_size, file);
+                    data[n] = <span class="number">0</span>;
+                }
+
+                fclose(file);
+                result = <span class="keyword">true</span>;
+                stream_attach(stream, data);
+            }
+        }
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">static</span> <span class="keyword">wchar_t</span> ReadNextChar(<span class="keyword">const</span> <span class="keyword">char</span>* data, <span class="keyword">int</span> currentPos, <span class="keyword">int</span>* bytes)
+{
+    <span class="comment">//https://www.ietf.org/rfc/rfc3629.txt
+</span>    <span class="comment">//https://www.fileformat.info/info/unicode/utf8.htm
+</span>
+    <span class="keyword">int</span> pos = currentPos;
+
+    <span class="keyword">unsigned</span> u = EOF;
+
+    <span class="keyword">if</span> (data != NULL)
+    {
+        <span class="keyword">int</span> c = data[pos];
+
+        <span class="keyword">if</span> (c == <span class="string">'\0'</span> <span class="comment">/*EOF*/</span>)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>x80) == <span class="number">0</span>)
+        {
+            pos++;
+            u = c;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span>
+        {
+            pos++;
+            u = (c &amp; <span class="number">0</span>xE0) == <span class="number">0</span>xC0 ? (c &amp; <span class="number">0</span>x1F)
+                : (c &amp; <span class="number">0</span>xF0) == <span class="number">0</span>xE0 ? (c &amp; <span class="number">0</span>x0F)
+                : (c &amp; <span class="number">0</span>xF8) == <span class="number">0</span>xF0 ? (c &amp; <span class="number">0</span>x07)
+                : <span class="number">0</span>;
+
+            <span class="keyword">if</span> (u == <span class="number">0</span>)
+            {
+                u = EOF;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">for</span> (;;)
+                {
+                    c = data[pos];
+                    pos++;
+
+                    <span class="keyword">if</span> (c == EOF)
+                    {
+                        <span class="keyword">break</span>;
+                    }
+                    <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+                    {
+                        u = (u &lt;&lt; <span class="number">6</span>) | (c &amp; <span class="number">0</span>x3F);
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        pos--;
+                        <span class="keyword">break</span>;
+                    }
+                }
+            }
+        }
+    }
+
+    *bytes = pos - currentPos;
+    <span class="keyword">return</span> u;
+}
+
+<span class="keyword">wchar_t</span> stream_look_ahead(<span class="keyword">const</span> <span class="keyword">struct</span> stream* stream)
+{
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+    <span class="keyword">wchar_t</span> ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> stream_look_ahead_twice(<span class="keyword">const</span> <span class="keyword">struct</span> stream* stream, <span class="keyword">wchar_t</span>* ch2)
+{
+    *ch2 = WEOF;
+
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+    <span class="keyword">wchar_t</span> ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+    <span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+    {
+        *ch2 = ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos + bytes, &amp;bytes);
+    }
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> stream_match(<span class="keyword">struct</span> stream* stream)
+{
+
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+    <span class="keyword">wchar_t</span> ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+
+    <span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+    {
+        <span class="keyword">if</span> (stream-&gt;CurrentLine == <span class="number">0</span>)
+        {
+            stream-&gt;CurrentLine = <span class="number">1</span>;
+        }
+
+        stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+        stream-&gt;NextBytePos += bytes;
+        stream-&gt;CurrentCol++;
+
+        <span class="keyword">if</span> (ch == <span class="string">'\n'</span>) <span class="comment">//fopen on windows automatically removes \r
+</span>        {
+            stream-&gt;CurrentLine++;
+            stream-&gt;CurrentCol = <span class="number">0</span>;
+        }
+        stream-&gt;CurrentChar = ch;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (ch == (<span class="keyword">wchar_t</span>)EOF)
+    {
+        <span class="keyword">if</span> (stream-&gt;CurrentBytePos != stream-&gt;NextBytePos)
+        {
+            stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+            stream-&gt;CurrentCol++;
+            stream-&gt;CurrentChar = ch;
+        }
+    }
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">void</span> stream_close(<span class="keyword">struct</span> stream* stream)
+{
+    free((<span class="keyword">void</span>*)stream-&gt;data);
+    stream-&gt;CurrentCol = <span class="number">0</span>;
+    stream-&gt;CurrentLine = <span class="number">0</span>;
+    stream-&gt;NextBytePos = <span class="number">0</span>;
+    stream-&gt;CurrentBytePos = <span class="number">0</span>;
+    stream-&gt;CurrentChar = <span class="number">0</span>;
+}
+
+</pre>
+
+
+<pre>
+<span class="keyword">#include</span> &lt;errno.h&gt;
+<span class="keyword">#include</span> &lt;varargs.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdarg.h&gt;
+
+<span class="keyword">struct</span> osstream
+{
+    <span class="keyword">char</span>* c_str;
+    <span class="keyword">int</span> size;
+    <span class="keyword">int</span> capacity;
+};
+
+
+<span class="keyword">int</span> osstream_putc(<span class="keyword">int</span> ch, <span class="keyword">struct</span> osstream* sb);
+
+<span class="keyword">int</span> osstream_close(<span class="keyword">struct</span> osstream* stream);
+
+
+<span class="keyword">int</span> osstream_vafprintf(<span class="keyword">struct</span> osstream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list args);
+
+<span class="keyword">int</span> osstream_printf(<span class="keyword">struct</span> osstream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...);
+
+</pre>
+
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;osstream.h&quot;</span>
+
+
+<span class="keyword">int</span> osstream_putc(<span class="keyword">int</span> ch, <span class="keyword">struct</span> osstream* sb)
+{
+    <span class="keyword">if</span> (sb-&gt;size + <span class="number">1</span> &gt; sb-&gt;capacity)
+    {
+        <span class="keyword">int</span> n = sb-&gt;capacity + sb-&gt;capacity / <span class="number">2</span>;
+        <span class="keyword">if</span> (n &lt; sb-&gt;size + <span class="number">1</span>)
+        {
+            n = sb-&gt;size + <span class="number">1</span>;
+        }
+
+        <span class="keyword">char</span>* pnew = sb-&gt;c_str;
+        pnew = (<span class="keyword">char</span>*)realloc(pnew, (n + <span class="number">1</span>) * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));
+        <span class="keyword">if</span> (pnew)
+        {
+            sb-&gt;c_str = pnew;
+            sb-&gt;capacity = n;
+        }
+        <span class="keyword">else</span>
+        {
+            errno = ENOMEM;
+            ch = EOF;
+        }
+    }
+
+    <span class="keyword">if</span> (ch != EOF)
+    {
+        sb-&gt;c_str[sb-&gt;size] = ch;
+        sb-&gt;c_str[sb-&gt;size + <span class="number">1</span>] = <span class="number">0</span>;
+        sb-&gt;size++;
+    }
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">int</span> osstream_close(<span class="keyword">struct</span> osstream* stream)
+{
+    free(stream-&gt;c_str);
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+<span class="keyword">int</span> osstream_vafprintf(<span class="keyword">struct</span> osstream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list args)
+{
+    <span class="keyword">int</span> size = <span class="number">0</span>;
+    va_list tmpa;
+
+    va_copy(tmpa, args);
+
+    size = vsnprintf(stream-&gt;c_str + stream-&gt;size, stream-&gt;capacity - stream-&gt;size, fmt, tmpa);
+
+    va_end(tmpa);
+
+    <span class="keyword">if</span> (size &lt; <span class="number">0</span>)
+    {
+        <span class="keyword">return</span> <span class="number">-1</span>;
+    }
+
+    <span class="keyword">if</span> (stream-&gt;size + size &gt; stream-&gt;capacity)
+    {
+        <span class="keyword">char</span>* pnew = stream-&gt;c_str;
+        pnew = (<span class="keyword">char</span>*)realloc(pnew, (stream-&gt;size + size + <span class="number">1</span>) * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));
+        <span class="keyword">if</span> (pnew)
+        {
+            stream-&gt;c_str = pnew;
+            stream-&gt;capacity = stream-&gt;size + size;
+        }
+        <span class="keyword">else</span>
+        {
+            errno = ENOMEM;
+            size = <span class="number">-1</span>;
+        }
+    }
+
+    size = vsprintf(stream-&gt;c_str + stream-&gt;size, fmt, args);
+    <span class="keyword">if</span> (size &gt; <span class="number">0</span>)
+    {
+        stream-&gt;size += size;
+    }
+    <span class="keyword">return</span> size;
+}
+
+<span class="keyword">int</span> osstream_printf(<span class="keyword">struct</span> osstream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    <span class="keyword">int</span> size = osstream_vafprintf(stream, fmt, args);
+    va_end(args);
+    <span class="keyword">return</span> size;
+}
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

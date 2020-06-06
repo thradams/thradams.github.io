@@ -273,6 +273,76 @@ int main()
 
 </pre>
 
+<pre>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">struct</span> Item
+{
+    <span class="keyword">int</span> i;
+    <span class="keyword">struct</span> Item* <span class="comment">/*@auto*/</span> pNext;
+};
+<span class="keyword">#define</span> ITEM_INIT (<span class="keyword">struct</span> Item){<span class="number">0</span>}
+
+<span class="keyword">void</span> Item_Delete(<span class="keyword">struct</span> Item* pItem) <span class="comment">/*@default*/</span>
+{
+    <span class="keyword">if</span> (pItem)
+    {
+        Item_Delete(pItem-&gt;pNext);
+        free((<span class="keyword">void</span>*)pItem);
+    }
+}
+
+<span class="keyword">#define</span> DECLARE_LIST(T) <span class="keyword">struct</span> list_##T { <span class="keyword">struct</span> T * pHead, *pTail; };
+
+<span class="keyword">#define</span> ListOf(T) list_##T
+
+DECLARE_LIST(Item)
+
+
+
+<span class="keyword">#define</span> list_push(pItems, pItem)\
+    <span class="keyword">if</span> ((pItems)-&gt;pHead == <span class="number">0</span>)\
+    {\
+        (pItems)-&gt;pHead = pItem;\
+    }\
+    <span class="keyword">else</span>\
+    {\
+        (pItems)-&gt;pTail-&gt;pNext = pItem;\
+    }\
+    (pItems)-&gt;pTail = pItem
+
+
+<span class="keyword">#define</span> list_destroy(<span class="keyword2">list</span>, F)\
+  <span class="keyword">while</span> ((<span class="keyword2">list</span>)-&gt;pHead) {\
+     <span class="keyword">void</span>* p = (<span class="keyword2">list</span>)-&gt;pHead-&gt;pNext;\
+     (F)((<span class="keyword2">list</span>)-&gt;pHead);\
+     (<span class="keyword2">list</span>)-&gt;pHead = p;\
+  }\
+  (<span class="keyword2">list</span>)-&gt;pTail = <span class="number">0</span>
+
+<span class="keyword">#define</span> <span class="keyword">new</span>(p)  malloc(<span class="keyword">sizeof</span> * (p)); <span class="keyword">if</span> (p) (*(p)) =
+
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> ListOf(Item) <span class="keyword2">list</span> = { <span class="number">0</span> };
+    <span class="keyword">struct</span> Item* pItem = <span class="keyword">new</span>(pItem) ITEM_INIT;
+
+    list_push(&amp;<span class="keyword2">list</span>, pItem);
+    
+    <span class="keyword">struct</span> Item* pItem2 = malloc(<span class="keyword">sizeof</span> * pItem);
+    *pItem2 = (<span class="keyword">struct</span> Item){ <span class="number">0</span> };
+    list_push(&amp;<span class="keyword2">list</span>, pItem2);
+
+    list_destroy(&amp;<span class="keyword2">list</span>, free);
+
+   
+}
+
+</pre>
+
+
 <!-- Page content end --> 
 </article> 
  
