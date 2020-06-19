@@ -2,6 +2,8 @@
 
 ## 2020
 
+[almagamation function/program](amalgamate.md) June 2020
+
 [shared object in C](sharedc.md) June 2020
 
 [increment build number in a file](incrementbuild.md) June 2020
