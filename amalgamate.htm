@@ -1,0 +1,367 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<pre>
+
+<span class="keyword">#define</span> _CRT_SECURE_NO_WARNINGS
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+
+<span class="keyword">int</span> strcicmp(<span class="keyword">char</span> <span class="keyword">const</span>* a, <span class="keyword">char</span> <span class="keyword">const</span>* b)
+{
+    <span class="keyword">for</span> (;; a++, b++) {
+        <span class="keyword">int</span> d = tolower((<span class="keyword">unsigned</span> <span class="keyword">char</span>)*a) - tolower((<span class="keyword">unsigned</span> <span class="keyword">char</span>)*b);
+        <span class="keyword">if</span> (d != <span class="number">0</span> || !*a)
+            <span class="keyword">return</span> d;
+    }
+}
+
+
+<span class="keyword">struct</span> strlist_node
+{
+    <span class="keyword">char</span>* fileName;
+    <span class="keyword">struct</span> strlist_node* pNext;
+};
+
+<span class="keyword">struct</span> strlist
+{
+    <span class="keyword">struct</span> strlist_node* head;
+};
+
+
+<span class="keyword">void</span> strlist_append(<span class="keyword">const</span> <span class="keyword">char</span>* filename, <span class="keyword">struct</span> strlist_node** s_included)
+{
+
+    <span class="keyword">struct</span> strlist_node* pNew = malloc(<span class="keyword">sizeof</span> * pNew);
+    pNew-&gt;fileName = _strdup(filename);
+    pNew-&gt;pNext = <span class="number">0</span>;
+
+    <span class="keyword">if</span> (*s_included == NULL)
+    {
+        *s_included = pNew;
+    }
+    <span class="keyword">else</span>
+    {
+        pNew-&gt;pNext = *s_included;
+        *s_included = pNew;
+    }
+}
+
+
+<span class="keyword">void</span> mark_as_included(<span class="keyword">const</span> <span class="keyword">char</span>* filename0, <span class="keyword">struct</span> strlist_node** s_included)
+{
+    <span class="keyword">char</span> filename[<span class="number">200</span>];
+    _fullpath(
+        filename,
+        filename0,
+        <span class="number">200</span>
+    );
+    printf(<span class="string">&quot;filename %s \n&quot;</span>, filename);
+    strlist_append(filename, s_included);
+}
+
+<span class="keyword">bool</span> strlist_has(<span class="keyword">const</span> <span class="keyword">char</span>* filename0, <span class="keyword">struct</span> strlist_node** s_included)
+{
+    <span class="keyword">char</span> filename[<span class="number">200</span>];
+    _fullpath(
+        filename,
+        filename0,
+        <span class="number">200</span>
+    );
+
+    <span class="keyword">bool</span> result = <span class="keyword">false</span>;
+    <span class="keyword">struct</span> strlist_node* pCurrent = *s_included;
+    <span class="keyword">while</span> (pCurrent)
+    {
+        <span class="keyword">if</span> (strcicmp(pCurrent-&gt;fileName, filename) == <span class="number">0</span>)
+        {
+            result = <span class="keyword">true</span>;
+            <span class="keyword">break</span>;
+        }
+        pCurrent = pCurrent-&gt;pNext;
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">void</span> strlist_free(<span class="keyword">struct</span> strlist_node** s_included)
+{
+    <span class="keyword">struct</span> strlist_node* pCurrent = *s_included;
+    <span class="keyword">while</span> (pCurrent)
+    {
+        <span class="keyword">struct</span> strlist_node* pNext = pCurrent-&gt;pNext;
+        free(pCurrent-&gt;fileName);
+        free(pCurrent);
+        pCurrent = pNext;
+    }
+
+}
+
+<span class="keyword">int</span> str_ends_with(<span class="keyword">const</span> <span class="keyword">char</span>* str, <span class="keyword">const</span> <span class="keyword">char</span>* suffix)
+{
+    <span class="keyword">if</span> (!str || !suffix)
+        <span class="keyword">return</span> <span class="number">0</span>;
+    size_t lenstr = strlen(str);
+    size_t lensuffix = strlen(suffix);
+    <span class="keyword">if</span> (lensuffix &gt; lenstr)
+        <span class="keyword">return</span> <span class="number">0</span>;
+    <span class="keyword">return</span> strcicmp(str + lenstr - lensuffix, suffix, lensuffix) == <span class="number">0</span>;
+}
+
+<span class="keyword">bool</span> Write(<span class="keyword">char</span>* name, FILE* out, <span class="keyword">struct</span> strlist_node** s_included)
+{
+
+    <span class="keyword">bool</span> cppfile = str_ends_with(name, <span class="string">&quot;.c&quot;</span>);
+
+    fputs(<span class="string">&quot;\n&quot;</span>, out);
+    <span class="keyword">bool</span> found = <span class="keyword">false</span>;
+
+    assert(!strlist_has(name, s_included));
+    mark_as_included(name, s_included);
+
+    <span class="keyword">struct</span> strlist_node* defineList = <span class="number">0</span>;
+
+
+    <span class="keyword">char</span> previous = <span class="string">'\0'</span>;
+
+    FILE* input = fopen(name, <span class="string">&quot;r&quot;</span>);
+    <span class="keyword">if</span> (input)
+    {
+        found = <span class="keyword">true</span>;
+        <span class="keyword">char</span> c = <span class="string">'\0'</span>;
+
+        <span class="keyword">while</span> (!feof(input))
+        {
+            previous = c;
+            c = fgetc(input);
+            <span class="keyword">if</span> ((previous == <span class="string">'\0'</span> || previous == <span class="string">'\n'</span>) &amp;&amp; c == <span class="string">'#'</span>)
+            {
+                c = fgetc(input);
+                <span class="keyword">char</span> linebuffer[<span class="number">500</span>];
+                <span class="keyword">int</span> i = <span class="number">0</span>;
+                linebuffer[i] = <span class="string">'#'</span>;
+                i++;
+                <span class="keyword">while</span> (c != <span class="string">'\n'</span> &amp;&amp; c != EOF)
+                {
+                    linebuffer[i] = c;
+                    c = fgetc(input);
+                    i++;
+                }
+                linebuffer[i] = <span class="string">'\0'</span>;
+                <span class="keyword">const</span> <span class="keyword">char</span>* pChar = linebuffer;
+
+                pChar++; <span class="comment">//skip #
+</span>
+                <span class="keyword">while</span> (*pChar == <span class="string">' '</span>) <span class="comment">//skip spaces
+</span>                    pChar++;
+
+                <span class="keyword">if</span> (strncmp(pChar, <span class="string">&quot;line&quot;</span>, <span class="keyword">sizeof</span>(<span class="string">&quot;line&quot;</span>) - <span class="number">1</span>) == <span class="number">0</span>)
+                {
+                    fputs(<span class="string">&quot;//&quot;</span>, out);
+                    fputs(linebuffer, out);
+                    fputs(<span class="string">&quot;\n&quot;</span>, out);
+                }
+                <span class="keyword">else</span> <span class="keyword">if</span> (strncmp(pChar, <span class="string">&quot;define&quot;</span>, <span class="keyword">sizeof</span>(<span class="string">&quot;define&quot;</span>) - <span class="number">1</span>) == <span class="number">0</span>)
+                {
+                    
+                    fputs(linebuffer, out);
+                    fputs(<span class="string">&quot;\n&quot;</span>, out);
+
+                    <span class="keyword">if</span> (cppfile)
+                    {
+                        <span class="comment">//guardar todos defines feitos em ccpp e fazer undef
+</span>                        pChar += <span class="keyword">sizeof</span>(<span class="string">&quot;define&quot;</span>) - <span class="number">1</span>; <span class="comment">//skip pragma
+</span>
+                        <span class="keyword">while</span> (*pChar == <span class="string">' '</span>) <span class="comment">//skip spaces
+</span>                            pChar++;
+
+                        <span class="keyword">char</span> defineName[<span class="number">200</span>] = { <span class="number">0</span> };
+                        <span class="keyword">int</span> k = <span class="number">0</span>;
+                        <span class="keyword">while</span> (*pChar != <span class="string">'\0'</span> &amp;&amp; *pChar != <span class="string">' '</span> &amp;&amp; *pChar != <span class="string">'('</span> &amp;&amp; *pChar != <span class="string">'\n'</span>)
+                        {
+                            defineName[k] = *pChar;
+                            k++;
+                            pChar++;
+                        }
+                        strlist_append(defineName, &amp;defineList);
+                    }
+                }
+                <span class="keyword">else</span> <span class="keyword">if</span> (strncmp(pChar, <span class="string">&quot;pragma&quot;</span>, <span class="keyword">sizeof</span>(<span class="string">&quot;pragma&quot;</span>) - <span class="number">1</span>) == <span class="number">0</span>)
+                {
+                    pChar += <span class="keyword">sizeof</span>(<span class="string">&quot;pragma&quot;</span>) - <span class="number">1</span>; <span class="comment">//skip pragma
+</span>
+                    <span class="keyword">while</span> (*pChar == <span class="string">' '</span>) <span class="comment">//skip spaces
+</span>                        pChar++;
+
+                    <span class="keyword">if</span> (strncmp(pChar, <span class="string">&quot;once&quot;</span>, <span class="keyword">sizeof</span>(<span class="string">&quot;once&quot;</span>) - <span class="number">1</span>) == <span class="number">0</span>)
+                    {
+                        fputs(<span class="string">&quot;//&quot;</span>, out);
+                        fputs(linebuffer, out);
+                        fputs(<span class="string">&quot;\n&quot;</span>, out);
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        fputs(linebuffer, out);
+                        fputs(<span class="string">&quot;\n&quot;</span>, out);
+                    }
+                }
+                <span class="keyword">else</span> <span class="keyword">if</span> (strncmp(pChar, <span class="string">&quot;include&quot;</span>, <span class="keyword">sizeof</span>(<span class="string">&quot;include&quot;</span>) - <span class="number">1</span>) == <span class="number">0</span>)
+                {
+                    pChar += <span class="keyword">sizeof</span>(<span class="string">&quot;include&quot;</span>) - <span class="number">1</span>; <span class="comment">//match include
+</span>
+                    <span class="keyword">while</span> (*pChar == <span class="string">' '</span>) <span class="comment">//skip spaces          
+</span>                        pChar++;
+
+                    <span class="keyword">if</span> (*pChar == <span class="string">'&quot;'</span> || *pChar == <span class="string">'&lt;'</span>)
+                    {
+                        pChar++;<span class="comment">//match &quot; or &lt;
+</span>
+                        <span class="keyword">char</span> fileName[<span class="number">200</span>] = { <span class="number">0</span> };
+                        <span class="keyword">int</span> k = <span class="number">0</span>;
+                        <span class="keyword">while</span> (*pChar)
+                        {
+                            <span class="keyword">if</span> (*pChar == '\&quot;' || *pChar == '&gt;')
+                            {
+                                <span class="keyword">break</span>;
+                            }
+                            fileName[k] = *pChar;
+                            pChar++;
+                            k++;
+                        }
+
+                        <span class="keyword">if</span> (!strlist_has(fileName, s_included))
+                        {
+                            fputs(<span class="string">&quot;\n&quot;</span>, out);
+                            <span class="keyword">if</span> (!Write(fileName, out, s_included))
+                            {
+                                fputs(linebuffer, out);
+                                fputs(<span class="string">&quot;\n&quot;</span>, out);
+                            }
+                        }
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        fputs(linebuffer, out);
+                        fputs(<span class="string">&quot;\n&quot;</span>, out);
+                    }
+                }
+                <span class="keyword">else</span>
+                {
+                    fputs(linebuffer, out);
+                    fputs(<span class="string">&quot;\n&quot;</span>, out);
+                }
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">if</span> (c != EOF)
+                {
+                    fputc(c, out);
+                }
+            }
+        }
+
+        fprintf(out, <span class="string">&quot;\n&quot;</span>);
+        <span class="keyword">struct</span> strlist_node* pCurrent = defineList;
+        <span class="keyword">while</span> (pCurrent)
+        {
+            <span class="keyword">struct</span> strlist_node* pNext = pCurrent-&gt;pNext;
+            fprintf(out, <span class="string">&quot;#undef %s \n&quot;</span>, pCurrent-&gt;fileName);
+            
+
+            free(pCurrent-&gt;fileName);
+            free(pCurrent);
+            pCurrent = pNext;
+        }
+        
+        fclose(input);
+    }
+
+    
+    <span class="keyword">return</span> found;
+}
+
+
+<span class="keyword">void</span> almagamate(<span class="keyword">const</span> <span class="keyword">char</span>* file_name_out, <span class="keyword">const</span> <span class="keyword">char</span>* files[], <span class="keyword">int</span> count)
+{
+    <span class="keyword">struct</span> strlist_node* s_included = <span class="number">0</span>;
+
+
+    FILE* out = fopen(file_name_out, <span class="string">&quot;w&quot;</span>);
+    <span class="keyword">if</span> (out)
+    {
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++)
+        {
+            
+            <span class="keyword">if</span> (!strlist_has(files[i], &amp;s_included))
+            {
+                Write(files[i], out, &amp;s_included);
+            }
+            
+        }
+        fclose(out);
+    }
+
+    strlist_free(&amp;s_included);
+
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* files[] = {
+        <span class="string">&quot;console.c&quot;</span>,
+        <span class="string">&quot;Error.c&quot;</span>,
+        <span class="string">&quot;StrBuilder.c&quot;</span>,
+        <span class="string">&quot;fs.c&quot;</span>,
+        <span class="string">&quot;Stream.c&quot;</span>,
+        <span class="string">&quot;JsonScanner.c&quot;</span>,
+        <span class="string">&quot;TaskQueue.c&quot;</span>,
+        <span class="string">&quot;ThreadPool.c&quot;</span>,
+        <span class="string">&quot;Board.c&quot;</span>,
+        <span class="string">&quot;BoardCore.c&quot;</span>,        
+        <span class="string">&quot;Socket.c&quot;</span>,
+        <span class="string">&quot;HttpConnection.c&quot;</span>,
+        <span class="string">&quot;HttpServer.c&quot;</span>,
+        <span class="string">&quot;UITask.c&quot;</span>,
+        <span class="string">&quot;Actor.c&quot;</span>,
+        <span class="string">&quot;tinycthread.c&quot;</span>
+    };
+
+    almagamate(<span class="string">&quot;out.c&quot;</span>, files, (<span class="keyword">sizeof</span>(files) / <span class="keyword">sizeof</span>(files[<span class="number">0</span>])));
+
+}
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
