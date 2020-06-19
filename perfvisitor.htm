@@ -1,0 +1,181 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<pre>
+
+
+<span class="keyword">#define</span> MAXCOUNT <span class="number">10000000</span>
+
+<span class="keyword">#ifndef</span> __cplusplus
+
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;time.h&gt;
+
+<span class="keyword">struct</span> circle {
+    <span class="keyword">double</span> radius;
+};
+<span class="keyword">#define</span> CIRCLE_TAG <span class="number">1</span>
+
+<span class="keyword">struct</span> square {
+    <span class="keyword">double</span> side;
+};
+<span class="keyword">#define</span> SQUARE_TAG <span class="number">2</span>
+
+<span class="keyword">struct</span> rectangle {
+    <span class="keyword">double</span> width;
+    <span class="keyword">double</span> height;
+};
+<span class="keyword">#define</span> RECTANGLE_TAG <span class="number">3</span>
+
+<span class="keyword">struct</span> shape {
+    <span class="keyword">int</span> tag;
+    <span class="keyword">union</span> {
+        <span class="keyword">struct</span> circle circle;
+        <span class="keyword">struct</span> square square;
+        <span class="keyword">struct</span> rectangle rectangle;
+    };
+};
+
+<span class="keyword">double</span> shape_area(<span class="keyword">struct</span> shape* s) {
+    <span class="keyword">switch</span> (s-&gt;tag) {
+        <span class="keyword">case</span> CIRCLE_TAG:
+            <span class="keyword">return</span> <span class="number">3.1</span><span class="number">4</span> * s-&gt;circle.radius * s-&gt;circle.radius;
+        <span class="keyword">case</span> SQUARE_TAG:
+            <span class="keyword">return</span> s-&gt;square.side * s-&gt;square.side;
+        <span class="keyword">case</span> RECTANGLE_TAG:
+            <span class="keyword">return</span> s-&gt;rectangle.width * s-&gt;rectangle.height;
+        <span class="keyword">default</span>:
+            assert(<span class="number">0</span>);
+            <span class="keyword">break</span>;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="keyword">int</span> run_test(<span class="keyword">const</span> <span class="keyword">char</span>* message, <span class="keyword">int</span> (*test)(<span class="keyword">void</span>)) {
+    time_t start = clock();
+    <span class="keyword">int</span> r = test();
+    printf(<span class="string">&quot;%s %d\n&quot;</span>, message, (<span class="keyword">int</span>)(clock() - start));
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">void</span> TestC() {}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">struct</span> shape s[] = {
+        {.tag = CIRCLE_TAG, .circle.radius = <span class="number">5</span>},
+        {.tag = SQUARE_TAG, .square.side = <span class="number">2</span>},
+        {.tag = RECTANGLE_TAG, .rectangle.width = <span class="number">4</span>, .rectangle.height = <span class="number">5</span>},
+        {.tag = CIRCLE_TAG, .circle.radius = <span class="number">5</span>},
+        {.tag = SQUARE_TAG, .square.side = <span class="number">2</span>},
+        {.tag = RECTANGLE_TAG, .rectangle.width = <span class="number">4</span>, .rectangle.height = <span class="number">5</span>},
+        {.tag = CIRCLE_TAG, .circle.radius = <span class="number">5</span>},
+        {.tag = SQUARE_TAG, .square.side = <span class="number">2</span>},
+        {.tag = RECTANGLE_TAG, .rectangle.width = <span class="number">4</span>, .rectangle.height = <span class="number">5</span>} };
+
+    <span class="keyword">double</span> area = <span class="number">0</span>;
+    time_t start = clock();
+    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAXCOUNT; j++) {
+        area = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(s) / <span class="keyword">sizeof</span>(s[<span class="number">0</span>]); i++) {
+            area += shape_area(&amp;s[i]);
+        }
+    }
+    printf(<span class="string">&quot;%d\n&quot;</span>, (<span class="keyword">int</span>)(clock() - start));
+    printf(<span class="string">&quot;%f&quot;</span>, area);
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+<span class="keyword">#else</span>
+
+<span class="keyword">#include</span> &lt;ctime&gt;
+<span class="keyword">#include</span> &lt;iostream&gt;
+<span class="keyword">#include</span> &lt;memory&gt;
+<span class="keyword">#include</span> &lt;variant&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">vector</span>&gt;
+
+<span class="keyword">struct</span> circle {
+    circle(<span class="keyword">double</span> <span class="keyword">const</span> radius_) : radius(radius_) {}
+    <span class="keyword">double</span>  radius;
+};
+
+<span class="keyword">struct</span> square {
+    square(<span class="keyword">double</span> <span class="keyword">const</span> side_) : side(side_) {}
+    <span class="keyword">double</span>  side;
+};
+
+<span class="keyword">struct</span> rectangle {
+    rectangle(<span class="keyword">double</span> width_, <span class="keyword">double</span> height_)
+        : width(width_), height(height_) {}
+    <span class="keyword">double</span>  width;
+    <span class="keyword">double</span>  height;
+};
+
+<span class="keyword">double</span> area(circle <span class="keyword">const</span>&amp; c) {
+    <span class="keyword">return</span> <span class="number">3.1</span><span class="number">4</span> * c.radius * c.radius;
+}
+<span class="keyword">double</span> area(square <span class="keyword">const</span>&amp; s) {
+    <span class="keyword">return</span> s.side * s.side;
+}
+<span class="keyword">double</span> area(rectangle <span class="keyword">const</span>&amp; r) {
+    <span class="keyword">return</span> r.width * r.height;
+}
+
+<span class="keyword">using</span> shape = std::variant&lt;circle, square, rectangle&gt;;
+
+<span class="keyword">int</span> main() {
+    shape shapes[] = { circle(<span class="number">5</span>), square(<span class="number">2</span>), rectangle(<span class="number">4</span>, <span class="number">5</span>),
+                      circle(<span class="number">5</span>), square(<span class="number">2</span>), rectangle(<span class="number">4</span>, <span class="number">5</span>),
+                      circle(<span class="number">5</span>), square(<span class="number">2</span>), rectangle(<span class="number">4</span>, <span class="number">5</span>) };
+
+    <span class="keyword">double</span> total_area = <span class="number">0</span>;
+
+    time_t start = clock();
+    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAXCOUNT; j++) {
+        total_area = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(shapes) / <span class="keyword">sizeof</span>(shapes[<span class="number">0</span>]); i++) {
+            std::visit([&amp;](<span class="keyword">auto</span> <span class="keyword">const</span>&amp; shape) { total_area += area(shape); },
+                       shapes[i]);
+        }
+    }
+    printf(<span class="string">&quot;time: %d\n\n&quot;</span>, (<span class="keyword">int</span>)(clock() - start));
+    std::cout &lt;&lt; <span class="string">&quot;Area total: &quot;</span> &lt;&lt; total_area &lt;&lt; std::endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+<span class="keyword">#endif</span>
+
+
+</pre>
+
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
