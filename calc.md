@@ -1,5 +1,5 @@
 
-## Simple expression parser.
+## Simple expression parser
 
 June 2020
 
