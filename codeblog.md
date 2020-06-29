@@ -2,6 +2,8 @@
 
 ## 2020
 
+[simple expression parser](calc.md) June 2020
+
 [performance test std::visitor x switch](perfvisitor.md) June 2020
 
 [almagamation function/program](amalgamate.md) June 2020
