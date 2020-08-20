@@ -1,11 +1,10 @@
 # The language between C and C++ I would like to have
 
-Updated 15 May 2020
+05 september 2020
 
 ## Objetive
 
-Remove boilerplate code adding few features. Make features inside the compiler
-not libraries.
+- Remove boilerplate code.
 
 When reading this document consider that the features are additions into C and not changes in C++.
 
@@ -22,40 +21,16 @@ struct X {
 
 ## Empty Initializer/Compound literal
 
+Static initialization using the values of member initializer
+
 ```cpp
 int main() {
    
    //new syntax
-   struct X x = {};    
-
-   //same as C99
-   struct X x = { . i = 1, .pt = {.x = 1, .y = 1 } };
-   
-   //new syntax
-   x = (struct X){};    
-
-   //same as C99
-   x = (struct X){ . i = 1, .pt = {.x = 1, .y = 1 } };
+   struct X x = {};       
+   struct X x1[200] = {};   
 }
 
-
-int main() {
-  struct X x; //same as C today (unitialized)
-}
-```
-
-```cpp
-int main() { 
-   struct X x1[2] = {};    
-   
-   //same as C99
-   struct X x2[2] = {{.x = 1, .y = 1 }, {.x = 1, .y = 1 } }; 
-}
-
-
-int main() {
-  struct X x; //same as C today (unitialized)
-}
 ```
 
 This initialization works for global static variables.
@@ -75,7 +50,7 @@ https://clang.llvm.org/docs/AttributeReference.html#overloadable
 
 
 
-### New and delete operators
+### new and destroy functions
 
 
 ```cpp
@@ -85,113 +60,66 @@ struct X {
 };
 
 int main() {
-  struct X* pX = new (struct X) {};
-  delete pX;
+  struct X* auto pX = new((struct X) {});
+  destroy(pX);
 }
-
-```
-new and delete operators can be overrided 
-
-```cpp
-
-void delete(struct X* p) {    
-};
-
-void new(struct X* p) {    
-};
-
-```
-
-
-## Operator destroy
-
-The compiler calls the destroy at the end of scope.
-
-```cpp
-struct Person {
-    char * name = NULL;
-};
-
-int main() {
-
-   struct Person x;
-
-}
-```
-
-destroy cannot be overriden (more details will follow)
-but there is one "event" destroy that is called and the
-user can add some code on it.
-
-```cpp
-void destroy(struct X* p) {    
-};
-
-```
-
-
-## NOT Calling destroy at the end of scope
-
-To to this, add the type modifier __view__.
-
-Sample:
-
-```cpp
-
-int main() {
-
-   struct X x1[10];
-   
-   view struct X x2[2]; 
-   
-   x1[0] = x2[1]; 
-   
-} //ONLY destroy of x1[0] ... x1[9] is called
 
 ```
 
 ## Auto pointers
 
 Pointers can be qualified with auto.
-When am auto pointer scope ends it call the operator delete on it.
 
 ```cpp
 
 struct X {
-    char * name = NULL;
+    char * auto name = NULL;
 };
 
 int main()
 {
-  struct X* auto pX = new (struct X){};
-  
-} //delete(pX) is called
+  struct X x0 = {};
+  struct X* auto pX = new((struct X){});  
+
+  destroy(x0);
+  destroy(pX);
+}
 
 ```
-
-We can imagine that all pointer are by default __view__ and other types are by default __auto__.
-
-## More operators
-
-swap, reset are also operators  that could be added.
-
-Templates could be added but I prefer to keep the abstractions
-at language level so the have a fixed and universal jop.
-
-
-
 
 ## if with initializer 
 Same of C++.  Togueter with auto it creates an interting pattern.
 
 ```cpp
 
-  if (struct X* auto pX = new (struct X){}, p)
+  if (struct X* auto pX = new ((struct X){}), p)
   {
     //pX in scope AND != NULL
     ..
+    destroy(pX);
   }
   //pX not in scope
+
+````
+
+## if with initializer  and final expression
+
+
+```cpp
+  if (struct X* auto pX = new ((struct X){}), p, destroy(pX))
+  {
+    ...
+    /* final expression goes here*/
+  }
+
+  if (struct X* auto pX = new ((struct X){}), p, destroy(pX))
+  {
+      /* final expression goes here*/
+      break;
+      return;
+      goto label:
+  }
+
 
 ````
 
@@ -241,6 +169,7 @@ int main()
     printf("%d", shapes[i].id);
   }
   
+  destroy(shapes);
 }
 
 ```

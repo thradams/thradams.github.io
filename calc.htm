@@ -1,0 +1,129 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<h2> Simple expression parser</h2>
+
+<p>June 2020</p>
+
+<p>grammar:</p>
+<pre>
+
+
+  Value    : [0-9.]+ | '(' Expr ')'
+  Product : Expr (('*' | '/') Expr)*
+  Sum      : Expr (('+'  | '-') Expr)*
+  Expr      :   Product | Sum | Value
+
+</pre>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+
+<span class="keyword">struct</span> stream {<span class="keyword">char</span>* p;};
+<span class="keyword">#define</span> ch(S) (*(S)-&gt;p)
+<span class="keyword">#define</span> match(S) ((S)-&gt;p++)
+
+<span class="keyword">int</span> parse_expression(<span class="keyword">struct</span> stream* stream);
+
+<span class="keyword">int</span> parse_value(<span class="keyword">struct</span> stream* stream) {
+    
+    <span class="keyword">int</span> result = <span class="number">0</span>;
+    <span class="keyword">if</span> (ch(stream) &gt;= <span class="string">'0'</span> &amp;&amp; ch(stream) &lt;= <span class="string">'9'</span>) {
+        result = atoi(stream-&gt;p);
+        <span class="keyword">while</span> (ch(stream) &gt;= <span class="string">'0'</span> &amp;&amp; ch(stream) &lt;= <span class="string">'9'</span>)
+            match(stream);
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (ch(stream) == <span class="string">'('</span>) {
+        match(stream);
+        result = parse_expression(stream);
+        match(stream);
+    }
+    <span class="keyword">else</span> {
+        <span class="comment">//error
+</span>    }
+    <span class="keyword">return</span> result;
+}
+
+
+<span class="keyword">int</span> parse_expression(<span class="keyword">struct</span> stream* stream)
+{
+    <span class="keyword">int</span> result = <span class="number">0</span>;
+    <span class="keyword">int</span> left = <span class="number">0</span>;
+    <span class="keyword">if</span> ((ch(stream) &gt;= <span class="string">'0'</span> &amp;&amp; ch(stream) &lt;= <span class="string">'9'</span>) || ch(stream) == <span class="string">'('</span>) {
+        left = parse_value(stream);
+    }
+    <span class="keyword">else</span>  {
+        left = parse_expression(stream);
+    }
+
+    <span class="keyword">char</span> op = ch(stream);
+    <span class="keyword">if</span> (op == <span class="string">'*'</span> || op == <span class="string">'/'</span>)
+    {
+        match(stream);
+        <span class="keyword">int</span> right = parse_expression(stream);
+        result = op == <span class="string">'*'</span> ? left * right : left / right;
+    }
+    <span class="keyword">else</span> <span class="keyword">if</span> (op == <span class="string">'+'</span> || op == <span class="string">'-'</span>) {
+        match(stream);
+        <span class="keyword">int</span> right = parse_expression(stream);
+        result = op == <span class="string">'+'</span> ? left + right : left - right;
+    }
+    <span class="keyword">else</span> {
+        result = left;
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">int</span> solve(<span class="keyword">const</span> <span class="keyword">char</span>* p)
+{
+    <span class="keyword">struct</span> stream s = { .p = p };
+    <span class="keyword">int</span> r = parse_expression(&amp;s);
+}
+
+<span class="keyword">int</span> main() {
+
+    <span class="keyword">for</span> (;;)
+    {
+        <span class="keyword">char</span> input[<span class="number">128</span>] = { <span class="number">0</span> };
+        printf(<span class="string">&quot;&gt; &quot;</span>);
+        gets(input);
+        <span class="keyword">int</span> result = solve(input);
+        printf(<span class="string">&quot;\t%d\n&quot;</span>, result);
+    }
+}
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

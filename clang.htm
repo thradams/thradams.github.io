@@ -25,11 +25,11 @@
 
 <h1> The language between C and C++ I would like to have</h1>
 
-<p>Updated 15 May 2020</p>
+<p>05 september 2020</p>
 
 <h2> Objetive</h2>
 
-<p>Remove boilerplate code adding few features. Make features inside the compilernot libraries.</p>
+<p>- Remove boilerplate code.</p>
 
 <p>When reading this document consider that the features are additions into C and not changes in C++.</p>
 
@@ -47,41 +47,16 @@
 
 <h2> Empty Initializer/Compound literal</h2>
 
+<p>Static initialization using the values of member initializer</p>
+
 <pre>
 <span class="keyword">int</span> main() {
    
    <span class="comment">//new syntax
-</span>   <span class="keyword">struct</span> X x = {};    
-
-   <span class="comment">//same as C99
-</span>   <span class="keyword">struct</span> X x = { . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
-   
-   <span class="comment">//new syntax
-</span>   x = (<span class="keyword">struct</span> X){};    
-
-   <span class="comment">//same as C99
-</span>   x = (<span class="keyword">struct</span> X){ . i = <span class="number">1</span>, .pt = {.x = <span class="number">1</span>, .y = <span class="number">1</span> } };
+</span>   <span class="keyword">struct</span> X x = {};       
+   <span class="keyword">struct</span> X x1[<span class="number">200</span>] = {};   
 }
 
-
-<span class="keyword">int</span> main() {
-  <span class="keyword">struct</span> X x; <span class="comment">//same as C today (unitialized)
-</span>}
-</pre>
-
-
-<pre>
-<span class="keyword">int</span> main() { 
-   <span class="keyword">struct</span> X x1[<span class="number">2</span>] = {};    
-   
-   <span class="comment">//same as C99
-</span>   <span class="keyword">struct</span> X x2[<span class="number">2</span>] = {{.x = <span class="number">1</span>, .y = <span class="number">1</span> }, {.x = <span class="number">1</span>, .y = <span class="number">1</span> } }; 
-}
-
-
-<span class="keyword">int</span> main() {
-  <span class="keyword">struct</span> X x; <span class="comment">//same as C today (unitialized)
-</span>}
 </pre>
 
 
@@ -99,7 +74,7 @@ void draw(struct X* p) overload;
 
 
 
-<h3> New and delete operators</h3>
+<h3> new and destroy functions</h3>
 
 
 <pre>
@@ -109,102 +84,33 @@ void draw(struct X* p) overload;
 };
 
 <span class="keyword">int</span> main() {
-  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X) {};
-  <span class="keyword">delete</span> pX;
+  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X) {});
+  destroy(pX);
 }
 
-</pre>
-
-<p>new and delete operators can be overrided </p>
-
-<pre>
-
-<span class="keyword">void</span> <span class="keyword">delete</span>(<span class="keyword">struct</span> X* p) {    
-};
-
-<span class="keyword">void</span> <span class="keyword">new</span>(<span class="keyword">struct</span> X* p) {    
-};
-
-</pre>
-
-
-
-<h2> Operator destroy</h2>
-
-<p>The compiler calls the destroy at the end of scope.</p>
-
-<pre>
-<span class="keyword">struct</span> Person {
-    <span class="keyword">char</span> * name = NULL;
-};
-
-<span class="keyword">int</span> main() {
-
-   <span class="keyword">struct</span> Person x;
-
-}
-</pre>
-
-
-<p>destroy cannot be overriden (more details will follow)but there is one &quot;event&quot; destroy that is called and theuser can add some code on it.</p>
-
-<pre>
-<span class="keyword">void</span> destroy(<span class="keyword">struct</span> X* p) {    
-};
-
-</pre>
-
-
-
-<h2> NOT Calling destroy at the end of scope</h2>
-
-<p>To to this, add the type modifier <i>view</i>.</p>
-
-<p>Sample:</p>
-
-<pre>
-
-<span class="keyword">int</span> main() {
-
-   <span class="keyword">struct</span> X x1[<span class="number">10</span>];
-   
-   view <span class="keyword">struct</span> X x2[<span class="number">2</span>]; 
-   
-   x1[<span class="number">0</span>] = x2[<span class="number">1</span>]; 
-   
-} <span class="comment">//ONLY destroy of x1[0] ... x1[9] is called
-</span>
 </pre>
 
 
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto.When am auto pointer scope ends it call the operator delete on it.</p>
+<p>Pointers can be qualified with auto.</p>
 
 <pre>
 
 <span class="keyword">struct</span> X {
-    <span class="keyword">char</span> * name = NULL;
+    <span class="keyword">char</span> * <span class="keyword">auto</span> name = NULL;
 };
 
 <span class="keyword">int</span> main()
 {
-  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X){};
-  
-} <span class="comment">//delete(pX) is called
-</span>
+  <span class="keyword">struct</span> X x0 = {};
+  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X){});  
+
+  destroy(x0);
+  destroy(pX);
+}
+
 </pre>
-
-
-<p>We can imagine that all pointer are by default <i>view</i> and other types are by default <i>auto</i>.</p>
-
-<h2> More operators</h2>
-
-<p>swap, reset are also operators  that could be added.</p>
-
-<p>Templates could be added but I prefer to keep the abstractionsat language level so the have a fixed and universal jop.</p>
-
-
 
 
 <h2> if with initializer </h2>
@@ -212,13 +118,36 @@ void draw(struct X* p) overload;
 
 <pre>
 
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X){}, p)
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p)
   {
     <span class="comment">//pX in scope AND != NULL
 </span>    ..
+    destroy(pX);
   }
   <span class="comment">//pX not in scope
 </span>
+</pre>
+<p>`</p>
+
+<h2> if with initializer  and final expression</h2>
+
+
+<pre>
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p, destroy(pX))
+  {
+    ...
+    <span class="comment">/* final expression goes here*/</span>
+  }
+
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p, destroy(pX))
+  {
+      <span class="comment">/* final expression goes here*/</span>
+      <span class="keyword">break</span>;
+      <span class="keyword">return</span>;
+      <span class="keyword">goto</span> label:
+  }
+
+
 </pre>
 <p>`</p>
 
@@ -267,6 +196,7 @@ void draw(struct X* p) overload;
 </span>    printf(<span class="string">&quot;%d&quot;</span>, shapes[i].id);
   }
   
+  destroy(shapes);
 }
 
 </pre>
