@@ -204,33 +204,16 @@ void draw(struct X* p) overload;
 
 <h2> Resizable arrays [auto]</h2>
 
-<p>We have some magic functions push and reserve for resizable arrays.</p>
-
-
-<p>Resizeble arrays are equivalent of </p>
-
 
 <pre>
-Eg: <span class="keyword">int</span> a[<span class="keyword">auto</span>];
-
-<span class="keyword">struct</span>  some_name
-{
-  <span class="keyword">int</span> * data;
-  <span class="keyword">int</span> size;
-  <span class="keyword">int</span> capacity;
-}
-</pre>
-
-
-<pre>
+<span class="keyword">int</span> a[<span class="keyword">auto</span>];
  
- <span class="keyword">int</span> a[<span class="keyword">auto</span>];
- 
+ capacity(a);
+ size(a);
  push(a, <span class="number">1</span>);
  reserve(a, <span class="number">10</span>);
-
- a.data[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
-</span> a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
+ 
+ a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> 
 </pre>
 
