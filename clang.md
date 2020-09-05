@@ -176,31 +176,15 @@ int main()
 
 ## Resizable arrays [auto]
 
-We have some magic functions push and reserve for resizable arrays.
-
-
-Resizeble arrays are equivalent of 
-
 
 ```cpp
-Eg: int a[auto];
-
-struct  some_name
-{
-  int * data;
-  int size;
-  int capacity;
-}
-```
-
-```cpp
+int a[auto];
  
- int a[auto];
- 
+ capacity(a);
+ size(a);
  push(a, 1);
  reserve(a, 10);
-
- a.data[0] = 1; //ok
+ 
  a[0] = 1; //ok
  
 ```
