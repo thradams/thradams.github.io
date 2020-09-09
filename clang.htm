@@ -23,15 +23,9 @@
  <!-- Page content begin --> 
 
 
-<h1> The language between C and C++ I would like to have</h1>
+<h1> Additions into C language I would like to have</h1>
 
-<p>05 september 2020</p>
-
-<h2> Objetive</h2>
-
-<p>- Remove boilerplate code.</p>
-
-<p>When reading this document consider that the features are additions into C and not changes in C++.</p>
+<p>08 september 2020</p>
 
 <h2> Member initializer</h2>
 
@@ -59,23 +53,53 @@
 
 </pre>
 
+<p>This initialization can be used for global scope variables.</p>
 
-<p>This initialization works for global static variables.There is no runtime function called like C++ constructor.Diferently from C++, we only accept constants. </p>
 
 <h3> Overloaded functions</h3>
 
-<p>Overload functions are especial functions with name mangling.</p>
+<p>Overload functions are functions with name mangling. </p>
 
 <pre>
-void draw(struct X* p) overload;
+void draw(struct Box* p) overload;
+void draw(struct Circle* p) overload;
 </pre>
+
 
 <p>See reference:<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
 
 
 
-<h3> new and destroy functions</h3>
+<h3> New function</h3>
 
+<p>New is an especial function that calls malloc and if malloc suceededit  initializes the object using the compound literal.</p>
+
+<pre>
+
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * name;
+};
+
+<span class="keyword">int</span> main() {
+
+  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X) {});
+  <span class="keyword">if</span> (pX != NULL)
+  {
+    assert(pX-&gt;name == NULL);
+    
+    ...
+
+    free(pX-&gt;name);
+  }
+}
+
+</pre>
+
+
+<h2> Destroy</h2>
+<p>Destroy is a especial function that is generated but also calla user function to destroy the object.</p>
+
+<p>See the sample:</p>
 
 <pre>
 
@@ -83,35 +107,44 @@ void draw(struct X* p) overload;
     <span class="keyword">char</span> * name = NULL;
 };
 
-<span class="keyword">int</span> main() {
-  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X) {});
-  destroy(pX);
+<span class="keyword">void</span> destroy(<span class="keyword">struct</span> X* pX) overload {
+   free(pX-&gt;name);
+}
+
+<span class="keyword">struct</span> Y {
+    <span class="keyword">struct</span> X x;
+};
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> Y y = {};
+  destroy(y);
 }
 
 </pre>
 
 
+
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto.</p>
+<p>Pointers can be qualified with auto. This tells the type systemthat this pointer is the onwer of the pointed object.</p>
+
 
 <pre>
-
 <span class="keyword">struct</span> X {
     <span class="keyword">char</span> * <span class="keyword">auto</span> name = NULL;
 };
 
 <span class="keyword">int</span> main()
 {
-  <span class="keyword">struct</span> X x0 = {};
-  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X){});  
-
-  destroy(x0);
-  destroy(pX);
+  <span class="keyword">struct</span> X x = {};
+  destroy(x);
 }
 
 </pre>
 
+
+<p>When auto pointers are destroyed they check if the pointer is not nulland then destroy the content  of the pointer.</p>
 
 <h2> if with initializer </h2>
 <p>Same of C++.  Togueter with auto it creates an interting pattern.</p>
@@ -216,12 +249,6 @@ void draw(struct X* p) overload;
  a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> 
 </pre>
-
-
-<h2> Standard build system </h2>
-<p>Pragma source is a way to make source files discoverable respecting platform configuration.This allow compilers and other tools like lint finds the source code in a standard way.</p>
-
-<p><a href="pragmasource.htm">Pragma source</a></p>
 
 
 
