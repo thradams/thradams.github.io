@@ -1,12 +1,6 @@
-# The language between C and C++ I would like to have
+# Additions into C language I would like to have
 
-05 september 2020
-
-## Objetive
-
-- Remove boilerplate code.
-
-When reading this document consider that the features are additions into C and not changes in C++.
+08 september 2020
 
 ## Member initializer
 
@@ -32,26 +26,55 @@ int main() {
 }
 
 ```
+This initialization can be used for global scope variables.
 
-This initialization works for global static variables.
-There is no runtime function called like C++ constructor.
-Diferently from C++, we only accept constants. 
 
 ### Overloaded functions
 
-Overload functions are especial functions with name mangling.
+Overload functions are functions with name mangling. 
 
 ```c
-void draw(struct X* p) overload;
+void draw(struct Box* p) overload;
+void draw(struct Circle* p) overload;
 ```
+
 
 See reference:
 https://clang.llvm.org/docs/AttributeReference.html#overloadable
 
 
 
-### new and destroy functions
+### New function
 
+New is an especial function that calls malloc and if malloc suceeded
+it  initializes the object using the compound literal.
+
+```cpp
+
+struct X {
+    char * name;
+};
+
+int main() {
+
+  struct X* pX = new((struct X) {});
+  if (pX != NULL)
+  {
+    assert(pX->name == NULL);
+    
+    ...
+
+    free(pX->name);
+  }
+}
+
+```
+
+## Destroy
+Destroy is a especial function that is generated but also call
+a user function to destroy the object.
+
+See the sample:
 
 ```cpp
 
@@ -59,33 +82,44 @@ struct X {
     char * name = NULL;
 };
 
-int main() {
-  struct X* auto pX = new((struct X) {});
-  destroy(pX);
+void destroy(struct X* pX) overload {
+   free(pX->name);
+}
+
+struct Y {
+    struct X x;
+};
+
+int main()
+{
+  struct Y y = {};
+  destroy(y);
 }
 
 ```
 
+
 ## Auto pointers
 
-Pointers can be qualified with auto.
+Pointers can be qualified with auto. This tells the type system
+that this pointer is the onwer of the pointed object.
+
 
 ```cpp
-
 struct X {
     char * auto name = NULL;
 };
 
 int main()
 {
-  struct X x0 = {};
-  struct X* auto pX = new((struct X){});  
-
-  destroy(x0);
-  destroy(pX);
+  struct X x = {};
+  destroy(x);
 }
 
 ```
+
+When auto pointers are destroyed they check if the pointer is not null
+and then destroy the content  of the pointer.
 
 ## if with initializer 
 Same of C++.  Togueter with auto it creates an interting pattern.
@@ -188,13 +222,6 @@ int a[auto];
  a[0] = 1; //ok
  
 ```
-
-## Standard build system 
-Pragma source is a way to make source files discoverable respecting platform configuration.
-This allow compilers and other tools like lint finds the source code in a standard way.
- 
-[Pragma source](pragmasource.md)
-
 
 
 

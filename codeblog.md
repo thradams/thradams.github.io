@@ -14,7 +14,7 @@
 
 [sprintf with dynamic allocation](vadsprintf.md) May 2020
 
-[The language between C and C++ I would like to have](clang.md) March 2020
+[Additions into C language I would like to have](clang.md) March 2020
 
 [quick and dirty dynamic array](darray.md) February 2020
 
