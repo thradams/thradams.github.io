@@ -2,6 +2,8 @@
 
 08 september 2020
 
+( I have a project to implement these features called cprime )
+
 ## Member initializer
 
 ```cpp
@@ -33,7 +35,7 @@ This initialization can be used for global scope variables.
 
 Overload functions are functions with name mangling. 
 
-```c
+```cpp
 void draw(struct Box* p) overload;
 void draw(struct Circle* p) overload;
 ```
