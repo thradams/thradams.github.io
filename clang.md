@@ -18,19 +18,25 @@ struct X {
 
 ```
 
+C++ compararion: This is very similar. The only diference is that in C++ 
+the init expression does not need to be a constant expression.
+
+
+
 ## Empty Initializer/Compound literal
 
-Static initialization using the values of member initializer
+Static initialization using the values of member initializer. 
 
 ```cpp
 int main() {
    
    //new syntax
    struct X x = {};       
-   struct X x1[200] = {};   
+   struct X x1[200] = {};
 }
 
 ```
+
 This initialization can be used for global scope variables.
 
 
@@ -43,16 +49,32 @@ void draw(struct Box* p) overload;
 void draw(struct Circle* p) overload;
 ```
 
-
-See reference:
+See reference :
 https://clang.llvm.org/docs/AttributeReference.html#overloadable
 
+We can think of it as an inverse of extern "C".
 
 
-### New function
+### New operator
 
-New is an especial function that calls malloc and if malloc suceeded
-it  initializes the object using the compound literal.
+
+```
+ postfix-expression:
+   new (type-name)
+   new (type-name) { }
+   new (type-name) { initializer-list }
+```
+
+The new operator allocates memory (using malloc) 
+and if it succeeds it initialize the memory using 
+the compound literal. 
+
+https://en.cppreference.com/w/c/language/compound_literal
+
+The { initializer-list } can be omitted and in this case 
+it results in the default.
+
+
 
 ```cpp
 
@@ -62,24 +84,30 @@ struct X {
 
 int main() {
 
-  struct X* pX = new((struct X) {});
+  struct X* pX = new (struct X) {};
   if (pX != NULL)
   {
-    assert(pX->name == NULL);
-    
-    ...
-
     free(pX->name);
   }
 }
 
 ```
+Comparion with C++: There is not constructor here. There is no need for exceptions.
 
-## Destroy
-Destroy is a especial function that is generated but also call
-a user function to destroy the object.
+Open question: Should we accept string literals?
 
-See the sample:
+```cpp
+char  *s = new ("text");
+````
+
+## Destroy operator
+
+Destroy operator instantiates an especial function that is used 
+to destroy object parts recursively.
+
+
+The user can optionally inform a destructor (overloading destroy function) 
+that is called just before the object destruction.
 
 ```cpp
 
@@ -103,12 +131,12 @@ int main()
 
 ```
 
-
 ## Auto pointers
 
-Pointers can be qualified with auto. This tells the type system
+Pointers can be qualified with auto. This tells the type system 
 that this pointer is the onwer of the pointed object.
 
+This information is used to generate destructors.
 
 ```cpp
 struct X {
@@ -123,56 +151,66 @@ int main()
 
 ```
 
-When auto pointers are destroyed they check if the pointer is not null
-and then destroy the content  of the pointer.
+When a pointer qualified with auto is destroyed it calls 
+the destructor of the pointed object.
 
 ## if with initializer 
-Same of C++.  Togueter with auto it creates an interting pattern.
+
+This is the same of C++.  
+
+Together with auto it creates an interesting pattern.
 
 ```cpp
 
-  if (struct X* auto pX = new ((struct X){}), p)
+  if (struct X* auto pX = new (struct X), p)
   {
-    //pX in scope AND != NULL
-    ..
+    /*The scope of pX corresponds where it is alive*/
     destroy(pX);
   }
-  //pX not in scope
+  
 
 ````
 
-## if with initializer  and final expression
+## if with initializer and defer
 
+Here we add an extra expression that is executed at the end of 
+scope.
 
 ```cpp
-  if (struct X* auto pX = new ((struct X){}), p, destroy(pX))
+  if (struct X* auto pX = new (struct X), p, destroy(pX))
   {
-    ...
-    /* final expression goes here*/
+        
   }
 
-  if (struct X* auto pX = new ((struct X){}), p, destroy(pX))
-  {
-      /* final expression goes here*/
-      break;
-      return;
-      goto label:
-  }
+```
 
+Open question:  What happend when break, return or goto is called?
 
-````
+Option 1: ban these keywords in this context.
+
+Option2: call the defer expression before jump.
+
 
 ## Lambdas 
-Similar of C++.
+
+Similar of C++ but without capture.
+
+```
+ lambda-expression:
+    [] ( parameters opt ) compound-statement
+    [] compound-statement
+```
+
 
 ## Polimorphism
 
-Pointers that can point to a especific set of types.
+Pointers that can point to a especific **set of types**.
 
-If you set of types have a common discriminant we also can 
-select the appropriated operator in runtime according with the type.
+If you set of types have a **common discriminant** we also can  
+select the appropriated object in runtime according with the type.
 
 Sample:
+
 ```cpp
  
 struct Box {
@@ -191,20 +229,19 @@ void draw(struct Circle* pCircle) overload {
     printf("Circle");
 }
 
+struct <Box | Circle> Shape;
+
 int main()
 {
-  struct <Box | Circle> * auto shapes[2] = {};
+  struct Shape * auto shapes[2] = {};
   
-  shapes[0] = new ((struct Box){});
-  shapes[1] = new ((struct Circle){});
+  shapes[0] = new (struct Box);
+  shapes[1] = new (struct Circle);
   
   for (int i = 0; i < 2; i++)
   {    
-    //runtime selecion according with the discriminant
-    //auto generated  draw for shape
     draw(shapes[i]); 
-    
-    //when types have a common discriminant it is available
+
     printf("%d", shapes[i].id);
   }
   
@@ -223,10 +260,11 @@ int a[auto];
  size(a);
  push(a, 1);
  reserve(a, 10);
- 
  a[0] = 1; //ok
  
 ```
+
+(not implemented yet)
 
 
 

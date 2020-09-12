@@ -44,19 +44,24 @@
 </pre>
 
 
+<p>C++ compararion: This is very similar. The only diference is that in C++ the init expression does not need to be a constant expression.</p>
+
+
+
 <h2> Empty Initializer/Compound literal</h2>
 
-<p>Static initialization using the values of member initializer</p>
+<p>Static initialization using the values of member initializer. </p>
 
 <pre>
 <span class="keyword">int</span> main() {
    
    <span class="comment">//new syntax
 </span>   <span class="keyword">struct</span> X x = {};       
-   <span class="keyword">struct</span> X x1[<span class="number">200</span>] = {};   
+   <span class="keyword">struct</span> X x1[<span class="number">200</span>] = {};
 }
 
 </pre>
+
 
 <p>This initialization can be used for global scope variables.</p>
 
@@ -71,14 +76,28 @@
 </pre>
 
 
+<p>See reference :<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
 
-<p>See reference:<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
+<p>We can think of it as an inverse of extern &quot;C&quot;.</p>
 
 
+<h3> New operator</h3>
 
-<h3> New function</h3>
 
-<p>New is an especial function that calls malloc and if malloc suceededit  initializes the object using the compound literal.</p>
+<pre>
+ postfix-expression:
+   new (type-name)
+   new (type-name) { }
+   new (type-name) { initializer-list }
+</pre>
+
+<p>The new operator allocates memory (using malloc) and if it succeeds it initialize the memory using the compound literal. </p>
+
+<p><a href="https://en.cppreference.com/w/c/language/compound_literal">https://en.cppreference.com/w/c/language/compound_literal</a></p>
+
+<p>The { initializer-list } can be omitted and in this case it results in the default.</p>
+
+
 
 <pre>
 
@@ -88,24 +107,30 @@
 
 <span class="keyword">int</span> main() {
 
-  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span>((<span class="keyword">struct</span> X) {});
+  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X) {};
   <span class="keyword">if</span> (pX != NULL)
   {
-    assert(pX-&gt;name == NULL);
-    
-    ...
-
     free(pX-&gt;name);
   }
 }
 
 </pre>
 
+<p>Comparion with C++: There is not constructor here. There is no need for exceptions.</p>
 
-<h2> Destroy</h2>
-<p>Destroy is a especial function that is generated but also calla user function to destroy the object.</p>
+<p>Open question: Should we accept string literals?</p>
 
-<p>See the sample:</p>
+<pre>
+<span class="keyword">char</span>  *s = <span class="keyword">new</span> (<span class="string">&quot;text&quot;</span>);
+</pre>
+<p>`</p>
+
+<h2> Destroy operator</h2>
+
+<p>Destroy operator instantiates an especial function that is used to destroy object parts recursively.</p>
+
+
+<p>The user can optionally inform a destructor (overloading destroy function) that is called just before the object destruction.</p>
 
 <pre>
 
@@ -130,11 +155,11 @@
 </pre>
 
 
-
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto. This tells the type systemthat this pointer is the onwer of the pointed object.</p>
+<p>Pointers can be qualified with auto. This tells the type system that this pointer is the onwer of the pointed object.</p>
 
+<p>This information is used to generate destructors.</p>
 
 <pre>
 <span class="keyword">struct</span> X {
@@ -150,56 +175,65 @@
 </pre>
 
 
-<p>When auto pointers are destroyed they check if the pointer is not nulland then destroy the content  of the pointer.</p>
+<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object.</p>
 
 <h2> if with initializer </h2>
-<p>Same of C++.  Togueter with auto it creates an interting pattern.</p>
+
+<p>This is the same of C++.  </p>
+
+<p>Together with auto it creates an interesting pattern.</p>
 
 <pre>
 
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p)
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), p)
   {
-    <span class="comment">//pX in scope AND != NULL
-</span>    ..
+    <span class="comment">/*The scope of pX corresponds where it is alive*/</span>
     destroy(pX);
   }
-  <span class="comment">//pX not in scope
-</span>
+  
+
 </pre>
 <p>`</p>
 
-<h2> if with initializer  and final expression</h2>
+<h2> if with initializer and defer</h2>
 
+<p>Here we add an extra expression that is executed at the end of scope.</p>
 
 <pre>
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p, destroy(pX))
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), p, destroy(pX))
   {
-    ...
-    <span class="comment">/* final expression goes here*/</span>
+        
   }
-
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> ((<span class="keyword">struct</span> X){}), p, destroy(pX))
-  {
-      <span class="comment">/* final expression goes here*/</span>
-      <span class="keyword">break</span>;
-      <span class="keyword">return</span>;
-      <span class="keyword">goto</span> label:
-  }
-
 
 </pre>
-<p>`</p>
+
+
+<p>Open question:  What happend when break, return or goto is called?</p>
+
+<p>Option 1: ban these keywords in this context.</p>
+
+<p>Option2: call the defer expression before jump.</p>
+
 
 <h2> Lambdas </h2>
-<p>Similar of C++.</p>
+
+<p>Similar of C++ but without capture.</p>
+
+<pre>
+ lambda-expression:
+    [] ( parameters opt ) compound-statement
+    [] compound-statement
+</pre>
+
 
 <h2> Polimorphism</h2>
 
-<p>Pointers that can point to a especific set of types.</p>
+<p>Pointers that can point to a especific <strong>set of types</strong>.</p>
 
-<p>If you set of types have a common discriminant we also can select the appropriated operator in runtime according with the type.</p>
+<p>If you set of types have a <strong>common discriminant</strong> we also can  select the appropriated object in runtime according with the type.</p>
 
 <p>Sample:</p>
+
 <pre>
  
 <span class="keyword">struct</span> Box {
@@ -218,21 +252,20 @@
     printf(<span class="string">&quot;Circle&quot;</span>);
 }
 
+<span class="keyword">struct</span> &lt;Box | Circle&gt; Shape;
+
 <span class="keyword">int</span> main()
 {
-  <span class="keyword">struct</span> &lt;Box | Circle&gt; * <span class="keyword">auto</span> shapes[<span class="number">2</span>] = {};
+  <span class="keyword">struct</span> Shape * <span class="keyword">auto</span> shapes[<span class="number">2</span>] = {};
   
-  shapes[<span class="number">0</span>] = <span class="keyword">new</span> ((<span class="keyword">struct</span> Box){});
-  shapes[<span class="number">1</span>] = <span class="keyword">new</span> ((<span class="keyword">struct</span> Circle){});
+  shapes[<span class="number">0</span>] = <span class="keyword">new</span> (<span class="keyword">struct</span> Box);
+  shapes[<span class="number">1</span>] = <span class="keyword">new</span> (<span class="keyword">struct</span> Circle);
   
   <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++)
   {    
-    <span class="comment">//runtime selecion according with the discriminant
-</span>    <span class="comment">//auto generated  draw for shape
-</span>    draw(shapes[i]); 
-    
-    <span class="comment">//when types have a common discriminant it is available
-</span>    printf(<span class="string">&quot;%d&quot;</span>, shapes[i].id);
+    draw(shapes[i]); 
+
+    printf(<span class="string">&quot;%d&quot;</span>, shapes[i].id);
   }
   
   destroy(shapes);
@@ -251,11 +284,12 @@
  size(a);
  push(a, <span class="number">1</span>);
  reserve(a, <span class="number">10</span>);
- 
  a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> 
 </pre>
 
+
+<p>(not implemented yet)</p>
 
 
 
