@@ -1,8 +1,11 @@
 # Additions into C language I would like to have
 
-08 september 2020
+September 2020
 
-( I have a project to implement these features called cprime )
+See the current implementation online : 
+
+[cprime online](www.thradams.com/web2/cprime.html)
+
 
 ## Member initializer
 
