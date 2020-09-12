@@ -4,7 +4,7 @@ September 2020
 
 See the current implementation online  
 
-[cprime online](www.thradams.com/web2/cprime.html)
+[cprime online](/web2/cprime.html)
 
 
 ## Member initializer
