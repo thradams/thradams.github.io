@@ -11,7 +11,7 @@ struct Point {
 
 struct Line {
   struct Point start;
-  struct Point start;
+  struct Point end;
 };
 
 struct Point global = {};
@@ -65,6 +65,9 @@ sample["new operator"] =
    
 */
 
+//#include <stdlib.h>
+//#include <string.h>
+
 struct Point {
   int x = 1;
   int y = 2;
@@ -94,6 +97,7 @@ struct Person {
 
 int main()
 {
+  //#include <stdlib.h>
    if (struct Person* auto p = new (struct Person); p)
    {
 
@@ -120,30 +124,34 @@ int main()
 
 sample["Polimorphism"] =
     `
-struct Box {
-    int id = 1;
-};
 
-void draw(struct Box* pBox) overload {
-    printf("Box");
-}
-
-struct Circle {
-    int id = 2;
-};
-
-void draw(struct Circle* pCircle) overload
-{
-    printf("Circle");
-}
-
-int main()
-{
-    struct <Box | Circle> * auto pShape = new (struct Box);
-    draw(pShape);
-    destroy(pShape);
-}
-
+  struct Box {
+      int id = 1;
+  };
+  
+  void draw(struct Box* pBox) overload {
+      printf("Box");
+  }
+  
+  struct Circle {
+      int id = 2;
+  };
+  
+  void draw(struct Circle* pCircle) overload
+  {
+      printf("Circle");
+  }
+  
+  struct <Box | Circle> Shape;
+  
+  int main()
+  {
+      struct Shape * auto pShape = new (struct Box);
+      draw(pShape);
+      destroy(pShape);
+  }
+  
+  
 `;
 
 
