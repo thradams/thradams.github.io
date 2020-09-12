@@ -14,6 +14,8 @@ struct Line {
   struct Point start;
 };
 
+struct Point global = {};
+
 int main()
 {
   struct Point pt = {};
@@ -23,6 +25,65 @@ int main()
 `;
 
 
+sample["Destructor"] =
+`
+
+struct Person {
+  char* auto name;
+};
+
+void destroy(struct Person* p) overload {
+    /*
+      this is a user defined function to receive an event
+      just before the object destruction.
+      This function is called indirectly by the destroy.
+    */
+    printf("person destructor called");
+}
+
+struct House {
+   struct Person person;
+};
+
+int main()
+{
+   struct House house = {};
+
+   destroy(house);
+}
+`;
+
+
+sample["new operator"] =
+`
+/*
+   New operator allocates the memory using malloc and initializes the
+   object using the compound literal.
+
+   There is no constructor. Apart of malloc it never fails. 
+   (no need for exceptions)
+   
+*/
+
+struct Point {
+  int x = 1;
+  int y = 2;
+};
+
+int main()
+{
+
+   struct Point * auto p1 = new (struct Point);
+   destroy(p1);
+
+   struct Point * auto p2 = new (struct Point) {};
+   destroy(p2);
+   
+   struct Point * auto p3 = new (struct Point) {.x = 3, .y = 4};
+   destroy(p3);
+}
+
+`;
 
 sample["If with initializer"] =
 `
@@ -33,7 +94,7 @@ struct Person {
 
 int main()
 {
-   if (struct Person* auto p = new  ((struct Person){}); p)
+   if (struct Person* auto p = new (struct Person); p)
    {
 
      destroy(p);
@@ -50,34 +111,10 @@ struct Person {
 
 int main()
 {
-   if (struct Person* auto p = new  ((struct Person){}); p; destroy(p))
+   if (struct Person* auto p = new (struct Person); p; destroy(p))
    {
-
-     
+     /*at this moment break, return or goto will not call defer*/
    }
-}
-`;
-
-sample["Destructor"] =
-`
-
-struct Person {
-  char* auto name;
-};
-
-void destroy(struct Person* p) overload {
-    printf("person destructor called");
-}
-
-struct House {
-   struct Person person;
-};
-
-int main()
-{
-   struct House house = {};
-
-   destroy(house);
 }
 `;
 
@@ -102,7 +139,7 @@ void draw(struct Circle* pCircle) overload
 
 int main()
 {
-    struct <Box | Circle> * auto pShape = new ((struct Box){});
+    struct <Box | Circle> * auto pShape = new (struct Box);
     draw(pShape);
     destroy(pShape);
 }
