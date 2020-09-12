@@ -175,7 +175,8 @@
 </pre>
 
 
-<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object.</p>
+<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object. So in this case the user does not need to overload destroy and free the name. He also can do this, in this case just removing auto.</p>
+
 
 <h2> if with initializer </h2>
 

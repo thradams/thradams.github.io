@@ -152,7 +152,10 @@ int main()
 ```
 
 When a pointer qualified with auto is destroyed it calls 
-the destructor of the pointed object.
+the destructor of the pointed object. So in this case the user 
+does not need to overload destroy and free the name. He also can 
+do this, in this case just removing auto.
+
 
 ## if with initializer 
 
