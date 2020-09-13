@@ -100,6 +100,25 @@ Open question: Should we accept string literals?
 char  *s = new ("text");
 ````
 
+Open design: How to customize the allocator global or for types.
+
+
+```cpp
+
+//global
+void cprime_free(void*)  {}
+void* cprime_new(int size, void* default) {}
+
+//for an especific type
+void free(struct X * auto pX) overload {}
+struct X * auto new(int size, void* default) overload {}
+
+```
+
+
+
+
+
 ## Destroy operator
 
 Destroy operator instantiates an especial function that is used 
