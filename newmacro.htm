@@ -48,11 +48,11 @@
     <span class="keyword">return</span> p;
 }
 
-<span class="keyword">#define</span> NEW(T, V) mallocinit(<span class="keyword">sizeof</span>(T), &amp;(T) V )
+<span class="keyword">#define</span> NEW(...) mallocinit(<span class="keyword">sizeof</span>(__VA_ARGS__), &amp; __VA_ARGS__)
 
 <span class="keyword">int</span> main()
 {
-    <span class="keyword">struct</span> X* p = NEW(<span class="keyword">struct</span> X, X_INIT); 
+    <span class="keyword">struct</span> X* p = NEW( (<span class="keyword">struct</span> X) X_INIT ); 
     <span class="keyword">if</span> (p)
     {
       free(p);

@@ -23,11 +23,11 @@ void* mallocinit(size_t size, void* value)
     return p;
 }
 
-#define NEW(T, V) mallocinit(sizeof(T), &(T) V )
+#define NEW(...) mallocinit(sizeof(__VA_ARGS__), & __VA_ARGS__)
 
 int main()
 {
-    struct X* p = NEW(struct X, X_INIT); 
+    struct X* p = NEW( (struct X) X_INIT ); 
     if (p)
     {
       free(p);
