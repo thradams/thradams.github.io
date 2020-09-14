@@ -8,6 +8,8 @@
 
 ## 2020
 
+[malloc and new](newmacro.md) September 2020
+
 [simple expression parser](calc.md) June 2020
 
 [performance test std::visitor x switch](perfvisitor.md) June 2020

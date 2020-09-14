@@ -1,0 +1,69 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+<span class="keyword">struct</span> X {
+    <span class="keyword">int</span> i;
+};
+
+<span class="keyword">#define</span> X_INIT {.i = <span class="number">1</span>}
+
+<span class="comment">/*
+  Allocates size bytes and initialized coping the value.
+*/</span>
+<span class="keyword">void</span>* mallocinit(size_t size, <span class="keyword">void</span>* value)
+{
+    <span class="keyword">void</span>* p = malloc(size);
+    <span class="keyword">if</span> (p) {
+        memcpy(p, value, size);
+    }
+    <span class="keyword">return</span> p;
+}
+
+<span class="keyword">#define</span> NEW(T, V) mallocinit(<span class="keyword">sizeof</span>(T), &amp;(T) V )
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> X* p = NEW(<span class="keyword">struct</span> X, X_INIT); 
+    <span class="keyword">if</span> (p)
+    {
+      free(p);
+    } 
+}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
