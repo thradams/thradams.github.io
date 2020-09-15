@@ -125,20 +125,6 @@
 </pre>
 <p>`</p>
 
-<p>Open design: How to customize the allocator global or for types.</p>
-
-
-<pre>
-
-<span class="comment">//global
-</span><span class="keyword">void</span> cprime_free(<span class="keyword">void</span>*)  {}
-<span class="keyword">void</span>* cprime_new(<span class="keyword">int</span> size, <span class="keyword">void</span>* <span class="keyword">default</span>) {}
-
-<span class="comment">//for an especific type
-</span><span class="keyword">void</span> free(<span class="keyword">struct</span> X * <span class="keyword">auto</span> pX) overload {}
-<span class="keyword">struct</span> X * <span class="keyword">auto</span> <span class="keyword">new</span>(<span class="keyword">int</span> size, <span class="keyword">void</span>* <span class="keyword">default</span>) overload {}
-
-</pre>
 
 
 
@@ -253,6 +239,16 @@
 
 <p>If you set of types have a <strong>common discriminant</strong> we also can  select the appropriated object in runtime according with the type.</p>
 
+<pre>
+
+ struct &lt;tag-list&gt; 
+ 
+ tag-list:
+  identifier
+  identifier , tag-list
+</pre>
+
+
 <p>Sample:</p>
 
 <pre>
@@ -295,6 +291,12 @@
 </pre>
 
 
+<p>The discriminant can be constant strings.</p>
+
+<p>struct Box {    const char };</p>
+
+<p>struct Circle {    const char };</p>
+
 <h2> Resizable arrays [auto]</h2>
 
 
@@ -312,6 +314,59 @@
 
 <p>(not implemented yet)</p>
 
+
+
+<h2> Parametrized types</h2>
+
+
+<pre>
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;
+<span class="keyword">struct</span> <span class="keyword2">vector</span>
+{
+  T * data;
+  <span class="keyword">int</span> size;
+  <span class="keyword">int</span> capacity;
+};
+
+<span class="keyword">void</span> F(<span class="keyword2">vector</span>&lt;<span class="keyword">int</span>&gt; * v) {}
+
+</pre>
+
+
+<h2> Parametrized functions</h2>
+
+
+<pre>
+<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;
+<span class="keyword">struct</span> <span class="keyword2">vector</span>
+{
+  T * data;
+  <span class="keyword">int</span> size;
+  <span class="keyword">int</span> capacity;
+};
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> destroy(<span class="keyword2">vector</span>&lt;T&gt; * v) 
+{
+
+}
+
+<span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;
+<span class="keyword">void</span> push(<span class="keyword2">vector</span>&lt;T&gt; * v, T i) {
+
+}
+
+<span class="keyword">int</span> main()
+{
+   <span class="keyword2">vector</span>&lt;<span class="keyword">int</span>&gt; v = {};
+   push(v, <span class="number">1</span>);
+   destroy(v);
+}
+<span class="comment">/*
+  if T is struct is is passed by pointer otherwise by copy. 
+*/</span>
+
+</pre>
 
 
 

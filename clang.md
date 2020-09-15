@@ -100,20 +100,7 @@ Open question: Should we accept string literals?
 char  *s = new ("text");
 ````
 
-Open design: How to customize the allocator global or for types.
 
-
-```cpp
-
-//global
-void cprime_free(void*)  {}
-void* cprime_new(int size, void* default) {}
-
-//for an especific type
-void free(struct X * auto pX) overload {}
-struct X * auto new(int size, void* default) overload {}
-
-```
 
 
 
@@ -231,6 +218,16 @@ Pointers that can point to a especific **set of types**.
 If you set of types have a **common discriminant** we also can  
 select the appropriated object in runtime according with the type.
 
+```
+
+ struct <tag-list> 
+ 
+ tag-list:
+  identifier
+  identifier , tag-list
+```
+
+
 Sample:
 
 ```cpp
@@ -272,6 +269,16 @@ int main()
 
 ```
 
+The discriminant can be constant strings.
+
+struct Box {
+    const char * type= "box";
+};
+
+struct Circle {
+    const char * type= "circle";
+};
+
 ## Resizable arrays [auto]
 
 
@@ -289,4 +296,55 @@ int a[auto];
 (not implemented yet)
 
 
+
+## Parametrized types
+
+
+```cpp
+template <typename T>
+struct vector
+{
+  T * data;
+  int size;
+  int capacity;
+};
+
+void F(vector<int> * v) {}
+
+```
+
+## Parametrized functions
+
+
+```cpp
+template <typename T>
+struct vector
+{
+  T * data;
+  int size;
+  int capacity;
+};
+
+template<class T>
+void destroy(vector<T> * v) 
+{
+
+}
+
+template<class T>
+void push(vector<T> * v, T i) {
+
+}
+
+int main()
+{
+   vector<int> v = {};
+   push(v, 1);
+   destroy(v);
+}
+/*
+  if T is struct is is passed by pointer otherwise by copy. 
+*/
+
+```
 
