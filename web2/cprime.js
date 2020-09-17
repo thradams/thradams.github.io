@@ -18675,7 +18675,7 @@ function _InstanciateDestroy($0,$1,$2,$3,$4,$5,$6,$7) {
  $15 = $7;
  $33 = $9;
  $34 = (_IsActive($33)|0);
- if ($34) {
+ if (!($34)) {
   STACKTOP = sp;return;
  }
  $35 = $12;
@@ -18992,7 +18992,7 @@ function _UnionTypeDefault($0,$1,$2,$3,$4,$5,$6,$7) {
  $15 = $7;
  $31 = $9;
  $32 = (_IsActive($31)|0);
- if ($32) {
+ if (!($32)) {
   STACKTOP = sp;return;
  }
  _memset(($16|0),0,200)|0;
@@ -20872,7 +20872,7 @@ function _InstantiateDestroyForPolymorphicType($0,$1,$2,$3,$4) {
  $9 = $4;
  $22 = $6;
  $23 = (_IsActive($22)|0);
- if ($23) {
+ if (!($23)) {
   STACKTOP = sp;return;
  }
  $24 = $7;
@@ -21073,7 +21073,7 @@ function _InstantiateDeleteForStruct($0,$1,$2,$3,$4) {
  $10 = $4;
  $16 = $8;
  $17 = (_IsActive($16)|0);
- if ($17) {
+ if (!($17)) {
   $$expand_i1_val = 0;
   HEAP8[$5>>0] = $$expand_i1_val;
   $$pre_trunc = HEAP8[$5>>0]|0;
@@ -22830,7 +22830,7 @@ function _InstantiateDestroyForStruct($0,$1,$2,$3,$4) {
  $10 = $4;
  $29 = $8;
  $30 = (_IsActive($29)|0);
- if ($30) {
+ if (!($30)) {
   $$expand_i1_val = 0;
   HEAP8[$5>>0] = $$expand_i1_val;
   $$pre_trunc = HEAP8[$5>>0]|0;
