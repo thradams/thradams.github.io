@@ -18,14 +18,9 @@ struct X {
 
 ```
 
-C++ compararion: This is very similar. The only diference is that in C++ 
-the init expression does not need to be a constant expression.
-
-
-
 ## Empty Initializer/Compound literal
 
-Static initialization using the values of member initializer. 
+**Static initialization** using the values of member initializer. 
 
 ```cpp
 int main() {
@@ -37,7 +32,9 @@ int main() {
 
 ```
 
-This initialization can be used for global scope variables.
+C++ comparison: This is very similar. The  difference is that in C++ 
+the init expression does not need to be a constant expression.
+
 
 
 ### Overloaded functions
@@ -92,7 +89,7 @@ int main() {
 }
 
 ```
-Comparion with C++: There is not constructor here. There is no need for exceptions.
+Comparison with C++: There is not constructor here. There is no need for exceptions.
 
 Open question: Should we accept string literals?
 
@@ -140,7 +137,7 @@ int main()
 ## Auto pointers
 
 Pointers can be qualified with auto. This tells the type system 
-that this pointer is the onwer of the pointed object.
+that this pointer is the owner of the pointed object.
 
 This information is used to generate destructors.
 
@@ -159,41 +156,59 @@ int main()
 
 When a pointer qualified with auto is destroyed it calls 
 the destructor of the pointed object. So in this case the user 
-does not need to overload destroy and free the name. He also can 
-do this, in this case just removing auto.
+does not need to overload destroy and free the name.  
+
+Alternatively we can do,
+
+```cpp
+struct X {
+    char * name = NULL;
+};
+
+void destroy(struct X* p) { free(p->name); }
+
+int main() {
+  struct X x = {};
+  destroy(x);
+}
+
+```
+
 
 
 ## if with initializer 
 
-This is the same of C++.  
+This is the same of C++ 17. 
 
 Together with auto it creates an interesting pattern.
 
 ```cpp
 
   if (struct X* auto pX = new (struct X), p)
-  {
-    /*The scope of pX corresponds where it is alive*/
+  {    
     destroy(pX);
   }
   
+  //pX out of scope
 
 ````
 
 ## if with initializer and defer
 
-Here we add an extra expression that is executed at the end of 
-scope.
+Considering the interesting pattern above (that is very useful to avoid bugs) 
+we also have an option with 'defer' to put everything at same line.
 
 ```cpp
-  if (struct X* auto pX = new (struct X), p, destroy(pX))
-  {
-        
+  if (struct X* auto pX = new (struct X), pX, destroy(pX))
+  {        
+      if (struct Y* auto pY = new (struct Y), pY, destroy(pY))
+      {        
+      }
   }
-
 ```
 
-Open question:  What happend when break, return or goto is called?
+
+Open question:  What happens when break, return or goto is called?
 
 Option 1: ban these keywords in this context.
 
@@ -211,21 +226,56 @@ Similar of C++ but without capture.
 ```
 
 
-## Polimorphism
+## Polymorphism
 
-Pointers that can point to a especific **set of types**.
+Pointers that can point to a specific **set of struct types**. 
 
-If you set of types have a **common discriminant** we also can  
-select the appropriated object in runtime according with the type.
+Syntax:
+
 
 ```
-
  struct <tag-list> 
  
  tag-list:
   identifier
   identifier , tag-list
 ```
+
+```cpp
+ struct <X | Y>* p; // points to struct X or struct Y (or equivalent typedef) 
+```
+
+Structs must have a **common discriminant** that is used
+in runtime to select the appropriated type.
+
+For instance:
+
+```cpp
+ struct X {  int type = 1;  }
+ struct Y {  int type = 2;  }
+```
+
+We can define a name for this type without typedef
+
+```cpp
+
+ struct <Box | Circle> Shape;
+
+ struct Shape* pShape;
+```
+
+This name can be used in other pointers and the result 
+is the union set of types.
+
+```cpp
+ struct <Shape | Data> Serializable;
+```
+
+
+The definition of the struct is automatic. We provide only
+the declaration.
+
+
 
 
 Sample:
@@ -271,6 +321,7 @@ int main()
 
 The discriminant can be constant strings.
 
+```cpp
 struct Box {
     const char * type= "box";
 };
@@ -278,6 +329,9 @@ struct Box {
 struct Circle {
     const char * type= "circle";
 };
+```
+
+(not implemented yet)
 
 ## Resizable arrays [auto]
 
@@ -285,11 +339,11 @@ struct Circle {
 ```cpp
 int a[auto];
  
- capacity(a);
- size(a);
- push(a, 1);
- reserve(a, 10);
- a[0] = 1; //ok
+  capacity(a);
+  size(a);
+  push(a, 1);
+  reserve(a, 10);
+  a[0] = 1; //ok
  
 ```
 
@@ -299,11 +353,11 @@ int a[auto];
 
 ## Parametrized types
 
+(not implemented yet)
 
 ```cpp
 template <typename T>
-struct vector
-{
+struct vector{
   T * data;
   int size;
   int capacity;

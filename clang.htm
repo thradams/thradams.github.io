@@ -44,13 +44,9 @@
 </pre>
 
 
-<p>C++ compararion: This is very similar. The only diference is that in C++ the init expression does not need to be a constant expression.</p>
-
-
-
 <h2> Empty Initializer/Compound literal</h2>
 
-<p>Static initialization using the values of member initializer. </p>
+<p><strong>Static initialization</strong> using the values of member initializer. </p>
 
 <pre>
 <span class="keyword">int</span> main() {
@@ -63,7 +59,8 @@
 </pre>
 
 
-<p>This initialization can be used for global scope variables.</p>
+<p>C++ comparison: This is very similar. The  difference is that in C++ the init expression does not need to be a constant expression.</p>
+
 
 
 <h3> Overloaded functions</h3>
@@ -116,7 +113,7 @@
 
 </pre>
 
-<p>Comparion with C++: There is not constructor here. There is no need for exceptions.</p>
+<p>Comparison with C++: There is not constructor here. There is no need for exceptions.</p>
 
 <p>Open question: Should we accept string literals?</p>
 
@@ -163,7 +160,7 @@
 
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto. This tells the type system that this pointer is the onwer of the pointed object.</p>
+<p>Pointers can be qualified with auto. This tells the type system that this pointer is the owner of the pointed object.</p>
 
 <p>This information is used to generate destructors.</p>
 
@@ -181,41 +178,61 @@
 </pre>
 
 
-<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object. So in this case the user does not need to overload destroy and free the name. He also can do this, in this case just removing auto.</p>
+<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object. So in this case the user does not need to overload destroy and free the name.  </p>
+
+<p>Alternatively we can do,</p>
+
+<pre>
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * name = NULL;
+};
+
+<span class="keyword">void</span> destroy(<span class="keyword">struct</span> X* p) { free(p-&gt;name); }
+
+<span class="keyword">int</span> main() {
+  <span class="keyword">struct</span> X x = {};
+  destroy(x);
+}
+
+</pre>
+
+
 
 
 <h2> if with initializer </h2>
 
-<p>This is the same of C++.  </p>
+<p>This is the same of C++ 17. </p>
 
 <p>Together with auto it creates an interesting pattern.</p>
 
 <pre>
 
   <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), p)
-  {
-    <span class="comment">/*The scope of pX corresponds where it is alive*/</span>
+  {    
     destroy(pX);
   }
   
-
+  <span class="comment">//pX out of scope
+</span>
 </pre>
 <p>`</p>
 
 <h2> if with initializer and defer</h2>
 
-<p>Here we add an extra expression that is executed at the end of scope.</p>
+<p>Considering the interesting pattern above (that is very useful to avoid bugs) we also have an option with 'defer' to put everything at same line.</p>
 
 <pre>
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), p, destroy(pX))
-  {
-        
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), pX, destroy(pX))
+  {        
+      <span class="keyword">if</span> (<span class="keyword">struct</span> Y* <span class="keyword">auto</span> pY = <span class="keyword">new</span> (<span class="keyword">struct</span> Y), pY, destroy(pY))
+      {        
+      }
   }
-
 </pre>
 
 
-<p>Open question:  What happend when break, return or goto is called?</p>
+
+<p>Open question:  What happens when break, return or goto is called?</p>
 
 <p>Option 1: ban these keywords in this context.</p>
 
@@ -233,20 +250,57 @@
 </pre>
 
 
-<h2> Polimorphism</h2>
+<h2> Polymorphism</h2>
 
-<p>Pointers that can point to a especific <strong>set of types</strong>.</p>
+<p>Pointers that can point to a specific <strong>set of struct types</strong>. </p>
 
-<p>If you set of types have a <strong>common discriminant</strong> we also can  select the appropriated object in runtime according with the type.</p>
+<p>Syntax:</p>
+
 
 <pre>
-
  struct &lt;tag-list&gt; 
  
  tag-list:
   identifier
   identifier , tag-list
 </pre>
+
+<pre>
+ <span class="keyword">struct</span> &lt;X | Y&gt;* p; <span class="comment">// points to struct X or struct Y (or equivalent typedef) 
+</span></pre>
+
+
+<p>Structs must have a <strong>common discriminant</strong> that is usedin runtime to select the appropriated type.</p>
+
+<p>For instance:</p>
+
+<pre>
+ <span class="keyword">struct</span> X {  <span class="keyword">int</span> type = <span class="number">1</span>;  }
+ <span class="keyword">struct</span> Y {  <span class="keyword">int</span> type = <span class="number">2</span>;  }
+</pre>
+
+
+<p>We can define a name for this type without typedef</p>
+
+<pre>
+
+ <span class="keyword">struct</span> &lt;Box | Circle&gt; Shape;
+
+ <span class="keyword">struct</span> Shape* pShape;
+</pre>
+
+
+<p>This name can be used in other pointers and the result is the union set of types.</p>
+
+<pre>
+ <span class="keyword">struct</span> &lt;Shape | Data&gt; Serializable;
+</pre>
+
+
+
+<p>The definition of the struct is automatic. We provide onlythe declaration.</p>
+
+
 
 
 <p>Sample:</p>
@@ -293,9 +347,18 @@
 
 <p>The discriminant can be constant strings.</p>
 
-<p>struct Box {    const char };</p>
+<pre>
+<span class="keyword">struct</span> Box {
+    <span class="keyword">const</span> <span class="keyword">char</span> * type= <span class="string">&quot;box&quot;</span>;
+};
 
-<p>struct Circle {    const char };</p>
+<span class="keyword">struct</span> Circle {
+    <span class="keyword">const</span> <span class="keyword">char</span> * type= <span class="string">&quot;circle&quot;</span>;
+};
+</pre>
+
+
+<p>(not implemented yet)</p>
 
 <h2> Resizable arrays [auto]</h2>
 
@@ -303,11 +366,11 @@
 <pre>
 <span class="keyword">int</span> a[<span class="keyword">auto</span>];
  
- capacity(a);
- size(a);
- push(a, <span class="number">1</span>);
- reserve(a, <span class="number">10</span>);
- a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
+  capacity(a);
+  size(a);
+  push(a, <span class="number">1</span>);
+  reserve(a, <span class="number">10</span>);
+  a[<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">//ok
 </span> 
 </pre>
 
@@ -318,11 +381,11 @@
 
 <h2> Parametrized types</h2>
 
+<p>(not implemented yet)</p>
 
 <pre>
 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;
-<span class="keyword">struct</span> <span class="keyword2">vector</span>
-{
+<span class="keyword">struct</span> <span class="keyword2">vector</span>{
   T * data;
   <span class="keyword">int</span> size;
   <span class="keyword">int</span> capacity;
