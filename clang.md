@@ -25,16 +25,14 @@ struct X {
 ```cpp
 int main() {
    
-   //new syntax
    struct X x = {};       
    struct X x1[200] = {};
+
+   x = (struct X) {};       
+
 }
 
 ```
-
-C++ comparison: This is very similar. The  difference is that in C++ 
-the init expression does not need to be a constant expression.
-
 
 
 ### Overloaded functions
@@ -70,6 +68,12 @@ https://en.cppreference.com/w/c/language/compound_literal
 
 The { initializer-list } can be omitted and in this case 
 it results in the default.
+
+Customization of the new operator is done using a macro
+
+```cpp
+#define NEW(...) mallocinit(sizeof(__VA_ARGS__), & __VA_ARGS__);
+```
 
 
 
@@ -136,10 +140,13 @@ int main()
 
 ## Auto pointers
 
-Pointers can be qualified with auto. This tells the type system 
-that this pointer is the owner of the pointed object.
+Pointers can be qualified with auto. 
 
-This information is used to generate destructors.
+This tells the type system that this pointer is the owner of the pointed object.
+
+At this moment auto is used to generate destructors but it also could be 
+used for static analysis in the future.
+
 
 ```cpp
 struct X {
@@ -155,8 +162,7 @@ int main()
 ```
 
 When a pointer qualified with auto is destroyed it calls 
-the destructor of the pointed object. So in this case the user 
-does not need to overload destroy and free the name.  
+the destructor of the pointed object.
 
 Alternatively we can do,
 
@@ -170,6 +176,24 @@ void destroy(struct X* p) { free(p->name); }
 int main() {
   struct X x = {};
   destroy(x);
+}
+
+```
+
+```cpp
+struct X {
+    char * auto name = NULL;
+};
+
+int main()
+{
+  struct X* pX = new (struct X);
+  destroy(pX); //warning does nothing
+  destroy(*pX); //destroy the object but does not free memory
+
+  struct X* auto pAuto = new (struct X);
+  destroy(pAuto); //destroy the pointed object and calls free
+  destroy(*pAuto); //destroy the object but does not free memory
 }
 
 ```
@@ -272,8 +296,7 @@ is the union set of types.
 ```
 
 
-The definition of the struct is automatic. We provide only
-the declaration.
+The definition of the struct is automatic (auto generated). We provide only the declaration.
 
 
 
@@ -319,7 +342,7 @@ int main()
 
 ```
 
-The discriminant can be constant strings.
+The discriminant can be constant strings or enuns etc.
 
 ```cpp
 struct Box {
@@ -331,7 +354,27 @@ struct Circle {
 };
 ```
 
-(not implemented yet)
+(strings are not implemented yet)
+
+We also need a way to cast. The syntax is a open question but 
+the C++ syntax can be used.
+
+```cpp
+struct Box *pBox = dynamic_cast<struct Box*>(pShape);
+```
+
+Alternatives:
+```cpp
+struct Box *pBox = pShape as Box;
+
+if (pShape is Box)
+{
+
+}
+```
+Cast from box to shape for instance are normal casts but in the future 
+the compiler can check the if the types are on the same set. 
+
 
 ## Resizable arrays [auto]
 

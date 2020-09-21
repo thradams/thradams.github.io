@@ -51,15 +51,14 @@
 <pre>
 <span class="keyword">int</span> main() {
    
-   <span class="comment">//new syntax
-</span>   <span class="keyword">struct</span> X x = {};       
+   <span class="keyword">struct</span> X x = {};       
    <span class="keyword">struct</span> X x1[<span class="number">200</span>] = {};
+
+   x = (<span class="keyword">struct</span> X) {};       
+
 }
 
 </pre>
-
-
-<p>C++ comparison: This is very similar. The  difference is that in C++ the init expression does not need to be a constant expression.</p>
 
 
 
@@ -93,6 +92,13 @@
 <p><a href="https://en.cppreference.com/w/c/language/compound_literal">https://en.cppreference.com/w/c/language/compound_literal</a></p>
 
 <p>The { initializer-list } can be omitted and in this case it results in the default.</p>
+
+<p>Customization of the new operator is done using a macro</p>
+
+<pre>
+<span class="keyword">#define</span> NEW(...) mallocinit(<span class="keyword">sizeof</span>(__VA_ARGS__), &amp; __VA_ARGS__);
+</pre>
+
 
 
 
@@ -160,9 +166,12 @@
 
 <h2> Auto pointers</h2>
 
-<p>Pointers can be qualified with auto. This tells the type system that this pointer is the owner of the pointed object.</p>
+<p>Pointers can be qualified with auto. </p>
 
-<p>This information is used to generate destructors.</p>
+<p>This tells the type system that this pointer is the owner of the pointed object.</p>
+
+<p>At this moment auto is used to generate destructors but it also could be used for static analysis in the future.</p>
+
 
 <pre>
 <span class="keyword">struct</span> X {
@@ -178,7 +187,7 @@
 </pre>
 
 
-<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object. So in this case the user does not need to overload destroy and free the name.  </p>
+<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object.</p>
 
 <p>Alternatively we can do,</p>
 
@@ -193,6 +202,25 @@
   <span class="keyword">struct</span> X x = {};
   destroy(x);
 }
+
+</pre>
+
+
+<pre>
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * <span class="keyword">auto</span> name = NULL;
+};
+
+<span class="keyword">int</span> main()
+{
+  <span class="keyword">struct</span> X* pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X);
+  destroy(pX); <span class="comment">//warning does nothing
+</span>  destroy(*pX); <span class="comment">//destroy the object but does not free memory
+</span>
+  <span class="keyword">struct</span> X* <span class="keyword">auto</span> pAuto = <span class="keyword">new</span> (<span class="keyword">struct</span> X);
+  destroy(pAuto); <span class="comment">//destroy the pointed object and calls free
+</span>  destroy(*pAuto); <span class="comment">//destroy the object but does not free memory
+</span>}
 
 </pre>
 
@@ -298,7 +326,7 @@
 
 
 
-<p>The definition of the struct is automatic. We provide onlythe declaration.</p>
+<p>The definition of the struct is automatic (auto generated). We provide only the declaration.</p>
 
 
 
@@ -345,7 +373,7 @@
 </pre>
 
 
-<p>The discriminant can be constant strings.</p>
+<p>The discriminant can be constant strings or enuns etc.</p>
 
 <pre>
 <span class="keyword">struct</span> Box {
@@ -358,7 +386,27 @@
 </pre>
 
 
-<p>(not implemented yet)</p>
+<p>(strings are not implemented yet)</p>
+
+<p>We also need a way to cast. The syntax is a open question but the C++ syntax can be used.</p>
+
+<pre>
+<span class="keyword">struct</span> Box *pBox = <span class="keyword">dynamic_cast</span>&lt;<span class="keyword">struct</span> Box*&gt;(pShape);
+</pre>
+
+
+<p>Alternatives:</p>
+<pre>
+<span class="keyword">struct</span> Box *pBox = pShape as Box;
+
+<span class="keyword">if</span> (pShape is Box)
+{
+
+}
+</pre>
+
+<p>Cast from box to shape for instance are normal casts but in the future the compiler can check the if the types are on the same set. </p>
+
 
 <h2> Resizable arrays [auto]</h2>
 
