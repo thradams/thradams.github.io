@@ -60,22 +60,10 @@ We can think of it as an inverse of extern "C".
    new (type-name) { initializer-list }
 ```
 
-The new operator allocates memory (using malloc) 
-and if it succeeds it initialize the memory using 
-the compound literal. 
+The objective of the new operator is allocate memory an them copy 
+the default compound literal or user provided compound literal,
 
-https://en.cppreference.com/w/c/language/compound_literal
-
-The { initializer-list } can be omitted and in this case 
-it results in the default.
-
-Customization of the new operator is done using a macro
-
-```cpp
-#define NEW(...) mallocinit(sizeof(__VA_ARGS__), & __VA_ARGS__);
-```
-
-
+The allocation is done using malloc.
 
 ```cpp
 
@@ -100,10 +88,6 @@ Open question: Should we accept string literals?
 ```cpp
 char  *s = new ("text");
 ````
-
-
-
-
 
 
 

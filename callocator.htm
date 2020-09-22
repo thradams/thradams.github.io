@@ -1,0 +1,121 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+
+<pre>
+
+<span class="keyword">#define</span> BLOCK_SIZE <span class="number">10</span> <span class="comment">//1024
+</span>
+<span class="keyword">struct</span> Block {
+    <span class="keyword">struct</span> Block* pNext;
+    <span class="keyword">char</span>  data[]; <span class="comment">/*TODO align*/</span>
+};
+
+<span class="keyword">struct</span> Allocator {
+    <span class="keyword">struct</span> Block* pHead;
+    <span class="keyword">struct</span> Block* pTail;
+    <span class="keyword">unsigned</span> bytesUsed; <span class="comment">/*bytes used on tail block*/</span>
+};
+
+<span class="keyword">void</span>* Malloc(<span class="keyword">struct</span> Allocator* allocator, <span class="keyword">int</span> sz)
+{
+    <span class="keyword">void</span>* result = NULL;
+
+    assert(sz &gt; <span class="number">0</span> &amp;&amp; sz &lt; BLOCK_SIZE);
+
+    <span class="keyword">if</span> (allocator-&gt;pHead == NULL) {
+        <span class="comment">/*first use*/</span>
+        <span class="keyword">struct</span> Block* pNew = malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> Block) + BLOCK_SIZE);
+        <span class="keyword">if</span> (pNew == NULL)
+            <span class="keyword">return</span> NULL;
+        pNew-&gt;pNext = <span class="number">0</span>;
+
+        allocator-&gt;pHead = pNew;                
+        allocator-&gt;pTail = pNew;
+        allocator-&gt;bytesUsed = <span class="number">0</span>;        
+    }
+
+    <span class="keyword">if</span> (BLOCK_SIZE - allocator-&gt;bytesUsed &lt; sz) {
+
+        <span class="comment">/*need a new block*/</span>
+
+        <span class="keyword">struct</span> Block* pNew = malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> Block) + BLOCK_SIZE);
+        <span class="keyword">if</span> (pNew == NULL)
+            <span class="keyword">return</span> NULL;
+        pNew-&gt;pNext = <span class="number">0</span>;
+
+        allocator-&gt;pTail-&gt;pNext = pNew;
+        allocator-&gt;pTail = pNew;
+        allocator-&gt;bytesUsed = <span class="number">0</span>;
+    }
+
+    <span class="keyword">if</span> (allocator-&gt;pTail != NULL)
+    {
+        result = allocator-&gt;pTail-&gt;data + allocator-&gt;bytesUsed;
+
+        <span class="comment">/*alignment*/</span>
+        <span class="keyword">unsigned</span> n = allocator-&gt;bytesUsed + sz / <span class="keyword">sizeof</span>(max_align_t);
+        allocator-&gt;bytesUsed = (n + <span class="number">1</span>) * <span class="keyword">sizeof</span>(max_align_t);
+    }
+
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">char</span>* StrDup(<span class="keyword">struct</span> Allocator* allocator, <span class="keyword">const</span> <span class="keyword">char</span>* s)
+{
+    <span class="keyword">int</span> sz = strlen(s);
+    <span class="keyword">char</span>* r = Malloc(allocator, sz + <span class="number">1</span>);
+    <span class="keyword">if</span> (r)
+        memcpy(r, s, sz + <span class="number">1</span>);
+    <span class="keyword">return</span> r;
+}
+
+<span class="keyword">void</span> Free(<span class="keyword">struct</span> Allocator* allocator) {
+    <span class="keyword">struct</span> Block* p = allocator-&gt;pHead;
+    <span class="keyword">while</span> (p) {
+        <span class="keyword">struct</span> Block* temp = p;
+        p = p-&gt;pNext;
+        free(temp);
+    }
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> Allocator allocator = { <span class="number">0</span> };
+
+    <span class="keyword">char</span>* text = StrDup(&amp;allocator, <span class="string">&quot;123489&quot;</span>);
+    text = StrDup(&amp;allocator, <span class="string">&quot;test2&quot;</span>);
+
+    Free(&amp;allocator);
+}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
