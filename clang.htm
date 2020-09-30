@@ -23,11 +23,11 @@
  <!-- Page content begin --> 
 
 
-<h1> Additions into C language I would like to have</h1>
+<h1> Part I - Additions into C language I would like to have</h1>
 
 <p>September 2020</p>
 
-<p>See the current implementation online  </p>
+<p>I have implemented these features in a c compiler that generatesc code.</p>
 
 <p><a href="/web2/cprime.html">cprime online</a></p>
 
@@ -61,6 +61,57 @@
 </pre>
 
 
+
+
+<h2> if with initializer </h2>
+
+<p>This is the same of C++ 17. </p>
+
+<pre>
+
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* pX = malloc(<span class="keyword">sizeof</span> * pX), pX)
+  {    
+    ...
+    free(pX);
+  }
+  
+  <span class="comment">//pX out of scope
+</span>
+</pre>
+<p>`</p>
+
+<h2> if with initializer and defer</h2>
+
+<p>Considering the interesting pattern above (that is very useful to avoid bugs) we also have an option with 'defer' to put everything at same line.</p>
+
+<pre>
+  <span class="keyword">if</span> (FILE* f = fopen(<span class="string">&quot;file.txt&quot;</span>, <span class="string">&quot;r&quot;</span>), f, fclose(f))
+  {        
+     
+  }
+</pre>
+
+
+
+<p>Open question:  What happens when break, return or goto is called?</p>
+
+<p>Option 1: ban these keywords in this context.</p>
+
+<p>Option2: call the defer expression before jump.</p>
+
+
+<h2> Lambdas </h2>
+
+<p>Similar of C++ but without capture.</p>
+
+<pre>
+ lambda-expression:
+    [] ( parameters opt ) compound-statement
+    [] compound-statement
+</pre>
+
+
+<h1> Part II - Features for a "light C++"</h1>
 
 <h3> Overloaded functions</h3>
 
@@ -116,8 +167,6 @@
 <span class="keyword">char</span>  *s = <span class="keyword">new</span> (<span class="string">&quot;text&quot;</span>);
 </pre>
 <p>`</p>
-
-
 
 <h2> Destroy operator</h2>
 
@@ -211,56 +260,6 @@
 
 
 
-
-<h2> if with initializer </h2>
-
-<p>This is the same of C++ 17. </p>
-
-<p>Together with auto it creates an interesting pattern.</p>
-
-<pre>
-
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), p)
-  {    
-    destroy(pX);
-  }
-  
-  <span class="comment">//pX out of scope
-</span>
-</pre>
-<p>`</p>
-
-<h2> if with initializer and defer</h2>
-
-<p>Considering the interesting pattern above (that is very useful to avoid bugs) we also have an option with 'defer' to put everything at same line.</p>
-
-<pre>
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* <span class="keyword">auto</span> pX = <span class="keyword">new</span> (<span class="keyword">struct</span> X), pX, destroy(pX))
-  {        
-      <span class="keyword">if</span> (<span class="keyword">struct</span> Y* <span class="keyword">auto</span> pY = <span class="keyword">new</span> (<span class="keyword">struct</span> Y), pY, destroy(pY))
-      {        
-      }
-  }
-</pre>
-
-
-
-<p>Open question:  What happens when break, return or goto is called?</p>
-
-<p>Option 1: ban these keywords in this context.</p>
-
-<p>Option2: call the defer expression before jump.</p>
-
-
-<h2> Lambdas </h2>
-
-<p>Similar of C++ but without capture.</p>
-
-<pre>
- lambda-expression:
-    [] ( parameters opt ) compound-statement
-    [] compound-statement
-</pre>
 
 
 <h2> Polymorphism</h2>

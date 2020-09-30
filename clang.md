@@ -1,8 +1,9 @@
-# Additions into C language I would like to have
+# Part I - Additions into C language I would like to have
 
 September 2020
 
-See the current implementation online  
+I have implemented these features in a c compiler that generates
+c code.
 
 [cprime online](/web2/cprime.html)
 
@@ -34,6 +35,56 @@ int main() {
 
 ```
 
+
+
+## if with initializer 
+
+This is the same of C++ 17. 
+
+```cpp
+
+  if (struct X* pX = malloc(sizeof * pX), pX)
+  {    
+    ...
+    free(pX);
+  }
+  
+  //pX out of scope
+
+````
+
+## if with initializer and defer
+
+Considering the interesting pattern above (that is very useful to avoid bugs) 
+we also have an option with 'defer' to put everything at same line.
+
+```cpp
+  if (FILE* f = fopen("file.txt", "r"), f, fclose(f))
+  {        
+     
+  }
+```
+
+
+Open question:  What happens when break, return or goto is called?
+
+Option 1: ban these keywords in this context.
+
+Option2: call the defer expression before jump.
+
+
+## Lambdas 
+
+Similar of C++ but without capture.
+
+```
+ lambda-expression:
+    [] ( parameters opt ) compound-statement
+    [] compound-statement
+```
+
+
+# Part II - Features for a "light C++"
 
 ### Overloaded functions
 
@@ -88,8 +139,6 @@ Open question: Should we accept string literals?
 ```cpp
 char  *s = new ("text");
 ````
-
-
 
 ## Destroy operator
 
@@ -183,55 +232,6 @@ int main()
 ```
 
 
-
-## if with initializer 
-
-This is the same of C++ 17. 
-
-Together with auto it creates an interesting pattern.
-
-```cpp
-
-  if (struct X* auto pX = new (struct X), p)
-  {    
-    destroy(pX);
-  }
-  
-  //pX out of scope
-
-````
-
-## if with initializer and defer
-
-Considering the interesting pattern above (that is very useful to avoid bugs) 
-we also have an option with 'defer' to put everything at same line.
-
-```cpp
-  if (struct X* auto pX = new (struct X), pX, destroy(pX))
-  {        
-      if (struct Y* auto pY = new (struct Y), pY, destroy(pY))
-      {        
-      }
-  }
-```
-
-
-Open question:  What happens when break, return or goto is called?
-
-Option 1: ban these keywords in this context.
-
-Option2: call the defer expression before jump.
-
-
-## Lambdas 
-
-Similar of C++ but without capture.
-
-```
- lambda-expression:
-    [] ( parameters opt ) compound-statement
-    [] compound-statement
-```
 
 
 ## Polymorphism
