@@ -8,6 +8,8 @@
 
 ## 2020
 
+[tls error](tlserror.md) October 2020
+
 [allocator](callocator.md) September 2020
 
 [malloc and new](newmacro.md) September 2020
