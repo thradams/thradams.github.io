@@ -35,7 +35,8 @@
     <span class="keyword">int</span> capacity; <span class="comment">/*size in bytes including 0 at the end*/</span>
 };
 
-<span class="keyword">struct</span> error* tls_error;
+<span class="keyword">#define</span> <span class="keyword">thread_local</span> __declspec(thread)
+<span class="keyword">extern</span> <span class="keyword">thread_local</span> <span class="keyword">struct</span> error* tls_error;
 <span class="keyword">int</span> error(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...);
 </pre>
 
@@ -45,9 +46,9 @@
 <span class="keyword">#include</span> &lt;assert.h&gt;
 <span class="keyword">#include</span> <span class="string">&quot;error.h&quot;</span>
 
-<span class="keyword">#define</span> <span class="keyword">thread_local</span> __declspec(thread)
 
-<span class="keyword">struct</span> error* tls_error;
+ <span class="keyword">thread_local</span> <span class="keyword">struct</span> error* tls_error;
+
 
 <span class="keyword">int</span> error_vafprintf(<span class="keyword">struct</span> error* error, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list args)
 {

@@ -10,7 +10,8 @@ struct error
     int capacity; /*size in bytes including 0 at the end*/
 };
 
-struct error* tls_error;
+#define thread_local __declspec(thread)
+extern thread_local struct error* tls_error;
 int error(const char* fmt, ...);
 ```
 
@@ -19,9 +20,9 @@ int error(const char* fmt, ...);
 #include <assert.h>
 #include "error.h"
 
-#define thread_local __declspec(thread)
 
-struct error* tls_error;
+ thread_local struct error* tls_error;
+
 
 int error_vafprintf(struct error* error, const char* fmt, va_list args)
 {
