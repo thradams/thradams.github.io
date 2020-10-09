@@ -99,11 +99,8 @@ struct Person {
 
 int main()
 {
-   #include <stdlib.h>
-
    if (struct Person* auto p = new (struct Person); p)
    {
-
      destroy(p);
    }
 }
@@ -128,6 +125,7 @@ int main()
 
 sample["Polimorphism"] =
 `
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -136,8 +134,12 @@ struct Box {
     int id = 1;
 };
 
+void destroy(struct Box* pBox) overload {
+      printf("dtor Box");
+}
+
 void draw(struct Box* pBox) overload {
-    printf("Box");
+    printf("draw Box\\n");
 }
 
 struct Circle {
@@ -146,7 +148,7 @@ struct Circle {
 
 void draw(struct Circle* pCircle) overload
 {
-    printf("Circle");
+    printf("draw Circle\\n");
 }
 
 struct <Box | Circle> Shape;
