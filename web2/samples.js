@@ -27,6 +27,8 @@ int main()
 
 sample["Destructor"] =
 `
+#include <stdlib.h>
+#include <stdio.h>
 
 struct Person {
   char* auto name;
@@ -65,8 +67,7 @@ sample["new operator"] =
    
 */
 
-//#include <stdlib.h>
-//#include <string.h>
+#include <stdlib.h>
 
 struct Point {
   int x = 1;
@@ -90,6 +91,7 @@ int main()
 
 sample["If with initializer"] =
 `
+#include <stdlib.h>
 
 struct Person {
   char* auto name;
@@ -97,7 +99,8 @@ struct Person {
 
 int main()
 {
-  //#include <stdlib.h>
+   #include <stdlib.h>
+
    if (struct Person* auto p = new (struct Person); p)
    {
 
@@ -108,6 +111,7 @@ int main()
 
 sample["If with initializer and defer"] =
 `
+#include <stdlib.h>
 
 struct Person {
   char* auto name;
@@ -123,40 +127,45 @@ int main()
 `;
 
 sample["Polimorphism"] =
-    `
+`
+#include <stdio.h>
+#include <stdlib.h>
 
-  struct Box {
-      int id = 1;
-  };
-  
-  void draw(struct Box* pBox) overload {
-      printf("Box");
-  }
-  
-  struct Circle {
-      int id = 2;
-  };
-  
-  void draw(struct Circle* pCircle) overload
-  {
-      printf("Circle");
-  }
-  
-  struct <Box | Circle> Shape;
-  
-  int main()
-  {
-      struct Shape * auto pShape = new (struct Box);
-      draw(pShape);
-      destroy(pShape);
-  }
-  
-  
+
+struct Box {
+    int id = 1;
+};
+
+void draw(struct Box* pBox) overload {
+    printf("Box");
+}
+
+struct Circle {
+    int id = 2;
+};
+
+void draw(struct Circle* pCircle) overload
+{
+    printf("Circle");
+}
+
+struct <Box | Circle> Shape;
+
+int main()
+{
+    struct Shape * auto pShape = new (struct Box);
+    draw(pShape);
+    destroy(pShape);
+}
+
 `;
 
 
 sample["Polimorphism 2"] =
 `
+#include <stdio.h>
+#include <stdlib.h>
+
 struct Box {
   int id = 1;
 };
@@ -221,16 +230,19 @@ int main()
 
 
 sample["Lambdas"] =
-    `
-void Run(void (*callback)(void*), void* data);
+`
+#include <stdio.h>
+
+void Run(void (*callback)(void*), void* data) {
+  callback(data);
+}
 
 int main()
 {  
   Run([](void* data){
-  
-    printf("first");
+    printf("first\\n");
     Run([](void* data){
-      printf("second");
+      printf("second\\n");
     }, 0);     
   }, 0);
 }
