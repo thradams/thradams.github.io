@@ -10,7 +10,7 @@
 
 [double buffer conio](conio2.md) October 2020
 
-[tls error](tlserror.md) October 2020
+[thread local error object](tlserror.md) October 2020
 
 [allocator](callocator.md) September 2020
 
