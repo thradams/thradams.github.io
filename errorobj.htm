@@ -25,34 +25,81 @@
 
 <h1> Error object</h1>
 
+<p>error.h</p>
+
 <pre>
 
-<span class="keyword">#include</span> &lt;stdio.h&gt;  
+<span class="keyword">#pragma</span> once
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">struct</span> error
+{
+    <span class="comment">/*pointer to the buffer that will receive the error message*/</span>
+    <span class="keyword">char</span>* message;
+
+    <span class="comment">/*size of the buffer pointed by message*/</span>
+    <span class="keyword">int</span> capacity; 
+};
+
+<span class="comment">/*
+  The seterror function returns the number of characters that are written,
+  not counting the terminating null character.
+
+  If the buffer size specified by er-&gt;capacity isn't sufficiently large to contain
+  the output specified by format and argptr, the return value of seterror is the
+  number of characters that would be written, not counting the null character,
+  if er-&gt;capacity were sufficiently large.
+
+  If the return value is greater than count - 1, the output has been truncated.
+
+  A return value of -1 indicates that an encoding error has occurred.
+*/</span>
+<span class="keyword">int</span> seterror(<span class="keyword">struct</span> error* er, _In_z_ _Printf_format_string_ <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...);
+
+<span class="comment">/*Return true if the error object is not empty*/</span>
+<span class="keyword">#define</span> haserror(er) ((er)-&gt;message[<span class="number">0</span>] != <span class="number">0</span>)
+
+</pre>
+
+
+
+<p>error.c</p>
+
+<pre>
+<span class="keyword">#include</span> &lt;stdio.h&gt;
 <span class="keyword">#include</span> &lt;stdarg.h&gt; 
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;error.h&quot;</span>
 
-<span class="keyword">typedef</span> <span class="keyword">struct</span> 
+<span class="comment">/*
+  The seterror function returns the number of characters that are written,
+  not counting the terminating null character. 
+  
+  If the buffer size specified by er-&gt;capacity isn't sufficiently large to contain 
+  the output specified by format and argptr, the return value of seterror is the 
+  number of characters that would be written, not counting the null character, 
+  if er-&gt;capacity were sufficiently large.
+  
+  If the return value is greater than count - 1, the output has been truncated. 
+  
+  A return value of -1 indicates that an encoding error has occurred.
+*/</span>
+<span class="keyword">int</span> seterror(<span class="keyword">struct</span> error* er, _In_z_ _Printf_format_string_  <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
 {
-  <span class="keyword">char</span> Msg[<span class="number">300</span>];
-} Error;
+    <span class="comment">/*the usage follow a pattern that the error is set just once*/</span>
+    assert(er-&gt;message[<span class="number">0</span>] == <span class="number">0</span>);
 
-<span class="keyword">inline</span> <span class="keyword">bool</span> Error_IsEmpty(Error* error)
-{
-  <span class="keyword">return</span> error-&gt;Msg[<span class="number">0</span>] == <span class="string">'0'</span>;
+    va_list args;
+    va_start(args, fmt);
+    <span class="keyword">int</span> n = vsnprintf(er-&gt;message, er-&gt;capacity, fmt, args);
+    va_end(args);
+
+
+    <span class="comment">/*maybe you should know that your message has been truncated?*/</span>
+    <span class="comment">//assert(n &gt; er-&gt;capacity - 1);
+</span>
+    <span class="keyword">return</span> n;
 }
-
-<span class="keyword">void</span> Error_SetVa(Error * p, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list va)
-{
-  vsnprintf(p-&gt;Msg, <span class="keyword">sizeof</span>(p-&gt;Msg), fmt, va); 
-}
-
-<span class="keyword">void</span> Error_Set(Error * p, <span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-  vsnprintf(p-&gt;Msg, <span class="keyword">sizeof</span>(p-&gt;Msg), fmt, args);
-  va_end(args);
-}
-
 
 </pre>
 
@@ -61,23 +108,74 @@
 
 <pre>
 
-bool F2(Error* error)
+<span class="keyword">#include</span> <span class="string">&quot;error.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+<span class="keyword">bool</span> F(<span class="keyword">struct</span> error* e)
 {
-  Error_Set(error, &quot;error at f2 %d&quot;, 1);
-  return false;
+    seterror(e, <span class="string">&quot;teste&quot;</span>);
+
+    <span class="keyword">return</span> haserror(e);
+}
+
+<span class="keyword">void</span> Test1()
+{
+    <span class="keyword">struct</span> error e = { .message = (<span class="keyword">char</span>[<span class="number">4</span>]) {<span class="number">0</span>}, .capacity = <span class="number">4</span> };
+    <span class="keyword">int</span> n = seterror(&amp;e, <span class="string">&quot;te&quot;</span>);
+    assert(strcmp(e.message, <span class="string">&quot;te&quot;</span>) == <span class="number">0</span>);
+    assert(n == <span class="number">2</span>);
+}
+
+<span class="keyword">void</span> Test2()
+{
+    <span class="keyword">struct</span> error e = { .message = (<span class="keyword">char</span>[<span class="number">4</span>]) {<span class="number">0</span>}, .capacity = <span class="number">4</span> };
+    <span class="keyword">int</span> n = seterror(&amp;e, <span class="string">&quot;teste&quot;</span>);
+    assert(strcmp(e.message, <span class="string">&quot;tes&quot;</span>) == <span class="number">0</span>);
+    assert(n == <span class="number">5</span>);
+    assert(n &gt; e.capacity - <span class="number">1</span>);
 }
 
 
-int main()
+<span class="keyword">void</span> Test3()
 {
-    ErrorExtended error = { 0 };
-    F2(&amp;error);
-    
-    return 0;
+    <span class="keyword">struct</span> error e = { .message = (<span class="keyword">char</span>[<span class="number">6</span>]) {<span class="number">0</span>}, .capacity = <span class="number">6</span> };
+    <span class="keyword">int</span> n = seterror(&amp;e, <span class="string">&quot;teste&quot;</span>);
+    assert(strcmp(e.message, <span class="string">&quot;teste&quot;</span>) == <span class="number">0</span>);
+    assert(n == <span class="number">5</span>);
+    assert(n == e.capacity - <span class="number">1</span>);
 }
 
+<span class="keyword">bool</span> F1(<span class="keyword">struct</span> error* e)
+{
+    seterror(e, <span class="string">&quot;error!&quot;</span>);
+    <span class="keyword">return</span> haserror(e);
+}
+
+<span class="keyword">bool</span> F2(<span class="keyword">struct</span> error* e)
+{
+    <span class="keyword">if</span> (F1(e))
+    {
+    }
+    <span class="keyword">return</span> haserror(e);
+}
+
+<span class="keyword">int</span> main()
+{
+    Test1();
+    Test2();
+    Test3();    
+
+    <span class="keyword">struct</span> error e = { .message = (<span class="keyword">char</span>[<span class="number">100</span>]) {<span class="number">0</span>}, .capacity = <span class="number">100</span> };
+    <span class="keyword">if</span> (F2(&amp;e))
+    {
+        printf(<span class="string">&quot;%s\n&quot;</span>, e.message);
+    }
+} 
 
 </pre>
+
 
 <!-- Page content end --> 
 </article> 
