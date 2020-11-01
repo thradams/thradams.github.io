@@ -8,7 +8,7 @@ c code.
 [cprime online](/web2/cprime.html)
 
 
-## Member initializer
+## Struct member initializer
 
 ```cpp
 
