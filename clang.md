@@ -35,6 +35,39 @@ int main() {
 
 ```
 
+Default initialization and struct member initializers are part of C++.
+Designed initializers also were added into C++ 20.
+
+While I was implementing this feature I check against C++ and I am  
+disappointed by the following.
+
+```cpp
+
+struct point {
+    int x = 1;
+    int y = 2;
+};
+
+struct line {
+  struct point point = { .x= 3, .y = 4 };
+};
+
+int main() {
+  struct line line = { .point = { .x = 5} };
+  printf("%d\n", line.point.y);
+}
+
+```
+
+This sample prints 2 in C++. So it does not take in account
+the default values of point variable in line.
+
+I was planing to print 4 because this is the default of variable point
+in line.
+
+This king of incompatibility with C++ would be very dangerous and I am holding
+this implementation.
+
 
 
 ## if with initializer 

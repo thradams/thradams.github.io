@@ -61,6 +61,35 @@
 </pre>
 
 
+<p>Default initialization and struct member initializers are part of C++.Designed initializers also were added into C++ 20.</p>
+
+<p>While I was implementing this feature I check against C++ and I am  disappointed by the following.</p>
+
+<pre>
+
+<span class="keyword">struct</span> point {
+    <span class="keyword">int</span> x = <span class="number">1</span>;
+    <span class="keyword">int</span> y = <span class="number">2</span>;
+};
+
+<span class="keyword">struct</span> line {
+  <span class="keyword">struct</span> point point = { .x= <span class="number">3</span>, .y = <span class="number">4</span> };
+};
+
+<span class="keyword">int</span> main() {
+  <span class="keyword">struct</span> line line = { .point = { .x = <span class="number">5</span>} };
+  printf(<span class="string">&quot;%d\n&quot;</span>, line.point.y);
+}
+
+</pre>
+
+
+<p>This sample prints 2 in C++. So it does not take in accountthe default values of point variable in line.</p>
+
+<p>I was planing to print 4 because this is the default of variable pointin line.</p>
+
+<p>This king of incompatibility with C++ would be very dangerous and I am holdingthis implementation.</p>
+
 
 
 <h2> if with initializer </h2>
