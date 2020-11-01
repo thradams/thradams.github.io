@@ -59,13 +59,13 @@ int main() {
 
 ```
 
-This sample prints 2 in C++. So it does not take in account
+This sample prints 2 in C++. So it does not take in account 
 the default values of point variable in line.
 
-I was planing to print 4 because this is the default of variable point
+I was planing to print 4 because this is the default of variable point 
 in line.
 
-This king of incompatibility with C++ would be very dangerous and I am holding
+This king of incompatibility with C++ would be very dangerous and I am holding 
 this implementation.
 
 
