@@ -83,3 +83,4 @@ Cada pergunta já pode ter para onde vai no YES e para onde vai no NO.
 Ela tambem pode ja ter computador o resultado e deixa pronto.
 O algorimo so vai perseguindo.
 
+![states.png](states.png)
