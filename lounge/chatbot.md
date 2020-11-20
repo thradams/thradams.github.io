@@ -84,3 +84,16 @@ Ela tambem pode ja ter computador o resultado e deixa pronto.
 O algorimo so vai perseguindo.
 
 ![states.png](states.png)
+
+
+Este sistema pode ser usado para indexar documentos.
+
+Por exemplo pega-se o titulo ou palavras chavas e se usa
+para programar a entrada.
+
+----
+
+É preciso de uma linguagem de programação da tabela.
+
+Ela tem que aceitar frases.
+
