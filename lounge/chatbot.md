@@ -13,12 +13,13 @@ A ideia central é que vários "ifs" decidirão o significado.
 Nós fazemos uma lista de perguntas ou 'ifs'.
 
 As perguntas para esta frase poderiam ser.
-
+```
  1 - A primeira palavra é 'Qual' ?
  2 - A segunda palavra é 'é' ? 
  3 - A terceira palavra é 'seu' ? 
  4 - A quarta palavra é 'nome' ?  
  5 - A quinta palavra é '?' ? 
+```
 
 Se todas estas perguntas tiverem resposta afirmativa
 significa que atingimos um estado conhecido definido
@@ -42,7 +43,9 @@ Representamos cada lista de perguntas como uma linha
 com perguntas ordenadas.
 
 Exemplo:
+```
 0: 2 10 24  
+```
 
 Esta é a linha 0.
 Ela tem a pergunta 2, pergunta 10, pergunta 24.
@@ -50,6 +53,7 @@ Ela tem a pergunta 2, pergunta 10, pergunta 24.
 Temos várias linhas também ordenadas pelas perguntas
 formando uma tabela:
 
+```
     0  1  2
 ----------------
 0:  2 10 24
@@ -57,6 +61,7 @@ formando uma tabela:
 2:  3 10
 3:  9 10 12 54
 ----------------
+```
 
 Dado uma entrada nós começamos fazendo a primeira 
 pergunta da primeira linha. (pergunta 2)
