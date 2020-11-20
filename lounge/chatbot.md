@@ -77,3 +77,9 @@ Senão
   Fazemos a primeira pergunta desta nova linha
 
 
+Nós podemos deixar pré computado para onde é o jump
+
+Cada pergunta já pode ter para onde vai no YES e para onde vai no NO.
+Ela tambem pode ja ter computador o resultado e deixa pronto.
+O algorimo so vai perseguindo.
+
