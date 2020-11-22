@@ -145,6 +145,8 @@ Apos marcamos a linha A como pronta.
 
 
 
+O numero de ordenacoes vai ser a maior busca, ou a linha que dependa de um maior numero de palavras.
+
 
 
 
