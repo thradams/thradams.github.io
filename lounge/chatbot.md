@@ -97,3 +97,56 @@ para programar a entrada.
 
 Ela tem que aceitar frases.
 
+
+-- 
+
+O problema pode ser visto de forma diferente.
+
+
+Entramos com algums numeros
+
+Exemplo 6 e 50.
+Queremos procurar se eles pertecem a varios conjuntos.
+
+```
+A 02 06 50 61
+B 02 10 60
+C 10 30 31
+D 20 50 51
+```
+
+Podemos criar vários conjuntos ordenados por cada coluna.
+(O primeiro já foi ordenado pela coluna 1.)
+
+```
+A 02 06 50 61
+B 02 10 60
+C 10 30 31
+D 20 50 51
+```
+
+```
+C 10 30 31
+A 02 06 50 61
+D 20 50 51
+B 02 10 60
+```
+
+```
+A 02 06 50 61
+```
+Ao procurar algo nos fazemos busca binaria
+em cada grupo destes.
+
+Entramos 6 e procuramos a linha. Vai cair na linha A.
+Nós executamos o algoritmo da linha A. 
+(os numeros dissem apenas de quais dados ele dependende)
+Apos marcamos a linha A como pronta.
+
+
+
+
+
+
+
+
