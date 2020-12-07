@@ -1,3 +1,5 @@
+# Vector of struct item
+
 [Make container](makecontainer.md)
 
 ```cpp
@@ -11,7 +13,10 @@ struct item {
     int count;
 };
 
-void item_destroy(struct item* p) {}
+/*in case your type needs a destructor*/
+void item_destroy(struct item* p) {
+
+}
 
 struct item_array
 {
@@ -19,6 +24,7 @@ struct item_array
     int size;
     int capacity;
 };
+
 
 int int_array_reserve(struct item_array* p, int n)
 {
@@ -43,10 +49,10 @@ int item_array_push(struct item_array* p, int index, int count)
 {
     if (p->size + 1 > p->capacity)
     {
-        int n = p->capacity * 2;
+        int n = p->capacity * 2; /*grow strategy*/
         if (n == 0)
         {
-            n = 1;
+            n = 1;/*starting capacity*/
         }
         if (int_array_reserve(p, n) == 0)
         {
@@ -64,6 +70,8 @@ int item_array_push(struct item_array* p, int index, int count)
 
 void item_array_destroy(struct item_array* p)
 {
+    
+    /*in case you need a destructor*/
     for (int i = 0; i < p->size; i++)
     {
         item_destroy(&p->data[i]);

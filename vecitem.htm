@@ -23,6 +23,8 @@
  <!-- Page content begin --> 
 
 
+<h1> Vector of struct item</h1>
+
 <p><a href="makecontainer.htm">Make container</a></p>
 
 <pre>
@@ -36,7 +38,10 @@
     <span class="keyword">int</span> count;
 };
 
-<span class="keyword">void</span> item_destroy(<span class="keyword">struct</span> item* p) {}
+<span class="comment">/*in case your type needs a destructor*/</span>
+<span class="keyword">void</span> item_destroy(<span class="keyword">struct</span> item* p) {
+
+}
 
 <span class="keyword">struct</span> item_array
 {
@@ -44,6 +49,7 @@
     <span class="keyword">int</span> size;
     <span class="keyword">int</span> capacity;
 };
+
 
 <span class="keyword">int</span> int_array_reserve(<span class="keyword">struct</span> item_array* p, <span class="keyword">int</span> n)
 {
@@ -68,10 +74,10 @@
 {
     <span class="keyword">if</span> (p-&gt;size + <span class="number">1</span> &gt; p-&gt;capacity)
     {
-        <span class="keyword">int</span> n = p-&gt;capacity * <span class="number">2</span>;
+        <span class="keyword">int</span> n = p-&gt;capacity * <span class="number">2</span>; <span class="comment">/*grow strategy*/</span>
         <span class="keyword">if</span> (n == <span class="number">0</span>)
         {
-            n = <span class="number">1</span>;
+            n = <span class="number">1</span>;<span class="comment">/*starting capacity*/</span>
         }
         <span class="keyword">if</span> (int_array_reserve(p, n) == <span class="number">0</span>)
         {
@@ -89,6 +95,8 @@
 
 <span class="keyword">void</span> item_array_destroy(<span class="keyword">struct</span> item_array* p)
 {
+    
+    <span class="comment">/*in case you need a destructor*/</span>
     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
     {
         item_destroy(&amp;p-&gt;data[i]);

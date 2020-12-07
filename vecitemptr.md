@@ -1,9 +1,9 @@
+# Vector of struct item*
+
 [Make container](makecontainer.md)
 
 ```cpp
 
-
-#pragma once
 #include <stdlib.h>
 #include <assert.h>
 
@@ -14,6 +14,7 @@ struct item
 };
 
 void item_delete(struct item* p) {
+    
     free(p); 
 }
 
@@ -54,7 +55,7 @@ int itemptr_array_push(struct itemptr_array* p, struct item* pitem)
         }
         if (int_array_reserve(p, n) == 0)
         {
-            item_delete(pitem);
+            item_delete(pitem); /*design choice*/
             return 0;
         }
     }

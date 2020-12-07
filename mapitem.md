@@ -1,10 +1,7 @@
 
 # Maps string to struct item
 
-
 [Make container](makecontainer.md)
-
-
 
 ```cpp
 
@@ -16,8 +13,7 @@
 
 #define strdup _strdup
 
-struct item
-{
+struct item {
     int i;
 };
 
@@ -57,6 +53,7 @@ unsigned int stringhash(const char* key)
 
 
 void hashmap_remove_all(struct hashmap* pMap) {
+    
     if (pMap->table != NULL)
     {
         for (unsigned int i = 0; i < pMap->capacity; i++)

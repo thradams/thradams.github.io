@@ -23,12 +23,12 @@
  <!-- Page content begin --> 
 
 
+<h1> Vector of struct item*</h1>
+
 <p><a href="makecontainer.htm">Make container</a></p>
 
 <pre>
 
-
-<span class="keyword">#pragma</span> once
 <span class="keyword">#include</span> &lt;stdlib.h&gt;
 <span class="keyword">#include</span> &lt;assert.h&gt;
 
@@ -39,6 +39,7 @@
 };
 
 <span class="keyword">void</span> item_delete(<span class="keyword">struct</span> item* p) {
+    
     free(p); 
 }
 
@@ -79,7 +80,7 @@
         }
         <span class="keyword">if</span> (int_array_reserve(p, n) == <span class="number">0</span>)
         {
-            item_delete(pitem);
+            item_delete(pitem); <span class="comment">/*design choice*/</span>
             <span class="keyword">return</span> <span class="number">0</span>;
         }
     }
