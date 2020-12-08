@@ -1,8 +1,13 @@
 
 ## Map string to int
 
+
+[Make container](makecontainer.md)
+
+(int, unsigned int, short, bool .... )
+
 ```cpp
-#pragma once
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,6 +21,7 @@ struct hashmap {
         struct mapentry* next;
         unsigned int hash;
         char* key;
+        
         int value;
     };
     struct mapentry** table;
@@ -177,13 +183,12 @@ int main()
 
     hashmap_set(&map, "a", 1);
     hashmap_set(&map, "a", 2);
+
     int value;
     assert(hashmap_find(&map, "a", &value));
     assert(!hashmap_find(&map, "b", &value));
 
     bool bRemoved = hashmap_remove(&map, "a");
-
-
 
     hashmap_destroy(&map);
 }

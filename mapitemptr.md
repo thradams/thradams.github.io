@@ -15,8 +15,7 @@
 
 #define strdup _strdup
 
-struct item
-{
+struct item {
     int i;
 };
 
@@ -25,12 +24,14 @@ void item_delete(struct item* p) {
 }
 
 struct hashmap {
+
     struct mapentry {
         struct mapentry* next;
         unsigned int hash;
         char* key;
         struct item* p;
     };
+
     struct mapentry** table;
     unsigned int capacity;
     int  size;
@@ -55,7 +56,8 @@ unsigned int stringhash(const char* key)
 }
 
 
-void hashmap_remove_all(struct hashmap* pMap) {
+void hashmap_remove_all(struct hashmap* pMap) 
+{
     if (pMap->table != NULL)
     {
         for (unsigned int i = 0; i < pMap->capacity; i++)
@@ -180,6 +182,9 @@ int hashmap_set(struct hashmap* pMap, const char* key, struct item* pNew)
     return result;
 }
 
+```
+
+```cpp
 
 int main()
 {

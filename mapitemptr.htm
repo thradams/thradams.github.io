@@ -40,8 +40,7 @@
 
 <span class="keyword">#define</span> strdup _strdup
 
-<span class="keyword">struct</span> item
-{
+<span class="keyword">struct</span> item {
     <span class="keyword">int</span> i;
 };
 
@@ -50,12 +49,14 @@
 }
 
 <span class="keyword">struct</span> hashmap {
+
     <span class="keyword">struct</span> mapentry {
         <span class="keyword">struct</span> mapentry* next;
         <span class="keyword">unsigned</span> <span class="keyword">int</span> hash;
         <span class="keyword">char</span>* key;
         <span class="keyword">struct</span> item* p;
     };
+
     <span class="keyword">struct</span> mapentry** table;
     <span class="keyword">unsigned</span> <span class="keyword">int</span> capacity;
     <span class="keyword">int</span>  size;
@@ -80,7 +81,8 @@
 }
 
 
-<span class="keyword">void</span> hashmap_remove_all(<span class="keyword">struct</span> hashmap* pMap) {
+<span class="keyword">void</span> hashmap_remove_all(<span class="keyword">struct</span> hashmap* pMap) 
+{
     <span class="keyword">if</span> (pMap-&gt;table != NULL)
     {
         <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pMap-&gt;capacity; i++)
@@ -205,6 +207,10 @@
     <span class="keyword">return</span> result;
 }
 
+</pre>
+
+
+<pre>
 
 <span class="keyword">int</span> main()
 {

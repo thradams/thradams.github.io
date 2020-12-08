@@ -26,8 +26,13 @@
 
 <h2> Map string to int</h2>
 
+
+<p><a href="makecontainer.htm">Make container</a></p>
+
+<p>(int, unsigned int, short, bool .... )</p>
+
 <pre>
-<span class="keyword">#pragma</span> once
+
 <span class="keyword">#include</span> &lt;stdbool.h&gt;
 <span class="keyword">#include</span> &lt;stdlib.h&gt;
 <span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
@@ -41,6 +46,7 @@
         <span class="keyword">struct</span> mapentry* next;
         <span class="keyword">unsigned</span> <span class="keyword">int</span> hash;
         <span class="keyword">char</span>* key;
+        
         <span class="keyword">int</span> value;
     };
     <span class="keyword">struct</span> mapentry** table;
@@ -203,13 +209,12 @@
 
     hashmap_set(&amp;map, <span class="string">&quot;a&quot;</span>, <span class="number">1</span>);
     hashmap_set(&amp;map, <span class="string">&quot;a&quot;</span>, <span class="number">2</span>);
+
     <span class="keyword">int</span> value;
     assert(hashmap_find(&amp;map, <span class="string">&quot;a&quot;</span>, &amp;value));
     assert(!hashmap_find(&amp;map, <span class="string">&quot;b&quot;</span>, &amp;value));
 
     <span class="keyword">bool</span> bRemoved = hashmap_remove(&amp;map, <span class="string">&quot;a&quot;</span>);
-
-
 
     hashmap_destroy(&amp;map);
 }
