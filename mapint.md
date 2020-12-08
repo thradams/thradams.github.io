@@ -1,279 +1,192 @@
 
-## Header
+## Map string to int
 
 ```cpp
 #pragma once
-#include <stdint.h> 
 #include <stdbool.h>
-
-typedef struct Bucket
-{
-  struct Bucket* pNext;
-  unsigned int   Hash;
-  uint32_t       Key;
-  void*          pValue;
-} Bucket;
-
-typedef struct
-{
-  Bucket**     pBuckets;
-  unsigned int HashTableSize;
-  size_t       Count;
-} Map;
-
-
-#define MAP_INIT_100 { NULL, 100, 0 }
-
-void Map_Init(Map* p);
-void Map_Destroy(Map* p, void (*PF)(void*));
-
-int Map_SetAt(Map* pMap,
-              uint32_t Key,
-              void* pNewValue,
-              void** ppPreviousValue);
-
-bool Map_Lookup(Map* pMap,
-                uint32_t  Key,
-                void** ppValue);
-
-bool Map_RemoveKey(Map* pMap,
-                   uint32_t Key,
-                   void** ppValue);
-```
-## Source
-
-```c
-#include "Map.h"
-#include <string.h>
-#define ASSERT(X)
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-void Map_Reset(Map* pMap, void(*PF)(void*));
+#define strdup _strdup
 
-void Map_Init(Map * p)
+
+struct hashmap {
+    struct mapentry {
+        struct mapentry* next;
+        unsigned int hash;
+        char* key;
+        int value;
+    };
+    struct mapentry** table;
+    unsigned int capacity;
+    int  size;
+};
+
+
+unsigned int stringhash(const char* key)
 {
-  Map temp = MAP_INIT_100;
-  *p = temp;
-}
+    // hash key to unsigned int value by pseudorandomizing transform
+    // (algorithm copied from STL char hash in xfunctional)
+    unsigned int uHashVal = 2166136261U;
+    unsigned int uFirst = 0;
+    unsigned int uLast = (unsigned int)strlen(key);
+    unsigned int uStride = 1 + uLast / 10;
 
-void Map_Destroy(Map* pMap, void(*PF)(void*))
-{
-  Map_Reset(pMap, PF);
-}
-
-
-static Bucket* FindBucket(
-  Map* pMap,
-  uint32_t Key,
-  unsigned int* nHashBucket,
-  unsigned int* HashValue);
-
-
-inline unsigned int HashKey(uint32_t  Key)
-{
-  // hash key to unsigned int value by pseudorandomizing transform
-  // (algorithm copied from STL string hash in xfunctional)
-  unsigned int uHashVal = 2166136261U;
-  unsigned int uFirst = 0;
-  unsigned int uLast = (unsigned int)sizeof(Key);
-  unsigned int uStride = 1 + uLast / 10;
-
-  for (; uFirst < uLast; uFirst += uStride)
-  {
-    uHashVal = 16777619U * uHashVal ^ (unsigned int) ((char*) &Key)[uFirst];
-  }
-
-  return (uHashVal);
-}
-
-
-void Map_Reset(Map* pMap, void(*PF)(void*))
-{
-  if (pMap->pBuckets != NULL)
-  {
-    for (unsigned int i = 0;
-      i < pMap->HashTableSize;
-      i++)
+    for (; uFirst < uLast; uFirst += uStride)
     {
-      Bucket* pBucket =
-        pMap->pBuckets[i];
+        uHashVal = 16777619U * uHashVal ^ (unsigned int)key[uFirst];
+    }
 
-      while (pBucket != NULL)
-      {
-        Bucket* pCurrentBucket = pBucket;
-        pBucket = pBucket->pNext;
-        
-        if (PF) 
+    return (uHashVal);
+}
+
+
+void hashmap_remove_all(struct hashmap* pMap) {
+
+    if (pMap->table != NULL)
+    {
+        for (unsigned int i = 0; i < pMap->capacity; i++)
         {
-          //call destructor of pValue
-          PF(pCurrentBucket->pValue);
+            struct mapentry* pentry = pMap->table[i];
+
+            while (pentry != NULL)
+            {
+                struct mapentry* pentryCurrent = pentry;
+                pentry = pentry->next;
+                free(pentryCurrent->key);
+                free(pentryCurrent);
+            }
         }
 
-        //Delete Bucket pCurrentBucket
-        free(pCurrentBucket);
-      }
+        free(pMap->table);
+        pMap->table = NULL;
+        pMap->size = 0;
+    }
+}
+
+void hashmap_destroy(struct hashmap* pMap)
+{
+    hashmap_remove_all(pMap);
+}
+
+bool hashmap_find(struct hashmap* pMap, const char* key, int* pval)
+{
+    bool bFound = false;
+
+    unsigned int hash = stringhash(key);
+    int index = hash % pMap->capacity;
+
+    struct mapentry* pentry = pMap->table[index];
+
+    for (; pentry != NULL; pentry = pentry->next)
+    {
+        if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
+            *pval = pentry->value;
+            bFound = true;
+            break;
+        }
     }
 
-    free(pMap->pBuckets);
-    pMap->pBuckets = NULL;
-    pMap->Count = 0;
-  }
+    return bFound;
 }
 
 
-static Bucket* FindBucket(
-  Map* pMap,
-  uint32_t Key,
-  unsigned int* nHashBucket,
-  unsigned int* HashValue)
+bool hashmap_remove(struct hashmap* map, const char* key)
 {
-  Bucket* pResult = NULL;
+    bool bRemoved = false;
 
-  if (pMap->pBuckets == NULL)
-  {
-    *HashValue = 0;
-    *nHashBucket = 0;
-  }
-  else
-  {
-    *HashValue = HashKey(Key);
-    *nHashBucket = *HashValue % pMap->HashTableSize;
-
-    Bucket* pKeyValue =
-      pMap->pBuckets[*nHashBucket];
-
-    for (; pKeyValue != NULL; pKeyValue = pKeyValue->pNext)
+    if (map->table != NULL)
     {
-      if (pKeyValue->Hash == *HashValue &&
-        pKeyValue->Key == Key)
-      {
-        pResult = pKeyValue;
-        break;
-      }
-    }
-  }
+        unsigned int hash = stringhash(key);
+        struct mapentry** preventry = &map->table[hash % map->capacity];
+        struct mapentry* pentry = *preventry;
 
-  return pResult;
+        for (; pentry != NULL; pentry = pentry->next)
+        {
+            if ((pentry->hash == hash) && (strcmp(pentry->key, key) == 0))
+            {
+                *preventry = pentry->next;
+                bRemoved = true;
+                free(pentry->key);
+                free(pentry);
+                break;
+            }
+            preventry = &pentry->next;
+        }
+    }
+
+    return bRemoved;
 }
 
-bool Map_Lookup(Map* pMap,
-  uint32_t  Key,
-  void** ppValue)
+int hashmap_set(struct hashmap* pMap, const char* key, int value)
 {
-  bool bResult = false;
+    int result = 0;
 
-  unsigned int nHashBucket, HashValue;
-  Bucket* pBucket = FindBucket(pMap,
-    Key,
-    &nHashBucket,
-    &HashValue);
-
-  if (pBucket != NULL)
-  {
-    *ppValue = pBucket->pValue;
-    bResult = true;
-  }
-
-  return bResult;
-}
-
-bool Map_RemoveKey(Map* pMap,
-  uint32_t  Key,
-  void** ppValue)
-{
-  *ppValue = NULL;
-  bool bResult = false;
-
-  if (pMap->pBuckets != NULL)
-  {
-    unsigned int HashValue = HashKey(Key);
-
-    Bucket** ppBucketPrev =
-      &pMap->pBuckets[HashValue % pMap->HashTableSize];
-
-    Bucket* pBucket = *ppBucketPrev;
-
-    for (; pBucket != NULL; pBucket = pBucket->pNext)
+    if (pMap->table == NULL)
     {
-      if ((pBucket->Hash == HashValue) &&
-        (pBucket->Key == Key))
-      {
-        // remove from list
-        *ppBucketPrev = pBucket->pNext;
-        *ppValue = pBucket->pValue;
+        if (pMap->capacity < 1) {
+            pMap->capacity = 1000;
+        }
 
-        //Delete Bucket pKeyValue
-        free(pBucket);
-
-        bResult = true;
-        break;
-      }
-
-      ppBucketPrev = &pBucket->pNext;
-    }
-  }
-
-  return bResult;
-}
-
-int Map_SetAt(Map* pMap,
-  uint32_t Key,
-  void* newValue,
-  void** ppPreviousValue)
-{
-  int result = 0;
-  *ppPreviousValue = NULL;
-
-  if (pMap->pBuckets == NULL)
-  {
-    if (pMap->HashTableSize < 1)
-    {
-      pMap->HashTableSize = 1;
+        pMap->table = calloc(pMap->capacity, sizeof(pMap->table[0]));
     }
 
-    Bucket** pNewBuckets =
-      (Bucket**)malloc(sizeof(Bucket*) * pMap->HashTableSize);
-
-    if (pNewBuckets != NULL)
+    if (pMap->table != NULL)
     {
-      memset(pNewBuckets, 0, sizeof(Bucket*) * pMap->HashTableSize);
-      pMap->pBuckets = pNewBuckets;
+        unsigned int hash = stringhash(key);
+        int index = hash % pMap->capacity;
+
+        struct mapentry* pentry = pMap->table[index];
+
+        for (; pentry != NULL; pentry = pentry->next) {
+            if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
+                break;
+            }
+        }
+
+        if (pentry == NULL)
+        {
+            pentry = calloc(1, sizeof(*pentry));
+            pentry->hash = hash;            
+            pentry->key = strdup(key);
+            pentry->next = pMap->table[index];
+            pMap->table[index] = pentry;
+            pMap->size++;
+            result = 0;
+
+            pentry->value = value;
+        }
+        else
+        {
+            result = 1;
+            pentry->value = value;
+        }
     }
-  }
 
-  if (pMap->pBuckets != NULL)
-  {
-    unsigned int nHashBucket, HashValue;
-    Bucket* pBucket =
-      FindBucket(pMap,
-        Key,
-        &nHashBucket,
-        &HashValue);
-
-    if (pBucket == NULL)
-    {
-      pBucket = (Bucket*)malloc(sizeof(Bucket) * 1);
-      pBucket->Hash = HashValue;
-      pBucket->pValue = newValue;
-      pBucket->Key = Key;
-      pBucket->pNext = pMap->pBuckets[nHashBucket];
-      pMap->pBuckets[nHashBucket] = pBucket;
-      pMap->Count++;
-      result = 0;
-    }
-
-    else
-    {
-      result = 1;
-      *ppPreviousValue = pBucket->pValue;
-      pBucket->pValue = newValue;
-      pBucket->Key = Key;
-    }
-  }
-
-  return result;
+    return result;
 }
 
 ```
 
+```cpp
+
+int main()
+{
+    struct hashmap map = { .capacity = 100 };
+
+    hashmap_set(&map, "a", 1);
+    hashmap_set(&map, "a", 2);
+    int value;
+    assert(hashmap_find(&map, "a", &value));
+    assert(!hashmap_find(&map, "b", &value));
+
+    bool bRemoved = hashmap_remove(&map, "a");
+
+
+
+    hashmap_destroy(&map);
+}
+
+```
 
