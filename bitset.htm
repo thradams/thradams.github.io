@@ -125,16 +125,6 @@
   printf(<span class="string">&quot;\n&quot;</span>);
 }
 
-<span class="keyword">void</span> bitset_intersection(<span class="keyword">struct</span> bitset* a, <span class="keyword">struct</span> bitset* b, <span class="keyword">struct</span> bitset* result)
-{
-  <span class="keyword">int</span> min = a-&gt;size &lt; b-&gt;size ? a-&gt;size : b-&gt;size;
-  bitset_resize(result, min);
-
-  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; min; i++)
-  {
-    result-&gt;bits
-  }
-}
 
 <span class="keyword">int</span> main()
 {

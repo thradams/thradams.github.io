@@ -100,16 +100,6 @@ void bitset_print(struct bitset* bitset)
   printf("\n");
 }
 
-void bitset_intersection(struct bitset* a, struct bitset* b, struct bitset* result)
-{
-  int min = a->size < b->size ? a->size : b->size;
-  bitset_resize(result, min);
-
-  for (int i = 0; i < min; i++)
-  {
-    result->bits
-  }
-}
 
 int main()
 {
