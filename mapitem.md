@@ -86,17 +86,19 @@ void hashmap_destroy(struct hashmap* pMap)
 struct item* hashmap_find(struct hashmap* pMap, const char* key)
 {
     struct item* p = NULL;
-    
-    unsigned int hash = stringhash(key);
-    int index = hash % pMap->capacity;
-
-    struct mapentry* pentry = pMap->table[index];
-
-    for (; pentry != NULL; pentry = pentry->next) 
+    if (pMap->capacity > 0)
     {
-        if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
-            p = &pentry->item;
-            break;
+        unsigned int hash = stringhash(key);
+        int index = hash % pMap->capacity;
+
+        struct mapentry* pentry = pMap->table[index];
+
+        for (; pentry != NULL; pentry = pentry->next) 
+        {
+            if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
+                p = &pentry->item;
+                break;
+            }
         }
     }
 

@@ -22,3 +22,6 @@ Copy this code and customize.
 
 [int](mapint.md)
 
+## Bitset
+
+[bitset](bitset.md)

@@ -111,17 +111,19 @@
 <span class="keyword">struct</span> item* hashmap_find(<span class="keyword">struct</span> hashmap* pMap, <span class="keyword">const</span> <span class="keyword">char</span>* key)
 {
     <span class="keyword">struct</span> item* p = NULL;
-    
-    <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = stringhash(key);
-    <span class="keyword">int</span> index = hash % pMap-&gt;capacity;
-
-    <span class="keyword">struct</span> mapentry* pentry = pMap-&gt;table[index];
-
-    <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next) 
+    <span class="keyword">if</span> (pMap-&gt;capacity &gt; <span class="number">0</span>)
     {
-        <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
-            p = &amp;pentry-&gt;item;
-            <span class="keyword">break</span>;
+        <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = stringhash(key);
+        <span class="keyword">int</span> index = hash % pMap-&gt;capacity;
+
+        <span class="keyword">struct</span> mapentry* pentry = pMap-&gt;table[index];
+
+        <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next) 
+        {
+            <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
+                p = &amp;pentry-&gt;item;
+                <span class="keyword">break</span>;
+            }
         }
     }
 
