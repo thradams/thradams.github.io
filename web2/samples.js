@@ -123,6 +123,36 @@ int main()
 }
 `;
 
+
+sample["If defer and jumps"] =
+`
+
+#include <stdlib.h>
+
+int main()
+{
+   if (void* p0 = malloc(1) ; p0; free(p0))
+   {
+     for (;;)
+     {
+       if (void* p1 = malloc(1) ; p1; free(p1))
+       {     
+         if (void* p2 = malloc(1) ; p2; free(p2))
+         {
+           break;
+         }       
+         while (1)
+         {
+           break;
+         }
+         return;
+       }
+     }
+   }
+}
+`;
+
+
 sample["Polimorphism"] =
 `
 
