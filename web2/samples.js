@@ -118,7 +118,7 @@ int main()
 {
    if (struct Person* auto p = new (struct Person); p; destroy(p))
    {
-     /*at this moment break, return or goto will not call defer*/
+     
    }
 }
 `;
