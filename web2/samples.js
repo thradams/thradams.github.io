@@ -145,12 +145,37 @@ int main()
          {
            break;
          }
-         return;
+         return 1;
        }
      }
    }
 }
 `;
+
+sample["If+defer and return"] =
+`
+/*
+ *  This sample shows why we need a temporary copy before return
+ */
+
+#include <stdlib.h>
+
+inline void* move(void** p) {
+  void* t = *p;
+  *p = 0;
+  return t;
+}
+
+void * F() {
+  if (void* p = malloc(1); p; free(p)) 
+  {
+    if (void* p2 = malloc(2); p2; free(p2)) 
+    {
+      return move(&p2); /*p2 is moved and not destroyed anymore*/
+    }
+  }
+}
+`
 
 
 sample["Polimorphism"] =
