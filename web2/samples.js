@@ -176,6 +176,37 @@ void * F() {
   }
 }
 `
+sample["If + defer"] =
+`
+#include  <stdlib.h>
+
+struct allocator {
+    int dummy;
+};
+
+void* allocator_alloc(struct allocator* allocator, int bytes) {
+    return malloc(bytes);
+}
+
+void* allocator_free(struct allocator* allocator, void* p) {
+    free(p);
+}
+
+void* allocator_destroy(struct allocator* allocator){
+}
+
+int main() {
+    struct allocator allocator = { 0 };
+
+    if (void* p = allocator_alloc(&allocator, 1);
+        p;
+        allocator_free(&allocator, p)
+        ) 
+    {        
+    }
+    allocator_destroy(&allocator);
+}
+`
 
 
 sample["Polimorphism"] =

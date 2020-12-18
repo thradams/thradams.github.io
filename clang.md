@@ -2,7 +2,7 @@
 
 September 2020
 
-I have implemented these features in a c compiler that generates
+I have implemented (some of) these features in a c compiler that generates
 c code.
 
 [cprime online](/web2/cprime.html)
@@ -38,7 +38,7 @@ int main() {
 Default initialization and struct member initializers are part of C++.
 Designed initializers also were added into C++ 20.
 
-While I was implementing this feature I check against C++ and I am  
+While I was implementing this feature I checked against C++ and I am  
 disappointed by the following.
 
 ```cpp
@@ -62,12 +62,11 @@ int main() {
 This sample prints 2 in C++. So it does not take in account 
 the default values of point variable in line.
 
-I was planing to print 4 because this is the default of variable point 
-in line.
+I was planing to print 4 because this is the default of variable  
+point in line.
 
 This king of incompatibility with C++ would be very dangerous and I am holding 
 this implementation.
-
 
 
 ## if with initializer 
@@ -98,12 +97,14 @@ we also have an option with 'defer' to put everything at same line.
   }
 ```
 
+When jumps like continue, break or goto are used 
+the defer is called before.
 
-Open question:  What happens when break, return or goto is called?
+When return is called (because this is a transpiler) we 
+need to create an extra variable.
 
-Option 1: ban these keywords in this context.
-
-Option2: call the defer expression before jump.
+One alternative for make the code more "honest and direct" is forbid  
+jumps. In this case it is like a for that runs just once.
 
 
 ## Lambdas 
@@ -116,8 +117,16 @@ Similar of C++ but without capture.
     [] compound-statement
 ```
 
+The return is always void but I think the C++ syntax for return
+can be added then lambdas can be used in algorithms like sort.
 
 # Part II - Features for a "light C++"
+
+These features are at this separated topic because they 
+imply more changes in the "spirit of C" and they are more like 
+"what if we had a simple C++"?
+
+
 
 ### Overloaded functions
 
@@ -172,6 +181,13 @@ Open question: Should we accept string literals?
 ```cpp
 char  *s = new ("text");
 ````
+
+So far there is no way to customize the allocator. I am considering 
+other alternatives to make it generic without adding C++ complexity.
+
+```cpp
+struct X* p = malloc(sizeof * p) *= {struct X}{};
+```
 
 ## Destroy operator
 
