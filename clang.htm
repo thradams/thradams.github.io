@@ -27,7 +27,7 @@
 
 <p>September 2020</p>
 
-<p>I have implemented these features in a c compiler that generatesc code.</p>
+<p>I have implemented (some of) these features in a c compiler that generatesc code.</p>
 
 <p><a href="/web2/cprime.html">cprime online</a></p>
 
@@ -63,7 +63,7 @@
 
 <p>Default initialization and struct member initializers are part of C++.Designed initializers also were added into C++ 20.</p>
 
-<p>While I was implementing this feature I check against C++ and I am  disappointed by the following.</p>
+<p>While I was implementing this feature I checked against C++ and I am  disappointed by the following.</p>
 
 <pre>
 
@@ -86,10 +86,9 @@
 
 <p>This sample prints 2 in C++. So it does not take in account the default values of point variable in line.</p>
 
-<p>I was planing to print 4 because this is the default of variable point in line.</p>
+<p>I was planing to print 4 because this is the default of variable  point in line.</p>
 
 <p>This king of incompatibility with C++ would be very dangerous and I am holding this implementation.</p>
-
 
 
 <h2> if with initializer </h2>
@@ -121,12 +120,11 @@
 </pre>
 
 
+<p>When jumps like continue, break or goto are used the defer is called before.</p>
 
-<p>Open question:  What happens when break, return or goto is called?</p>
+<p>When return is called (because this is a transpiler) we need to create an extra variable.</p>
 
-<p>Option 1: ban these keywords in this context.</p>
-
-<p>Option2: call the defer expression before jump.</p>
+<p>One alternative for make the code more &quot;honest and direct&quot; is forbid  jumps. In this case it is like a for that runs just once.</p>
 
 
 <h2> Lambdas </h2>
@@ -139,8 +137,13 @@
     [] compound-statement
 </pre>
 
+<p>The return is always void but I think the C++ syntax for returncan be added then lambdas can be used in algorithms like sort.</p>
 
 <h1> Part II - Features for a "light C++"</h1>
+
+<p>These features are at this separated topic because they imply more changes in the &quot;spirit of C&quot; and they are more like &quot;what if we had a simple C++&quot;?</p>
+
+
 
 <h3> Overloaded functions</h3>
 
@@ -196,6 +199,13 @@
 <span class="keyword">char</span>  *s = <span class="keyword">new</span> (<span class="string">&quot;text&quot;</span>);
 </pre>
 <p>`</p>
+
+<p>So far there is no way to customize the allocator. I am considering other alternatives to make it generic without adding C++ complexity.</p>
+
+<pre>
+<span class="keyword">struct</span> X* p = malloc(<span class="keyword">sizeof</span> * p) *= {<span class="keyword">struct</span> X}{};
+</pre>
+
 
 <h2> Destroy operator</h2>
 
