@@ -10,6 +10,9 @@ c code.
 
 ## Struct member initializer
 
+The same syntax of declaring and initializing global variables 
+but for struct members. 
+
 ```cpp
 
 struct X {
@@ -19,27 +22,21 @@ struct X {
 
 ```
 
-## Empty Initializer/Compound literal
-
-**Static initialization** using the values of member initializer. 
+This information is used for empty initialization and 
+empty compound literals.
 
 ```cpp
 int main() {
    
    struct X x = {};       
-   struct X x1[200] = {};
-
    x = (struct X) {};       
-
 }
 
 ```
 
-Default initialization and struct member initializers are part of C++.
-Designed initializers also were added into C++ 20.
+C++ has this features but with some unexpected 
+design.
 
-While I was implementing this feature I checked against C++ and I am  
-disappointed by the following.
 
 ```cpp
 
@@ -59,14 +56,11 @@ int main() {
 
 ```
 
-This sample prints 2 in C++. So it does not take in account 
-the default values of point variable in line.
+This sample prints 2 in C++. 
 
-I was planing to print 4 because this is the default of variable  
-point in line.
+I was expecting 4.
 
-This king of incompatibility with C++ would be very dangerous and I am holding 
-this implementation.
+C++ also accepts non constant initialization. 
 
 
 ## if with initializer 
@@ -75,7 +69,7 @@ This is the same of C++ 17.
 
 ```cpp
 
-  if (struct X* pX = malloc(sizeof * pX), pX)
+  if (struct X* pX = malloc(sizeof * pX); pX)
   {    
     ...
     free(pX);
@@ -91,21 +85,17 @@ Considering the interesting pattern above (that is very useful to avoid bugs)
 we also have an option with 'defer' to put everything at same line.
 
 ```cpp
-  if (FILE* f = fopen("file.txt", "r"), f, fclose(f))
+  if (FILE* f = fopen("file.txt", "r"); f; fclose(f))
   {        
      
   }
 ```
 
 When jumps like continue, break or goto are used 
-the defer is called before.
+the defer is called before the jump.
 
-When return is called (because this is a transpiler) we 
-need to create an extra variable.
-
-One alternative for make the code more "honest and direct" is forbid  
-jumps. In this case it is like a for that runs just once.
-
+When return is called first the result is copied to a local 
+variable then defer is called then  copied variable is returned.
 
 ## Lambdas 
 
@@ -117,7 +107,7 @@ Similar of C++ but without capture.
     [] compound-statement
 ```
 
-The return is always void but I think the C++ syntax for return
+The return is always void but I think the C++ syntax for return 
 can be added then lambdas can be used in algorithms like sort.
 
 # Part II - Features for a "light C++"
@@ -137,7 +127,7 @@ void draw(struct Box* p) overload;
 void draw(struct Circle* p) overload;
 ```
 
-See reference :
+See reference : 
 https://clang.llvm.org/docs/AttributeReference.html#overloadable
 
 We can think of it as an inverse of extern "C".

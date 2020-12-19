@@ -34,6 +34,8 @@
 
 <h2> Struct member initializer</h2>
 
+<p>The same syntax of declaring and initializing global variables but for struct members. </p>
+
 <pre>
 
 <span class="keyword">struct</span> X {
@@ -44,26 +46,20 @@
 </pre>
 
 
-<h2> Empty Initializer/Compound literal</h2>
-
-<p><strong>Static initialization</strong> using the values of member initializer. </p>
+<p>This information is used for empty initialization and empty compound literals.</p>
 
 <pre>
 <span class="keyword">int</span> main() {
    
    <span class="keyword">struct</span> X x = {};       
-   <span class="keyword">struct</span> X x1[<span class="number">200</span>] = {};
-
    x = (<span class="keyword">struct</span> X) {};       
-
 }
 
 </pre>
 
 
-<p>Default initialization and struct member initializers are part of C++.Designed initializers also were added into C++ 20.</p>
+<p>C++ has this features but with some unexpected design.</p>
 
-<p>While I was implementing this feature I checked against C++ and I am  disappointed by the following.</p>
 
 <pre>
 
@@ -84,11 +80,11 @@
 </pre>
 
 
-<p>This sample prints 2 in C++. So it does not take in account the default values of point variable in line.</p>
+<p>This sample prints 2 in C++. </p>
 
-<p>I was planing to print 4 because this is the default of variable  point in line.</p>
+<p>I was expecting 4.</p>
 
-<p>This king of incompatibility with C++ would be very dangerous and I am holding this implementation.</p>
+<p>C++ also accepts non constant initialization. </p>
 
 
 <h2> if with initializer </h2>
@@ -97,7 +93,7 @@
 
 <pre>
 
-  <span class="keyword">if</span> (<span class="keyword">struct</span> X* pX = malloc(<span class="keyword">sizeof</span> * pX), pX)
+  <span class="keyword">if</span> (<span class="keyword">struct</span> X* pX = malloc(<span class="keyword">sizeof</span> * pX); pX)
   {    
     ...
     free(pX);
@@ -113,19 +109,16 @@
 <p>Considering the interesting pattern above (that is very useful to avoid bugs) we also have an option with 'defer' to put everything at same line.</p>
 
 <pre>
-  <span class="keyword">if</span> (FILE* f = fopen(<span class="string">&quot;file.txt&quot;</span>, <span class="string">&quot;r&quot;</span>), f, fclose(f))
+  <span class="keyword">if</span> (FILE* f = fopen(<span class="string">&quot;file.txt&quot;</span>, <span class="string">&quot;r&quot;</span>); f; fclose(f))
   {        
      
   }
 </pre>
 
 
-<p>When jumps like continue, break or goto are used the defer is called before.</p>
+<p>When jumps like continue, break or goto are used the defer is called before the jump.</p>
 
-<p>When return is called (because this is a transpiler) we need to create an extra variable.</p>
-
-<p>One alternative for make the code more &quot;honest and direct&quot; is forbid  jumps. In this case it is like a for that runs just once.</p>
-
+<p>When return is called first the result is copied to a local variable then defer is called then  copied variable is returned.</p>
 
 <h2> Lambdas </h2>
 
@@ -137,7 +130,7 @@
     [] compound-statement
 </pre>
 
-<p>The return is always void but I think the C++ syntax for returncan be added then lambdas can be used in algorithms like sort.</p>
+<p>The return is always void but I think the C++ syntax for return can be added then lambdas can be used in algorithms like sort.</p>
 
 <h1> Part II - Features for a "light C++"</h1>
 
@@ -155,7 +148,7 @@
 </pre>
 
 
-<p>See reference :<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
+<p>See reference : <a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
 
 <p>We can think of it as an inverse of extern &quot;C&quot;.</p>
 
