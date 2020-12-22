@@ -1,0 +1,94 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> Capture</h1>
+
+<p>We can place objects into some memory and remove then sequentially.</p>
+
+<p>All objects are aligned in the maximum alignment type max</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;stddef.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">typedef</span> <span class="keyword">long</span> <span class="keyword">double</span> max_align_t;
+
+<span class="keyword">void</span>* place(max_align_t** pmem, <span class="keyword">unsigned</span> nbytes)
+{
+    <span class="keyword">unsigned</span> nunits = nbytes / <span class="keyword">sizeof</span>(*pmem[<span class="number">0</span>]);
+    <span class="keyword">if</span> (nbytes % <span class="keyword">sizeof</span>(*pmem[<span class="number">0</span>]) != <span class="number">0</span>)
+        nunits++;
+
+    <span class="keyword">void</span>* p = (<span class="keyword">void</span>*)*pmem;
+    *pmem += nunits;
+    <span class="keyword">return</span> p;
+}
+
+<span class="keyword">#define</span> capture(V) max_align_t* pCapture = V
+<span class="keyword">#define</span> set(T) *((T*)place(&amp;pCapture, <span class="number">4</span>, <span class="keyword">sizeof</span>(T)))
+<span class="keyword">#define</span> var(T, name) T name = *((T*)place(&amp;pCapture, <span class="keyword">sizeof</span>(T)));
+
+
+<span class="keyword">void</span> F(max_align_t* data)
+{
+    capture(data);
+    var(<span class="keyword">int</span>, i);
+    var(<span class="keyword">double</span>, d);
+    var(<span class="keyword">char</span>, c);
+   
+    printf(<span class="string">&quot;%d &quot;</span>, i);
+    printf(<span class="string">&quot;%f &quot;</span>, d);
+    printf(<span class="string">&quot;%c &quot;</span>, c);
+}
+
+
+<span class="keyword">int</span> main(<span class="keyword">void</span>) {
+
+    max_align_t data[<span class="number">4</span>];
+
+    capture(data);
+    set(<span class="keyword">int</span>) = <span class="number">1</span>;
+    set(<span class="keyword">double</span>) = <span class="number">2.3</span>;
+    set(<span class="keyword">char</span>) = <span class="string">'a'</span>;
+
+    F(data);
+
+}
+
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
