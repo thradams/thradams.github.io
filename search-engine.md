@@ -19,14 +19,12 @@ struct document
     const char* title;
 };
 
-
 struct documents
 {
     struct document** data;
     int size;
     int capacity;
 };
-
 
 void document_delete(struct document* p)
 {
@@ -95,7 +93,6 @@ inline bool bitset_getbit(struct bitset* bitset, int index)
 
 int bitset_resize(struct bitset* p, int newSize);
 
-
 struct search_index_entry {
     struct search_index_entry* next;
     unsigned int hash;
@@ -109,7 +106,6 @@ struct search_index {
     unsigned int capacity;
     int  size;
 };
-
 
 int bitset_resize(struct bitset* p, int newSize)
 {
@@ -132,7 +128,6 @@ int bitset_resize(struct bitset* p, int newSize)
     return p->size;
 }
 
-
 void bitset_setbit(struct bitset* bitset, int index, bool b)
 {
     int wordindex = index / BITSET_NUM_BITS_PER_WORD;
@@ -140,22 +135,15 @@ void bitset_setbit(struct bitset* bitset, int index, bool b)
     if ((wordindex + 1) > bitset->size)
     {
         if (bitset_resize(bitset, wordindex + 1) == 0)
-        {
             return;
-        }
     }
 
     unsigned long bit = 1ul << index % BITSET_NUM_BITS_PER_WORD;
     if (b)
-    {
         bitset->bits[wordindex] |= bit;
-    }
     else
-    {
         bitset->bits[wordindex] &= ~bit;
-    }
 }
-
 
 void bitset_destroy(struct bitset* p)
 {
@@ -219,7 +207,8 @@ struct bitset* search_index_find(struct search_index* pMap, const char* key)
 
     for (; pentry != NULL; pentry = pentry->next)
     {
-        if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
+        if (pentry->hash == hash && strcmp(pentry->key, key) == 0) 
+        {
             p = &pentry->bitset;
             break;
         }
@@ -235,7 +224,8 @@ int search_index_set(struct search_index* pMap, const char* key, int docindex)
 
     if (pMap->table == NULL)
     {
-        if (pMap->capacity < 1) {
+        if (pMap->capacity < 1) 
+        {
             pMap->capacity = 1000;
         }
 
@@ -249,8 +239,10 @@ int search_index_set(struct search_index* pMap, const char* key, int docindex)
 
         struct search_index_entry* pentry = pMap->table[index];
 
-        for (; pentry != NULL; pentry = pentry->next) {
-            if (pentry->hash == hash && strcmp(pentry->key, key) == 0) {
+        for (; pentry != NULL; pentry = pentry->next) 
+        {
+            if (pentry->hash == hash && strcmp(pentry->key, key) == 0) 
+            {
                 break;
             }
         }
@@ -293,13 +285,11 @@ void find_docs(int nwords,
             {
                 for (int j = 0; j < bitset->size; j++)
                 {
-
                     if ((j + 1) > result->size)
                     {
                         bitset_resize(result, j + 1);
                     }
                     result->bits[j] = bitset->bits[j];
-
                 }
                 bFirst = false;
             }
@@ -307,7 +297,6 @@ void find_docs(int nwords,
             {
                 for (int j = 0; j < bitset->size; j++)
                 {
-
                     if (j > result->size)
                     {
                         bitset_resize(result, j + 1);
@@ -319,8 +308,6 @@ void find_docs(int nwords,
     }
 }
 
-
-
 void print_results(struct bitset* bitset, struct documents* documents)
 {
     for (int i = 0; i < bitset->size * BITSET_NUM_BITS_PER_WORD; i++)
@@ -331,7 +318,6 @@ void print_results(struct bitset* bitset, struct documents* documents)
         }
     }
 }
-
 
 int main(void) {
 
