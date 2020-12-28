@@ -44,14 +44,12 @@
     <span class="keyword">const</span> <span class="keyword">char</span>* title;
 };
 
-
 <span class="keyword">struct</span> documents
 {
     <span class="keyword">struct</span> document** data;
     <span class="keyword">int</span> size;
     <span class="keyword">int</span> capacity;
 };
-
 
 <span class="keyword">void</span> document_delete(<span class="keyword">struct</span> document* p)
 {
@@ -120,7 +118,6 @@
 
 <span class="keyword">int</span> bitset_resize(<span class="keyword">struct</span> bitset* p, <span class="keyword">int</span> newSize);
 
-
 <span class="keyword">struct</span> search_index_entry {
     <span class="keyword">struct</span> search_index_entry* next;
     <span class="keyword">unsigned</span> <span class="keyword">int</span> hash;
@@ -134,7 +131,6 @@
     <span class="keyword">unsigned</span> <span class="keyword">int</span> capacity;
     <span class="keyword">int</span>  size;
 };
-
 
 <span class="keyword">int</span> bitset_resize(<span class="keyword">struct</span> bitset* p, <span class="keyword">int</span> newSize)
 {
@@ -157,7 +153,6 @@
     <span class="keyword">return</span> p-&gt;size;
 }
 
-
 <span class="keyword">void</span> bitset_setbit(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">int</span> index, <span class="keyword">bool</span> b)
 {
     <span class="keyword">int</span> wordindex = index / BITSET_NUM_BITS_PER_WORD;
@@ -165,22 +160,15 @@
     <span class="keyword">if</span> ((wordindex + <span class="number">1</span>) &gt; bitset-&gt;size)
     {
         <span class="keyword">if</span> (bitset_resize(bitset, wordindex + <span class="number">1</span>) == <span class="number">0</span>)
-        {
             <span class="keyword">return</span>;
-        }
     }
 
     <span class="keyword">unsigned</span> <span class="keyword">long</span> bit = <span class="number">1</span>ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD;
     <span class="keyword">if</span> (b)
-    {
         bitset-&gt;bits[wordindex] |= bit;
-    }
     <span class="keyword">else</span>
-    {
         bitset-&gt;bits[wordindex] &amp;= ~bit;
-    }
 }
-
 
 <span class="keyword">void</span> bitset_destroy(<span class="keyword">struct</span> bitset* p)
 {
@@ -244,7 +232,8 @@
 
     <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next)
     {
-        <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
+        <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) 
+        {
             p = &amp;pentry-&gt;bitset;
             <span class="keyword">break</span>;
         }
@@ -260,7 +249,8 @@
 
     <span class="keyword">if</span> (pMap-&gt;table == NULL)
     {
-        <span class="keyword">if</span> (pMap-&gt;capacity &lt; <span class="number">1</span>) {
+        <span class="keyword">if</span> (pMap-&gt;capacity &lt; <span class="number">1</span>) 
+        {
             pMap-&gt;capacity = <span class="number">1000</span>;
         }
 
@@ -274,8 +264,10 @@
 
         <span class="keyword">struct</span> search_index_entry* pentry = pMap-&gt;table[index];
 
-        <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next) {
-            <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
+        <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next) 
+        {
+            <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) 
+            {
                 <span class="keyword">break</span>;
             }
         }
@@ -318,13 +310,11 @@
             {
                 <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; bitset-&gt;size; j++)
                 {
-
                     <span class="keyword">if</span> ((j + <span class="number">1</span>) &gt; result-&gt;size)
                     {
                         bitset_resize(result, j + <span class="number">1</span>);
                     }
                     result-&gt;bits[j] = bitset-&gt;bits[j];
-
                 }
                 bFirst = <span class="keyword">false</span>;
             }
@@ -332,7 +322,6 @@
             {
                 <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; bitset-&gt;size; j++)
                 {
-
                     <span class="keyword">if</span> (j &gt; result-&gt;size)
                     {
                         bitset_resize(result, j + <span class="number">1</span>);
@@ -344,8 +333,6 @@
     }
 }
 
-
-
 <span class="keyword">void</span> print_results(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">struct</span> documents* documents)
 {
     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; bitset-&gt;size * BITSET_NUM_BITS_PER_WORD; i++)
@@ -356,7 +343,6 @@
         }
     }
 }
-
 
 <span class="keyword">int</span> main(<span class="keyword">void</span>) {
 
