@@ -1,0 +1,414 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> Search engine</h1>
+
+<p>Simple search engine to find words in documents.</p>
+
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+
+<span class="keyword">#define</span> strdup _strdup
+
+<span class="keyword">struct</span> document
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* url;
+    <span class="keyword">const</span> <span class="keyword">char</span>* title;
+};
+
+
+<span class="keyword">struct</span> documents
+{
+    <span class="keyword">struct</span> document** data;
+    <span class="keyword">int</span> size;
+    <span class="keyword">int</span> capacity;
+};
+
+
+<span class="keyword">void</span> document_delete(<span class="keyword">struct</span> document* p)
+{
+    free(p);
+}
+
+<span class="keyword">int</span> documents_reserve(<span class="keyword">struct</span> documents* p, <span class="keyword">int</span> n)
+{
+    <span class="keyword">if</span> (n &gt; p-&gt;capacity)
+    {
+        <span class="keyword">void</span>* pnew = realloc(p-&gt;data, n * <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]));
+        <span class="keyword">if</span> (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = n;
+        }
+        <span class="keyword">else</span>
+            <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">/*out of mem*/</span>
+    }
+
+    <span class="keyword">return</span> p-&gt;capacity;
+}
+
+<span class="keyword">int</span> documents_push(<span class="keyword">struct</span> documents* p, <span class="keyword">struct</span> document* pitem)
+{
+    <span class="keyword">if</span> (p-&gt;size + <span class="number">1</span> &gt; p-&gt;capacity)
+    {
+        <span class="keyword">int</span> n = p-&gt;capacity * <span class="number">2</span>;
+        <span class="keyword">if</span> (n == <span class="number">0</span>)
+            n = <span class="number">1</span>;
+
+        <span class="keyword">if</span> (documents_reserve(p, n) == <span class="number">0</span>)
+        {
+            document_delete(pitem); <span class="comment">/*design choice*/</span>
+            <span class="keyword">return</span> <span class="number">0</span>;
+        }
+    }
+
+    p-&gt;data[p-&gt;size] = pitem;
+    p-&gt;size++;
+
+    <span class="keyword">return</span> p-&gt;size - <span class="number">1</span>;
+}
+
+<span class="keyword">void</span> documents_destroy(<span class="keyword">struct</span> documents* p)
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+        document_delete(p-&gt;data[i]);
+
+    free(p-&gt;data);
+}
+
+<span class="keyword">#define</span> BITSET_NUM_BITS_PER_WORD (CHAR_BIT * (<span class="keyword">int</span>)<span class="keyword">sizeof</span>(<span class="keyword">unsigned</span> <span class="keyword">long</span>))
+
+<span class="keyword">struct</span> bitset
+{
+    <span class="keyword">unsigned</span> <span class="keyword">long</span>* bits;
+    <span class="keyword">int</span> size;
+};
+
+<span class="keyword">inline</span> <span class="keyword">bool</span> bitset_getbit(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">int</span> index)
+{
+    assert(index / BITSET_NUM_BITS_PER_WORD &lt; bitset-&gt;size);
+    <span class="keyword">return</span> (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp; (<span class="number">1</span>ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != <span class="number">0</span>;
+}
+
+<span class="keyword">int</span> bitset_resize(<span class="keyword">struct</span> bitset* p, <span class="keyword">int</span> newSize);
+
+
+<span class="keyword">struct</span> search_index_entry {
+    <span class="keyword">struct</span> search_index_entry* next;
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> hash;
+    <span class="keyword">char</span>* key;
+    <span class="keyword">struct</span> bitset bitset;
+};
+
+<span class="keyword">struct</span> search_index {
+
+    <span class="keyword">struct</span> search_index_entry** table;
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> capacity;
+    <span class="keyword">int</span>  size;
+};
+
+
+<span class="keyword">int</span> bitset_resize(<span class="keyword">struct</span> bitset* p, <span class="keyword">int</span> newSize)
+{
+    <span class="keyword">if</span> (newSize &gt; p-&gt;size)
+    {
+        <span class="keyword">int</span> oldsize = p-&gt;size;
+        <span class="keyword">unsigned</span> <span class="keyword">long</span>* pnew = realloc(p-&gt;bits, newSize * <span class="keyword">sizeof</span>(p-&gt;bits[<span class="number">0</span>]));
+        <span class="keyword">if</span> (pnew)
+        {
+            memset(pnew + oldsize, <span class="number">0</span>, <span class="keyword">sizeof</span>(p-&gt;bits[<span class="number">0</span>]) * (newSize - oldsize));
+            p-&gt;bits = pnew;
+            p-&gt;size = newSize;
+        }
+        <span class="keyword">else</span>
+        {
+            <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">/*out of mem*/</span>
+        }
+    }
+
+    <span class="keyword">return</span> p-&gt;size;
+}
+
+
+<span class="keyword">void</span> bitset_setbit(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">int</span> index, <span class="keyword">bool</span> b)
+{
+    <span class="keyword">int</span> wordindex = index / BITSET_NUM_BITS_PER_WORD;
+
+    <span class="keyword">if</span> ((wordindex + <span class="number">1</span>) &gt; bitset-&gt;size)
+    {
+        <span class="keyword">if</span> (bitset_resize(bitset, wordindex + <span class="number">1</span>) == <span class="number">0</span>)
+        {
+            <span class="keyword">return</span>;
+        }
+    }
+
+    <span class="keyword">unsigned</span> <span class="keyword">long</span> bit = <span class="number">1</span>ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD;
+    <span class="keyword">if</span> (b)
+    {
+        bitset-&gt;bits[wordindex] |= bit;
+    }
+    <span class="keyword">else</span>
+    {
+        bitset-&gt;bits[wordindex] &amp;= ~bit;
+    }
+}
+
+
+<span class="keyword">void</span> bitset_destroy(<span class="keyword">struct</span> bitset* p)
+{
+    free(p-&gt;bits);
+}
+
+<span class="keyword">void</span> search_index_remove_all(<span class="keyword">struct</span> search_index* pMap) {
+
+    <span class="keyword">if</span> (pMap-&gt;table != NULL)
+    {
+        <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pMap-&gt;capacity; i++)
+        {
+            <span class="keyword">struct</span> search_index_entry* pentry = pMap-&gt;table[i];
+
+            <span class="keyword">while</span> (pentry != NULL)
+            {
+                <span class="keyword">struct</span> search_index_entry* pentryCurrent = pentry;
+
+                bitset_destroy(&amp;pentryCurrent-&gt;bitset);
+
+                pentry = pentry-&gt;next;
+                free(pentryCurrent-&gt;key);
+                free(pentryCurrent);
+            }
+        }
+
+        free(pMap-&gt;table);
+        pMap-&gt;table = NULL;
+        pMap-&gt;size = <span class="number">0</span>;
+    }
+}
+
+<span class="keyword">void</span> search_index_destroy(<span class="keyword">struct</span> search_index* pMap)
+{
+    search_index_remove_all(pMap);
+}
+
+<span class="keyword">unsigned</span> <span class="keyword">int</span> stringhash(<span class="keyword">const</span> <span class="keyword">char</span>* key)
+{
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> uHashVal = <span class="number">2166136261</span>U;
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> uFirst = <span class="number">0</span>;
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> uLast = (<span class="keyword">unsigned</span> <span class="keyword">int</span>)strlen(key);
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> uStride = <span class="number">1</span> + uLast / <span class="number">10</span>;
+
+    <span class="keyword">for</span> (; uFirst &lt; uLast; uFirst += uStride)
+    {
+        uHashVal = <span class="number">16777619</span>U * uHashVal ^ (<span class="keyword">unsigned</span> <span class="keyword">int</span>)key[uFirst];
+    }
+
+    <span class="keyword">return</span> (uHashVal);
+}
+
+<span class="keyword">struct</span> bitset* search_index_find(<span class="keyword">struct</span> search_index* pMap, <span class="keyword">const</span> <span class="keyword">char</span>* key)
+{
+    <span class="keyword">struct</span> bitset* p = NULL;
+
+    <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = stringhash(key);
+    <span class="keyword">int</span> index = hash % pMap-&gt;capacity;
+
+    <span class="keyword">struct</span> search_index_entry* pentry = pMap-&gt;table[index];
+
+    <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next)
+    {
+        <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
+            p = &amp;pentry-&gt;bitset;
+            <span class="keyword">break</span>;
+        }
+    }
+
+    <span class="keyword">return</span> p;
+}
+
+
+<span class="keyword">int</span> search_index_set(<span class="keyword">struct</span> search_index* pMap, <span class="keyword">const</span> <span class="keyword">char</span>* key, <span class="keyword">int</span> docindex)
+{
+    <span class="keyword">int</span> result = <span class="number">0</span>;
+
+    <span class="keyword">if</span> (pMap-&gt;table == NULL)
+    {
+        <span class="keyword">if</span> (pMap-&gt;capacity &lt; <span class="number">1</span>) {
+            pMap-&gt;capacity = <span class="number">1000</span>;
+        }
+
+        pMap-&gt;table = calloc(pMap-&gt;capacity, <span class="keyword">sizeof</span>(pMap-&gt;table[<span class="number">0</span>]));
+    }
+
+    <span class="keyword">if</span> (pMap-&gt;table != NULL)
+    {
+        <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = stringhash(key);
+        <span class="keyword">int</span> index = hash % pMap-&gt;capacity;
+
+        <span class="keyword">struct</span> search_index_entry* pentry = pMap-&gt;table[index];
+
+        <span class="keyword">for</span> (; pentry != NULL; pentry = pentry-&gt;next) {
+            <span class="keyword">if</span> (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == <span class="number">0</span>) {
+                <span class="keyword">break</span>;
+            }
+        }
+
+        <span class="keyword">if</span> (pentry == NULL)
+        {
+            pentry = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span>(*pentry));
+            pentry-&gt;hash = hash;
+
+            pentry-&gt;key = strdup(key);
+            pentry-&gt;next = pMap-&gt;table[index];
+            pMap-&gt;table[index] = pentry;
+            pMap-&gt;size++;
+            result = <span class="number">0</span>;
+            bitset_setbit(&amp;pentry-&gt;bitset, docindex, <span class="number">1</span>);
+        }
+        <span class="keyword">else</span>
+        {
+            result = <span class="number">1</span>;
+            bitset_setbit(&amp;pentry-&gt;bitset, docindex, <span class="number">1</span>);
+        }
+    }
+
+    <span class="keyword">return</span> result;
+}
+
+
+<span class="keyword">void</span> find_docs(<span class="keyword">int</span> nwords,
+               <span class="keyword">const</span> <span class="keyword">char</span>* words[<span class="comment">/*nwords*/</span>],
+               <span class="keyword">struct</span> search_index* search_index,
+               <span class="keyword">struct</span> bitset* result)
+{
+    <span class="keyword">bool</span> bFirst = <span class="keyword">true</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nwords; i++)
+    {
+        <span class="keyword">struct</span> bitset* bitset = search_index_find(search_index, words[i]);
+        <span class="keyword">if</span> (bitset)
+        {
+            <span class="keyword">if</span> (bFirst)
+            {
+                <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; bitset-&gt;size; j++)
+                {
+
+                    <span class="keyword">if</span> ((j + <span class="number">1</span>) &gt; result-&gt;size)
+                    {
+                        bitset_resize(result, j + <span class="number">1</span>);
+                    }
+                    result-&gt;bits[j] = bitset-&gt;bits[j];
+
+                }
+                bFirst = <span class="keyword">false</span>;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; bitset-&gt;size; j++)
+                {
+
+                    <span class="keyword">if</span> (j &gt; result-&gt;size)
+                    {
+                        bitset_resize(result, j + <span class="number">1</span>);
+                    }
+                    result-&gt;bits[j] &amp;= bitset-&gt;bits[j];
+                }
+            }
+        }
+    }
+}
+
+
+
+<span class="keyword">void</span> print_results(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">struct</span> documents* documents)
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; bitset-&gt;size * BITSET_NUM_BITS_PER_WORD; i++)
+    {
+        <span class="keyword">if</span> (bitset_getbit(bitset, i))
+        {
+            printf(<span class="string">&quot;%s\n&quot;</span>, documents-&gt;data[i]-&gt;title);
+        }
+    }
+}
+
+
+<span class="keyword">int</span> main(<span class="keyword">void</span>) {
+
+    <span class="keyword">struct</span> documents documents = { <span class="number">0</span> };
+    <span class="keyword">struct</span> search_index search_index = { <span class="number">0</span> };
+
+    <span class="keyword">struct</span> document* pdoc = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span> * pdoc);
+    <span class="keyword">if</span> (pdoc)
+    {
+        pdoc-&gt;url = strdup(<span class="string">&quot;doc1&quot;</span>);
+        pdoc-&gt;title = strdup(<span class="string">&quot;document 1&quot;</span>);
+
+        <span class="keyword">int</span> docindex1 = documents_push(&amp;documents, pdoc);
+        search_index_set(&amp;search_index, <span class="string">&quot;1&quot;</span>, docindex1);
+        search_index_set(&amp;search_index, <span class="string">&quot;document&quot;</span>, docindex1);
+
+        <span class="keyword">struct</span> document* pdoc2 = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span> * pdoc2);
+        <span class="keyword">if</span> (pdoc2)
+        {
+            pdoc2-&gt;url = strdup(<span class="string">&quot;doc2&quot;</span>);
+            pdoc2-&gt;title = strdup(<span class="string">&quot;document 2&quot;</span>);
+
+            <span class="keyword">int</span> docindex2 = documents_push(&amp;documents, pdoc2);
+            search_index_set(&amp;search_index, <span class="string">&quot;2&quot;</span>, docindex2);
+            search_index_set(&amp;search_index, <span class="string">&quot;document&quot;</span>, docindex2);
+
+            <span class="keyword">struct</span> bitset bitset = { <span class="number">0</span> };            
+            find_docs(<span class="number">1</span>, (<span class="keyword">const</span> <span class="keyword">char</span>* []) { <span class="string">&quot;1&quot;</span> }, &amp;search_index, &amp;bitset);
+            print_results(&amp;bitset, &amp;documents);
+            bitset_destroy(&amp;bitset);
+
+            printf(<span class="string">&quot;---\n&quot;</span>);
+
+            <span class="keyword">struct</span> bitset bitset2 = { <span class="number">0</span> };
+            find_docs(<span class="number">1</span>, (<span class="keyword">const</span> <span class="keyword">char</span>* []) {<span class="string">&quot;document&quot;</span>}, &amp;search_index, &amp;bitset2);
+            print_results(&amp;bitset2, &amp;documents);            
+            bitset_destroy(&amp;bitset2);
+        }
+    }
+
+    
+    documents_destroy(&amp;documents);
+    search_index_destroy(&amp;search_index);
+}
+
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
