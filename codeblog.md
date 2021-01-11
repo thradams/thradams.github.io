@@ -6,6 +6,10 @@
 
 # Chronological view
 
+## 2021
+
+[build script in C](build-script-in-c.md) Jan 2021
+
 ## 2020
 
 [search engine](search-engine.md) dez 2020

@@ -1,0 +1,118 @@
+﻿
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ <html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head> 
+ <title>Thiago's website</title> 
+ <link href="trastyle.css" type="text/css" rel="stylesheet"/>    
+ <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" /> 
+</head> 
+ <script type="text/javascript"> var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));</script> 
+
+ <script type="text/javascript"> try {var pageTracker = _gat._getTracker("UA-9617326-1");pageTracker._trackPageview();} catch(err) {}</script> 
+ <body>     <div  class="pageheader">
+
+ <h2>Thiago R. Adams website</h2> <p>     
+ 
+ <a class="linkbox" href="index.htm">HOME</a>     
+ <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+ <a class="linkbox" href="about.htm">ABOUT</a>     
+ <br /> </p> </div>
+ 
+ <article>
+
+ <!-- Page content begin --> 
+
+
+<h1> Build script with ZERO dependencies for C/C++</h1>
+
+
+<p>I will show here a simple alternative for build. </p>
+
+<p>We can add much more features starting from this simple idea.</p>
+
+<p>I will use two files main.c and file.c to show the idea:</p>
+
+
+<p>main.c</p>
+
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;file.h&quot;</span>
+<span class="keyword">int</span> main() {  F(); }
+</pre>
+
+<p>file.h</p>
+<pre>
+<span class="keyword">#pragma</span> once
+<span class="keyword">void</span> F();
+</pre>
+
+<p>file.c</p>
+<pre>
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;file.h&quot;</span>
+<span class="keyword">void</span> F() { printf(<span class="string">&quot;hello world\n&quot;</span>); }
+</pre>
+
+
+<p>Now lets create our <strong>build.c</strong> script:</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="comment">/*Compiler and platform detection*/</span>
+
+<span class="keyword">#ifdef</span> _MSC_VER
+<span class="keyword">#define</span> COMPILER <span class="string">&quot;cl &quot;</span>
+#elif __GNUC__ != <span class="number">0</span>
+<span class="keyword">#define</span> COMPILER <span class="string">&quot;gcc &quot;</span>
+<span class="keyword">#else</span>
+<span class="keyword">#error</span> compiler <span class="keyword">not</span> defined
+<span class="keyword">#endif</span>
+
+<span class="comment">/*Files you want*/</span>
+<span class="keyword">#define</span> FILES <span class="string">&quot;hellobuild.c file.c&quot;</span>
+
+<span class="comment">/*output*/</span>
+<span class="keyword">#define</span> OUT <span class="string">&quot;hellobuild&quot;</span>
+
+<span class="keyword">#define</span> COMMAND_LINE  COMPILER  <span class="string">&quot; &quot;</span> FILES <span class="string">&quot; -o &quot;</span> OUT
+
+<span class="keyword">int</span> main()
+{
+  printf(<span class="string">&quot;%s\n&quot;</span>, COMMAND_LINE);
+  system(COMMAND_LINE); 
+}
+
+</pre>
+
+
+<p>How to build on linux:</p>
+<pre>
+   gcc build.c -o build
+   ./build
+</pre>
+
+<p>How to build on windows -  Open Developer command prompt</p>
+
+<pre>
+   cl build.c
+   build
+</pre>
+
+<p>That's it</p>
+
+<p>Now we can add warnings, includes, libs for each platform and each compiler.</p>
+
+<p>Very few things to learn, almost zero.</p>
+
+<p>I will try this in a real project. Comment on twitter.</p>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  
