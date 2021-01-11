@@ -1,4 +1,4 @@
-# Build script with ZERO dependencies for C/C++
+# Multiplatform build with ZERO dependencies for C/C++
 
 
 I will show here a simple alternative for build. 
@@ -74,9 +74,13 @@ How to build on windows -  Open Developer command prompt
 
 That's it!
 
-Now we can add warnings, includes, libs for each platform and each compiler.
+Now we can add warnings, includes, libs for each platform and each compiler...
 
-Very few things to learn, almost zero.
+We can make the build script more static using macros or it also can be dynamic using the args and build strings before calling 
+system. 
+
+It is up to you. 
+
 
 I will try this in a real project. Comment on twitter.
 
