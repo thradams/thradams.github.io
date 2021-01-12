@@ -85,3 +85,17 @@ It is up to you.
 I will try this in a real project. Comment on twitter.
 
 
+### Extras
+
+Visual C++ command line. Adding resources.
+
+```
+rc TesteWindowsApp.rc
+cl /W4 TesteWindowsApp.cpp TesteWindowsApp.res  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
+```
+
+The cl compiler call the linker automatically.
+
+[See also](https://docs.microsoft.com/en-us/cpp/build/reference/compiler-command-line-syntax?view=msvc-160)
+
+
