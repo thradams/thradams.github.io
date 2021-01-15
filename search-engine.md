@@ -88,7 +88,8 @@ struct bitset
 inline bool bitset_getbit(struct bitset* bitset, int index)
 {
     assert(index / BITSET_NUM_BITS_PER_WORD < bitset->size);
-    return (bitset->bits[index / BITSET_NUM_BITS_PER_WORD] & (1ul << index % BITSET_NUM_BITS_PER_WORD)) != 0;
+    return (bitset->bits[index / BITSET_NUM_BITS_PER_WORD] &
+           (1ul << index % BITSET_NUM_BITS_PER_WORD)) != 0;
 }
 
 int bitset_resize(struct bitset* p, int newSize);

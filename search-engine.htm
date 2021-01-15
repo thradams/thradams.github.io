@@ -113,7 +113,8 @@
 <span class="keyword">inline</span> <span class="keyword">bool</span> bitset_getbit(<span class="keyword">struct</span> bitset* bitset, <span class="keyword">int</span> index)
 {
     assert(index / BITSET_NUM_BITS_PER_WORD &lt; bitset-&gt;size);
-    <span class="keyword">return</span> (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp; (<span class="number">1</span>ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != <span class="number">0</span>;
+    <span class="keyword">return</span> (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp;
+           (<span class="number">1</span>ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != <span class="number">0</span>;
 }
 
 <span class="keyword">int</span> bitset_resize(<span class="keyword">struct</span> bitset* p, <span class="keyword">int</span> newSize);

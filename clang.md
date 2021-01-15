@@ -8,6 +8,9 @@ c code.
 [cprime online](/web2/cprime.html)
 
 
+What is funny is that more I use C less things I want to change.
+
+
 ## Struct member initializer
 
 The same syntax of declaring and initializing global variables 
