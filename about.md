@@ -22,3 +22,7 @@ The new domain http://www.thradams.com is probably from 2010.
 It was moved to github pages in Feb 2017.
 
 
+## Cookies
+
+This site is does not use cookies.
+

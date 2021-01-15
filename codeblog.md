@@ -1,16 +1,22 @@
-# Projects
+# CodeBlog
+
+
+
+## Projects
 
 [Additions into C language I would like to have](clang.md) March 2020
 
 
 
-# Chronological view
+## Chronological view
 
-## 2021
+
+### 2021
 
 [build script in C](build-script-in-c.md) Jan 2021
 
-## 2020
+----
+### 2020
 
 [search engine](search-engine.md) dez 2020
 
@@ -50,8 +56,8 @@
 
 [Date and time](date.md) January 2020
 
-## 2019
-
+----
+### 2019
 
 [History of C](chistory.md) October 2019
 
@@ -71,8 +77,8 @@
 
 [String Set](strset.md) March 
 
-
-## 2018
+----
+### 2018
 
 [Merge periods](periods.md) October 2018
 
@@ -86,7 +92,8 @@
 
 [Local String Builder](localstrbuilder.md) Jan 2018
 
-## 2017
+----
+### 2017
 
 [try except](errorprop.md) Sep 2017
 
@@ -100,13 +107,15 @@
 
 [git hub pages](gitpages.md) February 2017
 
-## 2016
+----
+### 2016
 
 [Parse expressions](expr3.md) March 2016
 
 [Markdown](markdown.md) Fev 2016
 
-## 2015
+----
+### 2015
 
 [Actors C++](actorscpp.md) July 2015
 
@@ -143,7 +152,8 @@
 
 [Closures in C](cclosure.md) January 2015
 
-## 2014
+----
+### 2014
 
 [Interfaces like COM in C](comc.md) December 2014
 
@@ -160,7 +170,8 @@
 
 [SSL references](ssl.md) May 2014
 
-##2013
+----
+### 2013
 
 [HTTP references](httpbuilding.md) December 2013
 
@@ -200,8 +211,8 @@
 
 [Timers using C++11](timers.md) January 2013
 
-
-##2012
+----
+### 2012
 
 
 [C++11 properties review](properties2.md) November 2012
@@ -242,8 +253,8 @@
 
 [ Class layout in VC++](classlayout.md) January 2012
 
-
-##2011
+----
+### 2011
 
 [ Compile time parser](compparser.md) December 2011
 
@@ -273,8 +284,8 @@
 
 [Converting from WinMain to main](winmain.md) April 2011
 
-
-##2010
+----
+### 2010
 
 
 [Polymorphism in C style](cpoly.md) December 2010
@@ -304,8 +315,8 @@
 
 [Fun with lambdas - for_each_where](funlamdas2.md) February 2010
 
-
-##2009
+----
+### 2009
 
 [*TkGen 0.1 - A Lexical Analyzer Generator](tkgen.md) November 2009
 
@@ -344,8 +355,8 @@
 
 [Input function like in BASIC](basicinput.md) January 2009
 
-
-## 2008
+----
+### 2008
 
 [*Comparing two approaches to implement polymorphic collections](policol.md) November 2008 
 
@@ -361,8 +372,8 @@
 
 [Multimethods in C++](multimethods.md) August 2008
 
-
-## 2007
+----
+### 2007
 
 [My implementation of the std::tr1::function](function.md) December 2007
 
@@ -376,8 +387,8 @@
 
 [Creating COM objects directly from the dll](comdll.md) February 2007
 
-
-## 2006
+----
+### 2006
 
 [Find-Replace for standardstrings](finreplace.md) December 2006
 
@@ -387,7 +398,8 @@
 
 [Function wrapper testing the class invariant](fwrapper.md) February 2006
 
-## 2005
+----
+### 2005
 
 [River Crossing Puzzle](puzzle.md) October 2005
 
@@ -398,7 +410,7 @@
 [Using the Koenig lookup - Argument dependent name lookup (ADL)](koenig.md) 1 August 2005
 
 ----
-## 2004
+### 2004
 
 [gc - Simple class to detect memory leaks](gc.md) 24 December 2004
 
