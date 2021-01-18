@@ -35,7 +35,11 @@ struct dirent {
     char           d_name[256]; /* Null-terminated filename */
 };
 
-typedef struct DIRINFO DIR;
+typedef struct {
+    void* handle;
+    struct dirent dirent;
+} DIR;
+
 
 //https://www.man7.org/linux/man-pages/man3/fdopendir.3.html
 DIR* opendir(const char* name);
@@ -52,19 +56,6 @@ dirent.c
 #include "dirent.h"
 #include <Windows.h>
 
-#define DT_BLK 1 //This is a block device.
-#define DT_CHR 2 //This is a character device.
-#define DT_DIR 3 //This is a directory.
-#define DT_FIFO 4//This is a named pipe(FIFO).
-#define DT_LNK 5//This is a symbolic link.
-#define DT_REG 6//This is a regular file.
-#define DT_SOCK 7//This is a UNIX domain socket.
-#define DT_UNKNOWN 8//
-
-struct DIRINFO {
-    HANDLE handle;
-    struct dirent dirent;
-};
 
 DIR* opendir(const char* name)
 {
@@ -78,7 +69,7 @@ DIR* opendir(const char* name)
 
     if (handle != INVALID_HANDLE_VALUE)
     {
-        struct DIRINFO* p = calloc(1, sizeof * p);
+        DIR* p = calloc(1, sizeof * p);
         if (p)
         {
             p->handle = handle;
@@ -110,7 +101,6 @@ struct dirent* readdir(DIR* dirp)
     BOOL b = FindNextFileA(dirp->handle, &fdFile);
     if (b)
     {
-
         if (fdFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
             dirp->dirent.d_type = DT_DIR;
@@ -123,7 +113,10 @@ struct dirent* readdir(DIR* dirp)
         strcpy(dirp->dirent.d_name, fdFile.cFileName);
         return &dirp->dirent;
     }
-
+    else
+    {
+        errno = GetLastError();
+    }
     return NULL;
 }
 
