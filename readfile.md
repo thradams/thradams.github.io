@@ -1,4 +1,8 @@
 
+Reads a file with optional BOM, allocates memory with malloc
+and returns the string.
+
+
 ```cpp
 
 
