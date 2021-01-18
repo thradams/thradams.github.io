@@ -60,7 +60,11 @@
     <span class="keyword">char</span>           d_name[<span class="number">256</span>]; <span class="comment">/* Null-terminated filename */</span>
 };
 
-<span class="keyword">typedef</span> <span class="keyword">struct</span> DIRINFO DIR;
+<span class="keyword">typedef</span> <span class="keyword">struct</span> {
+    <span class="keyword">void</span>* handle;
+    <span class="keyword">struct</span> dirent dirent;
+} DIR;
+
 
 <span class="comment">//https://www.man7.org/linux/man-pages/man3/fdopendir.3.html
 </span>DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span>* name);
@@ -78,19 +82,6 @@
 <span class="keyword">#include</span> <span class="string">&quot;dirent.h&quot;</span>
 <span class="keyword">#include</span> &lt;Windows.h&gt;
 
-<span class="keyword">#define</span> DT_BLK <span class="number">1</span> <span class="comment">//This is a block device.
-</span><span class="keyword">#define</span> DT_CHR <span class="number">2</span> <span class="comment">//This is a character device.
-</span><span class="keyword">#define</span> DT_DIR <span class="number">3</span> <span class="comment">//This is a directory.
-</span><span class="keyword">#define</span> DT_FIFO <span class="number">4</span><span class="comment">//This is a named pipe(FIFO).
-</span><span class="keyword">#define</span> DT_LNK <span class="number">5</span><span class="comment">//This is a symbolic link.
-</span><span class="keyword">#define</span> DT_REG <span class="number">6</span><span class="comment">//This is a regular file.
-</span><span class="keyword">#define</span> DT_SOCK <span class="number">7</span><span class="comment">//This is a UNIX domain socket.
-</span><span class="keyword">#define</span> DT_UNKNOWN <span class="number">8</span><span class="comment">//
-</span>
-<span class="keyword">struct</span> DIRINFO {
-    HANDLE handle;
-    <span class="keyword">struct</span> dirent dirent;
-};
 
 DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span>* name)
 {
@@ -104,7 +95,7 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
 
     <span class="keyword">if</span> (handle != INVALID_HANDLE_VALUE)
     {
-        <span class="keyword">struct</span> DIRINFO* p = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span> * p);
+        DIR* p = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span> * p);
         <span class="keyword">if</span> (p)
         {
             p-&gt;handle = handle;
@@ -136,7 +127,6 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
     BOOL b = FindNextFileA(dirp-&gt;handle, &amp;fdFile);
     <span class="keyword">if</span> (b)
     {
-
         <span class="keyword">if</span> (fdFile.dwFileAttributes &amp; FILE_ATTRIBUTE_DIRECTORY)
         {
             dirp-&gt;dirent.d_type = DT_DIR;
@@ -149,7 +139,10 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
         strcpy(dirp-&gt;dirent.d_name, fdFile.cFileName);
         <span class="keyword">return</span> &amp;dirp-&gt;dirent;
     }
-
+    <span class="keyword">else</span>
+    {
+        errno = GetLastError();
+    }
     <span class="keyword">return</span> NULL;
 }
 
