@@ -127,15 +127,15 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
     BOOL b = FindNextFileA(dirp-&gt;handle, &amp;fdFile);
     <span class="keyword">if</span> (b)
     {
+        <span class="comment">/*clear*/</span>
+        memset(&amp;dirp-&gt;dirent, <span class="number">0</span>, <span class="keyword">sizeof</span>(dirp-&gt;dirent));
+
+        
         <span class="keyword">if</span> (fdFile.dwFileAttributes &amp; FILE_ATTRIBUTE_DIRECTORY)
         {
-            dirp-&gt;dirent.d_type = DT_DIR;
+            dirp-&gt;dirent.d_type |= DT_DIR;
         }
-        <span class="keyword">else</span>
-        {
-            dirp-&gt;dirent.d_type = DT_REG;
-        }
-
+         
         strcpy(dirp-&gt;dirent.d_name, fdFile.cFileName);
         <span class="keyword">return</span> &amp;dirp-&gt;dirent;
     }

@@ -101,15 +101,15 @@ struct dirent* readdir(DIR* dirp)
     BOOL b = FindNextFileA(dirp->handle, &fdFile);
     if (b)
     {
+        /*clear*/
+        memset(&dirp->dirent, 0, sizeof(dirp->dirent));
+
+        
         if (fdFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
-            dirp->dirent.d_type = DT_DIR;
+            dirp->dirent.d_type |= DT_DIR;
         }
-        else
-        {
-            dirp->dirent.d_type = DT_REG;
-        }
-
+         
         strcpy(dirp->dirent.d_name, fdFile.cFileName);
         return &dirp->dirent;
     }
