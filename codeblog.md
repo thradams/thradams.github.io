@@ -6,12 +6,15 @@
 
 [Additions into C language I would like to have](clang.md) March 2020
 
+[Castle](castle.md) March 2020
 
 
 ## Chronological view
 
 
 ### 2021
+
+[directory iteration windows](opendir-windows.md) Jan 2021
 
 [build script in C](build-script-in-c.md) Jan 2021
 
