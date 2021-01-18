@@ -53,6 +53,7 @@ dirent.c
 
 ```cpp
 
+
 #include "dirent.h"
 #include <Windows.h>
 
@@ -110,7 +111,11 @@ struct dirent* readdir(DIR* dirp)
             dirp->dirent.d_type |= DT_DIR;
         }
          
-        strcpy(dirp->dirent.d_name, fdFile.cFileName);
+        /*worst case trunks the string*/
+        strncpy(dirp->dirent.d_name,
+                fdFile.cFileName,
+                sizeof(dirp->dirent.d_name) - 1);
+
         return &dirp->dirent;
     }
     else
@@ -119,6 +124,7 @@ struct dirent* readdir(DIR* dirp)
     }
     return NULL;
 }
+
 
 
 ```

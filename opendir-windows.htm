@@ -79,6 +79,7 @@
 
 <pre>
 
+
 <span class="keyword">#include</span> <span class="string">&quot;dirent.h&quot;</span>
 <span class="keyword">#include</span> &lt;Windows.h&gt;
 
@@ -136,7 +137,11 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
             dirp-&gt;dirent.d_type |= DT_DIR;
         }
          
-        strcpy(dirp-&gt;dirent.d_name, fdFile.cFileName);
+        <span class="comment">/*worst case trunks the string*/</span>
+        strncpy(dirp-&gt;dirent.d_name,
+                fdFile.cFileName,
+                <span class="keyword">sizeof</span>(dirp-&gt;dirent.d_name) - <span class="number">1</span>);
+
         <span class="keyword">return</span> &amp;dirp-&gt;dirent;
     }
     <span class="keyword">else</span>
@@ -145,6 +150,7 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
     }
     <span class="keyword">return</span> NULL;
 }
+
 
 
 </pre>
