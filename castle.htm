@@ -23,22 +23,22 @@
    <article>
   
       <!-- Page content begin -->
-<h1> Castle</h1>
+<h1> Castle (0.9)</h1>
 
 
 <p>Because modern web apps can be simple</p>
 
 <h3> Intro</h3>
 
-<p>Adopting big web frameworks like Angular or React makes you tied with technologies and tools that creates heavy applications and requires hours of learning on islands of technicalities that will become obsolete in few years.Castle is diferent because it is simple and small.</p>
+<p>Adopting big web frameworks like Angular or React makes you tied with technologies and tools that creates heavy applications and requires hours of learning on islands of technicalities that will become obsolete in few years.Castle is different because it is simple and small.</p>
 
 <p>With Castle you have the opportunity to work with a simple framework, understanding the internals, improving, customizing and contributing.</p>
 
-<p>I am not kidding, the Castle runtime is less than 500 lines of unminified JavaScript. The tools are small and you can create your own if you wish.</p>
+<p>I am not kidding, the Castle runtime is less than 500 lines of unminified JavaScript and the tools simple and small as well.</p>
 
 <p>Castle just adds the missing bits to make life more productive, and can be used with Javascript or Typescript.</p>
 
-<p>Castle does not requires a very modern browser to work. No surprises.</p>
+<p>Castle runs even in IE.</p>
 
 <h3> Get started</h3>
 
@@ -71,9 +71,122 @@ cd MyApp
 <pre>
 castle build
 </pre>
+<p>And you application is ready.</p>
 
-<p>And you application is ready. See indexD.html</p>
+<h2> How it works?</h2>
 
+<p>Castle scan the current directory looking for pair of js + html files with the same name. For instance:</p>
+
+<p>Home.js</p>
+<pre>
+class Home {
+}
+</pre>
+<p>Home.html</p>
+
+<pre>
+&lt;Home&gt;
+  &lt;h1&gt;Title&lt;/h1&gt;
+&lt;/Home&gt;
+</pre>
+<p>This pair represents our pages or controls. The html file has little differences compared with normal html file because we have a root element that has the name of the control/page.</p>
+
+
+<p>Castle then generates for each pair another file (.t.js) that basically has the html inserted as string inside a JavaScript file.</p>
+
+<p>Latter this string is used as template to instantiate your control.</p>
+
+<p>The final job of the tool is to insert each pair (js + .t.js) inside our index.html.</p>
+
+<p>At begging (event onload), the Castle runtime will instantiate the page called Home.</p>
+
+<h2> Page instantiation</h2>
+
+<p>The page instantiation is done automatically by the runtime when you navigate for some page. The page name is the fragment part of the url. For instance, <a href="http://localhost#Page1">http://localhost#Page1</a>will instantiate and show Page1. </p>
+
+<p>To create a link for page just use:</p>
+
+<pre>
+&lt;a href=&quot;#Page2&quot;&gt;Page2&lt;/a&gt;
+</pre>
+<p>When a page is instantiated both the JavaScript object and the DOM elements are instantiated. </p>
+
+<p>The DOM elements of a page are inserted at the div id=&quot;maindiv&quot;. </p>
+
+<p>During the instantiation the JavaScript objects sets the attribute <strong>htmlElement</strong> to the root of the DOM elements it represents.</p>
+
+<p>We can declare this using Typescript as:</p>
+
+<pre>
+class Home {
+    htmlElement : HTMLElementDiv;
+}
+</pre>
+<h2> Custom control instantiation</h2>
+
+<p>Controls are instantiated inside html just like normal html elements.</p>
+
+<p>For instance:</p>
+
+<pre>
+&lt;Home&gt;
+  &lt;h1&gt;Title&lt;/h1&gt;
+  &lt;MyButton text=&quot;Click&quot;&gt;&lt;MyButton&gt;
+&lt;/Home&gt;
+</pre>
+<p>When controls are instantiated inside pages they receive a attribute <strong>Parent</strong> that points to the control that is the parent and also <strong>Screen</strong> that points to the screen they are inserted. </p>
+
+<p>The DOM objects also receive these attributes. </p>
+
+<p>To receive a button event on the page we can do: </p>
+
+<pre>
+&lt;Home&gt;
+    &lt;button onclick=&quot;Parent.OnButtonClick()&quot;&gt;Prev&lt;/button&gt; 
+&lt;/Home&gt;
+</pre>
+
+<p>We also can inject a variable to your control inside the page using &quot;data-id&quot;. This works for custom control or normal html controls.</p>
+
+
+
+<pre>
+&lt;Home&gt;
+  &lt;h1&gt;Title&lt;/h1&gt;
+  &lt;MyButton text=&quot;Click&quot; data-id=&quot;btn&quot;&gt;&lt;MyButton&gt;
+&lt;/Home&gt;
+</pre>
+<p>The object Home will have a btn as variable. Using typescript we can declarethis.</p>
+
+<pre>
+class Home {
+    btn : HtmlButtonElement;
+}
+</pre>
+<h2> Events</h2>
+
+<p>When a page or control is instantiated it calls (if present) the event <strong>OnShow</strong>.</p>
+
+
+<h2> Reference</h2>
+
+<p>Each control/page has a root html element that is by default div.If you want to use another element as root use <strong>data-c</strong></p>
+<pre>
+&lt;View data-c=&quot;canvas&quot;&gt;
+&lt;/View&gt;
+</pre>
+
+<p>Language selection can be done at runtime using <strong>data-t</strong> tag splittingthe text with the character informed by data-t.</p>
+
+<pre>
+   &lt;a href=&quot;#Login&quot; data-t=&quot;#&quot;&gt;Já Tenho conta#Already have account&lt;/a&gt;
+</pre>
+
+<p>Look at the source code to customize this.</p>
+
+<h2> Design Notes</h2>
+
+<p>The html <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template">template element</a> was considered. But it requires newer browsers and web components to be equivalent on Castle solution.</p>
 
 
 <!-- Page content end --> 
