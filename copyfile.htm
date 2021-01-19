@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+<h1> Copy file</h1>
+
+<pre>
+
+
+<span class="keyword">int</span> copy_file(<span class="keyword">const</span> <span class="keyword">char</span>* pathfrom,
+              <span class="keyword">const</span> <span class="keyword">char</span>* pathto)
+{
+    <span class="keyword">char</span> buf[<span class="number">4096</span>];
+    size_t nread;
+    <span class="keyword">int</span> saved_errno;
+
+    FILE * fd_from = fopen(pathfrom, <span class="string">&quot;rb&quot;</span>);
+    <span class="keyword">if</span> (fd_from &lt; <span class="number">0</span>)
+        <span class="keyword">return</span> <span class="number">-1</span>;
+
+    FILE* fd_to = fopen(pathto, <span class="string">&quot;wb&quot;</span>);
+    <span class="keyword">if</span> (fd_to &lt; <span class="number">0</span>)
+        <span class="keyword">goto</span> out_error;
+
+    <span class="keyword">while</span> (nread = fread(buf, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="keyword">sizeof</span> buf, fd_from), nread &gt; <span class="number">0</span>)
+    {
+        <span class="keyword">char</span>* out_ptr = buf;
+        size_t nwritten;
+
+        <span class="keyword">do</span>
+        {
+            nwritten = fwrite(out_ptr, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), nread, fd_to);
+
+            <span class="keyword">if</span> (nwritten &gt;= <span class="number">0</span>)
+            {
+                nread -= nwritten;
+                out_ptr += nwritten;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">goto</span> out_error;
+            }
+        }
+        <span class="keyword">while</span> (nread &gt; <span class="number">0</span>);
+    }
+
+    <span class="keyword">if</span> (nread == <span class="number">0</span>)
+    {
+        <span class="keyword">if</span> (fclose(fd_to) &lt; <span class="number">0</span>)
+        {
+            fd_to = NULL;
+            <span class="keyword">goto</span> out_error;
+        }
+        fclose(fd_from);
+
+        <span class="comment">/* Success! */</span>
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }
+
+out_error:
+    saved_errno = errno;
+    
+    fclose(fd_from);
+
+    <span class="keyword">if</span> (fd_to != NULL)
+        fclose(fd_to);
+    
+    <span class="keyword">return</span> saved_errno;
+}
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

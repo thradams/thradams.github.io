@@ -14,6 +14,8 @@
 
 ### 2021
 
+[copy file](copyfile.md) Jan 2021
+
 [replacing parts of files](replacefile.md) Jan 2021
 
 [directory iteration windows](opendir-windows.md) Jan 2021
