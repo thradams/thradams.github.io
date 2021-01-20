@@ -84,6 +84,87 @@
 <span class="keyword">#include</span> &lt;Windows.h&gt;
 
 
+<span class="keyword">static</span> <span class="keyword">int</span> convert_windows_getlasterror_to_posix(<span class="keyword">int</span> i)
+{
+    <span class="keyword">switch</span> (i)
+    {
+        <span class="keyword">case</span> ERROR_ACCESS_DENIED: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_ALREADY_EXISTS: <span class="keyword">return</span> EEXIST;
+        <span class="keyword">case</span> ERROR_BAD_UNIT: <span class="keyword">return</span> ENODEV;
+        <span class="keyword">case</span> ERROR_BUFFER_OVERFLOW: <span class="keyword">return</span> ENAMETOOLONG;
+        <span class="keyword">case</span> ERROR_BUSY: <span class="keyword">return</span> EBUSY;
+        <span class="keyword">case</span> ERROR_BUSY_DRIVE: <span class="keyword">return</span> EBUSY;
+        <span class="keyword">case</span> ERROR_CANNOT_MAKE: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_CANTOPEN: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_CANTREAD: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_CANTWRITE: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_CURRENT_DIRECTORY: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_DEV_NOT_EXIST: <span class="keyword">return</span> ENODEV;
+        <span class="keyword">case</span> ERROR_DEVICE_IN_USE: <span class="keyword">return</span> EBUSY;
+        <span class="keyword">case</span> ERROR_DIR_NOT_EMPTY: <span class="keyword">return</span> ENOTEMPTY;
+        <span class="keyword">case</span> ERROR_DIRECTORY: <span class="keyword">return</span> EINVAL;
+        <span class="keyword">case</span> ERROR_DISK_FULL: <span class="keyword">return</span> ENOSPC;
+        <span class="keyword">case</span> ERROR_FILE_EXISTS: <span class="keyword">return</span> EEXIST;
+        <span class="keyword">case</span> ERROR_FILE_NOT_FOUND: <span class="keyword">return</span> ENOENT;
+        <span class="keyword">case</span> ERROR_HANDLE_DISK_FULL: <span class="keyword">return</span> ENOSPC;
+        <span class="keyword">case</span> ERROR_INVALID_ACCESS: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_INVALID_DRIVE: <span class="keyword">return</span> ENODEV;
+        <span class="keyword">case</span> ERROR_INVALID_FUNCTION: <span class="keyword">return</span> ENOSYS;
+        <span class="keyword">case</span> ERROR_INVALID_HANDLE: <span class="keyword">return</span> EINVAL;
+        <span class="keyword">case</span> ERROR_INVALID_NAME: <span class="keyword">return</span> EINVAL;
+        <span class="keyword">case</span> ERROR_LOCK_VIOLATION: <span class="keyword">return</span> ENOLCK;
+        <span class="keyword">case</span> ERROR_LOCKED: <span class="keyword">return</span> ENOLCK;
+        <span class="keyword">case</span> ERROR_NEGATIVE_SEEK: <span class="keyword">return</span> EINVAL;
+        <span class="keyword">case</span> ERROR_NOACCESS: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_NOT_ENOUGH_MEMORY: <span class="keyword">return</span> ENOMEM;
+        <span class="keyword">case</span> ERROR_NOT_READY: <span class="keyword">return</span> EAGAIN;
+        <span class="keyword">case</span> ERROR_NOT_SAME_DEVICE: <span class="keyword">return</span> EXDEV;
+        <span class="keyword">case</span> ERROR_OPEN_FAILED: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_OPEN_FILES: <span class="keyword">return</span> EBUSY;
+        <span class="keyword">case</span> ERROR_OPERATION_ABORTED: <span class="keyword">return</span> ECANCELED;
+        <span class="keyword">case</span> ERROR_OUTOFMEMORY: <span class="keyword">return</span> ENOMEM;
+        <span class="keyword">case</span> ERROR_PATH_NOT_FOUND: <span class="keyword">return</span> ENOENT;
+        <span class="keyword">case</span> ERROR_READ_FAULT: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_RETRY: <span class="keyword">return</span> EAGAIN;
+        <span class="keyword">case</span> ERROR_SEEK: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_SHARING_VIOLATION: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> ERROR_TOO_MANY_OPEN_FILES: <span class="keyword">return</span> EMFILE;
+        <span class="keyword">case</span> ERROR_WRITE_FAULT: <span class="keyword">return</span> EIO;
+        <span class="keyword">case</span> ERROR_WRITE_PROTECT: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> WSAEACCES: <span class="keyword">return</span> EACCES;
+        <span class="keyword">case</span> WSAEADDRINUSE: <span class="keyword">return</span> EADDRINUSE;
+        <span class="keyword">case</span> WSAEADDRNOTAVAIL: <span class="keyword">return</span> EADDRNOTAVAIL;
+        <span class="keyword">case</span> WSAEAFNOSUPPORT: <span class="keyword">return</span> EAFNOSUPPORT;
+        <span class="keyword">case</span> WSAEALREADY: <span class="keyword">return</span> EALREADY;
+        <span class="keyword">case</span> WSAEBADF: <span class="keyword">return</span> EBADF;
+        <span class="keyword">case</span> WSAECONNABORTED: <span class="keyword">return</span> ECONNABORTED;
+        <span class="keyword">case</span> WSAECONNREFUSED: <span class="keyword">return</span> ECONNREFUSED;
+        <span class="keyword">case</span> WSAECONNRESET: <span class="keyword">return</span> ECONNRESET;
+        <span class="keyword">case</span> WSAEDESTADDRREQ: <span class="keyword">return</span> EDESTADDRREQ;
+        <span class="keyword">case</span> WSAEFAULT: <span class="keyword">return</span> EFAULT;
+        <span class="keyword">case</span> WSAEHOSTUNREACH: <span class="keyword">return</span> EHOSTUNREACH;
+        <span class="keyword">case</span> WSAEINPROGRESS: <span class="keyword">return</span> EINPROGRESS;
+        <span class="keyword">case</span> WSAEINTR: <span class="keyword">return</span> EINTR;
+        <span class="keyword">case</span> WSAEINVAL: <span class="keyword">return</span> EINVAL;
+        <span class="keyword">case</span> WSAEISCONN: <span class="keyword">return</span> EISCONN;
+        <span class="keyword">case</span> WSAEMFILE: <span class="keyword">return</span> EMFILE;
+        <span class="keyword">case</span> WSAEMSGSIZE: <span class="keyword">return</span> EMSGSIZE;
+        <span class="keyword">case</span> WSAENETDOWN: <span class="keyword">return</span> ENETDOWN;
+        <span class="keyword">case</span> WSAENETRESET: <span class="keyword">return</span> ENETRESET;
+        <span class="keyword">case</span> WSAENETUNREACH: <span class="keyword">return</span> ENETUNREACH;
+        <span class="keyword">case</span> WSAENOBUFS: <span class="keyword">return</span> ENOBUFS;
+        <span class="keyword">case</span> WSAENOPROTOOPT: <span class="keyword">return</span> ENOPROTOOPT;
+        <span class="keyword">case</span> WSAENOTCONN: <span class="keyword">return</span> ENOTCONN;
+        <span class="keyword">case</span> WSAENOTSOCK: <span class="keyword">return</span> ENOTSOCK;
+        <span class="keyword">case</span> WSAEOPNOTSUPP: <span class="keyword">return</span> EOPNOTSUPP;
+        <span class="keyword">case</span> WSAEPROTONOSUPPORT: <span class="keyword">return</span> EPROTONOSUPPORT;
+        <span class="keyword">case</span> WSAEPROTOTYPE: <span class="keyword">return</span> EPROTOTYPE;
+        <span class="keyword">case</span> WSAETIMEDOUT: <span class="keyword">return</span> ETIMEDOUT;
+        <span class="keyword">case</span> WSAEWOULDBLOCK: <span class="keyword">return</span> EWOULDBLOCK;
+    }
+    <span class="keyword">return</span> EPERM;
+}
+
 DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span>* name)
 {
     WIN32_FIND_DATAA fdFile;
@@ -109,7 +190,7 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
     }
     <span class="keyword">else</span>
     {
-        errno = GetLastError();
+        errno = convert_windows_getlasterror_to_posix(GetLastError());
     }
 
     <span class="keyword">return</span> NULL;
@@ -131,12 +212,12 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
         <span class="comment">/*clear*/</span>
         memset(&amp;dirp-&gt;dirent, <span class="number">0</span>, <span class="keyword">sizeof</span>(dirp-&gt;dirent));
 
-        
+
         <span class="keyword">if</span> (fdFile.dwFileAttributes &amp; FILE_ATTRIBUTE_DIRECTORY)
         {
             dirp-&gt;dirent.d_type |= DT_DIR;
         }
-         
+
         <span class="comment">/*worst case trunks the string*/</span>
         strncpy(dirp-&gt;dirent.d_name,
                 fdFile.cFileName,
@@ -146,12 +227,10 @@ DIR* opendir(<span class="keyword">const</span> <span class="keyword">char</span
     }
     <span class="keyword">else</span>
     {
-        errno = GetLastError();
+        errno = convert_windows_getlasterror_to_posix(GetLastError());
     }
     <span class="keyword">return</span> NULL;
 }
-
-
 
 </pre>
 
