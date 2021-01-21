@@ -4,9 +4,11 @@
 
 ## Projects
 
-[Additions into C language I would like to have](clang.md) March 2020
+[Additions into C language I would like to have](clang.md)
 
-[Castle](castle.md) March 2020
+[Castle](castle.md)
+
+[Installer](installer.md) 
 
 
 ## Chronological view
