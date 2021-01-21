@@ -2,7 +2,7 @@
 
 
 
-## Projects
+## Hobby Projects
 
 [Additions into C language I would like to have](clang.md)
 
