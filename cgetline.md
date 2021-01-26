@@ -216,7 +216,8 @@ sample
   }
 ```
 
-Reading a line from console to a fixed buffer.
+
+
 
 ```cpp
 
@@ -301,6 +302,8 @@ int getstrstr(char **lineptr,
 }
 ```
 
+sample
+
 ```cpp
  char *slineptr = 0;
   size_t n = 0;
@@ -319,9 +322,9 @@ int getstrstr(char **lineptr,
 ```
 
 
-```cpp
+reading a line from console
 
-
+```cpp 
 int getstr(char* lineptr,
            size_t n,
            FILE* stream,
@@ -388,4 +391,3 @@ int main()
     printf("%s", str);
 }
 ```
-
