@@ -216,8 +216,7 @@ sample
   }
 ```
 
-
-
+Reading a line from console to a fixed buffer.
 
 ```cpp
 
@@ -318,3 +317,75 @@ int getstrstr(char **lineptr,
   }
   free(slineptr);
 ```
+
+
+```cpp
+
+
+int getstr(char* lineptr,
+           size_t n,
+           FILE* stream,
+           char terminator,
+           int offset)
+{
+    int ret;
+
+
+    int nchars_avail = n - offset;
+    char* read_pos = lineptr + offset;
+
+    for (;;)
+    {
+        int save_errno;
+        int c = getc(stream);
+
+        save_errno = errno;
+
+        assert((lineptr + n) == (read_pos + nchars_avail));
+        if (nchars_avail < 2)
+        {
+            return EACCES;
+        }
+
+        if (ferror(stream))
+        {
+            errno = save_errno;
+            return -1;
+        }
+
+        if (c == EOF)
+        {
+            if (read_pos == lineptr)
+            {
+                return -1;
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        if (c == terminator)
+        {
+            break;
+        }
+
+        *read_pos++ = c;
+        nchars_avail--;
+
+
+    }
+
+    *read_pos = '\0';
+    ret = read_pos - (*lineptr + offset);
+    return ret;
+}
+
+int main()
+{
+    char str[100];
+    getstr(str, 100, stdin, '\n', 0);
+    printf("%s", str);
+}
+```
+

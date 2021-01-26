@@ -243,8 +243,7 @@
 </pre>
 
 
-
-
+<p>Reading a line from console to a fixed buffer.</p>
 
 <pre>
 
@@ -346,6 +345,80 @@
   }
   free(slineptr);
 </pre>
+
+
+
+<pre>
+
+
+<span class="keyword">int</span> getstr(<span class="keyword">char</span>* lineptr,
+           size_t n,
+           FILE* stream,
+           <span class="keyword">char</span> terminator,
+           <span class="keyword">int</span> offset)
+{
+    <span class="keyword">int</span> ret;
+
+
+    <span class="keyword">int</span> nchars_avail = n - offset;
+    <span class="keyword">char</span>* read_pos = lineptr + offset;
+
+    <span class="keyword">for</span> (;;)
+    {
+        <span class="keyword">int</span> save_errno;
+        <span class="keyword">int</span> c = getc(stream);
+
+        save_errno = errno;
+
+        assert((lineptr + n) == (read_pos + nchars_avail));
+        <span class="keyword">if</span> (nchars_avail &lt; <span class="number">2</span>)
+        {
+            <span class="keyword">return</span> EACCES;
+        }
+
+        <span class="keyword">if</span> (ferror(stream))
+        {
+            errno = save_errno;
+            <span class="keyword">return</span> <span class="number">-1</span>;
+        }
+
+        <span class="keyword">if</span> (c == EOF)
+        {
+            <span class="keyword">if</span> (read_pos == lineptr)
+            {
+                <span class="keyword">return</span> <span class="number">-1</span>;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">break</span>;
+            }
+        }
+        
+        <span class="keyword">if</span> (c == terminator)
+        {
+            <span class="keyword">break</span>;
+        }
+
+        *read_pos++ = c;
+        nchars_avail--;
+
+
+    }
+
+    *read_pos = <span class="string">'\0'</span>;
+    ret = read_pos - (*lineptr + offset);
+    <span class="keyword">return</span> ret;
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">char</span> str[<span class="number">100</span>];
+    getstr(str, <span class="number">100</span>, stdin, <span class="string">'\n'</span>, <span class="number">0</span>);
+    printf(<span class="string">&quot;%s&quot;</span>, str);
+}
+</pre>
+
+
 
 <!-- Page content end --> 
 </article> 
