@@ -106,9 +106,19 @@ Similar of C++ but without capture.
 
 ```
  lambda-expression:
-    [] ( parameters opt ) compound-statement
-    [] compound-statement
+    [] ( parameters opt ) -> return type (optional) compound-statement
+    [] compound-statement -> return type (optional) 
 ```
+## Literal string copy to fixed array
+
+```cpp
+
+   char s[3];
+   s = "ab";//OK
+   s = "abc";//compile time error
+   s = "abcd";//compile time error
+```
+
 
 The return is always void but I think the C++ syntax for return 
 can be added then lambdas can be used in algorithms like sort.
