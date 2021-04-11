@@ -109,6 +109,8 @@ Similar of C++ but without capture.
     [] ( parameters opt ) -> return type (optional) compound-statement
     [] compound-statement -> return type (optional) 
 ```
+
+
 ## Literal string copy to fixed array
 
 ```cpp
@@ -120,8 +122,6 @@ Similar of C++ but without capture.
 ```
 
 
-The return is always void but I think the C++ syntax for return 
-can be added then lambdas can be used in algorithms like sort.
 
 # Part II - Features for a "light C++"
 
