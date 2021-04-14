@@ -82,7 +82,7 @@
 
 [Memory check](checkmem.md) April 2019
 
-[Find Test](findtest.md) April 2019
+[switch case generator for strings](findtest.md) April 2019
 
 [Stream](stream.md) April 2019
 
