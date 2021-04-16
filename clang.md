@@ -157,7 +157,7 @@ instead of
    {
 
        if (char* s1 = malloc(100); s1; free(s1)){
-       try (char* s2 = malloc(100); s2; free(s2)){
+       if (char* s2 = malloc(100); s2; free(s2)){
        if (condition){
        {
          /*ok*/
