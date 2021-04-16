@@ -101,27 +101,6 @@ When return is called first the result is copied to a local
 variable then defer is called then  copied variable is returned.
 
 
-## Lambdas 
-
-Similar of C++ but without capture.
-
-```
- lambda-expression:
-    [] ( parameters opt ) -> return type (optional) compound-statement
-    [] compound-statement -> return type (optional) 
-```
-
-
-## Literal string copy to fixed array
-
-```cpp
-
-   char s[3];
-   s = "ab";//OK
-   s = "abc";//compile time error
-   s = "abcd";//compile time error
-```
-
 ## try statement
 
 ```cpp
@@ -167,6 +146,28 @@ it is equivalent of:
        }} /*<- try does this job*/
    }  
 ```
+
+## Lambdas 
+
+Similar of C++ but without capture.
+
+```
+ lambda-expression:
+    [] ( parameters opt ) -> return type (optional) compound-statement
+    [] compound-statement -> return type (optional) 
+```
+
+
+## Literal string copy to fixed array
+
+```cpp
+
+   char s[3];
+   s = "ab";//OK
+   s = "abc";//compile time error
+   s = "abcd";//compile time error
+```
+
 
 
 # Part II - Features for a "light C++"
