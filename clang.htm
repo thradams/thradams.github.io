@@ -155,29 +155,11 @@
 </pre>
 
 
-<p>Sample</p>
-<pre>
-   <span class="keyword">int</span> main()
-   {
-     <span class="keyword">try</span> (Func() == <span class="number">0</span>); <span class="comment">//A
-</span>     {
-       <span class="keyword">try</span> (<span class="keyword">int</span> index = Find(); i != <span class="number">-1</span>); <span class="comment">//B
-</span>       <span class="keyword">try</span> (<span class="keyword">char</span> * s = malloc(<span class="number">100</span>); s; free(s));<span class="comment">//C
-</span>       <span class="keyword">if</span> (i != <span class="number">0</span>)
-       {
-
-       }
-     } <span class="comment">// B and C closed here
-</span>     F2();
-   } <span class="comment">//A closed here
-</span></pre>
-
-
 <p>try is like an if but it automatically creates an imaginary compound-statement that is closed at the most external '}'.</p>
 
 <p>When defer-expression exists it is executed if the condition is truebefore closing the imaginary compound-statement.</p>
 
-<p>The motivation is to avoid the indentation created by 'if'.</p>
+<p>The motivation is to avoid the indentation created by 'if' or the messof many closing curly braces.</p>
 
 <pre>
    <span class="keyword">int</span> main()
@@ -189,8 +171,23 @@
        {
          <span class="comment">/*ok*/</span>
        }
-   }
+   }  
 </pre>
+
+<p>instead of</p>
+<pre>
+   <span class="keyword">int</span> main()
+   {
+
+       <span class="keyword">if</span> (<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); s1; free(s1)){
+       <span class="keyword">try</span> (<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); s2; free(s2)){
+       <span class="keyword">if</span> (condition){
+       {
+         <span class="comment">/*ok*/</span>
+       }}}
+   }  
+</pre>
+
 
 
 <h1> Part II - Features for a "light C++"</h1>
