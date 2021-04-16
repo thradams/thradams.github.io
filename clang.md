@@ -109,11 +109,12 @@ variable then defer is called then  copied variable is returned.
    try (init-statement condition; defer-expression);
 ```
 
-try is like an if statement but it creates an imaginary compound-statement 
-that is automatically closed at the end of scope.
+try is like an if-statement but it creates an compound-statement 
+( without explicitly opening { ) that extends to the end of scope and it 
+is automatically closed. (the } is not visible)  
 
 When defer-expression exists it is executed if the condition is true 
-before closing the imaginary compound-statement. 
+before closing compound-statement. 
 
 The motivation is to avoid the indentation created by 'if' or the mess 
 of many closing curly braces. 
@@ -145,6 +146,21 @@ it is equivalent of:
        }
        }} /*<- try does this job*/
    }  
+```
+
+or in C99
+
+```cpp
+int main()
+{
+       {char* s1 = malloc(100); if( s1){{
+       {char* s2 = malloc(100); if( s2){{
+       if (condition)
+       {
+          /*ok*/
+       }
+       } free(s2);}}} free(s1);}}
+}
 ```
 
 ## Lambdas 

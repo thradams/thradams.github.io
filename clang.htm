@@ -133,9 +133,9 @@
 </pre>
 
 
-<p>try is like an if statement but it creates an imaginary compound-statement that is automatically closed at the end of scope.</p>
+<p>try is like an if-statement but it creates an compound-statement ( without explicitly opening { ) that extends to the end of scope and it is automatically closed. (the } is not visible)  </p>
 
-<p>When defer-expression exists it is executed if the condition is true before closing the imaginary compound-statement. </p>
+<p>When defer-expression exists it is executed if the condition is true before closing compound-statement. </p>
 
 <p>The motivation is to avoid the indentation created by 'if' or the mess of many closing curly braces. </p>
 
@@ -167,6 +167,22 @@
        }
        }} <span class="comment">/*&lt;- try does this job*/</span>
    }  
+</pre>
+
+
+<p>or in C99</p>
+
+<pre>
+<span class="keyword">int</span> main()
+{
+       {<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); <span class="keyword">if</span>( s1){{
+       {<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); <span class="keyword">if</span>( s2){{
+       <span class="keyword">if</span> (condition)
+       {
+          <span class="comment">/*ok*/</span>
+       }
+       } free(s2);}}} free(s1);}}
+}
 </pre>
 
 
