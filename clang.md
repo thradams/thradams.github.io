@@ -110,7 +110,7 @@ variable then defer is called then  copied variable is returned.
 ```
 
 try is like an if statement but it creates an imaginary compound-statement 
-that is closed at the most external '}'.
+that is automatically closed at the end of scope.
 
 When defer-expression exists it is executed if the condition is true 
 before closing the imaginary compound-statement. 
