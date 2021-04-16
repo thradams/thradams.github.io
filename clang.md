@@ -100,6 +100,7 @@ the defer is called before the jump.
 When return is called first the result is copied to a local 
 variable then defer is called then  copied variable is returned.
 
+
 ## Lambdas 
 
 Similar of C++ but without capture.
@@ -121,7 +122,51 @@ Similar of C++ but without capture.
    s = "abcd";//compile time error
 ```
 
+## try statement
 
+```cpp
+   try (condition);
+   try (init-statement condition);
+   try (init-statement condition; defer-expression);
+```
+
+Sample
+```cpp
+   int main()
+   {
+     try (Func() == 0); //A
+     {
+       try (int index = Find(); i != -1); //B
+       try (char * s = malloc(100); s; free(s));//C
+       if (i != 0)
+       {
+
+       }
+     } // B and C closed here
+     F2();
+   } //A closed here
+```
+
+try is like an if but it automatically creates an imaginary compound-statement 
+that is closed at the most external '}'.
+
+When defer-expression exists it is executed if the condition is true
+before closing the imaginary compound-statement.
+
+The motivation is to avoid the indentation created by 'if'.
+
+```cpp
+   int main()
+   {
+
+       try (char* s1 = malloc(100); s1; free(s1));
+       try (char* s2 = malloc(100); s2; free(s2));
+       if (condition)
+       {
+         /*ok*/
+       }
+   }
+```
 
 # Part II - Features for a "light C++"
 
