@@ -130,14 +130,14 @@ Similar of C++ but without capture.
    try (init-statement condition; defer-expression);
 ```
 
-try is like an if but it automatically creates an imaginary compound-statement 
+try is like an if statement but it creates an imaginary compound-statement 
 that is closed at the most external '}'.
 
-When defer-expression exists it is executed if the condition is true
-before closing the imaginary compound-statement.
+When defer-expression exists it is executed if the condition is true 
+before closing the imaginary compound-statement. 
 
-The motivation is to avoid the indentation created by 'if' or the mess
-of many closing curly braces.
+The motivation is to avoid the indentation created by 'if' or the mess 
+of many closing curly braces. 
 
 ```cpp
    int main()
