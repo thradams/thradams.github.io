@@ -160,10 +160,11 @@ it is equivalent of:
 
        if (char* s1 = malloc(100); s1; free(s1)){
        if (char* s2 = malloc(100); s2; free(s2)){
-       if (condition){
-       
-         /*ok*/
-       }}}
+       if (condition)
+       {
+          /*ok*/
+       }
+       }} /*<- try does this job*/
    }  
 ```
 
