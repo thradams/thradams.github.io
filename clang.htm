@@ -174,7 +174,9 @@
    }  
 </pre>
 
-<p>instead of</p>
+
+<p>it is equivalent of:</p>
+
 <pre>
    <span class="keyword">int</span> main()
    {
@@ -182,7 +184,7 @@
        <span class="keyword">if</span> (<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); s1; free(s1)){
        <span class="keyword">if</span> (<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); s2; free(s2)){
        <span class="keyword">if</span> (condition){
-       {
+       
          <span class="comment">/*ok*/</span>
        }}}
    }  
