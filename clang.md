@@ -163,6 +163,21 @@ int main()
 }
 ```
 
+## Make  while optional in do statement
+
+Missing while is the same of while(0). The motivation is to use 
+break and make scopes more explicit.
+
+```cpp
+  do
+  {
+       try (condition1);       
+  }
+
+```
+
+
+
 ## Lambdas 
 
 Similar of C++ but without capture.
