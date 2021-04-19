@@ -100,6 +100,24 @@ the defer is called before the jump.
 When return is called first the result is copied to a local 
 variable then defer is called then  copied variable is returned.
 
+## Make  while optional in do statement
+
+```
+  do statement while ( expression ) ;
+  do statement
+````
+
+Missing while is the same of while(0). The motivation is to use 
+allow break and make scopes more explicit for try statement.
+
+```cpp
+  do
+  {
+       if (1) break;
+  }
+
+```
+
 
 ## try statement
 
@@ -163,18 +181,6 @@ int main()
 }
 ```
 
-## Make  while optional in do statement
-
-Missing while is the same of while(0). The motivation is to use 
-break and make scopes more explicit.
-
-```cpp
-  do
-  {
-       try (condition1);       
-  }
-
-```
 
 
 
