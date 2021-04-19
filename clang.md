@@ -205,7 +205,7 @@ Similar of C++ but without capture.
    s = "abcd";//compile time error
 ```
 
-
+(not implemented yet in cprime)
 
 # Part II - Features for a "light C++"
 
@@ -311,7 +311,8 @@ int main()
 
 Pointers can be qualified with auto. 
 
-This tells the type system that this pointer is the owner of the pointed object.
+This tells the type system that this pointer is the owner of the pointed object. When the lifetime ends it should call a function to free the resource it points to.
+
 
 At this moment auto is used to generate destructors but it also could be 
 used for static analysis in the future.
@@ -331,7 +332,9 @@ int main()
 ```
 
 When a pointer qualified with auto is destroyed it calls 
-the destructor of the pointed object.
+the destructor of the pointed object and then free the memory.
+
+By default it calls free.
 
 Alternatively we can do,
 
@@ -367,7 +370,22 @@ int main()
 
 ```
 
+Specifying a free function.
 
+Not is not implemented yet.
+
+```cpp
+struct X {
+    char * auto(customFree) name = NULL;
+};
+
+```
+
+This is useful for custom allocator. Sometimes a pointer
+to the allocator is also required, in this case the best
+solution is auto() to say it is the owner pointer
+but don't use this information to free it, I will do it manually
+for instance at the destructor.
 
 
 ## Polymorphism
