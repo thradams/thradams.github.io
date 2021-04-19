@@ -208,8 +208,8 @@ int main() {
 }
 `
 
-sample["Optional while at do statement"] =
-    `
+sample["do statement with optional while"] =
+`
 #include <stdio.h>
 int main()
 {  
