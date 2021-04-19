@@ -229,7 +229,7 @@
 </span></pre>
 
 
-
+<p>(not implemented yet in cprime)</p>
 
 <h1> Part II - Features for a "light C++"</h1>
 
@@ -333,7 +333,8 @@
 
 <p>Pointers can be qualified with auto. </p>
 
-<p>This tells the type system that this pointer is the owner of the pointed object.</p>
+<p>This tells the type system that this pointer is the owner of the pointed object. When the lifetime ends it should call a function to free the resource it points to.</p>
+
 
 <p>At this moment auto is used to generate destructors but it also could be used for static analysis in the future.</p>
 
@@ -352,7 +353,9 @@
 </pre>
 
 
-<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object.</p>
+<p>When a pointer qualified with auto is destroyed it calls the destructor of the pointed object and then free the memory.</p>
+
+<p>By default it calls free.</p>
 
 <p>Alternatively we can do,</p>
 
@@ -390,7 +393,19 @@
 </pre>
 
 
+<p>Specifying a free function.</p>
 
+<p>Not is not implemented yet.</p>
+
+<pre>
+<span class="keyword">struct</span> X {
+    <span class="keyword">char</span> * <span class="keyword">auto</span>(customFree) name = NULL;
+};
+
+</pre>
+
+
+<p>This is useful for custom allocator. Sometimes a pointerto the allocator is also required, in this case the bestsolution is auto() to say it is the owner pointerbut don't use this information to free it, I will do it manuallyfor instance at the destructor.</p>
 
 
 <h2> Polymorphism</h2>
