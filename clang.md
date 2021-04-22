@@ -108,7 +108,7 @@ variable then defer is called then  copied variable is returned.
 ````
 
 Missing while is the same of while(0). The motivation is to use 
-allow break and make scopes more explicit for try statement.
+allow break and make scopes more explicit.
 
 ```cpp
   do
@@ -118,16 +118,19 @@ allow break and make scopes more explicit for try statement.
 
 ```
 
-## try block statement and throw
+## try-block statement and throw
 
-try block statement creates a region where we can use throw
+try block statement creates a region where we can use throw 
 and jump to the catch block.
 
+
 ```cpp
+
    try {
       throw integer-value; /*jump to catch*/
    }
-   catch (int error) {
+   catch (int error) /*catch is optional*/
+   {
    }   
 ```
 
@@ -136,11 +139,25 @@ inside try-blocks.
 
 
 ## try statement
-   This statement can be used inside try-blocks.
-   If the condition fails it execute "throw 1" that jumps to catch.
+   
+   Try statement can be used inside try-blocks. 
+   If the condition fails it execute "throw 1" that jumps to catch 
+   or it throw expression if specified with throw.
 
-   try statement also can have a defer-expression that is executed
-   when the scope is abandoned by throw, return etc or normal flow.
+   If defer-expression is specified then it called when the 
+   variable goes out of scope.
+
+Samples
+
+```cpp
+  
+  try(F1() == 0); /*throw 1;*/
+  try(F1() == 0) throw errno;
+  try(char* p = malloc(1); p ; free(p));
+
+```
+
+Syntax:
 
 ```cpp
    try (condition);

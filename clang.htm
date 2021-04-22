@@ -130,7 +130,7 @@
   do statement
 </pre>
 
-<p>Missing while is the same of while(0). The motivation is to use allow break and make scopes more explicit for try statement.</p>
+<p>Missing while is the same of while(0). The motivation is to use allow break and make scopes more explicit.</p>
 
 <pre>
   <span class="keyword">do</span>
@@ -141,15 +141,18 @@
 </pre>
 
 
-<h2> try block statement and throw</h2>
+<h2> try-block statement and throw</h2>
 
-<p>try block statement creates a region where we can use throwand jump to the catch block.</p>
+<p>try block statement creates a region where we can use throw and jump to the catch block.</p>
+
 
 <pre>
+
    <span class="keyword">try</span> {
       <span class="keyword">throw</span> integer-value; <span class="comment">/*jump to catch*/</span>
    }
-   <span class="keyword">catch</span> (<span class="keyword">int</span> error) {
+   <span class="keyword">catch</span> (<span class="keyword">int</span> error) <span class="comment">/*catch is optional*/</span>
+   {
    }   
 </pre>
 
@@ -158,9 +161,23 @@
 
 
 <h2> try statement</h2>
-<p>   This statement can be used inside try-blocks.   If the condition fails it execute &quot;throw 1&quot; that jumps to catch.</p>
 
-<p>   try statement also can have a defer-expression that is executed   when the scope is abandoned by throw, return etc or normal flow.</p>
+<p>   Try statement can be used inside try-blocks.    If the condition fails it execute &quot;throw 1&quot; that jumps to catch    or it throw expression if specified with throw.</p>
+
+<p>   If defer-expression is specified then it called when the    variable goes out of scope.</p>
+
+<p>Samples</p>
+
+<pre>
+  
+  <span class="keyword">try</span>(F1() == <span class="number">0</span>); <span class="comment">/*throw 1;*/</span>
+  <span class="keyword">try</span>(F1() == <span class="number">0</span>) <span class="keyword">throw</span> errno;
+  <span class="keyword">try</span>(<span class="keyword">char</span>* p = malloc(<span class="number">1</span>); p ; free(p));
+
+</pre>
+
+
+<p>Syntax:</p>
 
 <pre>
    <span class="keyword">try</span> (condition);
