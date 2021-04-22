@@ -86,7 +86,7 @@ void hashmap_destroy(struct hashmap* pMap)
 struct item* hashmap_find(struct hashmap* pMap, const char* key)
 {
     struct item* p = NULL;
-    if (pMap->capacity > 0)
+    if (pMap->table)
     {
         unsigned int hash = stringhash(key);
         int index = hash % pMap->capacity;

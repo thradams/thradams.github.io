@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+<h1> Tips for Safe C programming</h1>
+
+
+<p>Check this code in your compiler with maximum warning level.</p>
+
+<pre>
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">int</span> main()
+{
+    <span class="comment">//A
+</span>    <span class="keyword">char</span> buffer[<span class="number">3</span>] = <span class="string">&quot;abc&quot;</span>;
+    
+    <span class="comment">//B
+</span>    strcpy(buffer, <span class="string">&quot;abc&quot;</span>);
+
+    <span class="comment">//C
+</span>    <span class="keyword">char</span> buffer4[<span class="number">4</span>] ={<span class="number">0</span>};
+    strcpy(buffer, buffer4);
+
+}
+</pre>
+
+
+
+<p>Visual C++ 2019 gave me just warning at B</p>
+<pre>
+ warning C6386: Buffer overrun while writing to 'buffer':  the writable size is '3' bytes, but '4' bytes might be written.
+</pre>
+
+<pre>
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">int</span> main()
+{
+    <span class="comment">//A
+</span>    <span class="keyword">char</span> buffer[] = <span class="string">&quot;abc&quot;</span>;
+    
+    <span class="comment">//B
+</span>    strcpy(buffer, <span class="string">&quot;abc&quot;</span>);
+
+    <span class="comment">//C
+</span>    <span class="keyword">char</span> buffer4[<span class="number">4</span>] ={<span class="number">0</span>};
+    strcpy(buffer, buffer4);
+
+}
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

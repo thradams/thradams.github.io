@@ -118,71 +118,40 @@ allow break and make scopes more explicit for try statement.
 
 ```
 
+## try block statement and throw
+
+try block statement creates a region where we can use throw
+and jump to the catch block.
+
+```cpp
+   try {
+      throw integer-value; /*jump to catch*/
+   }
+   catch (int error) {
+   }   
+```
+
+The difference for C++ is that throw can only be used 
+inside try-blocks.
+
 
 ## try statement
+   This statement can be used inside try-blocks.
+   If the condition fails it execute "throw 1" that jumps to catch.
+
+   try statement also can have a defer-expression that is executed
+   when the scope is abandoned by throw, return etc or normal flow.
 
 ```cpp
    try (condition);
    try (init-statement condition);
    try (init-statement condition; defer-expression);
+   
+   try (condition) throw expression;
+   try (init-statement condition) throw expression;
+   try (init-statement condition; defer-expression) throw expression;
 ```
-
-try is like an if-statement but it creates an compound-statement 
-( without explicitly opening { ) that extends to the end of scope and it 
-is automatically closed. (the } is not visible)  
-
-When defer-expression exists it is executed if the condition is true 
-before closing compound-statement. 
-
-The motivation is to avoid the indentation created by 'if' or the mess 
-of many closing curly braces. 
-
-```cpp
-   int main()
-   {
-
-       try (char* s1 = malloc(100); s1; free(s1));
-       try (char* s2 = malloc(100); s2; free(s2));
-       if (condition)
-       {
-         /*ok*/
-       }
-   }  
-```
-
-it is equivalent of:
-
-```cpp
-   int main()
-   {
-
-       if (char* s1 = malloc(100); s1; free(s1)){
-       if (char* s2 = malloc(100); s2; free(s2)){
-       if (condition)
-       {
-          /*ok*/
-       }
-       }} /*<- try does this job*/
-   }  
-```
-
-or in C99
-
-```cpp
-int main()
-{
-       {char* s1 = malloc(100); if( s1){{
-       {char* s2 = malloc(100); if( s2){{
-       if (condition)
-       {
-          /*ok*/
-       }
-       } free(s2);}}} free(s1);}}
-}
-```
-
-
-
+  
 
 ## Lambdas 
 

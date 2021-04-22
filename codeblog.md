@@ -16,6 +16,8 @@
 
 ### 2021
 
+[Safe C Tips] (safec.md) April 2021
+
 [expression compiler](expression-compiler.md) Fev 2021
 
 [copy file](copyfile.md) Jan 2021

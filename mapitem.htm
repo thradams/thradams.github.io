@@ -111,7 +111,7 @@
 <span class="keyword">struct</span> item* hashmap_find(<span class="keyword">struct</span> hashmap* pMap, <span class="keyword">const</span> <span class="keyword">char</span>* key)
 {
     <span class="keyword">struct</span> item* p = NULL;
-    <span class="keyword">if</span> (pMap-&gt;capacity &gt; <span class="number">0</span>)
+    <span class="keyword">if</span> (pMap-&gt;table)
     {
         <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = stringhash(key);
         <span class="keyword">int</span> index = hash % pMap-&gt;capacity;

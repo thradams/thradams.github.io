@@ -141,69 +141,36 @@
 </pre>
 
 
+<h2> try block statement and throw</h2>
+
+<p>try block statement creates a region where we can use throwand jump to the catch block.</p>
+
+<pre>
+   <span class="keyword">try</span> {
+      <span class="keyword">throw</span> integer-value; <span class="comment">/*jump to catch*/</span>
+   }
+   <span class="keyword">catch</span> (<span class="keyword">int</span> error) {
+   }   
+</pre>
+
+
+<p>The difference for C++ is that throw can only be used inside try-blocks.</p>
+
 
 <h2> try statement</h2>
+<p>   This statement can be used inside try-blocks.   If the condition fails it execute &quot;throw 1&quot; that jumps to catch.</p>
+
+<p>   try statement also can have a defer-expression that is executed   when the scope is abandoned by throw, return etc or normal flow.</p>
 
 <pre>
    <span class="keyword">try</span> (condition);
    <span class="keyword">try</span> (init-statement condition);
    <span class="keyword">try</span> (init-statement condition; defer-expression);
+   
+   <span class="keyword">try</span> (condition) <span class="keyword">throw</span> expression;
+   <span class="keyword">try</span> (init-statement condition) <span class="keyword">throw</span> expression;
+   <span class="keyword">try</span> (init-statement condition; defer-expression) <span class="keyword">throw</span> expression;
 </pre>
-
-
-<p>try is like an if-statement but it creates an compound-statement ( without explicitly opening { ) that extends to the end of scope and it is automatically closed. (the } is not visible)  </p>
-
-<p>When defer-expression exists it is executed if the condition is true before closing compound-statement. </p>
-
-<p>The motivation is to avoid the indentation created by 'if' or the mess of many closing curly braces. </p>
-
-<pre>
-   <span class="keyword">int</span> main()
-   {
-
-       <span class="keyword">try</span> (<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); s1; free(s1));
-       <span class="keyword">try</span> (<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); s2; free(s2));
-       <span class="keyword">if</span> (condition)
-       {
-         <span class="comment">/*ok*/</span>
-       }
-   }  
-</pre>
-
-
-<p>it is equivalent of:</p>
-
-<pre>
-   <span class="keyword">int</span> main()
-   {
-
-       <span class="keyword">if</span> (<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); s1; free(s1)){
-       <span class="keyword">if</span> (<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); s2; free(s2)){
-       <span class="keyword">if</span> (condition)
-       {
-          <span class="comment">/*ok*/</span>
-       }
-       }} <span class="comment">/*&lt;- try does this job*/</span>
-   }  
-</pre>
-
-
-<p>or in C99</p>
-
-<pre>
-<span class="keyword">int</span> main()
-{
-       {<span class="keyword">char</span>* s1 = malloc(<span class="number">100</span>); <span class="keyword">if</span>( s1){{
-       {<span class="keyword">char</span>* s2 = malloc(<span class="number">100</span>); <span class="keyword">if</span>( s2){{
-       <span class="keyword">if</span> (condition)
-       {
-          <span class="comment">/*ok*/</span>
-       }
-       } free(s2);}}} free(s1);}}
-}
-</pre>
-
-
 
 
 
