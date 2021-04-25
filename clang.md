@@ -132,6 +132,19 @@ and jump to the catch block.
    catch (int error) /*catch is optional*/
    {
    }   
+
+   try {
+      throw integer-value; /*jump to catch*/
+   }
+   catch
+   {
+   }   
+
+   try {
+      throw;
+   }
+   
+
 ```
 
 The difference for C++ is that throw can only be used 
