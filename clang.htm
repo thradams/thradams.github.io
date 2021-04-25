@@ -25,19 +25,17 @@
       <!-- Page content begin -->
 <h1> Part I - Additions into C language I would like to have</h1>
 
-<p>September 2020</p>
+<p>April 2021</p>
 
-<p>I have implemented (some of) these features in a c compiler that generatesc code.</p>
+<p>Most of these features have been implemented in my transpiler that can be  visualized here:</p>
 
 <p><a href="/web2/cprime.html">cprime online</a></p>
 
 
-<p>What is funny is that more I use C less things I want to change.</p>
-
 
 <h2> Struct member initializer</h2>
 
-<p>The same syntax of declaring and initializing global variables but for struct members. </p>
+<p>struct members can be annotated with their respective initialization value.</p>
 
 <pre>
 
@@ -92,7 +90,7 @@
 
 <h2> if with initializer </h2>
 
-<p>This is the same of C++ 17. </p>
+<p>This is the same of C++ 17.  See <a href="https://en.cppreference.com/w/cpp/language/if">https://en.cppreference.com/w/cpp/language/if</a></p>
 
 <pre>
 
@@ -123,23 +121,6 @@
 
 <p>When return is called first the result is copied to a local variable then defer is called then  copied variable is returned.</p>
 
-<h2> Make  while optional in do statement</h2>
-
-<pre>
-  do statement while ( expression ) ;
-  do statement
-</pre>
-
-<p>Missing while is the same of while(0). The motivation is to use allow break and make scopes more explicit.</p>
-
-<pre>
-  <span class="keyword">do</span>
-  {
-       <span class="keyword">if</span> (<span class="number">1</span>) <span class="keyword">break</span>;
-  }
-
-</pre>
-
 
 <h2> try-block statement and throw</h2>
 
@@ -149,59 +130,50 @@
 <pre>
 
    <span class="keyword">try</span> {
-      <span class="keyword">throw</span> integer-value; <span class="comment">/*jump to catch*/</span>
+      <span class="keyword">throw</span>; <span class="comment">/*jump*/</span>
    }
-   <span class="keyword">catch</span> (<span class="keyword">int</span> error) <span class="comment">/*catch is optional*/</span>
-   {
-   }   
-
+   <span class="comment">/*here*/</span>
+   
    <span class="keyword">try</span> {
-      <span class="keyword">throw</span> integer-value; <span class="comment">/*jump to catch*/</span>
+      <span class="keyword">throw</span>; <span class="comment">/*jump*/</span>
    }
    <span class="keyword">catch</span>
    {
-   }   
-
-   <span class="keyword">try</span> {
-      <span class="keyword">throw</span>;
+     <span class="comment">/*here*/</span>
    }
    
+   <span class="keyword">try</span> {
+      <span class="keyword">throw</span> <span class="number">1</span>; <span class="comment">/*jump with value*/</span>
+   }
+   <span class="keyword">catch</span> (<span class="keyword">int</span> er)
+   {
+     <span class="comment">/*er is 1*/</span>
+   }
+      
 
 </pre>
 
 
-<p>The difference for C++ is that throw can only be used inside try-blocks.</p>
+<p>The difference for C++ is that throw can only be used inside try-blocks making the jump path visible.</p>
 
 
 <h2> try statement</h2>
 
-<p>   Try statement can be used inside try-blocks.    If the condition fails it execute &quot;throw 1&quot; that jumps to catch    or it throw expression if specified with throw.</p>
+<p>  If the condition expression fails the try statement   throws.</p>
 
-<p>   If defer-expression is specified then it called when the    variable goes out of scope.</p>
+<p>  A defer expression can be used in try statement and   if is called at the end of scope or before jumps.</p>
+
+<p>  We can inform the throw expression.</p>
 
 <p>Samples</p>
 
 <pre>
   
-  <span class="keyword">try</span>(F1() == <span class="number">0</span>); <span class="comment">/*throw 1;*/</span>
-  <span class="keyword">try</span>(F1() == <span class="number">0</span>) <span class="keyword">throw</span> errno;
-  <span class="keyword">try</span>(<span class="keyword">char</span>* p = malloc(<span class="number">1</span>); p ; free(p));
+  <span class="keyword">try</span> (F1() == <span class="number">0</span>);
+  <span class="keyword">try</span> (F1() == <span class="number">0</span>) <span class="keyword">throw</span> expression ;
+  <span class="keyword">try</span> (<span class="keyword">char</span>* p = malloc(<span class="number">1</span>); p ; free(p));
 
 </pre>
-
-
-<p>Syntax:</p>
-
-<pre>
-   <span class="keyword">try</span> (condition);
-   <span class="keyword">try</span> (init-statement condition);
-   <span class="keyword">try</span> (init-statement condition; defer-expression);
-   
-   <span class="keyword">try</span> (condition) <span class="keyword">throw</span> expression;
-   <span class="keyword">try</span> (init-statement condition) <span class="keyword">throw</span> expression;
-   <span class="keyword">try</span> (init-statement condition; defer-expression) <span class="keyword">throw</span> expression;
-</pre>
-
 
 
 <h2> Lambdas </h2>
@@ -227,12 +199,6 @@
 
 
 <p>(not implemented yet in cprime)</p>
-
-<h1> Part II - Features for a "light C++"</h1>
-
-<p>These features are at this separated topic because they imply more changes in the &quot;spirit of C&quot; and they are more like &quot;what if we had a simple C++&quot;?</p>
-
-
 
 <h3> Overloaded functions</h3>
 
@@ -282,12 +248,6 @@
 
 <p>Comparison with C++: There is not constructor here. There is no need for exceptions.</p>
 
-<p>Open question: Should we accept string literals?</p>
-
-<pre>
-<span class="keyword">char</span>  *s = <span class="keyword">new</span> (<span class="string">&quot;text&quot;</span>);
-</pre>
-<p>`</p>
 
 <p>So far there is no way to customize the allocator. I am considering other alternatives to make it generic without adding C++ complexity.</p>
 
@@ -398,6 +358,7 @@
 <span class="keyword">struct</span> X {
     <span class="keyword">char</span> * <span class="keyword">auto</span>(customFree) name = NULL;
 };
+
 
 </pre>
 

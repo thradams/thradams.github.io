@@ -1,20 +1,17 @@
 # Part I - Additions into C language I would like to have
 
-September 2020
+April 2021
 
-I have implemented (some of) these features in a c compiler that generates
-c code.
+Most of these features have been implemented in my transpiler that can be  visualized here:
 
 [cprime online](/web2/cprime.html)
 
 
-What is funny is that more I use C less things I want to change.
-
 
 ## Struct member initializer
 
-The same syntax of declaring and initializing global variables 
-but for struct members. 
+struct members can be annotated with their respective 
+initialization value.
 
 ```cpp
 
@@ -68,7 +65,7 @@ C++ also accepts non constant initialization.
 
 ## if with initializer 
 
-This is the same of C++ 17. 
+This is the same of C++ 17.  See [https://en.cppreference.com/w/cpp/language/if](https://en.cppreference.com/w/cpp/language/if)
 
 ```cpp
 
@@ -100,23 +97,6 @@ the defer is called before the jump.
 When return is called first the result is copied to a local 
 variable then defer is called then  copied variable is returned.
 
-## Make  while optional in do statement
-
-```
-  do statement while ( expression ) ;
-  do statement
-````
-
-Missing while is the same of while(0). The motivation is to use 
-allow break and make scopes more explicit.
-
-```cpp
-  do
-  {
-       if (1) break;
-  }
-
-```
 
 ## try-block statement and throw
 
@@ -127,61 +107,52 @@ and jump to the catch block.
 ```cpp
 
    try {
-      throw integer-value; /*jump to catch*/
+      throw; /*jump*/
    }
-   catch (int error) /*catch is optional*/
-   {
-   }   
-
+   /*here*/
+   
    try {
-      throw integer-value; /*jump to catch*/
+      throw; /*jump*/
    }
    catch
    {
-   }   
-
-   try {
-      throw;
+     /*here*/
    }
    
+   try {
+      throw 1; /*jump with value*/
+   }
+   catch (int er)
+   {
+     /*er is 1*/
+   }
+      
 
 ```
 
 The difference for C++ is that throw can only be used 
-inside try-blocks.
+inside try-blocks making the jump path visible.
 
 
 ## try statement
    
-   Try statement can be used inside try-blocks. 
-   If the condition fails it execute "throw 1" that jumps to catch 
-   or it throw expression if specified with throw.
+  If the condition expression fails the try statement 
+  throws.
 
-   If defer-expression is specified then it called when the 
-   variable goes out of scope.
+  A defer expression can be used in try statement and 
+  if is called at the end of scope or before jumps.
+
+  We can inform the throw expression.
 
 Samples
 
 ```cpp
   
-  try(F1() == 0); /*throw 1;*/
-  try(F1() == 0) throw errno;
-  try(char* p = malloc(1); p ; free(p));
+  try (F1() == 0);
+  try (F1() == 0) throw expression ;
+  try (char* p = malloc(1); p ; free(p));
 
 ```
-
-Syntax:
-
-```cpp
-   try (condition);
-   try (init-statement condition);
-   try (init-statement condition; defer-expression);
-   
-   try (condition) throw expression;
-   try (init-statement condition) throw expression;
-   try (init-statement condition; defer-expression) throw expression;
-```
-  
 
 ## Lambdas 
 
@@ -205,14 +176,6 @@ Similar of C++ but without capture.
 ```
 
 (not implemented yet in cprime)
-
-# Part II - Features for a "light C++"
-
-These features are at this separated topic because they 
-imply more changes in the "spirit of C" and they are more like 
-"what if we had a simple C++"?
-
-
 
 ### Overloaded functions
 
@@ -262,11 +225,6 @@ int main() {
 ```
 Comparison with C++: There is not constructor here. There is no need for exceptions.
 
-Open question: Should we accept string literals?
-
-```cpp
-char  *s = new ("text");
-````
 
 So far there is no way to customize the allocator. I am considering 
 other alternatives to make it generic without adding C++ complexity.
@@ -377,6 +335,7 @@ Not is not implemented yet.
 struct X {
     char * auto(customFree) name = NULL;
 };
+
 
 ```
 
