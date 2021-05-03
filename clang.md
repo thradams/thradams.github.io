@@ -79,7 +79,7 @@ This is the same of C++ 17.  See [https://en.cppreference.com/w/cpp/language/if]
 
 ````
 
-## if with initializer and defer
+## if with initializer and defer-expression
 
 Considering the interesting pattern above (that is very useful to avoid bugs) 
 we also have an option with 'defer' to put everything at same line.
@@ -129,7 +129,7 @@ inside try-blocks making the jump path visible.
 
  Using defer the statement is executed at the end of scope
  or before leaving the scope with jumps like return break etc.
- 
+
 ```cpp
   defer statement
 ```
