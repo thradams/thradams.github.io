@@ -124,7 +124,7 @@
 
 <h2> try-block statement and throw</h2>
 
-<p>try block statement creates a region where we can use throw and jump to the catch block.</p>
+<p>try block statement creates a region where we can use throw and jump to the end of statement of inside catch block.</p>
 
 
 <pre>
@@ -141,14 +141,6 @@
    {
      <span class="comment">/*here*/</span>
    }
-   
-   <span class="keyword">try</span> {
-      <span class="keyword">throw</span> <span class="number">1</span>; <span class="comment">/*jump with value*/</span>
-   }
-   <span class="keyword">catch</span> (<span class="keyword">int</span> er)
-   {
-     <span class="comment">/*er is 1*/</span>
-   }
       
 
 </pre>
@@ -156,24 +148,14 @@
 
 <p>The difference for C++ is that throw can only be used inside try-blocks making the jump path visible.</p>
 
+<h2> defer</h2>
 
-<h2> try statement</h2>
-
-<p>  If the condition expression fails the try statement   throws.</p>
-
-<p>  A defer expression can be used in try statement and   if is called at the end of scope or before jumps.</p>
-
-<p>  We can inform the throw expression.</p>
-
-<p>Samples</p>
+<p> Using defer the statement is executed at the end of scope or before leaving the scope with jumps like return break etc.</p>
 
 <pre>
-  
-  <span class="keyword">try</span> (F1() == <span class="number">0</span>);
-  <span class="keyword">try</span> (F1() == <span class="number">0</span>) <span class="keyword">throw</span> expression ;
-  <span class="keyword">try</span> (<span class="keyword">char</span>* p = malloc(<span class="number">1</span>); p ; free(p));
-
+  defer statement
 </pre>
+
 
 
 <h2> Lambdas </h2>

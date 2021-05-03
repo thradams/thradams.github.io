@@ -101,7 +101,7 @@ variable then defer is called then  copied variable is returned.
 ## try-block statement and throw
 
 try block statement creates a region where we can use throw 
-and jump to the catch block.
+and jump to the end of statement of inside catch block.
 
 
 ```cpp
@@ -118,14 +118,6 @@ and jump to the catch block.
    {
      /*here*/
    }
-   
-   try {
-      throw 1; /*jump with value*/
-   }
-   catch (int er)
-   {
-     /*er is 1*/
-   }
       
 
 ```
@@ -133,26 +125,15 @@ and jump to the catch block.
 The difference for C++ is that throw can only be used 
 inside try-blocks making the jump path visible.
 
+## defer
 
-## try statement
-   
-  If the condition expression fails the try statement 
-  throws.
-
-  A defer expression can be used in try statement and 
-  if is called at the end of scope or before jumps.
-
-  We can inform the throw expression.
-
-Samples
-
+ Using defer the statement is executed at the end of scope
+ or before leaving the scope with jumps like return break etc.
+ 
 ```cpp
-  
-  try (F1() == 0);
-  try (F1() == 0) throw expression ;
-  try (char* p = malloc(1); p ; free(p));
-
+  defer statement
 ```
+
 
 ## Lambdas 
 
