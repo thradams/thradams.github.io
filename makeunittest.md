@@ -206,7 +206,7 @@ void parse_attribute(struct stream* p)
             strncpy(fileName, start, (int)(p->p - start));
 
             //we dont collect tests from the ouput itself
-            if (strcmp(fileName, p->out) == 0)
+            if (strcmp(fileName, p->out) != 0)
             {
                 CollectTestsFile(fileName, p->list);
             }
@@ -416,7 +416,7 @@ int main(int argc, char** argv) {
     }
 
 
-    printf("%s\n", argv[1]);
+    printf("Searching for tests in '%s'\n", argv[1]);
     const char* p = readfile(argv[1]);// "<node at1=\"teste\">aa</node>";
 
     
@@ -455,8 +455,9 @@ int main(int argc, char** argv) {
         fprintf(fout, "}\n");
         fprintf(fout, "#endif\n");
         fclose(fout);
-    }
 
+        printf("file '%s' was updated\n", argv[2]);
+    }
 }
 
 ```

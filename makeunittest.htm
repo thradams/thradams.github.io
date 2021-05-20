@@ -231,7 +231,7 @@ Initial Directory: $(ProjectDir)
             strncpy(fileName, start, (<span class="keyword">int</span>)(p-&gt;p - start));
 
             <span class="comment">//we dont collect tests from the ouput itself
-</span>            <span class="keyword">if</span> (strcmp(fileName, p-&gt;out) == <span class="number">0</span>)
+</span>            <span class="keyword">if</span> (strcmp(fileName, p-&gt;out) != <span class="number">0</span>)
             {
                 CollectTestsFile(fileName, p-&gt;<span class="keyword2">list</span>);
             }
@@ -441,7 +441,7 @@ Initial Directory: $(ProjectDir)
     }
 
 
-    printf(<span class="string">&quot;%s\n&quot;</span>, argv[<span class="number">1</span>]);
+    printf(<span class="string">&quot;Searching for tests in '%s'\n&quot;</span>, argv[<span class="number">1</span>]);
     <span class="keyword">const</span> <span class="keyword">char</span>* p = readfile(argv[<span class="number">1</span>]);<span class="comment">// &quot;&lt;node at1=\&quot;teste\&quot;&gt;aa&lt;/node&gt;&quot;;
 </span>
     
@@ -480,8 +480,9 @@ Initial Directory: $(ProjectDir)
         fprintf(fout, <span class="string">&quot;}\n&quot;</span>);
         fprintf(fout, <span class="string">&quot;#endif\n&quot;</span>);
         fclose(fout);
-    }
 
+        printf(<span class="string">&quot;file '%s' was updated\n&quot;</span>, argv[<span class="number">2</span>]);
+    }
 }
 
 </pre>
