@@ -101,3 +101,47 @@ The cl compiler call the linker automatically.
 [See also](https://docs.microsoft.com/en-us/cpp/build/reference/compiler-command-line-syntax?view=msvc-160)
 
 
+build.bat
+```
+@ECHO OFF
+cl build.c
+if ERRORLEVEL 1 goto ERROR
+
+build.exe
+
+goto SUCCESS
+
+:ERROR
+ECHO Error creating the build file.
+
+:SUCCESS
+
+ECHO Build completed.
+
+del build.exe
+del build.obj
+
+
+```
+
+build.sh
+```
+#!/bin/bash
+echo Compiling the build file
+
+gcc build.c -o build
+
+if [ $? -ne '0' ]; then
+    echo "Error creating the build"
+    exit 1
+fi
+
+echo Running the build file
+
+./build
+rm build
+exit 1
+
+```
+
+

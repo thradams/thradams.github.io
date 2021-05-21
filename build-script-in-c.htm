@@ -129,6 +129,50 @@ cl /W4 TesteWindowsApp.cpp TesteWindowsApp.res  kernel32.lib
 <p><a href="https://docs.microsoft.com/en-us/cpp/build/reference/compiler-command-line-syntax?view=msvc-160">See also</a></p>
 
 
+<p>build.bat</p>
+<pre>
+@ECHO OFF
+cl build.c
+if ERRORLEVEL 1 goto ERROR
+
+build.exe
+
+goto SUCCESS
+
+:ERROR
+ECHO Error creating the build file.
+
+:SUCCESS
+
+ECHO Build completed.
+
+del build.exe
+del build.obj
+
+
+</pre>
+
+<p>build.sh</p>
+<pre>
+#!/bin/bash
+echo Compiling the build file
+
+gcc build.c -o build
+
+if [ $? -ne '0' ]; then
+    echo &quot;Error creating the build&quot;
+    exit 1
+fi
+
+echo Running the build file
+
+./build
+rm build
+exit 1
+
+</pre>
+
+
 
 <!-- Page content end --> 
 </article> 
