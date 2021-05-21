@@ -508,6 +508,150 @@ Initial Directory: $(ProjectDir)
 </pre>
 
 
+
+
+<pre>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;sys/stat.h&gt;
+
+<span class="keyword">struct</span> Test
+{
+    <span class="keyword">char</span> name[<span class="number">100</span>];
+    <span class="keyword">struct</span> Test* pNext;
+};
+
+<span class="keyword">struct</span> TestList
+{
+    <span class="keyword">struct</span> Test* pHead;
+    <span class="keyword">struct</span> Test* pTail;
+};
+
+<span class="keyword">void</span> CollectTests(FILE* f, <span class="keyword">struct</span> TestList* <span class="keyword2">list</span>)
+{
+    <span class="keyword">char</span> ch = fgetc(f);
+    <span class="keyword">while</span> (!feof(f))
+    {
+        <span class="keyword">int</span> count = <span class="number">0</span>;
+
+        <span class="keyword">char</span> buffer[<span class="number">100</span>] = { <span class="number">0</span> };
+
+        <span class="keyword">if</span> (ch &gt;= <span class="string">'a'</span> &amp;&amp; ch &lt;= <span class="string">'z'</span> ||
+            ch &gt;= <span class="string">'A'</span> &amp;&amp; ch &lt;= <span class="string">'Z'</span>)
+        {
+            <span class="keyword">while</span> (ch &gt;= <span class="string">'a'</span> &amp;&amp; ch &lt;= <span class="string">'z'</span> ||
+                   ch &gt;= <span class="string">'A'</span> &amp;&amp; ch &lt;= <span class="string">'Z'</span> ||
+                   ch &gt;= <span class="string">'0'</span> &amp;&amp; ch &lt;= <span class="string">'9'</span> ||
+                   ch == <span class="string">'_'</span>)
+            {
+                buffer[count] = ch;
+                ch = fgetc(f);
+                count++;
+            }
+            <span class="keyword">if</span> (buffer[<span class="number">0</span>] == <span class="string">'U'</span> &amp;&amp;
+                buffer[<span class="number">1</span>] == <span class="string">'N'</span> &amp;&amp;
+                buffer[<span class="number">2</span>] == <span class="string">'I'</span> &amp;&amp;
+                buffer[<span class="number">3</span>] == <span class="string">'T'</span> &amp;&amp;
+                buffer[<span class="number">4</span>] == <span class="string">'_'</span> &amp;&amp;
+                buffer[<span class="number">5</span>] == <span class="string">'T'</span> &amp;&amp;
+                buffer[<span class="number">6</span>] == <span class="string">'E'</span> &amp;&amp;
+                buffer[<span class="number">7</span>] == <span class="string">'S'</span> &amp;&amp;
+                buffer[<span class="number">8</span>] == <span class="string">'T'</span>
+                )
+            {
+                <span class="keyword">struct</span> Test* p = calloc(<span class="number">1</span>, <span class="keyword">sizeof</span> * p);
+                <span class="keyword">if</span> (p)
+                {
+                    strncpy(p-&gt;name, buffer, <span class="keyword">sizeof</span>(buffer));
+                    printf(<span class="string">&quot;  %s\n&quot;</span>, p-&gt;name);
+
+                    <span class="keyword">if</span> (<span class="keyword2">list</span>-&gt;pTail == NULL)
+                    {
+                        <span class="keyword2">list</span>-&gt;pHead = p;
+                        <span class="keyword2">list</span>-&gt;pTail = p;
+                    }
+                    <span class="keyword">else</span> {
+                        <span class="keyword2">list</span>-&gt;pTail-&gt;pNext = p;
+                        <span class="keyword2">list</span>-&gt;pTail = p;
+                    }
+                }
+            }
+        }
+
+        ch = fgetc(f);
+    }
+}
+
+<span class="keyword">void</span> CollectTestsFile(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">struct</span> TestList* <span class="keyword2">list</span>)
+{
+    FILE* f = fopen(file, <span class="string">&quot;r&quot;</span>);
+    <span class="keyword">if</span> (f)
+    {
+        printf(<span class="string">&quot;%s\n&quot;</span>, file);
+        CollectTests(f, <span class="keyword2">list</span>);
+        fclose(f);
+    }
+}
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv) {
+
+    <span class="keyword">if</span> (argc &lt; <span class="number">3</span>)
+    {
+        printf(<span class="string">&quot;usage: output.c file1.c file2.c ...\n&quot;</span>);
+        <span class="keyword">return</span> EXIT_FAILURE;
+    }
+
+
+
+    <span class="keyword">struct</span> TestList <span class="keyword2">list</span> = { <span class="number">0</span> };
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; (<span class="keyword">int</span>)argv; i++)
+    {
+        <span class="keyword">if</span> (strcmp(argv[i], argv[<span class="number">1</span>]) != <span class="number">0</span>) <span class="comment">/*ignore the ouputfile*/</span>
+        {
+            CollectTestsFile(argv[i], &amp;<span class="keyword2">list</span>);
+        }        
+    }
+
+    FILE* fout = fopen(argv[<span class="number">1</span>], <span class="string">&quot;w&quot;</span>);
+    <span class="keyword">if</span> (fout)
+    {
+        fprintf(fout, <span class="string">&quot;#ifdef TEST\n\n&quot;</span>);
+        fprintf(fout, <span class="string">&quot;//forward declarations\n\n&quot;</span>);
+
+        <span class="keyword">struct</span> Test* pCurrent = <span class="keyword2">list</span>.pHead;
+        <span class="keyword">while</span> (pCurrent)
+        {
+            fprintf(fout, <span class="string">&quot;void %s(void);\n&quot;</span>, pCurrent-&gt;name);
+            pCurrent = pCurrent-&gt;pNext;
+        }
+
+        fprintf(fout, <span class="string">&quot;\n&quot;</span>);
+        fprintf(fout, <span class="string">&quot;void DoUnitTests(void)\n{\n&quot;</span>);
+        pCurrent = <span class="keyword2">list</span>.pHead;
+        <span class="keyword">while</span> (pCurrent)
+        {
+            fprintf(fout, <span class="string">&quot;  %s();\n&quot;</span>, pCurrent-&gt;name);
+            pCurrent = pCurrent-&gt;pNext;
+        }
+        fprintf(fout, <span class="string">&quot;}\n&quot;</span>);
+
+        fprintf(fout, <span class="string">&quot;#else\n&quot;</span>);
+        fprintf(fout, <span class="string">&quot;; //removes warning C4206: nonstandard extension used: translation unit is empty\n&quot;</span>);
+        fprintf(fout, <span class="string">&quot;#endif\n&quot;</span>);
+        fclose(fout);
+
+        printf(<span class="string">&quot;file '%s' was updated\n&quot;</span>, argv[<span class="number">2</span>]);
+    }
+
+}
+
+</pre>
+
+
+
 <!-- Page content end --> 
 </article> 
  

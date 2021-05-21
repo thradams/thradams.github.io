@@ -480,3 +480,146 @@ void DoUnitTests(void)
 #endif
 
 ```
+
+
+
+```cpp
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+
+struct Test
+{
+    char name[100];
+    struct Test* pNext;
+};
+
+struct TestList
+{
+    struct Test* pHead;
+    struct Test* pTail;
+};
+
+void CollectTests(FILE* f, struct TestList* list)
+{
+    char ch = fgetc(f);
+    while (!feof(f))
+    {
+        int count = 0;
+
+        char buffer[100] = { 0 };
+
+        if (ch >= 'a' && ch <= 'z' ||
+            ch >= 'A' && ch <= 'Z')
+        {
+            while (ch >= 'a' && ch <= 'z' ||
+                   ch >= 'A' && ch <= 'Z' ||
+                   ch >= '0' && ch <= '9' ||
+                   ch == '_')
+            {
+                buffer[count] = ch;
+                ch = fgetc(f);
+                count++;
+            }
+            if (buffer[0] == 'U' &&
+                buffer[1] == 'N' &&
+                buffer[2] == 'I' &&
+                buffer[3] == 'T' &&
+                buffer[4] == '_' &&
+                buffer[5] == 'T' &&
+                buffer[6] == 'E' &&
+                buffer[7] == 'S' &&
+                buffer[8] == 'T'
+                )
+            {
+                struct Test* p = calloc(1, sizeof * p);
+                if (p)
+                {
+                    strncpy(p->name, buffer, sizeof(buffer));
+                    printf("  %s\n", p->name);
+
+                    if (list->pTail == NULL)
+                    {
+                        list->pHead = p;
+                        list->pTail = p;
+                    }
+                    else {
+                        list->pTail->pNext = p;
+                        list->pTail = p;
+                    }
+                }
+            }
+        }
+
+        ch = fgetc(f);
+    }
+}
+
+void CollectTestsFile(const char* file, struct TestList* list)
+{
+    FILE* f = fopen(file, "r");
+    if (f)
+    {
+        printf("%s\n", file);
+        CollectTests(f, list);
+        fclose(f);
+    }
+}
+
+int main(int argc, char** argv) {
+
+    if (argc < 3)
+    {
+        printf("usage: output.c file1.c file2.c ...\n");
+        return EXIT_FAILURE;
+    }
+
+
+
+    struct TestList list = { 0 };
+
+    for (int i = 1; i < (int)argv; i++)
+    {
+        if (strcmp(argv[i], argv[1]) != 0) /*ignore the ouputfile*/
+        {
+            CollectTestsFile(argv[i], &list);
+        }        
+    }
+
+    FILE* fout = fopen(argv[1], "w");
+    if (fout)
+    {
+        fprintf(fout, "#ifdef TEST\n\n");
+        fprintf(fout, "//forward declarations\n\n");
+
+        struct Test* pCurrent = list.pHead;
+        while (pCurrent)
+        {
+            fprintf(fout, "void %s(void);\n", pCurrent->name);
+            pCurrent = pCurrent->pNext;
+        }
+
+        fprintf(fout, "\n");
+        fprintf(fout, "void DoUnitTests(void)\n{\n");
+        pCurrent = list.pHead;
+        while (pCurrent)
+        {
+            fprintf(fout, "  %s();\n", pCurrent->name);
+            pCurrent = pCurrent->pNext;
+        }
+        fprintf(fout, "}\n");
+
+        fprintf(fout, "#else\n");
+        fprintf(fout, "; //removes warning C4206: nonstandard extension used: translation unit is empty\n");
+        fprintf(fout, "#endif\n");
+        fclose(fout);
+
+        printf("file '%s' was updated\n", argv[2]);
+    }
+
+}
+
+```
+
