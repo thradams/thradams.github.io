@@ -5,7 +5,8 @@
 This program scans the source files passed on the command line and collects 
 test functions that are inside ifdef TEST. It generates an ouputfile 
 tha calls all test functions.
- 
+
+
 ```
 maketest output.c file1.c file2.c ....
 ```
