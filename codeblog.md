@@ -16,7 +16,9 @@
 
 ### 2021
 
-[Make unit test call ](makeunittest.md) May 2021
+[Make unit test visual studio project ](maketestvc.md) May 2021
+
+[Make unit test command line ](makeunittest.md) May 2021
 
 [format %0 ](format.md) April 2021
 
