@@ -156,6 +156,89 @@
 
 
 
+<p>Without free.</p>
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+
+
+<span class="keyword">union</span> header {
+    <span class="keyword">struct</span> {
+        <span class="keyword">union</span> header* next; <span class="comment">/* next block*/</span>
+        <span class="keyword">void</span> (*DTOR)(<span class="keyword">void</span>*);     <span class="comment">/* destructor */</span>
+    } s;
+    <span class="keyword">long</span> <span class="keyword">double</span> x;         <span class="comment">/* force alignment of blocks */</span>
+};
+
+<span class="keyword">struct</span> allocator
+{
+    <span class="keyword">union</span> header* head;
+};
+
+<span class="keyword">void</span>* alloc(<span class="keyword">struct</span> allocator* allocator, <span class="keyword">int</span> nbytes, <span class="keyword">void</span> (*F)(<span class="keyword">void</span>*))
+{
+    <span class="keyword">int</span> nunits = (nbytes + <span class="keyword">sizeof</span>(<span class="keyword">union</span> header) - <span class="number">1</span>) / <span class="keyword">sizeof</span>(<span class="keyword">union</span> header) + <span class="number">1</span>;
+    <span class="keyword">union</span> header* p = malloc(nunits * <span class="keyword">sizeof</span>(<span class="keyword">union</span> header));
+    <span class="keyword">if</span> (p)
+    {        
+        p-&gt;s.next = allocator-&gt;head;
+        p-&gt;s.DTOR = F;        
+        allocator-&gt;head = p;
+
+
+        <span class="keyword">return</span> (<span class="keyword">void</span>*)(p + <span class="number">1</span>);
+    }
+    <span class="keyword">return</span> NULL;
+}
+
+<span class="keyword">void</span> allocator_destroy(<span class="keyword">struct</span> allocator* allocator)
+{
+    <span class="keyword">union</span> header* p = allocator-&gt;head;
+    <span class="keyword">while</span> (p)
+    {
+        <span class="keyword">union</span> header* next = p-&gt;s.next;
+        <span class="keyword">if</span> (p-&gt;s.DTOR)
+        {
+            <span class="keyword">void</span>* pobj = (<span class="keyword">void</span>*)((<span class="keyword">union</span> header*)p + <span class="number">1</span>);
+            p-&gt;s.DTOR(pobj);
+            free(p);
+        }
+        p = next;
+    }
+}
+
+<span class="keyword">struct</span> X
+{
+    <span class="keyword">char</span>* name;
+};
+
+<span class="keyword">void</span> DestroyX(<span class="keyword">struct</span> X* p)
+{
+    printf(<span class="string">&quot;DestroyX&quot;</span>);
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> allocator allocator = { <span class="number">0</span> };
+    <span class="keyword">struct</span> X* pX = alloc(&amp;allocator, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> X), DestroyX);
+    <span class="keyword">if</span> (pX)
+    {
+        pX-&gt;name = alloc(&amp;allocator, strlen(<span class="string">&quot;teste&quot;</span>), NULL);
+        strcpy(pX-&gt;name, <span class="string">&quot;teste&quot;</span>);
+        
+    }
+    
+
+    allocator_destroy(&amp;allocator);
+}
+
+
+</pre>
+
+
 
 <!-- Page content end --> 
 </article> 
