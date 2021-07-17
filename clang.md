@@ -135,14 +135,13 @@ inside try-blocks making the jump path visible.
 ```
 
 
-## Lambdas 
+## Function Literal
+  
+Syntax:
+```cpp
+   int (*f) (int arg1, int arg2) = 
+          (int () (int arg1, int arg2)) { return arg1 + arg2; };
 
-Similar of C++ but without capture.
-
-```
- lambda-expression:
-    [] ( parameters opt ) -> return type (optional) compound-statement
-    [] compound-statement -> return type (optional) 
 ```
 
 

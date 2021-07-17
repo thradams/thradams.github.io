@@ -158,15 +158,15 @@
 
 
 
-<h2> Lambdas </h2>
+<h2> Function Literal</h2>
 
-<p>Similar of C++ but without capture.</p>
-
+<p>Syntax:</p>
 <pre>
- lambda-expression:
-    [] ( parameters opt ) -&gt; return type (optional) compound-statement
-    [] compound-statement -&gt; return type (optional) 
+   <span class="keyword">int</span> (*f) (<span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2) = 
+          (<span class="keyword">int</span> () (<span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2)) { <span class="keyword">return</span> arg1 + arg2; };
+
 </pre>
+
 
 
 <h2> Literal string copy to fixed array</h2>
