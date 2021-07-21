@@ -140,8 +140,24 @@ inside try-blocks making the jump path visible.
 Syntax:
 ```cpp
    int (*f) (int arg1, int arg2) = 
-          (int () (int arg1, int arg2)) { return arg1 + arg2; };
+          (int (int arg1, int arg2)) { return arg1 + arg2; };
 
+```
+
+Grammar changes:
+
+```cpp
+  postfix-expression:
+    primary-expression
+    postfix-expression [ expression ]
+    postfix-expression ( argument-expression-listopt )
+    postfix-expression . identifier
+    postfix-expression -> identifier
+    postfix-expression ++
+    postfix-expression --
+    ( type-name ) { initializer-list }
+    ( type-name ) { initializer-list , }
+    ( type-name ) compound-statement           <---- if typename is function type
 ```
 
 
@@ -160,6 +176,7 @@ Syntax:
 ### Overloaded functions
 
 Overload functions are functions with name mangling. 
+They are created to support destructor/polymorphism/parametrization.
 
 ```cpp
 void draw(struct Box* p) overload;

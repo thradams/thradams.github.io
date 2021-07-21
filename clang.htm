@@ -163,8 +163,25 @@
 <p>Syntax:</p>
 <pre>
    <span class="keyword">int</span> (*f) (<span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2) = 
-          (<span class="keyword">int</span> () (<span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2)) { <span class="keyword">return</span> arg1 + arg2; };
+          (<span class="keyword">int</span> (<span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2)) { <span class="keyword">return</span> arg1 + arg2; };
 
+</pre>
+
+
+<p>Grammar changes:</p>
+
+<pre>
+  postfix-expression:
+    primary-expression
+    postfix-expression [ expression ]
+    postfix-expression ( argument-expression-listopt )
+    postfix-expression . identifier
+    postfix-expression -&gt; identifier
+    postfix-expression ++
+    postfix-expression --
+    ( type-name ) { initializer-<span class="keyword2">list</span> }
+    ( type-name ) { initializer-<span class="keyword2">list</span> , }
+    ( type-name ) compound-statement           &lt;---- <span class="keyword">if</span> <span class="keyword">typename</span> is <span class="keyword2">function</span> type
 </pre>
 
 
@@ -184,7 +201,7 @@
 
 <h3> Overloaded functions</h3>
 
-<p>Overload functions are functions with name mangling. </p>
+<p>Overload functions are functions with name mangling. They are created to support destructor/polymorphism/parametrization.</p>
 
 <pre>
 <span class="keyword">void</span> draw(<span class="keyword">struct</span> Box* p) overload;
