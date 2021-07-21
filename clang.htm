@@ -216,6 +216,7 @@
 
 <h3> New operator</h3>
 
+<p>(  Maybe will be removed because of the different possibilities of allocation.)</p>
 
 <pre>
  postfix-expression:
@@ -286,6 +287,8 @@
 
 
 <h2> Auto pointers</h2>
+
+<p>(  Maybe will be removed because of the different possibilities of allocation.)</p>
 
 <p>Pointers can be qualified with auto. </p>
 
@@ -363,6 +366,7 @@
 
 
 <p>This is useful for custom allocator. Sometimes a pointerto the allocator is also required, in this case the bestsolution is auto() to say it is the owner pointerbut don't use this information to free it, I will do it manuallyfor instance at the destructor.</p>
+
 
 
 <h2> Polymorphism</h2>
@@ -564,6 +568,19 @@
   if T is struct is is passed by pointer otherwise by copy. 
 */</span>
 
+</pre>
+
+
+<h2> Pragmas </h2>
+
+<p>This are just for the cprime generator.</p>
+
+<pre>
+<span class="keyword">#define</span> DEL(T) <span class="keyword">void</span> Delete_##T(<span class="keyword">struct</span> T* p){ <span class="keyword">if</span> (p) {destroy(*p); free(p);} }
+
+<span class="keyword">#pragma</span> expand on
+DEL(House)
+<span class="keyword">#pragma</span> expand off
 </pre>
 
 

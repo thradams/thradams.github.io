@@ -191,6 +191,9 @@ We can think of it as an inverse of extern "C".
 
 ### New operator
 
+(
+  Maybe will be removed because of the different possibilities of allocation.
+)
 
 ```
  postfix-expression:
@@ -262,6 +265,10 @@ int main()
 ```
 
 ## Auto pointers
+
+(
+  Maybe will be removed because of the different possibilities of allocation.
+)
 
 Pointers can be qualified with auto. 
 
@@ -341,6 +348,7 @@ to the allocator is also required, in this case the best
 solution is auto() to say it is the owner pointer
 but don't use this information to free it, I will do it manually
 for instance at the destructor.
+
 
 
 ## Polymorphism
@@ -536,5 +544,17 @@ int main()
   if T is struct is is passed by pointer otherwise by copy. 
 */
 
+```
+
+## Pragmas 
+
+This are just for the cprime generator.
+
+```cpp
+#define DEL(T) void Delete_##T(struct T* p){ if (p) {destroy(*p); free(p);} }
+
+#pragma expand on
+DEL(House)
+#pragma expand off
 ```
 
