@@ -378,7 +378,216 @@
 
 </pre>
 
+<p>two buffers one for chars and other for indexes</p>
 
+
+<pre>
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">#define</span> MAX_SIZE <span class="number">6</span>
+
+
+<span class="keyword">struct</span> ring_int {
+    <span class="keyword">int</span> size;
+    <span class="keyword">int</span> tail; <span class="comment">/*mais antigo*/</span>
+    <span class="keyword">int</span> head; <span class="comment">/*prix*/</span>
+    <span class="keyword">int</span> buffer[MAX_SIZE];
+};
+
+<span class="keyword">struct</span> ring_chars {
+    <span class="keyword">int</span> size;
+    <span class="keyword">int</span> tail; <span class="comment">/*mais antigo*/</span>
+    <span class="keyword">int</span> head; <span class="comment">/*prix*/</span>
+    <span class="keyword">char</span> buffer[MAX_SIZE];
+};
+
+
+<span class="keyword">void</span> ring_chars_push(<span class="keyword">struct</span> ring_chars* ring, <span class="keyword">char</span> item)
+{
+    <span class="keyword">if</span> (item == <span class="string">'\0'</span>)
+        item = <span class="string">'*'</span>;
+
+    <span class="keyword">if</span> (ring-&gt;head == ring-&gt;tail &amp;&amp;
+        ring-&gt;size == MAX_SIZE)
+    {
+        ring-&gt;tail++;
+        <span class="keyword">if</span> (ring-&gt;tail == MAX_SIZE)
+            ring-&gt;tail = <span class="number">0</span>;
+    }
+
+    ring-&gt;buffer[ring-&gt;head] = item;
+    ring-&gt;head++;
+    <span class="keyword">if</span> (ring-&gt;head == MAX_SIZE)
+        ring-&gt;head = <span class="number">0</span>;
+
+    <span class="keyword">if</span> (ring-&gt;size &lt; MAX_SIZE) {
+        ring-&gt;size++;
+    }
+}
+
+
+<span class="keyword">void</span> ring_int_push(<span class="keyword">struct</span> ring_int* ring, <span class="keyword">int</span> item)
+{
+    <span class="keyword">if</span> (ring-&gt;head == ring-&gt;tail &amp;&amp;
+        ring-&gt;size == MAX_SIZE)
+    {
+        ring-&gt;tail++;
+        <span class="keyword">if</span> (ring-&gt;tail == MAX_SIZE)
+            ring-&gt;tail = <span class="number">0</span>;
+    }
+
+    ring-&gt;buffer[ring-&gt;head] = item;
+    ring-&gt;head++;
+    <span class="keyword">if</span> (ring-&gt;head == MAX_SIZE)
+        ring-&gt;head = <span class="number">0</span>;
+
+    <span class="keyword">if</span> (ring-&gt;size &lt; MAX_SIZE) {
+        ring-&gt;size++;
+    }
+}
+
+<span class="keyword">int</span> ring_int_pop(<span class="keyword">struct</span> ring_int* ring)
+{
+    <span class="keyword">if</span> (ring-&gt;size &lt; <span class="number">1</span>) <span class="keyword">return</span> <span class="number">-1</span>;
+
+    <span class="keyword">int</span> item = ring-&gt;buffer[ring-&gt;tail];
+    ring-&gt;buffer[ring-&gt;tail] = <span class="number">-1</span>;
+    ring-&gt;size--;
+
+    ring-&gt;tail++;
+    <span class="keyword">if</span> (ring-&gt;tail == MAX_SIZE)
+        ring-&gt;tail = <span class="number">0</span>;
+    <span class="keyword">return</span> item;
+}
+
+<span class="keyword">void</span> ring_text(<span class="keyword">struct</span> ring_int* ring_int, <span class="keyword">struct</span> ring_chars* ring, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* p = text;
+    <span class="keyword">int</span> start = ring-&gt;head;
+
+    <span class="keyword">for</span> (;;)
+    {
+        
+
+        <span class="keyword">if</span> (ring_int-&gt;size &gt; <span class="number">0</span> &amp;&amp; ring-&gt;size == MAX_SIZE)
+        {
+            <span class="keyword">if</span> (ring-&gt;head &gt;= ring_int-&gt;buffer[ring_int-&gt;tail])
+            {
+                ring_int_pop(ring_int);
+            }
+        }
+
+        ring_chars_push(ring, *p);
+
+        <span class="keyword">if</span> (*p == <span class="number">0</span>)
+            <span class="keyword">break</span>;
+        p++;
+    }
+
+    ring_int_push(ring_int, start);
+}
+
+<span class="keyword">int</span> get_index(<span class="keyword">struct</span> ring_int* ring_int, <span class="keyword">int</span> index)
+{
+    index = (ring_int-&gt;tail + index) % MAX_SIZE;
+    <span class="keyword">return</span> ring_int-&gt;buffer[index];
+}
+
+<span class="keyword">void</span> print_new_to_old(<span class="keyword">struct</span> ring_int* ring_int, <span class="keyword">struct</span> ring_chars* ring)
+{
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = ring_int-&gt;size - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)
+    {
+        <span class="keyword">int</span> j = get_index(ring_int, i);
+        <span class="keyword">while</span> (ring-&gt;buffer[j] != <span class="string">'*'</span>)
+        {
+            printf(<span class="string">&quot;%c&quot;</span>, ring-&gt;buffer[j]);
+            j++;
+            <span class="keyword">if</span> (j == MAX_SIZE)
+                j = <span class="number">0</span>;
+        }
+        printf(<span class="string">&quot;\n&quot;</span>);
+    }
+}
+
+<span class="keyword">void</span> print_old_to_new(<span class="keyword">struct</span> ring_int* ring_int, <span class="keyword">struct</span> ring_chars* ring)
+{
+    <span class="comment">//printf(&quot;%d %d\n&quot;, ring-&gt;size, ring-&gt;head);
+</span>    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_SIZE; i++)
+    {
+        <span class="keyword">if</span> (i &lt; ring-&gt;size)
+            printf(<span class="string">&quot;%c&quot;</span>, ring-&gt;buffer[i]);
+        <span class="keyword">else</span>
+            printf(<span class="string">&quot;.&quot;</span>);
+    }
+    printf(<span class="string">&quot;\n&quot;</span>);
+    
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_SIZE; i++)
+    {
+        <span class="keyword">if</span> (i == ring-&gt;head)
+            printf(<span class="string">&quot;^&quot;</span>);
+        <span class="keyword">else</span> <span class="keyword">if</span> (i == ring-&gt;tail)
+            printf(<span class="string">&quot;~&quot;</span>);
+        <span class="keyword">else</span>
+            printf(<span class="string">&quot; &quot;</span>);
+    }
+    printf(<span class="string">&quot;\n&quot;</span>);
+
+    printf(<span class="string">&quot;[&quot;</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ring_int-&gt;size; i++)
+    {
+        <span class="keyword">int</span> j = get_index(ring_int, i);
+        printf(<span class="string">&quot;%d &quot;</span>, j);
+    }
+    printf(<span class="string">&quot;]\n&quot;</span>);
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ring_int-&gt;size; i++)
+    {
+        <span class="keyword">int</span> j = get_index(ring_int, i);
+        <span class="keyword">while</span> (ring-&gt;buffer[j] != <span class="string">'*'</span>)
+        {
+            printf(<span class="string">&quot;%c&quot;</span>, ring-&gt;buffer[j]);
+            j++;
+            <span class="keyword">if</span> (j == MAX_SIZE)
+                j = <span class="number">0</span>;
+        }
+        printf(<span class="string">&quot;\n&quot;</span>);
+
+    }
+}
+
+<span class="keyword">int</span> main()
+{
+    <span class="keyword">struct</span> ring_int ring_int = { <span class="number">0</span> };
+    <span class="keyword">struct</span> ring_chars ring_chars = { <span class="number">0</span> };
+     <span class="comment">//ring_text(&amp;ring_int, &amp;ring_chars, &quot;a&quot;);
+</span>     <span class="comment">//ring_text(&amp;ring_int, &amp;ring_chars, &quot;123&quot;);
+</span>     <span class="comment">//ring_text(&amp;ring_int, &amp;ring_chars, &quot;AB&quot;);
+</span>     <span class="comment">//ring_text(&amp;ring_int, &amp;ring_chars, &quot;Z&quot;);
+</span>     <span class="comment">//print_old_to_new(&amp;ring_int, &amp;ring_chars);
+</span>     <span class="comment">//ring_text(&amp;ring_int, &amp;ring_chars, &quot;45&quot;);
+</span>     <span class="comment">//print_old_to_new(&amp;ring_int, &amp;ring_chars);
+</span>     
+     
+
+    <span class="keyword">for</span> (;;)
+    {
+        <span class="keyword">char</span> <span class="keyword2">string</span>[<span class="number">256</span>] = { <span class="number">0</span> };
+        printf(<span class="string">&quot;--------------------------------\n&quot;</span>);
+        printf(<span class="string">&quot;&gt;&quot;</span>);
+        scanf(<span class="string">&quot;%s&quot;</span>, <span class="keyword2">string</span>);
+        ring_text(&amp;ring_int, &amp;ring_chars, <span class="keyword2">string</span>);
+        print_old_to_new(&amp;ring_int, &amp;ring_chars);
+    }
+    <span class="comment">//ring_chars_push(&amp;c, 'a');
+</span>    <span class="comment">//ring_chars_push(&amp;c, 'b');
+</span>    <span class="comment">//ring_chars_push(&amp;c, 'c');
+</span>    <span class="comment">//ring_chars_push(&amp;c, 'd');
+</span>    <span class="comment">//ring_chars_push(&amp;c, 'e');
+</span>}
+
+
+</pre>
 
 
 <!-- Page content end --> 

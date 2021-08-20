@@ -352,5 +352,213 @@ int main()
 
 
 ```
+two buffers one for chars and other for indexes
 
 
+```cpp
+
+#include <stdio.h>
+
+#define MAX_SIZE 6
+
+
+struct ring_int {
+    int size;
+    int tail; /*mais antigo*/
+    int head; /*prix*/
+    int buffer[MAX_SIZE];
+};
+
+struct ring_chars {
+    int size;
+    int tail; /*mais antigo*/
+    int head; /*prix*/
+    char buffer[MAX_SIZE];
+};
+
+
+void ring_chars_push(struct ring_chars* ring, char item)
+{
+    if (item == '\0')
+        item = '*';
+
+    if (ring->head == ring->tail &&
+        ring->size == MAX_SIZE)
+    {
+        ring->tail++;
+        if (ring->tail == MAX_SIZE)
+            ring->tail = 0;
+    }
+
+    ring->buffer[ring->head] = item;
+    ring->head++;
+    if (ring->head == MAX_SIZE)
+        ring->head = 0;
+
+    if (ring->size < MAX_SIZE) {
+        ring->size++;
+    }
+}
+
+
+void ring_int_push(struct ring_int* ring, int item)
+{
+    if (ring->head == ring->tail &&
+        ring->size == MAX_SIZE)
+    {
+        ring->tail++;
+        if (ring->tail == MAX_SIZE)
+            ring->tail = 0;
+    }
+
+    ring->buffer[ring->head] = item;
+    ring->head++;
+    if (ring->head == MAX_SIZE)
+        ring->head = 0;
+
+    if (ring->size < MAX_SIZE) {
+        ring->size++;
+    }
+}
+
+int ring_int_pop(struct ring_int* ring)
+{
+    if (ring->size < 1) return -1;
+
+    int item = ring->buffer[ring->tail];
+    ring->buffer[ring->tail] = -1;
+    ring->size--;
+
+    ring->tail++;
+    if (ring->tail == MAX_SIZE)
+        ring->tail = 0;
+    return item;
+}
+
+void ring_text(struct ring_int* ring_int, struct ring_chars* ring, const char* text)
+{
+    const char* p = text;
+    int start = ring->head;
+
+    for (;;)
+    {
+        
+
+        if (ring_int->size > 0 && ring->size == MAX_SIZE)
+        {
+            if (ring->head >= ring_int->buffer[ring_int->tail])
+            {
+                ring_int_pop(ring_int);
+            }
+        }
+
+        ring_chars_push(ring, *p);
+
+        if (*p == 0)
+            break;
+        p++;
+    }
+
+    ring_int_push(ring_int, start);
+}
+
+int get_index(struct ring_int* ring_int, int index)
+{
+    index = (ring_int->tail + index) % MAX_SIZE;
+    return ring_int->buffer[index];
+}
+
+void print_new_to_old(struct ring_int* ring_int, struct ring_chars* ring)
+{
+    for (int i = ring_int->size - 1; i >= 0; i--)
+    {
+        int j = get_index(ring_int, i);
+        while (ring->buffer[j] != '*')
+        {
+            printf("%c", ring->buffer[j]);
+            j++;
+            if (j == MAX_SIZE)
+                j = 0;
+        }
+        printf("\n");
+    }
+}
+
+void print_old_to_new(struct ring_int* ring_int, struct ring_chars* ring)
+{
+    //printf("%d %d\n", ring->size, ring->head);
+    for (int i = 0; i < MAX_SIZE; i++)
+    {
+        if (i < ring->size)
+            printf("%c", ring->buffer[i]);
+        else
+            printf(".");
+    }
+    printf("\n");
+    
+    for (int i = 0; i < MAX_SIZE; i++)
+    {
+        if (i == ring->head)
+            printf("^");
+        else if (i == ring->tail)
+            printf("~");
+        else
+            printf(" ");
+    }
+    printf("\n");
+
+    printf("[");
+    for (int i = 0; i < ring_int->size; i++)
+    {
+        int j = get_index(ring_int, i);
+        printf("%d ", j);
+    }
+    printf("]\n");
+
+    for (int i = 0; i < ring_int->size; i++)
+    {
+        int j = get_index(ring_int, i);
+        while (ring->buffer[j] != '*')
+        {
+            printf("%c", ring->buffer[j]);
+            j++;
+            if (j == MAX_SIZE)
+                j = 0;
+        }
+        printf("\n");
+
+    }
+}
+
+int main()
+{
+    struct ring_int ring_int = { 0 };
+    struct ring_chars ring_chars = { 0 };
+     //ring_text(&ring_int, &ring_chars, "a");
+     //ring_text(&ring_int, &ring_chars, "123");
+     //ring_text(&ring_int, &ring_chars, "AB");
+     //ring_text(&ring_int, &ring_chars, "Z");
+     //print_old_to_new(&ring_int, &ring_chars);
+     //ring_text(&ring_int, &ring_chars, "45");
+     //print_old_to_new(&ring_int, &ring_chars);
+     
+     
+
+    for (;;)
+    {
+        char string[256] = { 0 };
+        printf("--------------------------------\n");
+        printf(">");
+        scanf("%s", string);
+        ring_text(&ring_int, &ring_chars, string);
+        print_old_to_new(&ring_int, &ring_chars);
+    }
+    //ring_chars_push(&c, 'a');
+    //ring_chars_push(&c, 'b');
+    //ring_chars_push(&c, 'c');
+    //ring_chars_push(&c, 'd');
+    //ring_chars_push(&c, 'e');
+}
+
+
+```
