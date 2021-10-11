@@ -35,15 +35,26 @@ function GenerateDefineChar(arrayOfLines, literalPrefix) {
     return r;
 }
 
-function GenerateString(arrayOfLines, literalPrefix, literalSufix){
-    var r = "";
+function GenerateCString(arrayOfLines, literalPrefix) {
+    var r = "const char* str = \n";
 
-    for (var i in arrayOfLines)
-     {
-            r += literalPrefix + "\"" + Encode(arrayOfLines[i]) + "\\n\"" + literalSufix + "\n";
-     }
+    for (var i in arrayOfLines) {
+        r += literalPrefix + "\"" + Encode(arrayOfLines[i]) + "\\n\"" + "\n";
+    }
+    r += ";";
+
     return r;
 }
+
+function GenerateString(arrayOfLines, literalPrefix, literalSufix) {
+    var r = "";
+
+    for (var i in arrayOfLines) {
+        r += literalPrefix + "\"" + Encode(arrayOfLines[i]) + "\\n\"" + literalSufix + "\n";
+    }
+    return r;
+}
+
 
 function GenerateComment(arrayOfLines) {
     var r = "/*\n";
@@ -77,10 +88,12 @@ function Generate() {
         case 3:
             r = GenerateString(arrayOfLines, "s += ", ";");
             break;
+        case 4:
+            r = GenerateCString(arrayOfLines, "");
+            break;
     }
 
     var elText2 = document.getElementById("TextArea2");
     elText2.textContent = r;
 }
-window.onload = function () {
-};
+window.onload = function() {};

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Enum Generator</title>
+
+
+    <style type='text/css'>
+        .OutTextArea {
+            white-space: nowrap;
+            overflow: scroll;
+            overflow-y: scroll;
+            overflow-x: scroll;
+            overflow: -moz-scrollbars-horizontal;
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+    <Button onclick="OnButtonGenerate()">Generate</Button>
+    </br>
+    </br>
+
+    Input:
+
+    <textarea id="input" rows="4" style="width: 100%">
+ enum E {A = 1, B = 2};
+</textarea>
+
+    <p>Ouput:</p>
+
+    <textarea class='OutTextArea' id="output" rows="40" style="width: 100%"></textarea>
+
+    <script src="enumtostring.js"></script>
+
+</body>
+
+</html>
