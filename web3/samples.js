@@ -87,3 +87,17 @@ int main()
 
 `;
 
+sample["little of semantics analysis"] =
+    `
+int main()
+{
+    int a = 1;
+    *a = 2; //error
+
+    struct X { int i; }x;
+    x.j = 1;
+   
+}
+
+`;
+
