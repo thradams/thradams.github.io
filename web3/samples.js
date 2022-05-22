@@ -36,6 +36,23 @@ int main()
 `;
 
 
+sample["elifdef  elifndef C23"] =
+    `
+#define Y
+
+#ifdef X
+#define VERSION 1
+#elifdef  Y
+#define VERSION 2
+#else
+#define VERSION 3
+#end
+
+_Static_assert(VERSION == 4, "");
+
+`;
+
+
 sample["if with initialization C23?"] =
     `
 #include <stdio.h>
@@ -50,3 +67,23 @@ int main()
    }
 }
 `;
+
+
+sample["empty initializer C23"] =
+    `
+int main()
+{
+    struct X {
+        int i;
+    } x = {};
+
+    x = (struct X) {};
+
+    struct Y
+    {
+        struct X x;
+    } y = { {} };
+}
+
+`;
+

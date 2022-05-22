@@ -15,16 +15,18 @@
         <h2>C23 front end compiler</h2>
 
         <p>
-            This is a C23 front end compiler written from scratch by (twitter @thradams).
-            <br />
-            The front end has a integrated C23 preprocessor and it does a complete syntax analysis.
-            <br />
-            The semantic analysis is incomplete but is is moving forward together with some static analysis.
-            <br />
-            It also has a C back end generator that preserves (if possible) the original code formatting and macros.
-            <br />
+            This is a C23 front end compiler written from scratch by (twitter @thradams) as a hobby project.
         </p>
-        
+
+        <ol>
+            <li>preprocessor updated C23</li>
+            <li>syntax analisys</li>
+            <li>some microsoft extensions</li>
+            <li>The semantic analysis (incomplete)</li>
+            <li>Outputs C code. It can read C23 and ouputs C99 for instance</li>
+            <li>preserve (if possible) code formation and macros</li>
+        </ol>
+
 
         <select id="samples" onchange="OnChangeSelection(this.value)">
             <option>Select...</option>
@@ -61,22 +63,37 @@
 
         <p>CPrime was compiled with emscripten and it is running in your browser.</p>
 
-        <pre>
-            Features implemented:
-            
-            Preprocessor
 
-            # warning 
-            # elifdef elifndef
-            # has_include
-            #
-            
-            Compiler
-            - attributes
-            - digit separator
-            - binary digits
+        <p>It can be used for...</p>
+        <ol>
+            <li>Build and visit C23 AST</li>
+            <li>Syntax analisys</li>
+            <li>Experiments</li>
+            <li>As a preprocessor?</li>
+        </ol>
 
-        </pre>
+        <p>
+            Previous version
+            <a href="http://thradams.com/web2/cprime.html">http://thradams.com/web2/cprime.html</a>
+        </p>
+        <p>
+            This is the version 3 and the code is 100% new.
+        </p>
+        <p>
+            Version 2, builds the source from the AST adding macros, comments etc...
+        </p>
+        <p>
+            Version 3, just changes the tokens. For instance, if we write code with
+            attributes and we want to compile do C11, we need to remove these tokens,
+            otherwise they will be there inside the ouput. 
+            (This feature is missing now,
+            I need to visit each node from the ast...)
+        </p>
+
+        <p>
+            This version already compiles itself
+        </p>
+
         <script type='text/javascript'>
 
             var Module = {
