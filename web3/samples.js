@@ -37,7 +37,10 @@ int main()
 
 
 sample["elifdef  elifndef C23"] =
-    `
+`
+/*
+  C23 preprocessing directives elifdef and elifndef N2645
+*/
 #define Y
 
 #ifdef X
@@ -46,7 +49,7 @@ sample["elifdef  elifndef C23"] =
 #define VERSION 2
 #else
 #define VERSION 3
-#end
+#endif
 
 _Static_assert(VERSION == 4, "");
 
@@ -85,6 +88,24 @@ int main()
     } y = { {} };
 }
 
+`;
+
+sample["C23 typeof"] =
+`
+#define SWAP(a, b) \\
+  do {\\
+    typeof(a) temp = a; a = b; b = temp; \\
+  } while (0)
+
+#pragma expand SWAP
+
+int main()
+{
+    int a = 1;
+    typeof(a) b = 1;
+
+    SWAP(a, b);
+}
 `;
 
 sample["little of semantics analysis"] =

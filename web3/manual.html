@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <link rel="stylesheet" href="default.min.css">
+    <script src="highlight.min.js"></script>
+    
+    
+    
+    <script src="playground.js"></script>
+    <script type="text/javascript" src="cprime.js"></script>
+
+     <link rel="stylesheet" href="style.css" />
+    <style>
+        table {
+            text-align: left;
+        }
+        pre {
+            display:inline-block
+        }
+    </style>
+</head>
+<script>
+    Module.onRuntimeInitialized = function ()
+    {
+        OnLoad();
+    }
+</script>
+
+<body>
+
+    <a href="index.html">Home</a> | <a href="manual.html">Manual</a> | <a href="playground.html">Playground</a>  
+
+    <h1>C23 Front End - Manual</h1>
+
+    <h2>Command line</h2>
+    <table>
+
+        <tr>
+            <th>option</th>
+            <th>description</th>
+        </tr>
+        <tr>
+            <td>-r</td>
+            <td>Remove code comments</td>
+        </tr>
+        <tr>
+            <td>-E</td>
+            <td>Preprocess to console</td>
+        </tr>
+        <tr>
+            <td>-std=c99</td>
+            <td>Input language standard, use: -std=c99, -std=c11, -std=c2x</td>
+        </tr>
+    </table>
+
+    <h2>static_assert</h2>
+    <p>Despite not necessary for code transformation, 
+       the static_assert is evaluated.
+    </p>
+
+<pre><code class="language-c">
+    _Static_assert(1 == 2, "error");
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+    <p>When compiling to < C11 the static assert is removed</p>
+<pre><code class="language-c">
+    _Static_assert(2 == 2, "error");
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+    <h2>Digit separators</h2>    
+    <p>Digit separators are simply removed when compiling to < C23</p>
+    <pre><code class="language-c">
+    int a = 1000'00;        
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+    
+    <h2>Binary literals</h2>
+    <p>Binary literals are converted to hex when compiling to < C23</p>
+
+    <pre><code class="language-c">
+  int a = 0b1010;
+  int b = 0B1010;
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+    <h2>typeof</h2>
+    <p>The generated code replaces typeof(expression) by
+        the corresponding type
+    </p>
+    <p>
+        typedef requires the full type analisys and this is not ready yet.
+        Code is ready to be improved but requires more work.
+        </p>
+    <p>
+        Even having the correct type we also need to apply some non direct 
+        code transformation like when the struct is anonimous.
+    </p>
+
+    <h2>Pragma expand</h2>
+    <p>        
+        Tells the C back end to expand the MACRO.
+    </p>
+
+<pre><code class="language-c">
+#define SWAP(a, b) \
+    do { \
+      typeof(a) temp = a; a = b; b = temp; \
+    } while(0)
+
+#pragma expand SWAP
+
+int main()
+{
+   int a = 1;
+   typeof(a) b = 2;
+   SWAP(a, b);
+   return 1;
+}
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+
+</body>
+</html>
+
+      <script>
+          function OnLoad()
+          {
+              /*para pode cada code e pega o anterior p gerar o codigo do atual*/
+              var prev = null;
+              var items = document.body.getElementsByTagName("code");
+              for (var i = 0; i < items.length; i++) {                  
+                  if (prev != null)
+                  {
+                      var r = CompileText("", prev.textContent);
+                      items[i].textContent = r;
+                      prev = null;
+                  }
+                  else
+                  {
+                      prev = items[i];
+                  }
+              }
+
+              hljs.highlightAll();
+          }
+      </script>
+
