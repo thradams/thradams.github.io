@@ -72,8 +72,9 @@
 
     <h2>Digit separators</h2>    
     <p>Digit separators are simply removed when compiling to < C23</p>
-    <pre><code class="language-c">
-    int a = 1000'00;        
+    <pre><code class="language-c" data-options="-r">   
+        /*using -r option comments are removed*/
+        int a = 1000'00;        
 </code></pre>
 <pre><code class="language-c"></code></pre>
 
@@ -87,18 +88,11 @@
 </code></pre>
 <pre><code class="language-c"></code></pre>
 
-    <h2>typeof</h2>
-    <p>The generated code replaces typeof(expression) by
-        the corresponding type
+    <h2>typeof, remove_quals</h2>
+    <p>If the type has pointers a typedef is created. Otherwise typeof
+       is replaced by the type name. Anonymous  struct are not implemented yet.
     </p>
-    <p>
-        typedef requires the full type analisys and this is not ready yet.
-        Code is ready to be improved but requires more work.
-        </p>
-    <p>
-        Even having the correct type we also need to apply some non direct 
-        code transformation like when the struct is anonimous.
-    </p>
+        
 
     <h2>Pragma expand</h2>
     <p>        
@@ -123,6 +117,24 @@ int main()
 </code></pre>
 <pre><code class="language-c"></code></pre>
 
+    <!-- -->
+    
+    <h2>Empty initializer list</h2>
+    <p>        
+      Replaces the empty initializer by {0}. This may not be 100% precise because
+      {} is more like memset zero.
+    </p>
+
+<pre><code class="language-c">
+  int main()
+  {
+     struct X { int i ; } x = {};
+     x = (struct X){};
+  }
+</code></pre>
+<pre><code class="language-c"></code></pre>
+
+    <!-- -->
 
 </body>
 </html>
@@ -136,7 +148,10 @@ int main()
               for (var i = 0; i < items.length; i++) {                  
                   if (prev != null)
                   {
-                      var r = CompileText("", prev.textContent);
+                      var options = prev.dataset["options"];
+                      if (options == null)
+                          options = "";
+                      var r = CompileText(options, prev.textContent);
                       items[i].textContent = r;
                       prev = null;
                   }

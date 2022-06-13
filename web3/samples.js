@@ -22,16 +22,13 @@ int main()
 `;
 
 
-sample["Static_assert C11/C23"] =
+sample["_Static_assert static_assert"] =
     `
-/*
-  _Static_assert(condition, "text"); //C11 C23
-  _Static_assert(condition); //C23
-*/
-
 int main()
 {
     _Static_assert(1 == 1, "error");
+    static_assert(1 == 1, "error");
+    static_assert(1 == 1);
 }
 `;
 
@@ -103,9 +100,53 @@ int main()
 {
     int a = 1;
     typeof(a) b = 1;
-
+    typeof(int*) p1, p2;
     SWAP(a, b);
+
+    struct { int i; } x;
+    typeof(x) x2; /*not ready yet*/
 }
+
+`;
+
+
+sample["Literal function (extension)"] =
+`
+
+#include <stdio.h>
+#include <stdlib.h>
+extern char* strdup(const char* s);
+extern void async(void* capture, int sz, void (*F)(void* data));
+extern void dispatch(void* data, int sz, void (*F)(void* data));
+
+
+struct capture {
+    char * name;
+};
+
+void create_app(const char* appname)
+{
+  printf("step 1 main thread");
+
+  struct capture capture = {};
+  capture.name = strdup(appname);
+
+  async(&capture, sizeof capture, (void (void* p)){
+    struct capture* capture = p;
+    printf("step 2, any thread %s", capture->name);
+
+    dispatch(capture, sizeof *capture, (void (void* p) )
+    {
+      struct capture* capture = p;
+      printf("step 3 main thread again");
+      free(capture->name);
+    });
+
+  });
+}
+
+
+
 `;
 
 sample["little of semantics analysis"] =
