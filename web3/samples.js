@@ -104,7 +104,8 @@ int main()
     SWAP(a, b);
 
     struct { int i; } x;
-    typeof(x) x2; /*not ready yet*/
+    typeof(x) x2;
+    typeof(x) x3;
 }
 
 `;
