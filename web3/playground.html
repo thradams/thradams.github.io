@@ -149,7 +149,7 @@
                     "&to=" + encodeURI(to) +
                     "&options=" + encodeURI(options);
 
-                navigator.permissions.query({ name: "clipboard-write" }).then((result) => {
+                navigator.permissions.query({ name: "clipboardWrite" }).then((result) => {
   //if (result.state == "granted" || result.state == "prompt") {
     //alert("Write access ranted!");
                      navigator.clipboard.writeText(link).then(() => {
