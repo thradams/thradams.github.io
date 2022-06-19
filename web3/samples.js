@@ -111,42 +111,58 @@ int main()
 `;
 
 
-sample["Literal function (extension)"] =
+sample["Literal function (lambdas) (extension)"] =
 `
-
 #include <stdio.h>
 #include <stdlib.h>
 extern char* strdup(const char* s);
-extern void async(void* capture, int sz, void (*F)(void* data));
-extern void dispatch(void* data, int sz, void (*F)(void* data));
 
+void async(void* capture, int sz, void (*F)(void* data))
+{
+  /*
+    The real function would copy capture and the function pointer
+    to a queue and then execute at some thread pool
+  */
+  F(capture);
+}
 
-struct capture {
-    char * name;
-};
+void dispatch(void* capture, int sz, void (*F)(void* data))
+{
+  /*
+    The real function would copy capture and the function pointer
+    to a queue and then execute sequencially.
+  */
+  F(capture);
+}
+
 
 void create_app(const char* appname)
 {
-  printf("step 1 main thread");
+  printf("main thread\\n");
+ 
+  struct capture {
+     char * name;
+  } capture = { .name = strdup(appname) };
 
-  struct capture capture = {};
-  capture.name = strdup(appname);
-
-  async(&capture, sizeof capture, (void (void* p)){
+  async(&capture, sizeof capture, (void (void* p))
+  {
     struct capture* capture = p;
-    printf("step 2, any thread %s", capture->name);
+    printf("this is running at any thread (name=%s)\\n", capture->name);
 
     dispatch(capture, sizeof *capture, (void (void* p) )
     {
       struct capture* capture = p;
-      printf("step 3 main thread again");
+      printf("back to main thread\\n");
       free(capture->name);
     });
-
   });
 }
 
-
+int main()
+{
+  create_app("string");
+  return 0;
+}
 
 `;
 

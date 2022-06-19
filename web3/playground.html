@@ -33,17 +33,17 @@
         <button onclick="OnCompileButton()">Compile To</button>
 
         
-        <select id="outtype" style="margin-left:auto;margin-right: 10px">
-
-            <option value="0">Preprocessed</option>
+        <select id="outtype" style="margin-left:auto;margin-right: 10px">            
             <option value="1">C99</option>
             <option value="2">C11</option>
             <option value="3">C23</option>
             <option value="4">C23 + extensions</option>
+            <option value="0">Preprocess only</option>
         </select>
 
         <label>Options</label><input type="text" id="options"/>
-
+        
+        <button onclick="Share()">Share</button>
 
         <div style="width: 100%; overflow: hidden;">
             <div style="width: 48%; float: left;border-width: thin;border-style: solid;">
@@ -63,6 +63,8 @@
         
 
         <script>
+
+            
 
             //monta a lista com exemplos
             var se = document.getElementById("samples");
@@ -96,6 +98,28 @@
             );
             outputEditor.setSize(null, 400);
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');            
+            if (code)
+            {
+                inputEditor.setValue(atob(code))
+            }
+
+            const to = urlParams.get('to');
+            if (to)
+            {
+               to = decodeURI(to);
+               document.getElementById("outtype").value = to;
+            }
+
+            const options = urlParams.get('options');
+            if (options)
+            {
+                options = decodeURI(options);
+                document.getElementById("options").value = options;
+            }
+
+
             function OnSwap()
             {
                 var temp = inputEditor.getValue();
@@ -113,6 +137,22 @@
                 if (s.length == 0)
                     s = "coliru compilation ok";
                 document.getElementById("output").value = s;
+            }
+
+            function Share()
+            {
+                var source = inputEditor.getValue();
+                var to = document.getElementById("outtype").value;
+                var options = document.getElementById("options").value;
+
+                var link = "thradams.com/web3/playground.html?code=" + btoa(source) +
+                    "&to=" + encodeURI(to) +
+                    "&options=" + encodeURI(options);
+
+                
+                /* Copy the text inside the text field */
+                navigator.clipboard.writeText(link);
+                alert('Link was copied to clipboard');
             }
 
             function OnCompileButton()
