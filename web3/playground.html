@@ -153,8 +153,10 @@
                 "&to=" + encodeURI(to) +
                 "&options=" + encodeURI(options);
 
+            
             document.getElementById("sharelink").value = link;
             document.getElementById("sharelink").style.display = "block";
+            document.getElementById("sharelink").select();
 
         }
 
