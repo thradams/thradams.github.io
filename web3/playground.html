@@ -67,16 +67,6 @@
 
     <script>
 
-              function utf8_to_b64(str)
-        {
-            return window.btoa(unescape(encodeURIComponent(str)));
-        }
-
-        function b64_to_utf8(str)
-        {
-            return decodeURIComponent(escape(window.atob(str)));
-        }
-
 
         //monta a lista com exemplos
         var se = document.getElementById("samples");
@@ -111,15 +101,8 @@
         outputEditor.setSize(null, 400);
 
         const urlParams = new URLSearchParams(window.location.search);
-        var code = urlParams.get('code');
-        if (code)
-        {
-            code = atob(decodeURIComponent(code));
-            
-            
-            inputEditor.setValue(code);
-        }
 
+        
         var to = urlParams.get('to');
         if (to)
         {
@@ -142,6 +125,16 @@
         }
 
   
+        var code = urlParams.get('code');
+        if (code)
+        {
+            code = atob(decodeURIComponent(code));
+            
+            
+            inputEditor.setValue(code);
+
+            OnCompileButton();
+        }
 
         function Share()
         {
