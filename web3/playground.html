@@ -105,14 +105,14 @@
                 inputEditor.setValue(atob(code))
             }
 
-            const to = urlParams.get('to');
+            var to = urlParams.get('to');
             if (to)
             {
                to = decodeURI(to);
                document.getElementById("outtype").value = to;
             }
 
-            const options = urlParams.get('options');
+            var options = urlParams.get('options');
             if (options)
             {
                 options = decodeURI(options);
@@ -151,8 +151,12 @@
 
                 
                 /* Copy the text inside the text field */
-                navigator.clipboard.writeText(link);
-                alert('Link was copied to clipboard');
+                
+                navigator.clipboard.writeText(link).then(() => {
+         
+        alert("Copied to clipboard");
+    });
+        
             }
 
             function OnCompileButton()
