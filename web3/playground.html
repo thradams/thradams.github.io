@@ -138,19 +138,21 @@
 
         function Share()
         {
-            var source = inputEditor.getValue();
-            var to = document.getElementById("outtype").value;
-            var options = document.getElementById("options").value;
-
-            var link = "thradams.com/web3/playground.html?code=" + encodeURIComponent(btoa(source)) +
-                "&to=" + encodeURI(to) +
-                "&options=" + encodeURI(options);
-
             
-            document.getElementById("sharelink").value = link;
-            document.getElementById("sharelink").style.display = "block";
-            document.getElementById("sharelink").select();
+            
+                var source = inputEditor.getValue();
+                var to = document.getElementById("outtype").value;
+                var options = document.getElementById("options").value;
 
+                var link = "thradams.com/web3/playground.html?code=" + encodeURIComponent(btoa(source)) +
+                    "&to=" + encodeURI(to) +
+                    "&options=" + encodeURI(options);
+
+
+                document.getElementById("sharelink").value = link;
+                document.getElementById("sharelink").style.display = "block";
+                document.getElementById("sharelink").select();
+            
         }
 
         function OnSwap()
@@ -204,7 +206,7 @@
         {
             inputEditor.setValue(sample[index], -1);
         }
-
+        
         
     </script>
 

@@ -1,4 +1,4 @@
-var sample = {};
+﻿var sample = {};
 
 
 
@@ -14,9 +14,12 @@ int main()
 sample["Binary Literal C23"] =
 `
 
+/* pp-numbers starting with 0b or 0B also are changed */
+#define X  0b1010
+
 int main()
 {
-    int a = 0b1010;
+    int a = X;
     int b = 0B1010;
 }
 `;
@@ -48,12 +51,12 @@ sample["elifdef  elifndef C23"] =
 #define VERSION 3
 #endif
 
-_Static_assert(VERSION == 4, "");
+_Static_assert(VERSION == 2, "");
 
 `;
 
 
-sample["if with initialization C23?"] =
+sample["Like C++17 if with initialization (extension)"] =
     `
 #include <stdio.h>
 
@@ -179,4 +182,23 @@ int main()
 }
 
 `;
+
+sample["u8 literals"] =
+`
+char * s1 = u8"maçã";
+char * s2 = u8"maca";
+char * s3 = "maçã";
+char * s4 = "maca";
+`;
+
+sample["Hello, World!"] =
+`
+#include <stdio.h>
+
+int main()
+{
+  printf("Hello, 世界");
+}
+`;
+
 
