@@ -185,6 +185,10 @@ int main()
 
 sample["u8 literals"] =
 `
+/*
+  source code character set is always utf8
+*/
+
 char * s1 = u8"maçã";
 char * s2 = u8"maca";
 char * s3 = "maçã";
@@ -202,3 +206,71 @@ int main()
 `;
 
 
+sample["C23 bool true false"] =
+ `
+int main()
+{
+  bool b = true;
+  b = false;
+  static_assert(1 == true);
+  static_assert(0 == false);
+}
+
+`;
+
+sample["NULL (keyword extension)"] =
+`
+#if NULL == 0
+int main()
+{
+  void * p = NULL;
+  static_assert(NULL == 0);
+}
+#endif
+`;
+
+
+sample["_Hashof (extension)"] =
+`
+struct X {
+    int a[10];
+  
+    /*uncomment the next line*/
+    //char * text;
+};
+
+void x_destroy(struct X* p);
+
+int main()
+{
+    struct X x = {};
+    x_destroy(&x);
+}
+
+
+
+
+
+
+
+
+
+
+void x_destroy(struct X* p)
+{
+    /*In a far away galaxy*/
+    static_assert(_Hashof(p) == 283780300, "check this function x_destroy");
+}
+
+
+`
+;
+
+   
+
+sample["typeid (extension)"] =
+`
+int a[10];
+static_assert(typeid(a) == typeid(double [10]), "types are diferent");
+
+`;

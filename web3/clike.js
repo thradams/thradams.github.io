@@ -262,7 +262,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return words.propertyIsEnumerable(word);
     }
   }
-  var cKeywords = "true false static_assert typeof try catch defer throw auto inline if break case register continue return default do sizeof " +
+    var cKeywords = "true false static_assert typeof typeid try catch defer throw auto inline if break case register continue return default do sizeof " +
     "static else struct switch extern typedef union for goto while enum const volatile overload destroy new _Static_assert";
   var cTypes = "int long char short double float unsigned signed void size_t ptrdiff_t";
 
@@ -454,7 +454,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
                     " default delegate do else enum event explicit extern finally fixed for" +
                     " foreach goto if implicit in interface internal is lock namespace new" +
                     " operator out override params private protected public readonly ref return sealed" +
-                    " sizeof stackalloc static struct switch this throw try typeof unchecked" +
+                    " sizeof stackalloc static struct switch this throw try typeof typeid unchecked" +
                     " unsafe using virtual void volatile while add alias ascending descending dynamic from get" +
                     " global group into join let orderby partial remove select set value var yield"),
     types: words("Action Boolean Byte Char DateTime DateTimeOffset Decimal Double Func" +
@@ -729,7 +729,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   def("text/x-squirrel", {
     name: "clike",
     keywords: words("base break clone continue const default delete enum extends function in class" +
-                    " throw foreach local resume return this throw typeof yield constructor instanceof static"),
+                    " throw foreach local resume return this throw typeof typeid yield constructor instanceof static"),
     types: words(cTypes),
     blockKeywords: words("case catch class else for foreach if switch try while"),
     defKeywords: words("function local class"),
