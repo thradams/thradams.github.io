@@ -56,20 +56,7 @@ _Static_assert(VERSION == 2, "");
 `;
 
 
-sample["Like C++17 if with initialization (extension)"] =
-    `
-#include <stdio.h>
 
-int main()
-{
-   int size = 10;
-   if (FILE* f = fopen("file.txt", "r"); f)
-   {
-     /*...*/
-     fclose(f);
-   }
-}
-`;
 
 
 sample["empty initializer C23"] =
@@ -114,60 +101,7 @@ int main()
 `;
 
 
-sample["Literal function (lambdas) (extension)"] =
-`
-#include <stdio.h>
-#include <stdlib.h>
-extern char* strdup(const char* s);
 
-void async(void* capture, int sz, void (*F)(void* data))
-{
-  /*
-    The real function would copy capture and the function pointer
-    to a queue and then execute at some thread pool
-  */
-  F(capture);
-}
-
-void dispatch(void* capture, int sz, void (*F)(void* data))
-{
-  /*
-    The real function would copy capture and the function pointer
-    to a queue and then execute sequencially.
-  */
-  F(capture);
-}
-
-
-void create_app(const char* appname)
-{
-  printf("main thread\\n");
- 
-  struct capture {
-     char * name;
-  } capture = { .name = strdup(appname) };
-
-  async(&capture, sizeof capture, (void (void* p))
-  {
-    struct capture* capture = p;
-    printf("this is running at any thread (name=%s)\\n", capture->name);
-
-    dispatch(capture, sizeof *capture, (void (void* p) )
-    {
-      struct capture* capture = p;
-      printf("back to main thread\\n");
-      free(capture->name);
-    });
-  });
-}
-
-int main()
-{
-  create_app("string");
-  return 0;
-}
-
-`;
 
 sample["little of semantics analysis"] =
     `
@@ -218,13 +152,13 @@ int main()
 
 `;
 
-sample["NULL (keyword extension)"] =
+sample["C23 nullptr (NULL as extension)"] =
 `
 #if NULL == 0
 int main()
 {
   void * p = NULL;
-  static_assert(NULL == 0);
+  static_assert(nullptr == 0);
 }
 #endif
 `;
@@ -272,5 +206,100 @@ sample["typeid (extension)"] =
 `
 int a[10];
 static_assert(typeid(a) == typeid(double [10]), "types are diferent");
+
+`;
+
+sample["try catch (extension)"] =
+`
+#include <stdio.h>
+
+int main()
+{
+  FILE * f = NULL;
+  try
+  {
+     f = fopen("file.txt", "r");
+     if (f == NULL) throw;
+
+    /*success here*/
+  }
+  catch
+  {
+     /*some error*/
+  }
+
+  if (f)
+    fclose(f);
+}
+
+`;
+
+sample["Like C++17 if with initialization (extension)"] =
+    `
+#include <stdio.h>
+
+int main()
+{
+   int size = 10;
+   if (FILE* f = fopen("file.txt", "r"); f)
+   {
+     /*...*/
+     fclose(f);
+   }
+}
+`;
+
+sample["Literal function (lambdas) (extension)"] =
+    `
+#include <stdio.h>
+#include <stdlib.h>
+extern char* strdup(const char* s);
+
+void async(void* capture, int sz, void (*F)(void* data))
+{
+  /*
+    The real function would copy capture and the function pointer
+    to a queue and then execute at some thread pool
+  */
+  F(capture);
+}
+
+void dispatch(void* capture, int sz, void (*F)(void* data))
+{
+  /*
+    The real function would copy capture and the function pointer
+    to a queue and then execute sequencially.
+  */
+  F(capture);
+}
+
+
+void create_app(const char* appname)
+{
+  printf("main thread\\n");
+ 
+  struct capture {
+     char * name;
+  } capture = { .name = strdup(appname) };
+
+  async(&capture, sizeof capture, (void (void* p))
+  {
+    struct capture* capture = p;
+    printf("this is running at any thread (name=%s)\\n", capture->name);
+
+    dispatch(capture, sizeof *capture, (void (void* p) )
+    {
+      struct capture* capture = p;
+      printf("back to main thread\\n");
+      free(capture->name);
+    });
+  });
+}
+
+int main()
+{
+  create_app("string");
+  return 0;
+}
 
 `;

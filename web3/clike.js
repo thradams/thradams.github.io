@@ -262,8 +262,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return words.propertyIsEnumerable(word);
     }
   }
-    var cKeywords = "true false static_assert typeof typeid try catch defer throw auto inline if break case register continue return default do sizeof " +
-    "static else struct switch extern typedef union for goto while enum const volatile overload destroy new _Static_assert";
+    var cKeywords = "true false nullptr static_assert typeof typeid try catch defer throw auto inline if break case register continue return default do sizeof " +
+    "static else struct switch extern constexpr typedef union for goto while enum const volatile overload destroy new _Static_assert";
   var cTypes = "int long char short double float unsigned signed void size_t ptrdiff_t";
 
   function cppHook(stream, state) {
@@ -381,7 +381,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   def(["text/x-c++src", "text/x-c++hdr"], {
     name: "clike",
-    keywords: words(cKeywords + " asm dynamic_cast namespace reinterpret_cast try explicit new " +
+    keywords: words(cKeywords + " asm nullptr dynamic_cast namespace reinterpret_cast try explicit new " +
                     "static_cast typeid catch operator template typename class friend private " +
                     "this using const_cast inline public throw virtual delete mutable protected " +
                     "alignas alignof constexpr decltype nullptr noexcept thread_local final " +
@@ -709,7 +709,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   def("text/x-objectivec", {
     name: "clike",
-    keywords: words(cKeywords + "catch throw try inline restrict _Static_assert _Bool _Complex _Imaginary BOOL Class bycopy byref id IMP in " +
+    keywords: words(cKeywords + "catch throw try inline restrict nullprt _Static_assert _Bool _Complex _Imaginary BOOL Class bycopy byref id IMP in " +
                     "inout nil oneway out Protocol SEL self super atomic nonatomic retain copy readwrite readonly"),
     types: words(cTypes),
     atoms: words("YES NO NULL NILL ON OFF true false"),
