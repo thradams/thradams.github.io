@@ -168,10 +168,30 @@
 
             http.open("POST", "http://coliru.stacked-crooked.com/compile", false);
             http.send(JSON.stringify({ "cmd": "gcc  -x c main.cpp && ./a.out", "src": outputEditor.getValue() }));
-            var s = http.response;
-            if (s.length == 0)
-                s = "coliru compilation ok";
-            document.getElementById("output").value = s;
+            var text = http.response;
+            if (text.length == 0)
+                text = "coliru compilation ok";
+            //document.getElementById("output").value = s;
+            text = "\x1b[37m" + text;
+
+            var element = document.getElementById('output');
+            var convert = new Filter();
+            text = convert.toHtml(text);
+            //console.log(convert.toHtml('\x1b[30mblack\x1b[37mwhite'));
+
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            //console.log(text);
+            if (element)
+            {
+                element.innerHTML += text + "\n";
+                element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+
         }
 
 
