@@ -234,6 +234,64 @@ int main()
 
 `;
 
+
+sample["1 defer (extension)"] =
+    `
+#include <stdio.h>
+
+int main()
+{
+
+  try
+  {
+     FILE* f = fopen("file.txt", "r");
+     if (f == NULL) throw;
+     defer fclose(f);
+
+    /*success here*/
+  }
+  catch
+  {
+     /*some error*/
+  }
+
+
+}
+
+`;
+
+sample["2 defer (extension)"] =
+    `
+#include <stdio.h>
+
+int main()
+{
+
+  try
+  {
+     FILE* f = fopen("in.txt", "r");
+     if (f == NULL) throw;
+     defer fclose(f);
+
+     FILE* f2 = fopen("out.txt", "w");
+     if (f2 == NULL) throw;
+     defer fclose(f2);
+
+     //...
+
+    /*success here*/
+  }
+  catch
+  {
+     /*some error*/
+  }
+
+
+}
+
+`;
+
+
 sample["Like C++17 if with initialization (extension)"] =
     `
 #include <stdio.h>
