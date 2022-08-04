@@ -342,6 +342,51 @@ int main()
 
 `;
 
+
+sample["defer with return (extension)"] =
+    `
+
+#include <stdio.h>
+
+int main()
+{
+  FILE* f = fopen("in.txt", "r");
+  if (f == NULL) return 1;
+  defer fclose(f);
+
+  FILE* f2 = fopen("out.txt", "w");
+  if (f2 == NULL) return 1;
+  defer fclose(f2);
+
+  return 0;
+}
+
+
+`;
+
+
+sample["defer goto (extension)"] =
+    `
+
+#include <stdio.h>
+
+int main()
+{
+  FILE* f = fopen("in.txt", "r");
+  if (f != NULL)
+  {
+     defer fclose(f);
+
+     FILE* f2 = fopen("out.txt", "w");
+     if (f2 == NULL) goto LEND;
+     defer fclose(f2);
+  }
+  LEND:
+  return 0;
+}
+
+`;
+
 sample["Like C++17 if with initialization (extension)"] =
     `
 #include <stdio.h>
