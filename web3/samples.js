@@ -291,6 +291,56 @@ int main()
 
 `;
 
+sample["defer with breaks (extension)"] =
+    `
+
+#include <stdio.h>
+
+int main()
+{
+
+  do
+  {
+     FILE* f = fopen("in.txt", "r");
+     if (f == NULL) break;
+     defer fclose(f);
+
+     FILE* f2 = fopen("out.txt", "w");
+     if (f2 == NULL) break;
+     defer fclose(f2);
+
+     //...
+
+    /*success here*/
+  }
+  while(0);
+
+
+}
+
+`;
+
+
+sample["defer with breaks II (extension)"] =
+    `
+
+#include <stdio.h>
+
+int main()
+{
+  FILE* f = NULL;
+  defer if (f) fclose(f);
+
+  do
+  {
+     f = fopen("in.txt", "r");
+     if (f == NULL) break;     
+  }
+  while(0);
+
+}
+
+`;
 
 sample["Like C++17 if with initialization (extension)"] =
     `
