@@ -235,6 +235,35 @@ int main()
 `;
 
 
+sample["try catch II(extension)"] =
+`
+#include <stdio.h>
+
+/*not sure if usefull , but this is allowed*/
+
+int main()
+{
+  try
+  {
+      FILE * f = NULL;
+      try {
+         FILE *f = fopen("file.txt", "r");
+         if (f == NULL) throw;
+         /*more*/
+      }
+      catch {
+         if (f)
+          fclose(f);
+         throw;
+      }
+  }
+  catch
+  {
+  }
+}
+
+`;
+
 sample["1 defer (extension)"] =
     `
 #include <stdio.h>
@@ -398,6 +427,28 @@ int main()
    {
      /*...*/
      fclose(f);
+   }
+}
+`;
+
+sample["repeat (extension)"] =
+`
+int main()
+{
+   /* this is from B language! it is back :D */
+
+   /*5.7.1 The repeat Statement
+
+   repeat merely executes the given statement forever unless a
+   break statement is encountered, or a goto passes control to a
+   statement outside the loop. The statement in a repeat statement
+   is almost invariably compound. next and break statements are valid
+   inside a repeat.
+   */
+
+   repeat
+   {
+     break;
    }
 }
 `;
