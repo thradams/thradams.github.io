@@ -95,6 +95,28 @@ _Static_assert(VERSION == 2, "");
 `;
 
 
+sample["C23 __VA_OPT__"] =
+`
+ #define F(...)  f(0 __VA_OPT__(,) __VA_ARGS__)
+ F(a, b, c);
+
+ #define F2(...)  f(0 __VA_OPT__(,) __VA_ARGS__)
+ F2()
+`;
+
+sample["C23 _has_include"] =
+`
+#if __has_include(<stdio.h>)
+#warning  YES
+#endif
+
+#if __has_include(<any.h>)
+#warning  YES
+#else
+#warning  NO
+#endif
+`;
+
 sample["C23 #embed"] =
 `
 #include <stdio.h>
