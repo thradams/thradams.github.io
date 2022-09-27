@@ -12,7 +12,9 @@ int main(void)
 
 sample["C99 Hexadecimal floating constants"] =
 `
-double d = 0x1p+1;
+const double d = 0x1p+1;
+const double dmax = 0x1.fffffffffffffp+1023;
+const double dmin = 0x1p-1022;
 `;
 
 
@@ -60,31 +62,42 @@ _Noreturn void not_coming_back(void)
 `;
 
 sample["C11 u8 literals"] =
-    `
+`
 /*
-  source code character set is always utf8
+* cake input source code encode is always utf8
+* cake ouput source code is also utf8
+*
+* This web ouput also works with utf8. So everthing just works
+* even without u8 prefix. (press compile ouput)
+*
+* u8 prefix may be useful in case you have a compiler where
+* the input or output is not uft8.
 */
 
-char * s1 = u8"maçã";
-char * s2 = u8"maca";
-char * s3 = "maçã";
-char * s4 = "maca";
+#include <stdio.h>
+
+int main()
+{
+  printf("Hello, 世界\\n");
+  printf(u8"Hello, 世界\\n");
+}
 `;
 
 
 sample["C23 Digit Separator"] =
 `
+#define M 1000'00
+
 int main()
 {
     int a = 1000'00;
-    _Static_assert(1000'00 == 100000);
+    static_assert(1000'00 == 100000);
 }
+
 `;
 
 sample["C23 Binary Literal"] =
 `
-
-/* pp-numbers starting with 0b or 0B also are changed */
 #define X  0b1010
 
 int main()
@@ -134,17 +147,31 @@ sample["C23 __VA_OPT__"] =
  F2()
 `;
 
-sample["C23 _has_include"] =
+sample["C23 _has_include|__has_embed|__has_c_attribute"] =
 `
+
 #if __has_include(<stdio.h>)
-#warning  YES
+#warning  yes we have <stdio.h>
 #endif
+
+
+#if __has_embed(<stdio.h>)
+#warning  yes we have <stdio.h> embed
+#endif
+
 
 #if __has_include(<any.h>)
 #warning  YES
 #else
-#warning  NO
+#warning  NO we dont have <any.h>
 #endif
+
+
+#if __has_c_attribute(fallthrough)
+#else
+#warning at this moment we return 0 for all attributes
+#endif
+
 `;
 
 sample["C23 #embed"] =
@@ -265,6 +292,71 @@ int main()
 `;
 
 
+sample["C23 [[maybe_unused]] "] =
+`
+
+void f( [[maybe_unused]] int arg1, int arg2)
+{
+    [[maybe_unused]] int local1;
+    int local2;
+    /*warning not used for local2*/
+    /*warning not used for arg2*/
+}
+
+`;
+
+
+sample["C23 [[deprecated]] "] =
+`
+[[deprecated]] void f2() {
+}
+
+
+struct [[deprecated]] S {
+  int a;
+};
+
+enum [[deprecated]] E1 {
+ one
+};
+
+int main(void) {
+    struct S s;
+    enum E1 e;
+    f2();
+}
+`;
+
+sample["C23 [[nodiscard]] "] =
+`
+
+#include <stdlib.h>
+
+struct [[nodiscard]] error_info { int error; };
+
+struct error_info enable_missile_safety_mode(void);
+
+void launch_missiles(void);
+
+void test_missiles(void) {
+    enable_missile_safety_mode();
+    launch_missiles();
+}
+
+[[nodiscard("must check armed state")]]
+bool arm_detonator(int within);
+
+void detonate();
+
+void call(void) {
+  arm_detonator(3);
+  detonate();
+}
+
+
+
+`;
+
 sample["Extension _Hashof"] =
 `
 struct X {
@@ -365,32 +457,7 @@ int main()
 
 `;
 
-sample["Extension defer I"] =
-    `
-#include <stdio.h>
-
-int main()
-{
-
-  try
-  {
-     FILE* f = fopen("file.txt", "r");
-     if (f == NULL) throw;
-     defer fclose(f);
-
-    /*success here*/
-  }
-  catch
-  {
-     /*some error*/
-  }
-
-
-}
-
-`;
-
-sample["Extension defer II"] =
+sample["Extension defer inside try blocks"] =
     `
 #include <stdio.h>
 
@@ -517,7 +584,7 @@ int main()
 
 `;
 
-sample["Extension Like C++17 if with initialization"] =
+sample["Extension if with initialization (Like C++17)"] =
     `
 #include <stdio.h>
 
@@ -597,7 +664,7 @@ int main()
 
 `;
 
-sample["typeof + lambdas = generic programming"] =
+sample["Extension typeof + lambdas"] =
 `
 /* Use -fo option to format output*/
 
@@ -614,18 +681,9 @@ int main()
     SWAP(a, b);
 }
 `;
-sample["Hello, World!"] =
-`
-#include <stdio.h>
-
-int main()
-{
-  printf("Hello, 世界");
-}
-`;
 
 sample["little of semantics analysis"] =
-    `
+`
 int main()
 {
     int a = 1;
@@ -636,5 +694,18 @@ int main()
    
 }
 
+`;
+
+
+sample["little of static analysis"] =
+    `
+int main()
+{
+    int a = 1;
+    if (a)
+    {
+       int a = 2;
+    }   
+}
 `;
 
