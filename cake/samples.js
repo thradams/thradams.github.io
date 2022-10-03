@@ -290,15 +290,26 @@ int main()
 
 sample["C23 auto"] =
 `
-/*in progress...*/
 
-struct X x;
+struct X {int i;} x;
+
+#define SWAP(a, b) \\
+  do {\\
+    auto temp = a; a = b; b = temp; \\
+  } while (0)
+
+#pragma expand SWAP
 
 int main()
 {
-   auto * p = &x;
+   auto s = "hello auto";
+   auto p = &x;
+   auto *p2 = &x;
    const auto d = 1.0;
    static auto c = 2;
+   int a = 1;
+   int b = 2;
+   SWAP(a, b);
 }
 
 `;
@@ -324,6 +335,20 @@ int main()
 {
   void * p = nullptr;
   void * p2 = NULL;
+}
+
+/*
+  in case you want to add a compatibility header with
+  nullptr defined as macro, then nullptr macro is preserved
+  like this. The same for other features like static_assert.
+*/
+
+#define nullptr ((void*)0)
+
+int F()
+{
+    void * p = nullptr;
+    void * p2 = NULL;
 }
 `;
 
