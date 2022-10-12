@@ -32,6 +32,9 @@
 <li>
 <a href="#toc_6">Extensions (Not in C23)</a>
 </li>
+<li>
+<a href="#toc_7">Pré-defined macros</a>
+</li>
 </ul>
 <h2 id="toc_0">Command line</h2>
 
@@ -1396,4 +1399,43 @@ is cleared.</p>
 
 <p>There is also a MUST_DESTROY flag that is used when other function
 needs to be called. For instance, x_destroy for struct x.</p>
+
+<p>declarators of type struct with [[nodiscard]] are considered
+MUST_DESTROY</p>
+
+<pre><code class="language-c">struct [[nodiscard]] x {
+    char* name;
+};
+
+void x_destroy(struct x* p) {
+    static_assert(_has_attr(p, MUST_DESTROY));
+    _del_attr(p, MUST_DESTROY);
+    free(p-&gt;name);
+}
+
+int main()
+{
+    struct x x = {0};    
+    x_destroy(&amp;x);
+}
+</code></pre>
+
+<p>declarators with pointer to struct with [[nodiscard]] are considered
+MUST_DESTROY if they also have MUST_FREE</p>
+
+<pre><code class="language-c">int main()
+{
+    struct x* px = malloc(sizeof(struct x));        
+    x_destroy(px);
+    free(px)
+}
+</code></pre>
+
+<h2 id="toc_7">Pré-defined macros</h2>
+
+<ul>
+<li>__CAKE__ 202311L</li>
+<li>__STDC_VERSION__ 202311L</li>
+<li></li>
+</ul>
 </body></html>
