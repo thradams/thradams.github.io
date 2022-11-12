@@ -33,7 +33,10 @@
 <a href="#toc_6">Extensions (Not in C23)</a>
 </li>
 <li>
-<a href="#toc_7">Pré-defined macros</a>
+<a href="#toc_7">Type traits</a>
+</li>
+<li>
+<a href="#toc_8">Pre-defined macros</a>
 </li>
 </ul>
 <h2 id="toc_0">Command line</h2>
@@ -1300,6 +1303,48 @@ void x_destroy(struct X* p)
 
 </code></pre>
 
+<h2 id="toc_7">Type traits</h2>
+
+<p>We have some compile time functions to infer properties of types.
+They are based on C++ <a href="https://en.cppreference.com/w/cpp/header/type_traits">https://en.cppreference.com/w/cpp/header/type_traits</a></p>
+
+<pre><code class="language-c">
+_is_char (TODO)
+The three types char, signed char, and unsigned char are collectively called the character types.
+
+_is_pointer
+Pointer to object or function
+
+_is_array
+Array type
+
+_is_function
+A function type describes a function with specified return type. 
+
+_is_floating_point
+float, double, and long double return true
+
+_is_integral
+The standard signed integer types and standard unsigned integer types are collectively called the
+standard integer types;
+
+_is_arithmetic
+Integer and floating types are collectively called arithmetic types. 
+
+_is_scalar
+Arithmetic types, pointer types, and the nullptr_t type are collectively called scalar types
+
+_is_same(T, U)
+If T and U name the same type (taking into account const/volatile qualifications returns 1
+
+</code></pre>
+
+<h2 id="toc_8">Pre-defined macros</h2>
+
+<pre><code class="language-c"> #define __CAKE__ 202311L
+ #define __STDC_VERSION__ 202311L
+</code></pre>
+
 <h3>Extension - declarator static analisys flags</h3>
 
 <p>Motivation:</p>
@@ -1317,125 +1362,4 @@ p[0] = 1;
 <h4>How we could take notes that p is invalid?</h4>
 
 <h4>How compiler could check our notes?</h4>
-
-<p>This is the motivation for <em>declarator static analisys</em> flags.</p>
-
-<h3>Mechanics.</h3>
-
-<p>We can set/remove and checks declarator flags.</p>
-
-<p>For instance:</p>
-
-<pre><code class="language-c">int main()
-{
-    int *p = malloc(sizeof(int)*10);
-    _add_attr(p, MUST_FREE);
-
-    free(p);
-    _del_attr(p, MUST_FREE);
-
-    static_assert(!__has_attr(MUST_FREE));
-}
-</code></pre>
-
-<p>When we set/remove or check declarator flags on arguments
-the operation is delayed until the function instantiation.</p>
-
-<p>For instance:</p>
-
-<pre><code class="language-c">void my_free(void *arg1)
-{
-    static_assert(__has_attr(arg1, MUST_FREE));
-    _del_attr(arg1, MUST_FREE);
-}
-</code></pre>
-
-<p>We cannot determine if arg1 has the flag MUST_FREE without
-looking at caller. So static_assert is just ignored at first
-pass.</p>
-
-<p>But when we call my_free:</p>
-
-<pre><code class="language-c">int main()
-{
-    int *p = malloc(sizeof(int)*10);
-    _add_attr(p, MUST_FREE);
-
-    my_free(p);
-
-    static_assert(!__has_attr(MUST_FREE));
-}
-</code></pre>
-
-<p>Then the flags of p are plugged into arg1 by &quot;reference&quot; and the function
-my_free is analised again. set/remove and check are now using the flags of p.</p>
-
-<p>We can also add flags to the receiver declarator using &quot;return&quot;</p>
-
-<pre><code class="language-c">void* my_malloc(int size)
-{    
-    _add_attr(return, MUST_FREE);
-}
-</code></pre>
-
-<p>So we can write</p>
-
-<pre><code class="language-c">int main()
-{
-    int *p = my_malloc(sizeof(int)*10);
-    static_assert(__has_attr(MUST_FREE));
-
-    my_free(p);
-    static_assert(!__has_attr(MUST_FREE));
-}
-</code></pre>
-
-<p>Cake have some built in flags on header annotations.h. </p>
-
-<p>It also  have some built in checks.</p>
-
-<p>When the declarators go out of scope we check if MUST_FREE flag
-is cleared.</p>
-
-<p>There is also a MUST_DESTROY flag that is used when other function
-needs to be called. For instance, x_destroy for struct x.</p>
-
-<p>declarators of type struct with [[nodiscard]] are considered
-MUST_DESTROY</p>
-
-<pre><code class="language-c">struct [[nodiscard]] x {
-    char* name;
-};
-
-void x_destroy(struct x* p) {
-    static_assert(_has_attr(p, MUST_DESTROY));
-    _del_attr(p, MUST_DESTROY);
-    free(p-&gt;name);
-}
-
-int main()
-{
-    struct x x = {0};    
-    x_destroy(&amp;x);
-}
-</code></pre>
-
-<p>declarators with pointer to struct with [[nodiscard]] are considered
-MUST_DESTROY if they also have MUST_FREE</p>
-
-<pre><code class="language-c">int main()
-{
-    struct x* px = malloc(sizeof(struct x));        
-    x_destroy(px);
-    free(px)
-}
-</code></pre>
-
-<h2 id="toc_7">Pré-defined macros</h2>
-
-<ul>
-<li>__CAKE__ 202311L</li>
-<li>__STDC_VERSION__ 202311L</li>
-<li></li>
-</ul>
 </body></html>

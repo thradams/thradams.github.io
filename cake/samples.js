@@ -83,6 +83,27 @@ int main()
 }
 `;
 
+sample["C11 _AlignOf / C23 alignof"] =
+`
+struct X
+{
+    char s;
+    //align member 7
+    double c;
+    int s2;
+    //align member 4
+};
+
+int main(void)
+{
+    static_assert(_Alignof(float[10]) == alignof(float));
+    static_assert(alignof(char) == 1);
+    static_assert(sizeof(struct X) == 24);
+    static_assert(alignof(struct X) == 8);
+}
+
+`;
+
 
 sample["C23 Digit Separator"] =
 `
@@ -783,52 +804,56 @@ int main()
 `;
 
 
-sample["declarator annotations"] =
+sample["Extension - declarator annotations"] =
 `
-#include <stdlib.h>
 
-struct [[nodiscard]] x {
+
+#include "annotations.h"
+
+[[free]] void* malloc(size_t);
+void free([[free]] void*);
+
+
+struct _destroy x {
     char* name;
 };
 
-void x_destroy(struct x* p) extern {
-    static_assert(_has_attr(p, MUST_DESTROY));
-    _del_attr(p, MUST_DESTROY);
-}
 
-void x_delete(struct x* p) extern {
-    _del_attr(p, MUST_DESTROY | MUST_FREE);
-}
-
-int main()
-{
-    struct x x = {0};
-    struct x* px = malloc(sizeof(struct x));
-
-    x_delete(px);
-    x_destroy(&x);
-}
-
-
-void x_destroy(struct x* p) {
+void x_destroy(_destroy struct x* p) {
     free(p->name);
 }
 
-void x_delete(struct x* p) {
+void x_delete(_delete struct x* p) {
     if (p) {
         x_destroy(p);
         free(p);
     }
 }
 
+
+int main()
+{
+    struct x x = { 0 };
+    struct x* px = malloc(sizeof(struct x));
+
+    //x_delete(px);
+    //x_destroy(&x);
+}
 `;
 
 
 
 
-sample["declarator annotations II"] =
+sample["Extension - declarator annotations II"] =
 `
+[[free]] void* malloc(size_t);
+void free([[free]] void*);
+[[free]] void * moveptr([[free]] void *p);
+
 #include <stdlib.h>
+#include "annotations.h" 
+
+
 
 int main()
 {
@@ -848,4 +873,41 @@ int main()
     //free(p2);
 }
 
+
+
 `;
+
+
+
+sample["Extension - Traits"] =
+    `
+
+/*
+  These type traits are based on C++ version
+  https://en.cppreference.com/w/cpp/header/type_traits
+*/
+
+int main()
+{
+  int i;
+  static_assert(_is_integral(i));
+  static_assert(_is_floating_point(double) && _is_floating_point(float));
+  static_assert(_is_function(main));
+
+  char * p;
+  static_assert(_is_scalar(p));
+  static_assert(_is_scalar(nullptr));
+
+  int a[10];
+  static_assert(_is_array(a));
+
+  /*pf = pointer to function (void) returning array 10 of int*/
+  int (*pf)(void)[10];
+  static_assert(!_is_array(pf));
+  static_assert(_is_pointer(pf));
+
+  static_assert(_is_same(int, typeof(i)));
+
+}
+`;
+
