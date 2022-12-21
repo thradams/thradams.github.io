@@ -22,30 +22,29 @@ will be destroyed together with the allocator.</p>
 
 <p>Removing allocator_free we can use singled linked list.</p>
 
-<p>Sample:
-```cpp</p>
+<p>Sample:</p>
 
-<h1 id="toc_1">include <stdio.h></h1>
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
 
-<h1 id="toc_2">include <stdlib.h></h1>
 
-<h1 id="toc_3">include <string.h></h1>
-
-<p>union header {
+union header {
     struct {
-        union header* prev; /* next block<em>/
-        union header</em> next; /* next block<em>/
-        void (</em>DTOR)(void<em>);     /</em> destructor <em>/
+        union header* prev; /* next block*/
+        union header* next; /* next block*/
+        void (*DTOR)(void*);     /* destructor */
     } s;
-    long double x;         /</em> force alignment of blocks */
-};</p>
+    long double x;         /* force alignment of blocks */
+};
 
-<p>struct allocator
+struct allocator
 {
     union header* head;
-};</p>
+};
 
-<p>void* alloc(struct allocator* allocator, int nbytes, void (<em>F)(void</em>))
+void* alloc(struct allocator* allocator, int nbytes, void (*F)(void*))
 {
     int nunits = (nbytes + sizeof(union header) - 1) / sizeof(union header) + 1;
     union header* p = malloc(nunits * sizeof(union header));
@@ -58,48 +57,46 @@ will be destroyed together with the allocator.</p>
         {
             allocator-&gt;head-&gt;s.prev = p;
         }
-        allocator-&gt;head = p;</p>
+        allocator-&gt;head = p;
 
-<pre><code>    return (void*)(p + 1);
+
+        return (void*)(p + 1);
+    }
+    return NULL;
 }
-return NULL;
-</code></pre>
-
-<p>}
 void allocator_free(struct allocator* allocator, void* p)
-{</p>
-
-<pre><code>union header* del = ((union header*)p) - 1;
-
-/* If node to be deleted is head node */
-if (allocator-&gt;head == del)
-    allocator-&gt;head = del-&gt;s.next;
-
-/* Change next only if node to be
-deleted is NOT the last node */
-if (del-&gt;s.next != NULL)
-    del-&gt;s.next-&gt;s.prev = del-&gt;s.prev;
-
-/* Change prev only if node to be
-deleted is NOT the first node */
-if (del-&gt;s.prev != NULL)
-    del-&gt;s.prev-&gt;s.next = del-&gt;s.next;
-
-
-if (del-&gt;s.DTOR)
 {
-    void* pobj = (void*)((union header*)p + 1);
-    del-&gt;s.DTOR(pobj);
+
+    union header* del = ((union header*)p) - 1;
+
+    /* If node to be deleted is head node */
+    if (allocator-&gt;head == del)
+        allocator-&gt;head = del-&gt;s.next;
+
+    /* Change next only if node to be
+    deleted is NOT the last node */
+    if (del-&gt;s.next != NULL)
+        del-&gt;s.next-&gt;s.prev = del-&gt;s.prev;
+
+    /* Change prev only if node to be
+    deleted is NOT the first node */
+    if (del-&gt;s.prev != NULL)
+        del-&gt;s.prev-&gt;s.next = del-&gt;s.next;
+
+
+    if (del-&gt;s.DTOR)
+    {
+        void* pobj = (void*)((union header*)p + 1);
+        del-&gt;s.DTOR(pobj);
+    }
+
+    /* Finally, free the memory occupied by del*/
+    free(del);
+    return;
+
 }
 
-/* Finally, free the memory occupied by del*/
-free(del);
-return;
-</code></pre>
-
-<p>}</p>
-
-<p>void allocator_destroy(struct allocator* allocator)
+void allocator_destroy(struct allocator* allocator)
 {
     union header* p = allocator-&gt;head;
     while (p)
@@ -107,25 +104,25 @@ return;
         union header* next = p-&gt;s.next;
         if (p-&gt;s.DTOR)
         {
-            void* pobj = (void<em>)((union header</em>)p + 1);
+            void* pobj = (void*)((union header*)p + 1);
             p-&gt;s.DTOR(pobj);
             free(p);
         }
         p = next;
     }
-}</p>
+}
 
-<p>struct X
+struct X
 {
     char* name;
-};</p>
+};
 
-<p>void DestroyX(struct X* p)
+void DestroyX(struct X* p)
 {
     printf(&quot;DestroyX&quot;);
-}</p>
+}
 
-<p>int main()
+int main()
 {
     struct allocator allocator = { 0 };
     struct X* pX = alloc(&amp;allocator, sizeof(struct X), DestroyX);
@@ -134,21 +131,19 @@ return;
         pX-&gt;name = alloc(&amp;allocator, strlen(&quot;teste&quot;), NULL);
         strcpy(pX-&gt;name, &quot;teste&quot;);
         allocator_free(&amp;allocator, pX-&gt;name);
-    }</p>
+    }
 
-<pre><code>allocator_free(&amp;allocator, pX);
+    allocator_free(&amp;allocator, pX);
 
-allocator_destroy(&amp;allocator);
+    allocator_destroy(&amp;allocator);
+}
+
+
 </code></pre>
 
-<p>}</p>
+<p>Without free.</p>
 
-<pre><code>
-
-Without free.
-
-```cpp
-
+<pre><code class="language-cpp">
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;.
 #include &lt;string.h&gt;

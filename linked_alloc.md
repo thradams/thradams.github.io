@@ -12,6 +12,7 @@ Removing allocator_free we can use singled linked list.
 
 
 Sample:
+
 ```cpp
 
 #include <stdio.h>
