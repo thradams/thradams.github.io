@@ -13,6 +13,7 @@ maketest output.c file1.c file2.c ....
 Sample:
 
 file1.c
+
 ```cpp
 #ifdef TEST
 void MyTestCase(void)
@@ -22,6 +23,7 @@ void MyTestCase(void)
 ```
 
 file2.c
+
 ```cpp
 #ifdef TEST
 void MyTestCase2(void)

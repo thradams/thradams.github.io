@@ -22,21 +22,18 @@ tha calls all test functions.</p>
 
 <p>Sample:</p>
 
-<p>file1.c
-```cpp</p>
+<p>file1.c</p>
 
-<h1 id="toc_1">ifdef TEST</h1>
-
-<p>void MyTestCase(void)
+<pre><code class="language-cpp">#ifdef TEST
+void MyTestCase(void)
 {
-}</p>
+}
+#endif
+</code></pre>
 
-<h1 id="toc_2">endif</h1>
+<p>file2.c</p>
 
-<pre><code>
-file2.c
-```cpp
-#ifdef TEST
+<pre><code class="language-cpp">#ifdef TEST
 void MyTestCase2(void)
 {
 }
@@ -72,7 +69,7 @@ void DoUnitTests(void)
 
 </code></pre>
 
-<h2 id="toc_3">How Do I use it?</h2>
+<h2 id="toc_1">How Do I use it?</h2>
 
 <p>I define my ASSERT at unittest.h</p>
 
