@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Maps string to struct item*</h1>
+
+<p><a href="makecontainer.md">Make container</a></p>
+
+<pre><code class="language-cpp">
+#include &lt;stdbool.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+
+#define strdup _strdup
+
+struct item {
+    int i;
+};
+
+void item_delete(struct item* p) {
+    free(p);
+}
+
+struct hashmap {
+
+    struct mapentry {
+        struct mapentry* next;
+        unsigned int hash;
+        char* key;
+        struct item* p;
+    };
+
+    struct mapentry** table;
+    unsigned int capacity;
+    int  size;
+};
+
+
+unsigned int stringhash(const char* key)
+{
+    // hash key to unsigned int value by pseudorandomizing transform
+    // (algorithm copied from STL char hash in xfunctional)
+    unsigned int uHashVal = 2166136261U;
+    unsigned int uFirst = 0;
+    unsigned int uLast = (unsigned int)strlen(key);
+    unsigned int uStride = 1 + uLast / 10;
+
+    for (; uFirst &lt; uLast; uFirst += uStride)
+    {
+        uHashVal = 16777619U * uHashVal ^ (unsigned int)key[uFirst];
+    }
+
+    return (uHashVal);
+}
+
+
+void hashmap_remove_all(struct hashmap* pMap) 
+{
+    if (pMap-&gt;table != NULL)
+    {
+        for (unsigned int i = 0; i &lt; pMap-&gt;capacity; i++)
+        {
+            struct mapentry* pentry = pMap-&gt;table[i];
+
+            while (pentry != NULL)
+            {
+                struct mapentry* pentryCurrent = pentry;
+
+                item_delete(pentryCurrent-&gt;p);
+
+                pentry = pentry-&gt;next;                
+                free(pentryCurrent-&gt;key);
+                free(pentryCurrent);
+            }
+        }
+
+        free(pMap-&gt;table);
+        pMap-&gt;table = NULL;
+        pMap-&gt;size = 0;
+    }
+}
+
+void hashmap_destroy(struct hashmap* pMap)
+{
+    hashmap_remove_all(pMap);
+}
+
+struct item* hashmap_find(struct hashmap* pMap, const char* key)
+{
+    struct item* p = NULL;
+    
+    unsigned int hash = stringhash(key);
+    int index = hash % pMap-&gt;capacity;
+
+    struct mapentry* pentry = pMap-&gt;table[index];
+
+    for (; pentry != NULL; pentry = pentry-&gt;next) 
+    {
+        if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0) {
+            p = pentry-&gt;p;
+            break;
+        }
+    }
+
+    return p;
+}
+
+
+struct item* hashmap_remove(struct hashmap* map, const char* key)
+{
+    struct item* p = 0;
+
+    if (map-&gt;table != NULL)
+    {
+        unsigned int hash = stringhash(key);
+        struct mapentry** preventry = &amp;map-&gt;table[hash % map-&gt;capacity];
+        struct mapentry* pentry = *preventry;
+
+        for (; pentry != NULL; pentry = pentry-&gt;next)
+        {
+            if ((pentry-&gt;hash == hash) &amp;&amp; (strcmp(pentry-&gt;key, key) == 0))
+            {
+                *preventry = pentry-&gt;next;
+                p = pentry-&gt;p;
+                free(pentry-&gt;key);
+                free(pentry);
+                break;
+            }
+            preventry = &amp;pentry-&gt;next;
+        }
+    }
+
+    return p;
+}
+
+int hashmap_set(struct hashmap* pMap, const char* key, struct item* pNew)
+{
+    int result = 0;
+
+    if (pMap-&gt;table == NULL)
+    {
+        if (pMap-&gt;capacity &lt; 1) {
+            pMap-&gt;capacity = 1000;
+        }
+
+        pMap-&gt;table = calloc(pMap-&gt;capacity, sizeof(pMap-&gt;table[0]));        
+    }
+
+    if (pMap-&gt;table != NULL)
+    {
+        unsigned int hash = stringhash(key);
+        int index = hash % pMap-&gt;capacity;
+
+        struct mapentry* pentry = pMap-&gt;table[index];
+
+        for (; pentry != NULL; pentry = pentry-&gt;next) {
+            if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0){
+                break;
+            }
+        }
+
+        if (pentry == NULL)
+        {
+            pentry = calloc(1, sizeof(*pentry));
+            pentry-&gt;hash = hash;
+            pentry-&gt;p = pNew;
+            pentry-&gt;key = strdup(key);
+            pentry-&gt;next = pMap-&gt;table[index];
+            pMap-&gt;table[index] = pentry;
+            pMap-&gt;size++;
+            result = 0;
+        }
+        else
+        {
+            result = 1;         
+            pentry-&gt;p = pNew;
+        }
+    }
+
+    return result;
+}
+
+</code></pre>
+
+<pre><code class="language-cpp">
+int main()
+{
+    struct hashmap map = { .capacity = 100 };
+
+    struct item* p = calloc(1, sizeof*p);
+
+    hashmap_set(&amp;map, &quot;a&quot;, p);
+    hashmap_set(&amp;map, &quot;a&quot;, p);
+    assert(hashmap_find(&amp;map, &quot;a&quot;) != NULL);
+    assert(hashmap_find(&amp;map, &quot;b&quot;) == NULL);
+    
+    p = hashmap_remove(&amp;map, &quot;a&quot;);
+    item_delete(p);
+
+    hashmap_destroy(&amp;map);
+}
+
+</code></pre>
+</body></html>

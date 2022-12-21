@@ -1,14 +1,15 @@
-==TkGen - A Lexical Analyzer ==Generator
+# TkGen - A Lexical Analyzer Generator
 
-===What is tkgen?===
+## What is tkgen?
 
 TkGen is a lexical analyzer generator (also known as scanner generator) for C++, written in C++.
 
-===Input format===
+### Input format
 
 Basicaly the input file a list of token names and regular expressions.
 Input file sample:
-{{{
+
+```
 NUMBER
 [0-9]+(\.[0-9]+)?
 SYMBOL
@@ -28,6 +29,7 @@ PLUS
 MINUS
 \-
 }}}
+```
 
 The output is a C++ header file with a DFA (deterministic finite automaton) transitions information. 
 

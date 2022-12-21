@@ -2,6 +2,7 @@
 Non intrusive, non "vtable" polimorphism in C.
 
 button.h
+
 ```cpp
 
 #ifndef BUTTON_H
@@ -47,6 +48,7 @@ void button_destroy(struct button* btn)
 
 
 edit.h
+
 ```cpp
 
 #ifndef EDIT_H
@@ -67,6 +69,7 @@ void edit_destroy(struct edit*);
 ```
 
 edit.c
+
 ```cpp
 
 #include "edit.h"
@@ -96,6 +99,7 @@ This file defines what is "control". In this case, the control set is { button ,
 
 
 controls.h
+
 ```cpp
 
 #ifndef CONTROLS_H
@@ -135,6 +139,7 @@ enum
 ```
 
 sample.c
+
 ```cpp
 #include <stdlib.h>
 #include "controls.h"
@@ -165,6 +170,7 @@ int main(int argc, char* argv[])
 ```
 
 type_ptr_array.h
+
 ```cpp
 #ifndef TYPE_PTR_ARRAY_H
 #define TYPE_PTR_ARRAY_H
@@ -195,6 +201,7 @@ void type_ptr_array_push(struct type_ptr_array* p, int type, void* item);
 ```
 
 type_ptr_array.c
+
 ```cpp
 
 #include <stdlib.h>

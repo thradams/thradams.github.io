@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p><a href="algorithms.md">Algorithms</a></p>
+
+<h3>Multiplication</h3>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template &lt; unsigned long long base,
+             class LeftIterator,
+             class RightIterator,
+             class OutIterator &gt;
+    void multiply(LeftIterator left_first,
+                  LeftIterator left_last,
+                  RightIterator right_first,
+                  RightIterator right_last,
+                  OutIterator out_first,
+                  OutIterator out_last)
+
+</code></pre>
+
+<p>Multiplies two digit-sequence with represents the number in the same base.</p>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">Input:
+      { 1 9 9}
+              10
+        { 1 2}
+              10
+{ 5 5 5 5 5 5}
+              10
+Output:
+      { 1 9 9}
+              10
+        { 1 2}
+              10
+{ 0 0 2 3 8 8}
+              10
+
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">void multiply_test()
+{
+    using namespace std;
+    int u[] = { 3, 0, 1 , 0 };  // u = 103 base == 10
+    int v[] = { 0, 2, 0, 0 };   // v =  20 base == 10
+    int r[] = { 0, 0, 0, 0, 0, 0 };
+    multiply&lt;10&gt;(begin(u), sig_digit_end(begin(u), end(u)),
+                 begin(v), sig_digit_end(begin(v), end(v)),
+                 begin(r), end(r));
+    assert(r[5] == 0 &amp;&amp; r[4] == 0 &amp;&amp; r[3] == 2 &amp;&amp; r[2] == 0 &amp;&amp; r[1] == 6 &amp;&amp; r[0] == 0);
+}
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">
+template &lt; unsigned long long base,
+         class LeftIterator,
+         class RightIterator,
+         class OutIterator &gt;
+void multiply(LeftIterator left_first,
+              LeftIterator left_last,
+              RightIterator right_first,
+              RightIterator right_last,
+              OutIterator out_first,
+              OutIterator out_last)
+{
+    static_assert(base &gt; 1, &quot;base must be &gt; 1&quot;);
+    //base sanity check
+    assert(check_digits&lt;base&gt;(left_first, left_last));
+    assert(check_digits&lt;base&gt;(right_first, right_last));
+
+    assert(out_last - out_first &gt;= (left_last - left_first) + (right_last - right_first));
+    assert(left_last - left_first == sig_digits(left_first, left_last));
+    assert(right_last - right_first == sig_digits(right_first, right_last));
+
+    const size_t left_digits = left_last - left_first;
+    const size_t right_digits = right_last - right_first;
+
+    for (size_t j = 0; j &lt; right_digits; ++j)
+    {
+        if (right_first[j] == 0)
+        {
+            continue;
+        }
+
+        unsigned long long k = 0;
+
+        for (size_t i = 0; i &lt; left_digits; ++i)
+        {
+            unsigned long long ui = left_first[i];
+            unsigned long long vj = right_first[j];
+            unsigned long long rij = j &gt; 0 ? out_first[i + j] : 0;
+            unsigned long long current = ui * vj + rij + k;
+            out_first[i + j] = current % base;
+            k = current / base ;
+        }
+
+        out_first[j + left_digits] = k;
+    }
+
+    //fills leading zeroes
+    out_first += right_digits -1 + left_digits;
+    for (;out_first != out_last;++out_first)
+    {
+      *out_first = 0;
+    }
+}
+</code></pre>
+
+<hr>
+
+<h3>Multiply in place by a single digit</h3>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+    void multiply_in_place(It first,
+                           It last,
+                           unsigned long long value)
+
+</code></pre>
+
+<p>Multiples a digit-sequence by a single digit returning the result in a digit-sequence.</p>
+
+<h2 id="toc_0">Extra leading zero must be reserved.</h2>
+
+<h3>Sample</h3>
+
+<pre><code>Input:
+    { 0 1 9 9}
+              10
+           {5}
+              10
+
+Output:
+    { 0 9 9 5}
+              10
+           {5}
+              10
+</code></pre>
+
+<hr>
+
+<pre><code class="language-cpp">
+void multiply_test2()
+{
+    using namespace std;
+    int n[] = { 3, 0, 1 , 0 };  //103
+    multiply_in_place&lt;10&gt;(begin(n), end(n), 2); //103 * 2
+    assert(n[3] == 0 &amp;&amp; n[2] == 2 &amp;&amp; n[1] == 0 &amp;&amp; n[0] == 6);
+    multiply_in_place&lt;10&gt;(begin(n), end(n), 3); //206 * 3
+    assert(n[3] == 0 &amp;&amp; n[2] == 6 &amp;&amp; n[1] == 1 &amp;&amp; n[0] == 8);
+    multiply_in_place&lt;10&gt;(begin(n), end(n), 1); //618 * 1
+    assert(n[3] == 0 &amp;&amp; n[2] == 6 &amp;&amp; n[1] == 1 &amp;&amp; n[0] == 8);
+    multiply_in_place&lt;10&gt;(begin(n), end(n), 2); //1236
+    assert(n[3] == 1 &amp;&amp; n[2] == 2 &amp;&amp; n[1] == 3 &amp;&amp; n[0] == 6);
+    //assert
+    //multiply&lt;10&gt;(begin(n), end(n), 2); //1236 * 2
+    //assert(n[3] == 1 &amp;&amp; n[2] == 2 &amp;&amp; n[1] == 3 &amp;&amp; n[0] == 6);
+    int m[] = { 3, 0, 1 , 0 };  //103
+    multiply_in_place&lt;10&gt;(begin(m), end(m), 0); //103 * 0
+    assert(m[3] == 0 &amp;&amp; m[2] == 0 &amp;&amp; m[1] == 0 &amp;&amp; m[0] == 0);
+}
+
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">    template&lt;unsigned long long base, class It&gt;
+    void multiply_in_place(It first,
+                           It last,
+                           unsigned long long value)
+    {
+        static_assert(base &gt; 1, &quot;base must be &gt; 1&quot;);
+        //base sanity check
+        assert(check_digits&lt;base&gt;(first, last));
+        assert(value &lt; base);
+        --last;
+        //extra non-significant digit zero must be reserved!
+        assert(*last == 0);
+        unsigned long long carry = 0;
+
+        for (; first != last; ++first)
+        {
+            unsigned long long temp = *first;
+            temp *= value;
+            temp += carry;
+            *first = temp % base;
+            carry = temp / base;
+        };
+
+        *first = carry;
+    };
+</code></pre>
+
+<hr>
+
+<h4>Multiplies by a single digit</h4>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long base, class LeftIterator, class OutIterator&gt;
+    void multiply(LeftIterator left_first,
+                  LeftIterator left_last,
+                  unsigned long long value,
+                  OutIterator out_first,
+                  OutIterator out_last)
+
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code>Input:
+    { 0 1 9 9}
+              10
+
+           {5}
+              10
+
+{ 1 1 1 1 1 1}
+              10
+Output:
+    { 0 1 9 9}
+              10
+           {5}
+              10
+------------------
+{ 0 0 0 9 9 5}
+              10
+
+
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long base,
+         class LeftIterator,
+         class OutIterator&gt;
+void multiply(LeftIterator left_first,
+              LeftIterator left_last,
+              unsigned long long value,
+              OutIterator out_first,
+              OutIterator out_last)
+{
+    static_assert(base &gt; 1, &quot;base must be &gt; 1&quot;);
+    //base sanity check
+    assert(check_digits&lt;base&gt;(left_first, left_last));
+    assert(value &lt; base);
+    unsigned long long carry = 0;
+
+    for (; left_first != left_last; ++left_first)
+    {
+        unsigned long long u = *left_first;
+        unsigned long long temp = u * value + carry;
+        *out_first++ = temp % base;
+        carry = temp / base;
+    };
+
+    *out_first = carry;
+
+    ++out_first;
+
+    //fills leading zeroes
+    while (out_first != out_last)
+    {
+        *out_first++ = 0;
+    }
+};
+
+</code></pre>
+</body></html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Memory</h2>
+
+<p>Memory manipulation functions
+```cpp</p>
+
+<p>//
+// Copyright (C) 2009, Thiago R. Adams
+// <a href="http://www.thradams.com">http://www.thradams.com</a>
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+//</p>
+
+<h1 id="toc_1">include <cassert></h1>
+
+<h1 id="toc_2">include <limits></h1>
+
+<p>namespace memory 
+{
+    template<class T>
+    void clearbits(T &amp; v, int bit<em>index, int nbits)
+    {
+        T mask = ~(T(0)) &lt;&lt; (sizeof(T) * CHAR</em>BIT - T(nbits));
+        mask =  mask &gt;&gt; (sizeof(T) * CHAR<em>BIT - T(bit</em>index) - T(nbits));
+        v &amp;= ~mask;
+    }</p>
+
+<pre><code>template&lt;class T, class T2&gt;
+void setbits(T &amp;v, int bit_index, int nbits, T2 number)
+{  
+    //static_assert(is_unsigned&lt;T&gt;::value);
+    assert(number &lt;= (std::numeric_limits&lt;T&gt;::max)());
+    assert(number &gt;= 0);
+
+    clearbits(number, nbits, sizeof(T2) * CHAR_BIT - nbits);
+
+    T big(number);
+    big = (big &lt;&lt; bit_index);
+
+    clearbits(v, bit_index, nbits);
+    v |= big;
+}
+
+template&lt;class T&gt;
+T getbits(T v, int bit_index, int nbits)
+{
+    T r = v &gt;&gt; bit_index;
+    clearbits(r, nbits, sizeof(T) * CHAR_BIT - nbits);
+    return r;
+}
+
+template&lt;class T&gt;
+bool is_bit_on(T v, int bit_index)
+{
+    return (v &amp; (T(1) &lt;&lt; bit_index)) != 0;
+}
+</code></pre>
+
+<p>} //namespace memory</p>
+
+<pre><code>===Helper===
+```cpp
+template&lt;class T&gt;
+void PrintBitsLn(T v)
+{
+  for  (int i = 0; i &lt; sizeof(T) * CHAR_BIT ; i++)
+  {
+    std::cout &lt;&lt; (memory::is_bit_on(v, i) ? &#39;1&#39; : &#39;0&#39;);
+  }
+  std::cout &lt;&lt; std::endl;
+}
+</code></pre>
+
+<h3>History</h3>
+
+<ul>
+<li>3 fev 2010 : PrintBitsLn Added</li>
+</ul>
+</body></html>

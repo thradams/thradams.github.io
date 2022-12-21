@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Actors using C++</p>
+
+<pre><code class="language-cpp">#include &quot;stdafx.h&quot;
+#include &lt;stdlib.h&gt;
+#include &quot;ThreadPool.h&quot;
+#include &lt;mutex&gt;
+#include &lt;memory&gt;
+#include &lt;iostream&gt;
+
+
+
+template&lt;class T&gt;
+class Actor : public std::enable_shared_from_this&lt;Actor&lt;T&gt;&gt;
+{    
+    enum ACTOR_STATE
+    {
+        ACTOR_STATE_NONE,
+        ACTOR_STATE_RUNNING,
+        ACTOR_STATE_ONQUEUE
+    };
+
+    typedef std::function&lt;void(T&amp;)&gt; Message;
+    typedef  std::vector &lt; Message &gt; Messages;
+    std::mutex m_mutex;
+    Messages m_messages;
+    ACTOR_STATE m_State;
+
+    T m_object;
+
+public:
+
+    Messages GetMessages()
+    {
+        Messages messages;
+        std::lock_guard&lt;std::mutex&gt; lock(m_mutex);
+
+        if (m_messages.empty())
+        {
+            m_State = ACTOR_STATE_NONE;
+        }
+        else
+        {
+            m_State = ACTOR_STATE_RUNNING;
+            messages.swap(m_messages);
+        }
+        return messages;
+    }
+
+    void ProcessMessages()
+    {
+        for (;;)
+        {
+            auto messages = GetMessages();
+
+            if (messages.empty())
+            {
+                break;
+            }
+
+            for (auto &amp; item : messages)
+            {
+                item(m_object);
+            }
+        }
+    }
+
+public:
+    Actor() : m_State(ACTOR_STATE_NONE)
+    {        
+    }
+
+    void Post(Message f)
+    {
+        std::lock_guard&lt;std::mutex&gt; lock(m_mutex);
+        m_messages.push_back(f);
+
+        switch (m_State)
+        {
+        case ACTOR_STATE_NONE:
+        {
+            m_State = ACTOR_STATE_ONQUEUE;
+            std::weak_ptr&lt;Actor&gt; weak = shared_from_this();
+            ThreadPool::RunAsync([weak, f]
+            {
+                std::shared_ptr&lt;Actor&gt; sp = weak.lock();
+                if (sp.get())
+                {
+                    sp-&gt;ProcessMessages();
+                }
+            });
+        }
+        break;
+
+        case ACTOR_STATE_ONQUEUE:
+        case ACTOR_STATE_RUNNING:
+            break;
+
+        default:
+            assert(false);
+        }
+    }
+
+};
+
+class MyObject  
+{
+public:
+    
+};
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+    ThreadPool pool(10);
+
+
+    auto actor = std::make_shared&lt;Actor&lt;MyObject&gt;&gt;();
+    
+    actor-&gt;Post([](MyObject&amp; obj)
+    {     
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::cout &lt;&lt; &quot;1&quot; &lt;&lt; std::endl;
+    });
+
+    actor-&gt;Post([](MyObject&amp;)
+    {
+        std::cout &lt;&lt; &quot;2&quot; &lt;&lt; std::endl;
+    });
+
+
+    pool.StopAndJoin();
+
+    return 0;
+}
+
+</code></pre>
+
+<p>Thread pool
+```cpp</p>
+
+<h1 id="toc_0">pragma once</h1>
+
+<h1 id="toc_1">ifndef THREAD<em>POOL</em>H</h1>
+
+<h1 id="toc_2">define THREAD<em>POOL</em>H</h1>
+
+<h1 id="toc_3">include <vector></h1>
+
+<h1 id="toc_4">include <queue></h1>
+
+<h1 id="toc_5">include <memory></h1>
+
+<h1 id="toc_6">include <thread></h1>
+
+<h1 id="toc_7">include <mutex></h1>
+
+<h1 id="toc_8">include <condition_variable></h1>
+
+<h1 id="toc_9">include <future></h1>
+
+<h1 id="toc_10">include <functional></h1>
+
+<h1 id="toc_11">include <stdexcept></h1>
+
+<h1 id="toc_12">include <Windows.h></h1>
+
+<h1 id="toc_13">include <string></h1>
+
+<p>class ThreadPool
+{
+    static ThreadPool* s_OutthreadPool;</p>
+
+<p>public:
+    ThreadPool(size_t);
+    template<class F>
+    void enqueue(F&amp;&amp; f);
+    ~ThreadPool();
+    void StopAndJoin();</p>
+
+<pre><code>template&lt;class T&gt;
+static void RunAsync(T&amp;&amp; f)
+{
+    assert(s_OutthreadPool);
+    s_OutthreadPool-&gt;enqueue(std::forward&lt;T&gt;(f));
+}
+</code></pre>
+
+<p>private:</p>
+
+<pre><code>std::vector&lt; std::thread &gt; m_workers;
+std::queue&lt; std::function&lt;void()&gt; &gt; m_tasks;
+
+std::mutex m_queue_mutex;
+std::condition_variable m_condition;
+bool m_stop;
+</code></pre>
+
+<p>};</p>
+
+<p>inline ThreadPool::ThreadPool(size<em>t threads)
+    : m</em>stop(false)
+{
+    s_OutthreadPool = this;</p>
+
+<pre><code>for (size_t i = 0; i&lt;threads; ++i)
+    m_workers.emplace_back(
+    [this, threads]
+{
+    for (;;)
+    {
+        std::unique_lock&lt;std::mutex&gt; lock(this-&gt;m_queue_mutex);
+        while (!this-&gt;m_stop &amp;&amp; this-&gt;m_tasks.empty())
+        {
+            this-&gt;m_condition.wait(lock);
+        }
+        if (this-&gt;m_stop &amp;&amp; this-&gt;m_tasks.empty())
+        {
+            return;
+        }
+
+        std::function&lt;void()&gt; task(this-&gt;m_tasks.front());
+        this-&gt;m_tasks.pop();
+
+        lock.unlock();
+
+        task();
+    }
+}
+);
+</code></pre>
+
+<p>}</p>
+
+<p>template<class F>
+void ThreadPool::enqueue(F&amp;&amp; f)
+{
+    {
+        std::unique<em>lock<a href="std::mutex">std::mutex</a> lock(m</em>queue<em>mutex);
+        if (m</em>stop)
+        {
+            assert(false);
+            return;
+        }
+        m_tasks.emplace(f);
+    }</p>
+
+<pre><code>m_condition.notify_one();
+</code></pre>
+
+<p>}</p>
+
+<p>inline void ThreadPool::StopAndJoin()
+{
+    {
+        std::unique<em>lock<a href="std::mutex">std::mutex</a> lock(m</em>queue_mutex);</p>
+
+<pre><code>    if (m_stop)
+    {
+        return;
+    }
+    else
+    {
+        m_stop = true;
+    }
+}
+
+m_condition.notify_all();
+for (size_t i = 0; i &lt; m_workers.size(); ++i)
+{
+    m_workers[i].join();
+}
+</code></pre>
+
+<p>}</p>
+
+<p>inline ThreadPool::~ThreadPool()
+{
+    StopAndJoin();
+}</p>
+
+<h1 id="toc_14">endif</h1>
+
+<pre><code>
+```cpp
+#include &quot;stdafx.h&quot;
+#include &quot;ThreadPool.h&quot;
+
+ThreadPool* ThreadPool::s_OutthreadPool = nullptr;
+</code></pre>
+</body></html>

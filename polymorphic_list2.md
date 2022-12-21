@@ -1,5 +1,6 @@
 
 Sample
+
 ```cpp
 #include "stdafx.h"
 #include <iostream>
@@ -86,6 +87,7 @@ int main()
 
 
 Code
+
 ```cpp
 #pragma once
 #include <algorithm>

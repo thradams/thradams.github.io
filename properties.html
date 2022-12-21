@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">C++ Properties using C++ 11</h2>
+
+<p>A property is a &quot;virtual field&quot;.
+When the virtual field is used as rvalue it calls some get function.
+When the virtual field is used as lvalue it calls the best set_ function.</p>
+
+<p>The idea behind this implementation is to detect when the field is used as lvalue using 
+operator =, and to detect when the field is used as rvalue overriding operators +,- etc.</p>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">auto result = x.prop;
+x.prop = something;
+</code></pre>
+
+<p>will be equivalent of:
+<code>cpp
+auto result = x.get_prop();
+x.set_prop(something);
+</code></p>
+
+<h3>Tested with:</h3>
+
+<ul>
+<li>VC++ 2010</li>
+<li>VC++ 2011 Preview</li>
+<li>CLang (Xcode 4.2)</li>
+</ul>
+
+<hr>
+
+<h2 id="toc_1">properties.h</h2>
+
+<pre><code class="language-cpp">//
+// Copyright (C) 2012, Thiago R. Adams
+// http://www.thradams.com
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+//
+
+#pragma once
+
+#include &lt;type_traits&gt;
+#include  &lt;ostream&gt;
+
+struct Property {};
+
+template&lt;class T&gt;
+struct is_property : public std::is_base_of&lt;Property, T&gt; {};
+
+
+template &lt;class T&gt;
+auto eval(const T&amp; v)
+-&gt; typename std::enable_if &lt; is_property&lt;T&gt;::value, decltype(v.get())&gt;::type
+{
+    return v.get();
+}
+
+template &lt;class T&gt;
+auto eval(const T&amp; v)
+-&gt; typename std::enable_if &lt; !is_property&lt;T&gt;::value, decltype(v) &gt;::type
+{
+    return v;
+}
+
+#define READ_ONLY_PROPERTY(CLASSTYPE, GETFUNC, GETTYPE, name)\
+struct CLASSTYPE_##name : public Property\
+{\
+  template&lt;class T&gt; operator T()\
+  {\
+      return get();\
+  }\
+  GETTYPE operator ()() const \
+  {\
+      return get();\
+  }\
+  operator GETTYPE()\
+  {\
+      return get();\
+  }\
+  GETTYPE get() const \
+  {\
+     return reinterpret_cast&lt;const CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+  }\
+} name
+
+#define PROPERTY(CLASSTYPE, GETFUNC, SETFUNC,GETTYPE, name)\
+struct CLASSTYPE_##name : public Property\
+{\
+    typedef CLASSTYPE_##name MyType;\
+    template&lt;class T&gt; operator T()\
+    {\
+        return get();\
+    }\
+    GETTYPE operator ()() const \
+    {\
+        return get();\
+    }\
+    operator GETTYPE()\
+    {\
+        return get();\
+    }\
+    GETTYPE get() const \
+    {\
+       return reinterpret_cast&lt;const CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+    }\
+    template &lt;class T&gt; typename std::enable_if&lt;is_property&lt;T&gt;::value, MyType&amp;&gt;::type\
+    operator =(T&amp;&amp; value)\
+    {\
+        reinterpret_cast&lt;CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;SETFUNC(std::forward&lt;T&gt;(value.get()));\
+        return *this;\
+    }\
+    template &lt;class T&gt; typename std::enable_if&lt;!is_property&lt;T&gt;::value, MyType&amp;&gt;::type\
+    operator =(T&amp;&amp; value)\
+    {\
+        reinterpret_cast&lt;CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;SETFUNC(std::forward&lt;T&gt;(value));\
+        return *this;\
+    }\
+} name
+
+
+/// === Arithmetic operators ===
+
+//Addition
+template &lt;class TA, class TB&gt;
+auto operator +(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) + eval(b)) &gt;::type
+{
+    return eval(a) + eval(b);
+}
+
+//Subtraction
+template &lt;class TA, class TB&gt;
+auto operator -(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) - eval(b)) &gt;::type
+{
+    return eval(a) - eval(b);
+}
+
+
+//Unary plus (integer promotion)
+//TODO
+//Unary minus (additive inverse)
+//TODO
+
+//Multiplication
+template &lt;class TA, class TB&gt;
+auto operator *(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) * eval(b)) &gt;::type
+{
+    return eval(a) * eval(b);
+}
+
+//Division
+template &lt;class TA, class TB&gt;
+auto operator /(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) / eval(b)) &gt;::type
+{
+    return eval(a) / eval(b);
+}
+
+//Modulo (remainder)
+template &lt;class TA, class TB&gt;
+auto operator %(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(a.get() % b) &gt;::type
+{
+    return eval(a) % eval(b);
+}
+
+//Increment Prefix
+template &lt;class TA&gt;
+auto operator ++(TA&amp; a)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get()) &gt;::type
+{
+    a = (a.get() + 1);
+    return a.get();
+}
+
+//Increment Suffix
+template &lt;class TA&gt;
+auto operator ++(TA&amp; a, int)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get()) &gt;::type
+{
+    auto temp = a.get();
+    a = (a.get() + 1);
+    return temp;
+}
+//Decrement Prefix
+template &lt;class TA&gt;
+auto operator --(TA&amp; a)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ,
+decltype(a.get()) &gt;::type
+{
+    a = (a.get() - 1);
+    return a.get();
+}
+
+//Decrement Suffix
+template &lt;class TA&gt;
+auto operator --(TA&amp; a, int)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ,
+decltype(a.get()) &gt;::type
+{
+    auto temp = a.get();
+    a = (a.get() - 1);
+    return temp;
+}
+
+// ===Comparison operators/relational operators===
+
+//Equal to
+template &lt;class TA, class TB&gt;
+auto operator ==(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) == eval(b)) &gt;::type
+{
+    return eval(a) == eval(b);
+}
+
+
+//Not equal to
+template &lt;class TA, class TB&gt;
+auto operator !=(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) != eval(b)) &gt;::type
+{
+    return eval(a) != eval(b);
+}
+
+//Greater than
+//bug clang? decltype(eval(a) &gt; eval(b)), bool works
+template &lt;class TA, class TB&gt;
+auto operator &gt; (const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            bool &gt;::type
+{
+    return eval(a) &gt; eval(b);
+}
+
+//Less than
+template &lt;class TA, class TB&gt;
+auto operator &lt;(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) &lt; eval(b)) &gt;::type
+{
+    return eval(a) &lt; eval(b);
+}
+
+//Greater than or equal to
+template &lt;class TA, class TB&gt;
+auto operator &gt;=(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) &gt;= eval(b)) &gt;::type
+{
+    return eval(a) &gt;= eval(b);
+}
+
+//Less than or equal to
+template &lt;class TA, class TB&gt;
+auto operator &lt;=(const TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ||
+is_property&lt;TB&gt;::value,
+            decltype(eval(a) &lt;= eval(b)) &gt;::type
+{
+    return eval(a) &lt;= eval(b);
+}
+
+// === Logical operators ===
+
+//Logical negation (NOT)
+template &lt;class TA&gt;
+auto operator !(const TA&amp; a)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ,
+decltype(!eval(a)) &gt;::type
+{
+    return !a.get();
+}
+
+//Logical AND
+//Logical OR
+
+// ===Bitwise operators===
+//Bitwise NOT
+template &lt;class TA&gt;
+auto operator ~(const TA&amp; a)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ,
+decltype(~a.get()) &gt;::type
+{
+    return ~a.get();
+}
+//Bitwise AND
+//Bitwise XOR
+
+template&lt;class Elem,    class Traits, class TB&gt; inline
+typename std::enable_if &lt; is_property&lt;TB&gt;::value,
+         std::basic_ostream&lt;Elem, Traits&gt;&amp; &gt;::type
+         operator &lt;&lt; (std::basic_ostream&lt;Elem, Traits&gt;&amp; os, const TB&amp; b)
+{
+    return os &lt;&lt; b.get();
+}
+
+//Bitwise right shift
+//TODO
+
+//===Compound assignment operators===
+
+//Addition assignment
+
+template &lt;class TA, class TB&gt;
+auto operator += (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value, TA&amp; &gt;::type
+{
+    a = (a.get() + b);
+    return a;
+}
+
+//Subtraction assignment
+template &lt;class TA, class TB&gt;
+auto operator -= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value, TA&amp; &gt;::type
+{
+    a = (a.get() - b);
+    return a;
+}
+
+//Multiplication assignment
+template &lt;class TA, class TB&gt;
+auto operator *= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value, TA&amp; &gt;::type
+{
+    a = (a.get() * b);
+    return a;
+}
+
+//Division assignment
+template &lt;class TA, class TB&gt;
+auto operator /= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value, TA&amp; &gt;::type
+{
+    a = (a.get() / b);
+    return a;
+}
+
+//Modulo assignment
+template &lt;class TA, class TB&gt;
+auto operator %= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value, TA&amp;&gt;::type
+{
+    a = (a.get() % b);
+    return a;
+}
+
+//Bitwise AND assignment
+template &lt;class TA, class TB&gt;
+auto operator &amp;= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get() &amp;= b) &gt;::type
+{
+    return a = (a.get() &amp; b);
+}
+
+//Bitwise OR assignment
+template &lt;class TA, class TB&gt;
+auto operator |= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get() |= b) &gt;::type
+{
+    return a = (a.get() | b);
+}
+
+//Bitwise XOR assignment
+template &lt;class TA, class TB&gt;
+auto operator ^= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value ,
+decltype(a.get() ^= b) &gt;::type
+{
+    return a = (a.get() ^ b);
+}
+
+//Bitwise left shift assignment
+template &lt;class TA, class TB&gt;
+auto operator &lt;&lt;= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get() &lt;&lt;= b) &gt;::type
+{
+    return a.get() &lt;&lt;= b;
+}
+
+//Bitwise right shift assignment
+template &lt;class TA, class TB&gt;
+auto operator &gt;&gt;= (TA&amp; a, const TB&amp; b)
+-&gt; typename std::enable_if &lt; is_property&lt;TA&gt;::value,
+decltype(a.get() &gt;&gt;= b) &gt;::type
+{
+    return a.get() &gt;&gt;= b;
+}
+
+//==Member and pointer operators==
+//==Other operators==
+
+
+</code></pre>
+
+<hr>
+
+<h2 id="toc_2">Testing</h2>
+
+<pre><code class="language-cpp">
+
+#include &lt;cassert&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+#include &quot;properties.h&quot;
+
+struct X
+{
+    std::string m_text;
+
+    void set_text(std::string value)
+    {
+        m_text = value;
+    }
+
+    std::string get_text() const
+    {
+        return m_text;
+    }
+
+    PROPERTY(X, get_text,set_text, std::string, text);
+
+    int m_width;
+
+    void set_width(int value)
+    {
+        m_width = value;
+    }
+
+    int get_width() const
+    {
+        return m_width;
+    }
+
+    PROPERTY(X, get_width, set_width, int, width);
+
+    bool m_b;
+
+    void set_b(bool value)
+    {
+        m_b = value;
+    }
+
+    bool get_b() const
+    {
+        return m_b;
+    }
+
+    PROPERTY(X, get_b, set_b,  bool, b);
+
+};
+
+struct X2
+{
+
+    std::string m_text2;
+
+    void set_text2(const char* value)
+    {
+          m_text2 = value;
+    }
+    void set_text2(std::string value)
+    {
+        m_text2 = value;
+    }
+
+    const std::string&amp; get_text2() const
+    {
+        return m_text2;
+    }
+
+    PROPERTY(X2, get_text2, set_text2, const std::string&amp;, text2);
+
+    int m_width;
+
+    void set_width(int value)
+    {
+        m_width = value;
+    }
+
+    int get_width() const
+    {
+        return m_width;
+    }
+
+    PROPERTY(X, get_width, set_width,int,  width);
+
+    bool m_b;
+
+    bool get_b() const
+    {
+        return m_b;
+    }
+    
+    READ_ONLY_PROPERTY(X, get_b, bool, b);
+};
+
+void f(int) {}
+void f1(const int) {}
+void f2(int&amp;) {}
+void f3(double) {}
+void f4(const std::string&amp;) {}
+
+
+template &lt;typename R, typename C&gt; R get_return_type(R (C::*)(void));
+
+
+int main()
+{
+    X x;
+    X2 x2;
+    bool b = x.text &lt;= x2.text2;
+    b = x2.text2 &lt;= x.text;
+    x.text = x2.text2;
+    x.text == x2.text2;
+    x.text != x2.text2;
+    x.text != &quot;aa&quot;;
+    x.text = &quot;aa&quot;;
+    x.text = x.text + &quot;b&quot;;
+    x.text = &quot;a&quot; + x.text;
+    x.text += &quot;c&quot;;
+    x.text = x.text + x2.text2;
+    x2.text2=&quot;text2&quot;;
+    b = (x.text == &quot;aa&quot;);
+    b = x.text &gt; x2.text2;
+    b = x.text &lt; x2.text2;
+    b = x.text &lt; &quot;a&quot;;
+    //x2.b = true; //b is read only
+    f4(x.text);
+    b = x.text &lt;= x2.text2;
+    x.width = !x.width;
+    x.width = 1;
+    x.width += 1;
+    x.width -= 1;
+    x.width *= 1;
+    x.width /= 1;
+    x.width = x.width == 2 || x.width == 1;
+    x.width = x.width &amp;&amp; x.width ;
+
+    b = x2.b;
+    x.b = false;
+    x.b = !x.b;
+    x.b == x2.b;
+    x.width++;
+    x.width--;
+
+    x.b = x.b || 1;
+    x.b = x.b || x2.b;
+    x.width = x.width &amp;&amp; 1;
+    x.width = x.width &amp;&amp; x.width;
+    x.width += x.width;
+    x.width -= 1;
+    x2.width = 2;
+    x.width == x2.width;
+    x.width++;
+    x.width &gt;= 1;
+    x.width &gt;= x2.width;
+    x.width &lt;= x2.width;
+    b = x.width &lt; x2.width;
+    b = x.width &gt; x2.width;
+    f(x.width);
+    f1(x.width);
+    ++x.width;
+    x.width = x2.width + 1;
+    x.width = x.width  + x2.width;
+    x.width = x.width  - x2.width;
+
+    x.width = 5;
+    assert(x.width % 2  == 1);
+    x.width = 1;
+    x2.width = 2;
+    assert(x2.width &gt; x.width);
+    assert(x.width &lt; x2.width);
+    x.width &lt;= x2.width;
+    x.width &gt;= x2.width;
+    x.width != x2.width;
+
+    if (x.text().empty())
+    {
+    }
+    
+    x.text().clear(); //ok
+    //x2.text2().clear(); // error
+
+    std::cout &lt;&lt; x.width;
+    std::cout &lt;&lt; x.text;
+}
+
+</code></pre>
+
+<h2 id="toc_3">History</h2>
+
+<ul>
+<li>10/10/2012 New version [[properties2.htm]]</li>
+<li>28/08/2012 Version using VC++ 2012 ok</li>
+<li>23/01/2012 Version using VC++ 11 preview</li>
+<li>22/01/2012 Clang fixes </li>
+<li>18/01/2012 published</li>
+<li>19/01/2012 non const get also suported</li>
+</ul>
+
+<h2 id="toc_4">Limitations of this implementation</h2>
+
+<ul>
+<li>Some operators are misssing</li>
+<li>Code like this one will not compile
+<code>cpp
+bool b = x.prop.empty();
+where prop is std::string
+</code>
+This is because there is no overload for operator dot.</li>
+</ul>
+
+<p>The workaround is to use operator ()
+<code>
+  bool b = x.prop().empty();
+</code></p>
+
+<h2 id="toc_5">See also</h2>
+
+<p><a href="http://msdn.microsoft.com/en-us/library/yhfk0thd(v=vs.80).aspx">http://msdn.microsoft.com/en-us/library/yhfk0thd(v=vs.80).aspx</a></p>
+
+<hr>
+
+<h2 id="toc_6">Compiling using Visual C++ 11 Preview</h2>
+
+<p>Using VC++ 11 preview or Clang is possible to find out the &quot;get&quot; return type.</p>
+
+<pre><code class="language-cpp">#include &lt;type_traits&gt;
+#include  &lt;ostream&gt;
+
+struct Property {};
+
+template&lt;class T&gt;
+struct is_property : public std::is_base_of&lt;Property, T&gt; {};
+
+
+template &lt;class T&gt;
+auto eval(const T&amp; v)
+-&gt; typename std::enable_if &lt; is_property&lt;T&gt;::value, decltype(v.get())&gt;::type
+{
+    return v.get();
+}
+
+template &lt;class T&gt;
+auto eval(const T&amp; v)
+-&gt; typename std::enable_if &lt; !is_property&lt;T&gt;::value, decltype(v) &gt;::type
+{
+    return v;
+}
+
+template &lt;typename R, typename O&gt;
+R ReturnType(R (O::*)(void) const) 
+{ 
+  return R();
+}
+
+#define READ_ONLY_PROPERTY(CLASSTYPE, GETFUNC, name)\
+struct CLASSTYPE_##name : public Property\
+{\
+  typedef decltype(ReturnType(&amp;CLASSTYPE::GETFUNC)) GETTYPE;\
+  template&lt;class T&gt; operator T()\
+  {\
+      return get();\
+  }\
+  GETTYPE operator ()() const \
+  {\
+      return get();\
+  }\
+  operator GETTYPE()\
+  {\
+      return get();\
+  }\
+  GETTYPE get() const \
+  {\
+     return reinterpret_cast&lt;const CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+  }\
+} name
+
+#define PROPERTY(CLASSTYPE, GETFUNC, SETFUNC, name)\
+struct CLASSTYPE_##name : public Property\
+{\
+    typedef CLASSTYPE_##name MyType;\
+    typedef decltype(ReturnType(&amp;CLASSTYPE::GETFUNC)) GETTYPE;\
+    template&lt;class T&gt; operator T()\
+    {\
+        return get();\
+    }\
+    GETTYPE operator ()() const \
+    {\
+        return get();\
+    }\
+    operator GETTYPE()\
+    {\
+        return get();\
+    }\
+    GETTYPE get() const \
+    {\
+       return reinterpret_cast&lt;const CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;GETFUNC();\
+    }\
+    template &lt;class T&gt; typename std::enable_if&lt;is_property&lt;T&gt;::value, MyType&amp;&gt;::type\
+    operator =(T&amp;&amp; value)\
+    {\
+        reinterpret_cast&lt;CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;SETFUNC(std::forward&lt;T&gt;(value.get()));\
+        return *this;\
+    }\
+    template &lt;class T&gt; typename std::enable_if&lt;!is_property&lt;T&gt;::value, MyType&amp;&gt;::type\
+    operator =(T&amp;&amp; value)\
+    {\
+        reinterpret_cast&lt;CLASSTYPE*&gt;(this - offsetof(CLASSTYPE, name))-&gt;SETFUNC(std::forward&lt;T&gt;(value));\
+        return *this;\
+    }\
+} name
+
+
+
+...
+
+</code></pre>
+
+<p>Sample of use:
+<code>
+...
+    PROPERTY(X, get_width, set_width, width);
+...
+    READ_ONLY_PROPERTY(X, get_b, b);
+...
+</code></p>
+</body></html>

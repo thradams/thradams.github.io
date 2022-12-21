@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>==Tag-dispathing.==</p>
+
+<p>( Nota: Para entender o tag dispathing é importante saber o que é uma especializaçào de templates e também Traits. Um artigo mais introdutório pode ser encontrado aqui: [[<a href="http://www.thradams.com/codeblog/templates.pdf%7Chttp://www.thradams.com/codeblog/templates.pdf%5D">http://www.thradams.com/codeblog/templates.pdf|http://www.thradams.com/codeblog/templates.pdf]</a>] )</p>
+
+<p>Antes de iniciar o assunto tag-dispathing, quero lembrar rapidamente o conceito de sobrecarga (overloading).</p>
+
+<p>Sobrecarregar funções significa criar funções com o mesmo nome mas com assinaturas diferentes. Ou seja, o tipo ou o número de parâmetros é diferente em cada uma.</p>
+
+<p>Por exemplo:
+{{{cpp
+ int abs(int i) {...}
+ double abs(double d) {...}
+}}}
+A função correta será chamada de acordo com o argumento passado.</p>
+
+<p>Tag dispathing é uma técnica que usa a sobrecarga de funções adicionando um parâmetro extra apenas para servir de controle e seleção de uma função. Este parâmetro extra é tipo chamado <strong>&quot;tag&quot;</strong>.</p>
+
+<p>Para demonstrar a motivação é melhor ver um exemplo:</p>
+
+<p>Vamos supor que eu tenha os tipos S1, S2 e S3.</p>
+
+<p>{{{cpp
+struct S1 {}; 
+struct S2 {};
+struct S3 {};
+}}}</p>
+
+<p>E uma função genérica para T
+{{{cpp
+template<class T> void Search(T&amp; v) { ... }
+}}}</p>
+
+<p>Vamos supor que os tipos S1 e S2 tenham uma característica especial aonde a implementação de Search poderia ser otimizada.</p>
+
+<p>Uma solução seria criar uma especialização de Search para S1 e outra especialização de Search para S2. 
+{{{cpp
+template&lt;&gt; void Search(S1&amp; v) { ... }
+template&lt;&gt; void Search(S2&amp; v) { ... }
+}}}
+No entanto se a implementação para S1 e S2 forem iguais estaríamos duplicando código.</p>
+
+<p>Então para compartilhar o código poderiamos ter:</p>
+
+<p>{{{cpp
+template<class T> void SearchOptimezed(T&amp; v) { ... }</p>
+
+<p>template&lt;&gt; void Search(S1&amp; v) { SearchOptimezed(v); }
+template&lt;&gt; void Search(S2&amp; v) { SearchOptimezed(v); }
+}}}</p>
+
+<p>O tag dispatch é outra alternativa para resolver esta questão.</p>
+
+<p>Com o tag dispatch é criado um tag para representar as caracteristicas em comum de S1 e S2.</p>
+
+<p>Por exemplo:
+{{{cpp
+struct OptimezedTag{};
+struct NonOptimezedTag{};
+}}}</p>
+
+<p>Depois é preciso associar o tipo (S1, S2 etc) ao tag. Para isso existem  duas formas. </p>
+
+<p>Uma intrusiva aonde um //typedef// no tipo vai dizer se ele pode ou não usar o algorítmo especializado ou uma forma não intrusiva através de &quot;Traits&quot;.</p>
+
+<p>A forma intrusiva seria por exemplo:
+{{{cpp
+struct S1 
+{ 
+  typedef OptimezedTag type;
+  ...
+} </p>
+
+<p>struct S2
+{ 
+  typedef OptimezedTag type; 
+  ...
+} 
+}}}</p>
+
+<p>E a forma não intrusiva com um Traits seria:</p>
+
+<p>{{{cpp
+// O caso geral será o não especializado
+template<class T> struct Traits 
+{ 
+  typedef NonOptimezedTag type;
+} </p>
+
+<p>// S1 pode usar o caso otimizado
+template&lt; &gt; struct Traits <S1> 
+{
+ typedef OptimezedTag type; 
+}</p>
+
+<p>// S2 pode usar o caso otimizado 
+template&lt; &gt; struct Traits <S2> 
+{
+ typedef OptimezedTag type; 
+}
+}}}</p>
+
+<p>Duas versões de implementação da função Search são criadas com o mesmo nome porém com o tipo de tag diferente.</p>
+
+<p>{{{cpp
+template<class T> void SearchImp(T&amp; v, OptimezedTag) { ... }
+template<class T> void SearchImp(T&amp; v, NonOptimezedTag) { ... }
+}}}</p>
+
+<p>Então a função Search pode escolher a implementação correta usando a sobrecarga através do tag associado de cada tipo.</p>
+
+<p>1) Para o caso de estar usando Traits:
+{{{cpp
+template<class T> void Search(T&amp; v) 
+{
+  typename Traits<T>::type t;
+  SearchImp(v, t);
+}
+}}}</p>
+
+<p>2) Ou o caso do existir o typedef</p>
+
+<p>{{{cpp
+template<class T> void Search(T&amp; v) 
+{
+  typename T::type t;
+  SearchImp(v, t);
+}
+}}}</p>
+
+<p>O resultado final disso tudo é que o compilador saberá selecionar a função mais correta para cada tipo.</p>
+
+<p>===Referências===</p>
+
+<p>[[<a href="http://www.boost.org/community/generic_programming.html%7Chttp://www.boost.org/community/generic_programming.html%5D">http://www.boost.org/community/generic_programming.html|http://www.boost.org/community/generic_programming.html]</a>]</p>
+
+<p>([[<a href="http://www.thradams.com/codeblog/tagdispatch.txt%7CVers%E3o">http://www.thradams.com/codeblog/tagdispatch.txt|Versão</a> txt]])</p>
+</body></html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Part I - Additions into C language I would like to have</h1>
+
+<p>April 2021</p>
+
+<p>Most of these features have been implemented in my transpiler that can be  visualized here:</p>
+
+<p><a href="./web2/cprime.html">cprime V2 online</a> <br>
+<a href="./cake/index.html">cake V3 online</a></p>
+
+<h2 id="toc_1">Struct member initializer</h2>
+
+<p>struct members can be annotated with their respective 
+initialization value.</p>
+
+<pre><code class="language-c">
+struct X {
+   int i = 1;
+   struct Point pt = { .x = 1, .y = 1 };
+};
+
+</code></pre>
+
+<p>This information is used for empty initialization and 
+empty compound literals.</p>
+
+<pre><code class="language-cpp">int main() {
+   
+   struct X x = {};       
+   x = (struct X) {};       
+}
+
+</code></pre>
+
+<p>C++ has this features but with some unexpected 
+design.</p>
+
+<pre><code class="language-cpp">
+struct point {
+    int x = 1;
+    int y = 2;
+};
+
+struct line {
+  struct point point = { .x= 3, .y = 4 };
+};
+
+int main() {
+  struct line line = { .point = { .x = 5} };
+  printf(&quot;%d\n&quot;, line.point.y);
+}
+
+</code></pre>
+
+<p>This sample prints 2 in C++. </p>
+
+<p>I was expecting 4.</p>
+
+<p>C++ also accepts non constant initialization. </p>
+
+<h2 id="toc_2">if with initializer</h2>
+
+<p>This is the same of C++ 17.  See <a href="https://en.cppreference.com/w/cpp/language/if">https://en.cppreference.com/w/cpp/language/if</a></p>
+
+<pre><code class="language-cpp">
+  if (struct X* pX = malloc(sizeof * pX); pX)
+  {    
+    ...
+    free(pX);
+  }
+  
+  //pX out of scope
+
+````
+
+## if with initializer and defer-expression
+
+Considering the interesting pattern above (that is very useful to avoid bugs) 
+we also have an option with &#39;defer&#39; to put everything at same line.
+
+```cpp
+  if (FILE* f = fopen(&quot;file.txt&quot;, &quot;r&quot;); f; fclose(f))
+  {        
+     
+  }
+</code></pre>
+
+<p>When jumps like continue, break or goto are used 
+the defer is called before the jump.</p>
+
+<p>When return is called first the result is copied to a local 
+variable then defer is called then  copied variable is returned.</p>
+
+<h2 id="toc_3">try-block statement and throw</h2>
+
+<p>try block statement creates a region where we can use throw 
+and jump to the end of statement of inside catch block.</p>
+
+<pre><code class="language-cpp">
+   try {
+      throw; /*jump*/
+   }
+   /*here*/
+   
+   try {
+      throw; /*jump*/
+   }
+   catch
+   {
+     /*here*/
+   }
+      
+
+</code></pre>
+
+<p>The difference for C++ is that throw can only be used 
+inside try-blocks making the jump path visible.</p>
+
+<h2 id="toc_4">defer</h2>
+
+<p>Using defer the statement is executed at the end of scope
+ or before leaving the scope with jumps like return break etc.</p>
+
+<pre><code class="language-cpp">  defer statement
+</code></pre>
+
+<h2 id="toc_5">Function Literal</h2>
+
+<p>Syntax:
+```cpp
+   int (*f) (int arg1, int arg2) = 
+          (int (int arg1, int arg2)) { return arg1 + arg2; };</p>
+
+<pre><code>
+Grammar changes:
+
+```cpp
+  postfix-expression:
+    primary-expression
+    postfix-expression [ expression ]
+    postfix-expression ( argument-expression-listopt )
+    postfix-expression . identifier
+    postfix-expression -&gt; identifier
+    postfix-expression ++
+    postfix-expression --
+    ( type-name ) { initializer-list }
+    ( type-name ) { initializer-list , }
+    ( type-name ) compound-statement           &lt;---- if typename is function type
+</code></pre>
+
+<h2 id="toc_6">Literal string copy to fixed array</h2>
+
+<pre><code class="language-cpp">
+   char s[3];
+   s = &quot;ab&quot;;//OK
+   s = &quot;abc&quot;;//compile time error
+   s = &quot;abcd&quot;;//compile time error
+</code></pre>
+
+<p>(not implemented yet in cprime)</p>
+
+<h3>Overloaded functions</h3>
+
+<p>Overload functions are functions with name mangling. 
+They are created to support destructor/polymorphism/parametrization.</p>
+
+<pre><code class="language-cpp">void draw(struct Box* p) overload;
+void draw(struct Circle* p) overload;
+</code></pre>
+
+<p>See reference : 
+<a href="https://clang.llvm.org/docs/AttributeReference.html#overloadable">https://clang.llvm.org/docs/AttributeReference.html#overloadable</a></p>
+
+<p>We can think of it as an inverse of extern &quot;C&quot;.</p>
+
+<h3>New operator</h3>
+
+<p>(
+  Maybe will be removed because of the different possibilities of allocation.
+)</p>
+
+<pre><code> postfix-expression:
+   new (type-name)
+   new (type-name) { }
+   new (type-name) { initializer-list }
+</code></pre>
+
+<p>The objective of the new operator is allocate memory an them copy 
+the default compound literal or user provided compound literal,</p>
+
+<p>The allocation is done using malloc.</p>
+
+<pre><code class="language-cpp">
+struct X {
+    char * name;
+};
+
+int main() {
+
+  struct X* pX = new (struct X) {};
+  if (pX != NULL)
+  {
+    free(pX-&gt;name);
+  }
+}
+
+</code></pre>
+
+<p>Comparison with C++: There is not constructor here. There is no need for exceptions.</p>
+
+<p>So far there is no way to customize the allocator. I am considering 
+other alternatives to make it generic without adding C++ complexity.</p>
+
+<pre><code class="language-cpp">struct X* p = malloc(sizeof * p) *= {struct X}{};
+</code></pre>
+
+<h2 id="toc_7">Destroy operator</h2>
+
+<p>Destroy operator instantiates an especial function that is used 
+to destroy object parts recursively.</p>
+
+<p>The user can optionally inform a destructor (overloading destroy function) 
+that is called just before the object destruction.</p>
+
+<pre><code class="language-cpp">
+struct X {
+    char * name = NULL;
+};
+
+void destroy(struct X* pX) overload {
+   free(pX-&gt;name);
+}
+
+struct Y {
+    struct X x;
+};
+
+int main()
+{
+  struct Y y = {};
+  destroy(y);
+}
+
+</code></pre>
+
+<h2 id="toc_8">Auto pointers</h2>
+
+<p>(
+  Maybe will be removed because of the different possibilities of allocation.
+)</p>
+
+<p>Pointers can be qualified with auto. </p>
+
+<p>This tells the type system that this pointer is the owner of the pointed object. When the lifetime ends it should call a function to free the resource it points to.</p>
+
+<p>At this moment auto is used to generate destructors but it also could be 
+used for static analysis in the future.</p>
+
+<pre><code class="language-cpp">struct X {
+    char * auto name = NULL;
+};
+
+int main()
+{
+  struct X x = {};
+  destroy(x);
+}
+
+</code></pre>
+
+<p>When a pointer qualified with auto is destroyed it calls 
+the destructor of the pointed object and then free the memory.</p>
+
+<p>By default it calls free.</p>
+
+<p>Alternatively we can do,</p>
+
+<pre><code class="language-cpp">struct X {
+    char * name = NULL;
+};
+
+void destroy(struct X* p) { free(p-&gt;name); }
+
+int main() {
+  struct X x = {};
+  destroy(x);
+}
+
+</code></pre>
+
+<pre><code class="language-cpp">struct X {
+    char * auto name = NULL;
+};
+
+int main()
+{
+  struct X* pX = new (struct X);
+  destroy(pX); //warning does nothing
+  destroy(*pX); //destroy the object but does not free memory
+
+  struct X* auto pAuto = new (struct X);
+  destroy(pAuto); //destroy the pointed object and calls free
+  destroy(*pAuto); //destroy the object but does not free memory
+}
+
+</code></pre>
+
+<p>Specifying a free function.</p>
+
+<p>Not is not implemented yet.</p>
+
+<pre><code class="language-cpp">struct X {
+    char * auto(customFree) name = NULL;
+};
+
+
+</code></pre>
+
+<p>This is useful for custom allocator. Sometimes a pointer
+to the allocator is also required, in this case the best
+solution is auto() to say it is the owner pointer
+but don&#39;t use this information to free it, I will do it manually
+for instance at the destructor.</p>
+
+<h2 id="toc_9">Polymorphism</h2>
+
+<p>Pointers that can point to a specific <strong>set of struct types</strong>. </p>
+
+<p>Syntax:</p>
+
+<pre><code> struct &lt;tag-list&gt; 
+ 
+ tag-list:
+  identifier
+  identifier , tag-list
+</code></pre>
+
+<pre><code class="language-cpp"> struct &lt;X | Y&gt;* p; // points to struct X or struct Y (or equivalent typedef) 
+</code></pre>
+
+<p>Structs must have a <strong>common discriminant</strong> that is used
+in runtime to select the appropriated type.</p>
+
+<p>For instance:</p>
+
+<pre><code class="language-cpp"> struct X {  int type = 1;  }
+ struct Y {  int type = 2;  }
+</code></pre>
+
+<p>We can define a name for this type without typedef</p>
+
+<pre><code class="language-cpp">
+ struct &lt;Box | Circle&gt; Shape;
+
+ struct Shape* pShape;
+</code></pre>
+
+<p>This name can be used in other pointers and the result 
+is the union set of types.</p>
+
+<pre><code class="language-cpp"> struct &lt;Shape | Data&gt; Serializable;
+</code></pre>
+
+<p>The definition of the struct is automatic (auto generated). We provide only the declaration.</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-cpp"> 
+struct Box {
+    const int id = 1; //discriminant
+};
+
+void draw(struct Box* pBox) overload {
+    printf(&quot;Box&quot;);
+}
+
+struct Circle {
+    const int id = 2; //discriminant
+};
+
+void draw(struct Circle* pCircle) overload {
+    printf(&quot;Circle&quot;);
+}
+
+struct &lt;Box | Circle&gt; Shape;
+
+int main()
+{
+  struct Shape * auto shapes[2] = {};
+  
+  shapes[0] = new (struct Box);
+  shapes[1] = new (struct Circle);
+  
+  for (int i = 0; i &lt; 2; i++)
+  {    
+    draw(shapes[i]); 
+
+    printf(&quot;%d&quot;, shapes[i].id);
+  }
+  
+  destroy(shapes);
+}
+
+</code></pre>
+
+<p>The discriminant can be constant strings or enuns etc.</p>
+
+<pre><code class="language-cpp">struct Box {
+    const char * type= &quot;box&quot;;
+};
+
+struct Circle {
+    const char * type= &quot;circle&quot;;
+};
+</code></pre>
+
+<p>(strings are not implemented yet)</p>
+
+<p>We also need a way to cast. The syntax is a open question but 
+the C++ syntax can be used.</p>
+
+<pre><code class="language-cpp">struct Box *pBox = dynamic_cast&lt;struct Box*&gt;(pShape);
+</code></pre>
+
+<p>Alternatives:
+```cpp
+struct Box *pBox = pShape as Box;</p>
+
+<p>if (pShape is Box)
+{</p>
+
+<p>}
+```
+Cast from box to shape for instance are normal casts but in the future 
+the compiler can check the if the types are on the same set. </p>
+
+<h2 id="toc_10">Resizable arrays [auto]</h2>
+
+<pre><code class="language-cpp">int a[auto];
+ 
+  capacity(a);
+  size(a);
+  push(a, 1);
+  reserve(a, 10);
+  a[0] = 1; //ok
+ 
+</code></pre>
+
+<p>(not implemented yet)</p>
+
+<h2 id="toc_11">Parametrized types</h2>
+
+<p>(not implemented yet)</p>
+
+<pre><code class="language-cpp">template &lt;typename T&gt;
+struct vector{
+  T * data;
+  int size;
+  int capacity;
+};
+
+void F(vector&lt;int&gt; * v) {}
+
+</code></pre>
+
+<h2 id="toc_12">Parametrized functions</h2>
+
+<pre><code class="language-cpp">template &lt;typename T&gt;
+struct vector
+{
+  T * data;
+  int size;
+  int capacity;
+};
+
+template&lt;class T&gt;
+void destroy(vector&lt;T&gt; * v) 
+{
+
+}
+
+template&lt;class T&gt;
+void push(vector&lt;T&gt; * v, T i) {
+
+}
+
+int main()
+{
+   vector&lt;int&gt; v = {};
+   push(v, 1);
+   destroy(v);
+}
+/*
+  if T is struct is is passed by pointer otherwise by copy. 
+*/
+
+</code></pre>
+
+<h2 id="toc_13">Pragmas</h2>
+
+<p>This are just for the cprime generator.</p>
+
+<pre><code class="language-cpp">#define DEL(T) void Delete_##T(struct T* p){ if (p) {destroy(*p); free(p);} }
+
+#pragma expand on
+DEL(House)
+#pragma expand off
+</code></pre>
+</body></html>

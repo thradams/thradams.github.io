@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Usage:</p>
+
+<pre><code class="language-cpp">
+struct X
+{
+    int i;
+};
+
+int main()
+{
+    struct ArrayOf(int) a = { 0 };
+   
+
+    for (int j = 0; j &lt; 10; j++)
+    {
+        ArrayPush(&amp;a, j);
+    }
+
+    printf(&quot;[&quot;);
+    for (int i = 0; i &lt; a.size; i++)
+    {
+        if (i &gt; 0)
+            printf(&quot;, &quot;);
+        printf(&quot;%d &quot;, a.data[i]);
+    }
+    printf(&quot;]\n&quot;);
+
+    struct ArrayOf(struct X) a2 = { 0 };
+
+
+    for (int j = 0; j &lt; 10; j++)
+    {
+        ArrayPush(&amp;a2, (struct X) {.i = j});
+    }
+
+    printf(&quot;[&quot;);
+    for (int i = 0; i &lt; a.size; i++)
+    {
+        if (i &gt; 0)
+            printf(&quot;, &quot;);
+        printf(&quot;.i=%d &quot;, a2.data[i].i);
+    }
+    printf(&quot;]\n&quot;);
+
+    struct ArrayOf(struct X*) a3 = { 0 };
+
+
+    for (int j = 0; j &lt; 10; j++)
+    {
+        struct X* p = malloc(sizeof * p);
+        if (p)
+        {
+            *p = (struct X){ .i = j };
+            ArrayPush(&amp;a3, p);
+        }
+    }
+
+    printf(&quot;[&quot;);
+    for (int i = 0; i &lt; a3.size; i++)
+    {
+        if (i &gt; 0)
+            printf(&quot;, &quot;);
+        printf(&quot;.i=%d &quot;, a3.data[i]-&gt;i);
+    }
+    printf(&quot;]\n&quot;);
+}
+</code></pre>
+
+<p>Source:</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#define ArrayOf(T) { T* data; int size; int capacity; }
+
+#define ArrayPush(A, V)\
+do {\
+    if ((A)-&gt;size + 1 &gt; (A)-&gt;capacity)\
+    {\
+        int n = (A)-&gt;capacity * 2;\
+        if (n == 0)\
+        {\
+            n = 1;\
+        }\
+        void* pnew = (A)-&gt;data;\
+        pnew = realloc(pnew, n * sizeof((A)-&gt;data[0]));\
+        if (pnew)\
+        {\
+            (A)-&gt;data = pnew;\
+            (A)-&gt;capacity = n;\
+            (A)-&gt;data[(A)-&gt;size] = (V); \
+            (A)-&gt;size++;\
+        }\
+    } else \
+    {\
+      (A)-&gt;data[(A)-&gt;size] = (V);\
+      (A)-&gt;size++;\
+    }\
+}while(0)
+
+
+
+
+</code></pre>
+
+<pre><code class="language-cpp">
+
+
+#define array_size(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[0]) : 0)
+#define array_capacity(a)  ((a) ? (((int*)((char*)(a) - sizeof(int) * 2))[1]) : 0)
+#define array_free(a) if (a) free((((int*)((char*)(a) - sizeof(int) * 2))))
+
+#define array_reserve(p, newcapacity) \
+  do {\
+    int* pints = p ? ((int*)((char*)(p) - sizeof(int) * 2)) : 0;\
+    int capacity = pints ? pints[1] : 0;\
+    int size = pints ? pints[0] : 0;\
+    if (newcapacity &gt; capacity) {\
+      pints = (int*)realloc(pints, sizeof(int) * 2 + newcapacity * sizeof(p[0]));\
+      if (pints) {\
+         p = ((void*)((char*)(pints) + sizeof(int) * 2));\
+         pints[0] = size;\
+         pints[1] = newcapacity;\
+      }\
+    }\
+  } while (0)
+
+
+#define array_push(p, value) \
+  do {\
+    int* pints = p ? ((int*)((char*)(p) - sizeof(int) * 2)) : 0;\
+    int size = pints ? pints[0] : 0;\
+    int capacity = pints ? pints[1] : 0;\
+    if (size + 1 &gt; capacity) {\
+      int n = capacity * 2;\
+      if (n == 0) {\
+         n = 1;\
+      }\
+      pints = (int*)realloc(pints, sizeof(int) * 2 + n * sizeof(p[0]));\
+      if (pints) {\
+         p = ((void*)((char*)(pints) + sizeof(int) * 2));\
+         pints[0] = size;\
+         pints[1] = n;\
+      }\
+    }\
+   p[size] = value;\
+   pints[0]++;\
+  } while (0)
+
+
+struct X
+{
+    int i;
+};
+
+int main()
+{
+    struct X* pX = { 0 };
+    
+    array_reserve(pX, 1100);
+    printf(&quot;%d %d&quot;, array_size(pX), array_capacity(pX));
+
+    array_push(pX, (struct X) {.i = 1});
+    array_push(pX, (struct X) {.i = 2});
+    
+    for (int i = 0; i &lt; array_size(pX); i++)
+    {
+        printf(&quot;%d\n&quot;, pX[i].i);
+    }
+    array_free(pX);
+}
+
+
+
+</code></pre>
+
+<pre><code class="language-c">#pragma once
+#include &lt;stdlib.h&gt;
+
+struct ptrarray
+{
+    void** data; int size, capacity;
+};
+
+#define Array(item) array_##item
+#define DECLARE_ARRAY(item) struct Array(item) { struct item** data; int size, capacity; }
+
+#define array_push(a, v) ptrarray_push((struct ptrarray*) a, v)
+
+static inline ptrarray_push(struct ptrarray* a, void* value)
+{
+    if (a-&gt;size + 1 &gt; a-&gt;capacity)
+    {
+        int n = a-&gt;capacity * 2;
+        if (n == 0)
+        {
+            n = 1;
+        }
+        void** pnew = a-&gt;data;
+        pnew = (void**)realloc(pnew, n * sizeof(void*));
+        if (pnew)
+        {
+            a-&gt;data = pnew;
+            a-&gt;capacity = n;
+        }
+    }
+    a-&gt;data[a-&gt;size] = value;
+    a-&gt;size++;
+}
+
+</code></pre>
+
+<pre><code class="language-c">#include &quot;array.h&quot;
+
+struct X
+{
+    int i;
+};
+
+DECLARE_ARRAY(X);
+
+void F(struct Array(X)* a)
+{
+    struct X* p = malloc(sizeof * p);
+    p-&gt;i = 1;
+    array_push(a, p);    
+}
+int main()
+{
+    struct Array(X) a = {0};
+    struct X* p = malloc(sizeof * p);
+    p-&gt;i = 1;
+    array_push(&amp;a, p);
+    F(&amp;a);
+}
+
+
+
+
+</code></pre>
+
+<pre><code class="language-cpp">
+#include &lt;stdlib.h&gt;
+
+struct Item
+{
+    int i;
+    struct Item* /*@auto*/ pNext;
+};
+#define ITEM_INIT (struct Item){0}
+
+void Item_Delete(struct Item* pItem) /*@default*/
+{
+    if (pItem)
+    {
+        Item_Delete(pItem-&gt;pNext);
+        free((void*)pItem);
+    }
+}
+
+#define DECLARE_LIST(T) struct list_##T { struct T * pHead, *pTail; };
+
+#define ListOf(T) list_##T
+
+DECLARE_LIST(Item)
+
+
+
+#define list_push(pItems, pItem)\
+    if ((pItems)-&gt;pHead == 0)\
+    {\
+        (pItems)-&gt;pHead = pItem;\
+    }\
+    else\
+    {\
+        (pItems)-&gt;pTail-&gt;pNext = pItem;\
+    }\
+    (pItems)-&gt;pTail = pItem
+
+
+#define list_destroy(list, F)\
+  while ((list)-&gt;pHead) {\
+     void* p = (list)-&gt;pHead-&gt;pNext;\
+     (F)((list)-&gt;pHead);\
+     (list)-&gt;pHead = p;\
+  }\
+  (list)-&gt;pTail = 0
+
+#define new(p)  malloc(sizeof * (p)); if (p) (*(p)) =
+
+
+int main()
+{
+    struct ListOf(Item) list = { 0 };
+    struct Item* pItem = new(pItem) ITEM_INIT;
+
+    list_push(&amp;list, pItem);
+    
+    struct Item* pItem2 = malloc(sizeof * pItem);
+    *pItem2 = (struct Item){ 0 };
+    list_push(&amp;list, pItem2);
+
+    list_destroy(&amp;list, free);
+
+   
+}
+
+</code></pre>
+</body></html>

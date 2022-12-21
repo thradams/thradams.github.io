@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Assertions in compile time</h2>
+
+<p>See:
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1720.html">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1720.html</a> </p>
+
+<p>And:</p>
+
+<p><a href="http://www.boost.org/doc/libs/1_37_0/doc/html/boost_staticassert.html">http://www.boost.org/doc/libs/1_37_0/doc/html/boost_staticassert.html</a></p>
+
+<p>For simple cases we can use today:</p>
+
+<pre><code class="language-cpp">#include &lt;cassert&gt;
+namespace private_assertion_namespace
+{
+    template&lt;bool assertion&gt; struct assertion_class;
+    template&lt;&gt; struct assertion_class&lt;true&gt;
+    {
+        static const bool value = true;
+    };
+}
+
+#define static_assert(x)  assert(private_assertion_namespace::assertion_class&lt;(x)&gt;::value);
+
+</code></pre>
+</body></html>

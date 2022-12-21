@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p><a href="tklgen.md">TKLGEN HOME</a></p>
+
+<p>Header:
+<strong>&quot;StringStream.h&quot;</strong></p>
+
+<pre><code class="language-cpp">
+#pragma once
+
+struct StringStream
+{
+  const wchar_t* m_pCharacteres;
+  const wchar_t* m_pCurrentChar;
+  size_t         m_CurrentLine;
+  size_t         m_CurrentCol;
+  bool           m_HasPutBack;
+  wchar_t        m_PutBackCharacter;
+  bool           m_EofSent;
+
+  bool NextCharCore(wchar_t&amp; ch)
+  {
+    if (m_HasPutBack)
+    {
+      ch = m_PutBackCharacter;
+      m_HasPutBack = false;
+      m_PutBackCharacter = 0;
+      return true;
+    }
+
+    if (m_EofSent)
+      return false;
+
+    ch = *m_pCurrentChar++;
+
+    if (ch == L&#39;\0&#39;)
+    {
+      ch = &#39;\0&#39;;
+      m_EofSent = true;
+    }
+
+    return true;
+  }
+
+public:
+
+  StringStream(const wchar_t* psz)
+    : m_pCharacteres(psz)
+    , m_CurrentLine(1)
+    , m_CurrentCol(1)
+    , m_HasPutBack(false)
+    , m_PutBackCharacter(L&#39;\0&#39;)
+    , m_EofSent(false)
+  {
+    m_pCurrentChar = m_pCharacteres;
+  }
+
+  void PutBack(wchar_t ch)
+  {
+    assert(m_HasPutBack == false);
+
+    if (ch == L&#39;\n&#39;)
+    {
+      if (m_CurrentLine &gt; 1)
+      {
+        m_CurrentLine--;
+      }
+    }
+    else
+    {
+      if (m_CurrentCol &gt; 1)
+      {
+        m_CurrentCol--;
+      }
+    }
+
+    m_PutBackCharacter = ch;
+    m_HasPutBack = true;
+  }
+
+  bool NextChar(wchar_t&amp; ch)
+  {
+    bool b = NextCharCore(ch);
+
+    if (b &amp;&amp; ch == L&#39;\n&#39;)
+    {
+      m_CurrentLine++;
+      m_CurrentCol = 1;
+    }
+    else
+    {
+      m_CurrentCol++;
+    }
+
+    return b;
+  }
+
+  size_t GetLine() const
+  {
+    return m_CurrentLine;
+  }
+
+  size_t GetCol() const
+  {
+    return m_CurrentCol;
+  }
+};
+
+</code></pre>
+</body></html>

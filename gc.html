@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">gc - Simple class to detect memory leaks</h2>
+
+<p>24 December 2004</p>
+
+<p>Use this small class to detected memory leaks in your application. To use it just derive your class from the gc class. If any object is still alive in the end of your application, the method OnMemoryLeak will be called.</p>
+
+<p>Generally I use an assert(false) to customize the OnMemoryLeak method.</p>
+
+<pre><code class="language-cpp">
+#ifndef __GC_H__
+#define __GC_H__
+
+#ifdef _DEBUG
+
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;functional&gt;
+#include &lt;typeinfo&gt;
+
+class gc
+{
+    struct gcList : public std::vector&lt;gc*&gt;
+    {
+        ~gcList()
+        {
+            std::for_each(begin(), end(), std::mem_fun(&amp;OnMemoryLeak));
+        }
+    };
+
+    static gcList&amp; GCList()
+    {
+        static gcList vec;
+        return vec;
+    }
+
+  void OnMemoryLeak(void)
+  {
+     const char *leak_in = typeid(*this).name();
+     //do something here :
+  }
+
+protected:
+  gc()
+  {
+    GCList().push_back(this);
+  }
+
+  virtual ~gc() {
+      std::vector&lt;gc*&gt;::iterator it = std::find(GCList().begin(), GCList().end(), this);
+      if (it != GCList().end())
+         GCList().erase(it);
+  }
+};
+
+#else
+
+// it does nothing in releas
+class gc {};
+
+#endif
+
+
+#endif //__GC_H_
+</code></pre>
+</body></html>

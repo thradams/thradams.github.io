@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Permutations</h1>
+
+<p>February 2020</p>
+
+<p>Given a string (for instance &quot;abcd&quot;) and a group size (for instance 2) we generate all combinations.</p>
+
+<pre><code>ab
+ac
+ad
+ba
+bc
+bd
+ca
+cb
+cd
+da
+db
+dc
+</code></pre>
+
+<p>Because the order matters we have for instance ab and also ba.</p>
+
+<p>The number of items generate is:
+```</p>
+
+<h2 id="toc_1"> N!</h2>
+
+<p>(G-1)!</p>
+
+<p>or </p>
+
+<p>N * (N-1) * (N-2) ...</p>
+
+<p>4*3 = 12</p>
+
+<p>4!
+ ----- = 12
+ (2-1)</p>
+
+<pre><code>
+
+
+```cpp
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+_Bool NotUsed(int used[], int s, int index)
+{
+  for (int i = 0; i &lt; s; i++)
+  {
+    if (used[i] == index)
+      return 0;
+  }
+  return 1;
+}
+
+void f2(const char* s, int indexesUsed[], int usedCount, int count, int groupSize)
+{
+  if (usedCount == groupSize)
+  {
+    for (int i = 0; i &lt; usedCount; i++)
+    {
+      printf(&quot;%c&quot;, s[indexesUsed[i]]);
+    }
+    printf(&quot;\n&quot;);
+    return;
+  }
+  for (int i = 0; i &lt; count; i++)
+  {
+    if (NotUsed(indexesUsed, usedCount, i))
+    {
+      indexesUsed[usedCount] = i; //insert on the set of used indexes
+      f2(s, indexesUsed, usedCount + 1, count, groupSize);
+    }
+  }
+}
+
+int NumCombinations(int size, int groupSize)
+{
+  int result = 1;
+  for (int i = 0; i &lt; groupSize; i++)
+  {
+    result = result * (size - i);
+  }
+  return result;
+}
+
+
+int main()
+{
+  int used[8] = {-1};
+  f2(&quot;abcd&quot;, used, 0, sizeof(&quot;abcd&quot;) - 1, 2);
+}
+
+</code></pre>
+
+<p>Bit set</p>
+
+<pre><code class="language-cpp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+
+void f2(const char* s,
+        int indexesUsed[],
+        int usedSet, 
+        int usedCount, 
+        int count, 
+        int groupSize)
+{
+    if (usedCount == groupSize)
+    {
+        for (int i = 0; i &lt; usedCount; i++)
+        {
+            printf(&quot;%c&quot;, s[indexesUsed[i]]);
+        }
+        printf(&quot;\n&quot;);
+        return;
+    }
+    for (int i = 0; i &lt; count; i++)
+    {
+        if (!((usedSet &amp; (1 &lt;&lt; i)) != 0))
+        {
+            usedSet = usedSet | (1 &lt;&lt; i) ;
+            indexesUsed[usedCount] = i;
+            f2(s, indexesUsed, usedSet, usedCount + 1, count, groupSize);
+            usedSet &amp;= ~(1 &lt;&lt; i);
+        }
+    }
+}
+
+int NumCombinations(int size, int groupSize)
+{
+    int result = 1;
+    for (int i = 0; i &lt; groupSize; i++)
+    {
+        result = result * (size - i);
+    }
+    return result;
+}
+
+
+int main()````
+{
+    int used[32] = { -1 };
+    int usedSet = 0;
+    f2(&quot;abcd&quot;, used, usedSet,0 , sizeof(&quot;abcd&quot;) - 1, 4);
+ }
+
+</code></pre>
+
+<p>If the ordern does not matter:
+From this site:
+<a href="https://www.geeksforgeeks.org/print-all-possible-combinations-of-r-elements-in-a-given-array-of-size-n/">https://www.geeksforgeeks.org/print-all-possible-combinations-of-r-elements-in-a-given-array-of-size-n/</a></p>
+
+<pre><code class="language-cpp">// Program to print all combination of size r in an array of size n 
+#include &lt;stdio.h&gt; 
+void combinationUtil(int arr[], int data[], int start, int end,  
+                     int index, int r); 
+  
+// The main function that prints all combinations of size r 
+// in arr[] of size n. This function mainly uses combinationUtil() 
+void printCombination(int arr[], int n, int r) 
+{ 
+    // A temporary array to store all combination one by one 
+    int data[r]; 
+  
+    // Print all combination using temprary array &#39;data[]&#39; 
+    combinationUtil(arr, data, 0, n-1, 0, r); 
+} 
+  
+/* arr[]  ---&gt; Input Array 
+   data[] ---&gt; Temporary array to store current combination 
+   start &amp; end ---&gt; Staring and Ending indexes in arr[] 
+   index  ---&gt; Current index in data[] 
+   r ---&gt; Size of a combination to be printed */
+void combinationUtil(int arr[], int data[], int start, int end, 
+                     int index, int r) 
+{ 
+    // Current combination is ready to be printed, print it 
+    if (index == r) 
+    { 
+        for (int j=0; j&lt;r; j++) 
+            printf(&quot;%d &quot;, data[j]); 
+        printf(&quot;\n&quot;); 
+        return; 
+    } 
+  
+    // replace index with all possible elements. The condition 
+    // &quot;end-i+1 &gt;= r-index&quot; makes sure that including one element 
+    // at index will make a combination with remaining elements 
+    // at remaining positions 
+    for (int i=start; i&lt;=end &amp;&amp; end-i+1 &gt;= r-index; i++) 
+    { 
+        data[index] = arr[i]; 
+        combinationUtil(arr, data, i+1, end, index+1, r); 
+    } 
+} 
+  
+// Driver program to test above functions 
+int main() 
+{ 
+    int arr[] = {1, 2, 3, 4, 5}; 
+    int r = 3; 
+    int n = sizeof(arr)/sizeof(arr[0]); 
+    printCombination(arr, n, r); 
+} 
+</code></pre>
+</body></html>

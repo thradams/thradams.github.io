@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Polymorphism without virtual funcions</h2>
+
+<p><strong>type_ptr</strong> is a type that can be used to hold objects in a container for instance, and can be used to select function in runtime.</p>
+
+<p>Sample</p>
+
+<pre><code class="language-cpp">struct Box
+{
+  ~Box()
+  {
+    std::cout &lt;&lt; &quot;~box&quot; &lt;&lt; std::endl;
+  }
+};
+
+struct Circle
+{
+  ~Circle()
+  {
+    std::cout &lt;&lt; &quot;~circle&quot; &lt;&lt; std::endl;
+  }
+};
+
+void Print(Box&amp; box)
+{
+  std::cout &lt;&lt; &quot;box&quot; &lt;&lt; std::endl;
+}
+
+void Print(Circle&amp; circle)
+{
+  std::cout &lt;&lt; &quot;circle&quot; &lt;&lt; std::endl;
+}
+
+struct F
+{
+  template&lt;class T&gt; static void Call(T&amp; r) { Print(r); }
+};
+
+void Test1()
+{
+  std::vector&lt;type_ptr&gt; v;
+
+  v.emplace_back(new Box());
+  v.emplace_back(new Circle());
+
+  //Option 1 
+  for (auto &amp; item : v)
+  {
+    if (auto p = item.is_ptr&lt;Box&gt;())
+    {
+      Print(*p);
+    }
+    else if (auto p = item.is_ptr&lt;Circle&gt;())
+    {
+      Print(*p);
+    }
+  }
+
+  //Option 2 
+  for (auto &amp; item : v)
+  {
+    switch (is_index&lt;Box, Circle&gt;(item))
+    {
+    case 1:
+      Print(item.ref&lt;Box&gt;());
+      break;
+    case 2:
+      Print(item.ref&lt;Circle&gt;());
+      break;
+    default:
+      break;
+    }
+  }
+
+  //Option 3  
+  for (auto &amp; item : v)
+  {
+    Select&lt;F, Box, Circle&gt;(item);
+  }
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+  Test1();
+  return 0;
+}
+
+
+</code></pre>
+
+<p>type_ptr.h
+```cpp</p>
+
+<h1 id="toc_1">include &quot;stdafx.h&quot;</h1>
+
+<h1 id="toc_2">include <iostream></h1>
+
+<h1 id="toc_3">include <vector></h1>
+
+<h1 id="toc_4">include <memory></h1>
+
+<h1 id="toc_5">include <string></h1>
+
+<h1 id="toc_6">include <cassert></h1>
+
+<p>class type_ptr
+{
+  template<class T>
+  static void Delete(void* p)
+  {
+    delete (T*)p;
+  }</p>
+
+<p>protected:</p>
+
+<p>void(<em>DeleteF)(void</em>);
+  void * ptr;
+  const type_info* tinfo;</p>
+
+<p>public:</p>
+
+<p>type<em>ptr(type</em>ptr&amp;&amp; other)
+  {
+    ptr = other.ptr;
+    tinfo = other.tinfo;
+    DeleteF = other.DeleteF;</p>
+
+<pre><code>other.ptr = nullptr;
+other.tinfo = nullptr;
+other.DeleteF = nullptr;
+</code></pre>
+
+<p>}</p>
+
+<p>template<class T>
+  type_ptr(T* p)
+  {
+    ptr = p;
+    tinfo = &amp;typeid(*p);
+    DeleteF = &amp;Delete<T>;
+  }</p>
+
+<p>type<em>ptr()
+  {
+    ptr = nullptr;
+    type</em>info* tinfo = nullptr;
+  }</p>
+
+<p>~type_ptr()
+  {
+    if (DeleteF != nullptr)
+    {
+      DeleteF(ptr);
+      ptr = nullptr;
+    }
+  }</p>
+
+<p>template<class T>
+  bool is() const
+  {
+    return (*tinfo == typeid(T));
+  }</p>
+
+<p>template<class T>
+  T* is_ptr() const
+  {
+    if (is<T>())
+    {
+      return (T*)ptr;
+    }
+    return nullptr;
+  }</p>
+
+<p>template<class T>
+  T&amp; ref()
+  {
+    assert(is_ptr<T>() != nullptr);
+    return <em>((T</em>)ptr);
+  }
+};</p>
+
+<p>template<int N>
+int is<em>index</em>imp(const type_ptr&amp;)
+{
+  return -1;
+}</p>
+
+<p>template<int N, class T1, typename... TN>
+int is<em>index</em>imp(const type_ptr&amp; tp)
+{
+  if (tp.is<T1>())
+  {
+    return N;
+  }</p>
+
+<p>return is<em>index</em>imp<N + 1, TN...>(tp);
+}</p>
+
+<p>template<typename... TN>
+int is<em>index(const type</em>ptr&amp; tp)
+{
+  return is<em>index</em>imp<1, TN...>(tp);
+}</p>
+
+<p>template<class F>
+void call<em>imp(const type</em>ptr&amp;)
+{
+}</p>
+
+<p>template<class F, class T1, typename... TN>
+void call<em>imp(const type</em>ptr&amp; tp)
+{
+  if (auto p = tp.is_ptr<T1>())
+  {
+    return F::Call(*p);
+  }</p>
+
+<p>return call_imp<F, TN...>(tp);
+}</p>
+
+<p>template<class F, typename... TN>
+void Select(const type<em>ptr&amp; tp)
+{
+  return call</em>imp<F, TN...>(tp);
+}</p>
+
+<pre><code>
+
+</code></pre>
+</body></html>

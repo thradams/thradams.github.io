@@ -7,6 +7,7 @@ Everything you need to know about exceptions in the class constructor is:
 Everything else is done automatically for you.
 
 So:
+
 ```cpp
 
 class X

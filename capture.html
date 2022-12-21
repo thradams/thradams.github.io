@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Capture</h1>
+
+<p>We can place objects into some memory and remove then sequentially.</p>
+
+<p>All objects are aligned in the maximum alignment type max<em>align</em>t.</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stddef.h&gt;
+#include &lt;stdio.h&gt;
+
+typedef long double max_align_t;
+
+void* place(max_align_t** pmem, unsigned nbytes)
+{
+    unsigned nunits = nbytes / sizeof(*pmem[0]);
+    if (nbytes % sizeof(*pmem[0]) != 0)
+        nunits++;
+
+    void* p = (void*)*pmem;
+    *pmem += nunits;
+    return p;
+}
+
+#define capture(V) max_align_t* pCapture = V
+#define set(T) *((T*)place(&amp;pCapture, 4, sizeof(T)))
+#define var(T, name) T name = *((T*)place(&amp;pCapture, sizeof(T)));
+
+
+void F(max_align_t* data)
+{
+    capture(data);
+    var(int, i);
+    var(double, d);
+    var(char, c);
+   
+    printf(&quot;%d &quot;, i);
+    printf(&quot;%f &quot;, d);
+    printf(&quot;%c &quot;, c);
+}
+
+
+int main(void) {
+
+    max_align_t data[4];
+
+    capture(data);
+    set(int) = 1;
+    set(double) = 2.3;
+    set(char) = &#39;a&#39;;
+
+    F(data);
+
+}
+
+</code></pre>
+</body></html>

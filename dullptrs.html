@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Normal pointers and references to shared objects.</p>
+
+<p>Sample</p>
+
+<pre><code class="language-cpp">   
+   //Creates a new shared object (ref counted)
+   X* pShared = new_shared_object&lt;X&gt;();
+
+   //Shares the object with pShared2
+   X* pShared2 = share_object(pShared);
+
+   //Release the pShared reference
+   release_shared_object(pShared);
+   pShared = nullptr;
+
+   //Release the pShared2 reference
+   release_shared_object(pShared2);
+   pShared2 = nullptr;
+
+//References:
+
+   X&amp; sharedRef = *new_shared_object&lt;X&gt;();
+   X&amp; sharedRef2 = share_object(sharedRef);
+
+   //(destructor for instance)
+   release_shared_object(sharedRef);
+   release_shared_object(sharedRef2);
+</code></pre>
+
+<hr>
+
+<p>Source Code: (scratch)</p>
+
+<pre><code class="language-cpp">
+template&lt;class T&gt;
+struct AtomicHolder : public T
+{
+  std::atomic&lt;unsigned int&gt; counter;
+  
+  AtomicHolder()
+  { 
+    counter = 1; 
+  }
+
+  template&lt;class A1, class A2&gt;
+  AtomicHolder(A1&amp;&amp; a1, A2&amp;&amp; a2) : T(std::forward&lt;A1&gt;(a1), std::forward&lt;A2&gt;(a2)) 
+  { 
+    counter = 1; 
+  }
+};
+
+
+template&lt;class T&gt;
+int is_shared_object(T *p)
+{
+  if (!std::is_polymorphic&lt;T&gt;::value)
+  {      
+    //we can&#39;t check using this method
+    return -1;
+  }
+  return  typeid(*p) == typeid(AtomicHolder&lt;T&gt;) ? 1 : 0;
+}
+
+template&lt;class T&gt;
+T* share_object(T* p)
+{  
+  assert(is_shared_object(p) != 0);
+  AtomicHolder&lt;T&gt; *p2 = static_cast&lt;AtomicHolder&lt;T&gt;*&gt;(p);
+  p2-&gt;counter++;
+  return p;
+}
+
+
+template&lt;class T&gt;
+T&amp; share_object(T&amp; r)
+{    
+  return *share_object(&amp;r);
+}
+
+
+template&lt;class T&gt;
+void release_shared_object(T* p)
+{
+   if (p == nullptr)
+     return;
+
+  assert(is_shared_object(p) != 0);
+
+  AtomicHolder&lt;T&gt; *p2 = static_cast&lt;AtomicHolder&lt;T&gt;*&gt;(p);
+  if (p2-&gt;counter.fetch_add(-1) == 1)
+    delete p2;
+}
+
+template&lt;class T&gt;
+void release_shared_object(T&amp; r)
+{
+  release_shared_object(&amp;r);
+}
+
+
+template &lt;class T&gt;
+T* new_shared_object() //0..N arguments
+{
+  T* p0 = new AtomicHolder&lt;T&gt;();
+
+  //I don&#39;t want to use dynamic_cast
+  assert(static_cast&lt;AtomicHolder&lt;T&gt;*&gt;(static_cast&lt;T*&gt;(p0)) == p0);
+
+  return p0;
+}
+
+template &lt;class T, class A1, class A2&gt;
+AtomicHolder&lt;T&gt;* new_shared_object(A1&amp;&amp; a1, A2&amp;&amp; a2) //0..N arguments
+{
+  AtomicHolder&lt;T&gt;* p0 = new AtomicHolder&lt;T&gt;(std::forward&lt;A1&gt;(a1), std::forward&lt;A2&gt;(a2));
+
+  //I don&#39;t want to use dynamic_cast
+  assert(static_cast&lt;AtomicHolder&lt;T&gt;*&gt;(static_cast&lt;T*&gt;(p0)) == p0);
+
+  return p0;
+}
+
+
+</code></pre>
+
+<p>Sample</p>
+
+<pre><code class="language-cpp">using namespace std;
+
+
+struct X
+{
+  X()
+  {
+    std::cout &lt;&lt; &quot;X&quot; &lt;&lt; std::endl;
+  }
+  virtual ~X()
+  {
+    std::cout &lt;&lt; &quot;~X&quot; &lt;&lt; std::endl;
+  }
+};
+
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+  //X *pNotShared = new X;
+  //X* pSharedWrong = share_object(pNotShared); //error
+
+
+  X* pShared = new_shared_object&lt;X&gt;();
+  X* pShared2 = share_object(pShared);
+
+  release_shared_object(pShared);
+  release_shared_object(pShared2);
+
+  X&amp; sharedRef = *new_shared_object&lt;X&gt;();
+  X&amp; sharedRef2 = share_object(sharedRef);
+
+  release_shared_object(sharedRef);
+  release_shared_object(sharedRef2);
+
+
+  return 0;
+}
+
+
+</code></pre>
+
+<hr>
+
+<p>Sample2:</p>
+
+<pre><code class="language-cpp">struct Point
+{
+  int m_x;
+  int m_y;
+
+  Point(int x, int y) : m_x(x), m_y(y)
+  {
+    std::cout &lt;&lt; &quot;Point(&quot; &lt;&lt;m_x &lt;&lt; &quot;, &quot; &lt;&lt; m_y &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+  }
+  
+  ~Point()
+  {
+    std::cout &lt;&lt; &quot;~Point(&quot; &lt;&lt;m_x &lt;&lt; &quot;, &quot; &lt;&lt; m_y &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+  }
+};
+
+struct Line
+{
+  Point&amp; m_start;
+  Point&amp; m_end;
+  Line(Point&amp; start, Point&amp; end) : 
+     m_start(share_object(start)), 
+     m_end(share_object(end))
+  {
+    std::cout &lt;&lt; &quot;Line&quot; &lt;&lt; std::endl;
+  }
+  ~Line()
+  {
+    release_shared_object(m_start);
+    release_shared_object(m_end);
+    std::cout &lt;&lt; &quot;~Line&quot; &lt;&lt; std::endl;
+  }
+};
+
+template&lt;class T&gt;
+struct SmartPtr
+{
+  T *m_p;
+  SmartPtr(AtomicHolder&lt;T&gt; *p)
+  {
+    m_p = p;
+  }
+  ~SmartPtr() 
+  {
+    release_shared_object(m_p);
+  }
+  operator T*()
+  {
+    return m_p;
+  }
+  
+  T * get()
+  {
+    return m_p;
+  }
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+ {
+    Line *pline = nullptr;
+
+    {
+      SmartPtr&lt;Point&gt; pt1(new_shared_object&lt;Point&gt;(0,0));
+      SmartPtr&lt;Point&gt; pt2(new_shared_object&lt;Point&gt;(1,1));
+      pline = new Line(*pt1.get(), *pt2.get());
+    }
+
+    Line *pline2 = nullptr;
+    {
+      SmartPtr&lt;Point&gt; pt3(new_shared_object&lt;Point&gt;(1,0));
+      pline2 = new Line(pline-&gt;m_end, *pt3.get());
+    }
+
+    delete pline;
+    delete pline2;
+  }  
+
+  return 0;
+}
+
+</code></pre>
+
+<p>Output:</p>
+
+<pre><code>Point(0, 0)
+Point(1, 1)
+Line
+Point(1, 0)
+Line
+~Point(0, 0)
+~Line
+~Point(1, 1)
+~Point(1, 0)
+~Line
+</code></pre>
+
+<p>See also:
+<a href="shared_ptr">http://www.thradams.com/codeblog/shared_ptr.htm</a></p>
+</body></html>

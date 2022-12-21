@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Functions to print the equivalent uniform initialization expression of a value.</p>
+
+<p>Implemented so far for these types:</p>
+
+<ul>
+<li>vector</li>
+<li>set</li>
+<li>map</li>
+<li>basic_string</li>
+<li>integral types</li>
+<li>bool</li>
+</ul>
+
+<pre><code class="language-cpp">#include &lt;vector&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;set&gt;
+#include &lt;map&gt;
+#include &lt;type_traits&gt;
+
+
+template&lt;class CharType, class CharTraits, class YourType&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os, const YourType&amp; v)
+{
+    static_assert(false, &quot;especialize this function for your type!&quot;);
+}
+
+template&lt;class CharType, class CharTraits, class T&gt;
+typename std::enable_if&lt;std::is_integral&lt;T&gt;::value, void&gt;::type
+PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os, const T&amp; v)
+{
+    os &lt;&lt; v;
+}
+
+char PrintL(char){  return &#39;\0&#39;;}
+char PrintL(wchar_t) { return &#39;L&#39;; }
+
+template&lt;class CharType, class CharTraits&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;char, CharTraits&gt; &amp; os, const std::basic_string&lt;CharType&gt;&amp; v)
+{
+    os &lt;&lt; PrintL((CharType) 0) &lt;&lt; &#39;&quot;&#39;;
+
+    for (size_t i = 0; i &lt; v.size(); i++)
+    {
+        os &lt;&lt; (char) v[i]; //TODO ranges
+    }
+
+    os &lt;&lt; &#39;&quot;&#39;;
+}
+
+template&lt;class CharType, class CharTraits&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;wchar_t, CharTraits&gt; &amp; os, const std::basic_string&lt;CharType&gt;&amp; v)
+{
+    os &lt;&lt; PrintL((CharType) 0) &lt;&lt; &#39;&quot;&#39;;
+
+    for (size_t i = 0; i &lt; v.size(); i++)
+    {
+        os &lt;&lt; (wchar_t) v[i]; //TODO ranges
+    }
+
+    os &lt;&lt; L&#39;&quot;&#39;;
+}
+
+template&lt;class CharTraits&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;char, CharTraits&gt; &amp; os, bool v)
+{
+    os &lt;&lt; (v ? &quot;true&quot; : &quot;false&quot;);
+}
+
+template&lt;class CharTraits&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;wchar_t, CharTraits&gt; &amp; os, bool v)
+{
+    os &lt;&lt; (v ? L&quot;true&quot; : L&quot;false&quot;);
+}
+
+template&lt;class CharType, class CharTraits, class Iterator&gt;
+void PrintSequence(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os,
+                   Iterator beginIt,
+                   Iterator endIt)
+{
+    typedef typename Iterator::value_type T;
+    os &lt;&lt; (CharType)&#39;{&#39;;
+    auto it = beginIt;
+
+    if (it != endIt)
+    {
+        PrintUniformInitialization(os, *it);
+        ++it;
+    }
+
+    for (; it != endIt; it++)
+    {
+        os &lt;&lt; (CharType) &#39;,&#39; &lt;&lt; (CharType) &#39; &#39;;
+        PrintUniformInitialization(os, *it);
+    }
+
+    os &lt;&lt; (CharType)&#39;}&#39;;
+}
+
+template&lt;class CharType, class CharTraits, class T, class TAllocator&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os,
+                                const std::vector&lt;T, TAllocator&gt;&amp; v)
+{
+    PrintSequence(os, v.cbegin(), v.cend());
+}
+
+
+template&lt;class CharType, class CharTraits, class T, class TComp, class TAllocator&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os,
+                                const std::set&lt;T, TComp, TAllocator&gt;&amp; v)
+{
+    PrintSequence(os, v.cbegin(), v.cend());
+}
+
+template &lt; class CharType,
+         class CharTraits,
+         class _Kty,
+         class _Ty,
+         class _Pr,
+         class _Alloc &gt;
+void PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os,
+                                const std::map&lt;_Kty, _Ty, _Pr, _Alloc&gt;&amp; m)
+{
+    os &lt;&lt; (CharType)&#39;{&#39;;
+    auto it = m.cbegin();
+
+    if (it != m.cend())
+    {
+        os &lt;&lt; (CharType)&#39;{&#39;;
+        PrintUniformInitialization(os, it-&gt;first);
+        os &lt;&lt; (CharType)&#39;,&#39; &lt;&lt; (CharType)&#39; &#39;;
+        PrintUniformInitialization(os, it-&gt;second);
+        os &lt;&lt; (CharType)&#39;}&#39;;
+        ++it;
+    }
+
+    for (; it != m.cend(); it++)
+    {
+        os &lt;&lt; (CharType)&#39;,&#39; &lt;&lt; (CharType)&#39; &#39;;
+        os &lt;&lt; (CharType)&#39;{&#39;;
+        PrintUniformInitialization(os, it-&gt;first);
+        os &lt;&lt; (CharType)&#39;,&#39; &lt;&lt; (CharType)&#39; &#39;;
+        PrintUniformInitialization(os, it-&gt;second);
+        os &lt;&lt; (CharType)&#39;}&#39;;
+    }
+
+    os &lt;&lt; (CharType)&#39;}&#39;;
+}
+
+//Printing the type name
+
+template&lt;class T&gt;
+void PrintTypeName(std::ostream&amp; , T*)
+{
+  static_assert(false, &quot;overload for your type&quot;); 
+}
+
+void PrintTypeName(std::ostream&amp; os, std::wstring*) {  os &lt;&lt; &quot;std::wstring&quot;;}
+void PrintTypeName(std::ostream&amp; os, std::string*) {  os &lt;&lt; &quot;std::string&quot;;}
+void PrintTypeName(std::ostream&amp; os, int*) { os &lt;&lt; &quot;int&quot;; }
+void PrintTypeName(std::ostream&amp; os, double*) {  os &lt;&lt; &quot;double&quot;; }
+void PrintTypeName(std::ostream&amp; os, bool*) {  os &lt;&lt; &quot;bool&quot;; }
+void PrintTypeName(std::ostream&amp; os, char*) {  os &lt;&lt; &quot;char&quot;; }
+
+template&lt;class T&gt;
+void PrintTypeName(std::ostream&amp; os, std::vector&lt;T&gt;*) 
+{
+  os &lt;&lt; &quot;std::vector&lt;&quot;;
+  PrintTypeName(os, (T*)nullptr);
+  os &lt;&lt; &quot;&gt;&quot;; 
+}
+
+template&lt;class T&gt;
+void PrintTypeName(std::ostream&amp; os, std::set&lt;T&gt;*) 
+{
+  os &lt;&lt; &quot;std::set&lt;&quot;;
+  PrintTypeName(os, (T*)nullptr);
+  os &lt;&lt; &quot;&gt;&quot;; 
+}
+
+template&lt;class K, class T&gt;
+void PrintTypeName(std::ostream&amp; os, std::map&lt;T, K&gt;*) 
+{
+  os &lt;&lt; &quot;std::map&lt;&quot;;
+  PrintTypeName(os, (K*)nullptr);
+  os &lt;&lt; &quot;, &quot;;
+  PrintTypeName(os, (T*)nullptr);
+  os &lt;&lt; &quot;&gt;&quot;; 
+}
+
+
+</code></pre>
+
+<p>Sample:</p>
+
+<pre><code class="language-cpp">
+struct MyType
+{
+    std::wstring x;
+    bool v;
+};
+
+template&lt;class CharType, class CharTraits&gt;
+void PrintUniformInitialization(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os, const MyType&amp; v)
+{
+    os &lt;&lt; (CharType)&#39;{&#39;;
+    PrintUniformInitialization(os, v.x);
+    os &lt;&lt; (CharType)&#39;,&#39; &lt;&lt; (CharType)&#39; &#39;;
+    PrintUniformInitialization(os, v.v);
+    os &lt;&lt; (CharType)&#39;}&#39;;
+}
+
+void PrintTypeName(std::ostream&amp; os, MyType*) 
+{
+  os &lt;&lt; &quot;MyType&quot;; 
+}
+
+template&lt;class CharType, class CharTraits, class T&gt;
+void PrintUniformInitializationLn(std::basic_ostream&lt;CharType, CharTraits&gt; &amp; os, const T&amp; v)
+{
+    PrintTypeName(os, (T*)nullptr);     
+    os &lt;&lt; std::endl;
+    PrintUniformInitialization(os, v);
+    os &lt;&lt; std::endl;
+    os &lt;&lt; std::endl;
+}
+
+  
+int main()
+{
+    using namespace std;
+    vector&lt;MyType&gt; vx;
+    MyType x;
+    x.v = false;
+    vx.push_back(x);
+    PrintUniformInitializationLn(cout, vx);
+    map&lt;std::wstring, bool&gt; m;
+    m[L&quot;a&quot;] = true;
+    m[L&quot;b&quot;] = false;
+    PrintUniformInitializationLn(cout, m);
+    std::vector&lt;std::vector&lt;int&gt;&gt; v;
+    v.push_back(std::vector&lt;int&gt;(2));
+    v.push_back(std::vector&lt;int&gt;(3));
+    PrintUniformInitializationLn(cout, m);
+    std::set&lt;std::wstring&gt; st;
+    st.insert(L&quot;aa&quot;);
+    st.insert(L&quot;bb&quot;);
+    PrintUniformInitializationLn(cout, st);
+    std::vector&lt;bool&gt; vb;
+    vb.push_back(false);
+    vb.push_back(true);
+    PrintUniformInitializationLn(cout, vb);
+}
+
+</code></pre>
+
+<p>Output:
+```</p>
+
+<p>std::vector<MyType>
+{{L&quot;&quot;, false}}</p>
+
+<p>std::map<bool, std::wstring>
+{{L&quot;a&quot;, true}, {L&quot;b&quot;, false}}</p>
+
+<p>std::map<bool, std::wstring>
+{{L&quot;a&quot;, true}, {L&quot;b&quot;, false}}</p>
+
+<p>std::set<a href="std::wstring">std::wstring</a>
+{L&quot;aa&quot;, L&quot;bb&quot;}</p>
+
+<p>std::vector<bool>
+{false, true}</p>
+
+<pre><code>
+</code></pre>
+</body></html>

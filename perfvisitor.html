@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Performance test std::visitor x switch</h2>
+
+<p>June 2020</p>
+
+<pre><code class="language-cpp">
+
+#define MAXCOUNT 10000000
+
+#ifndef __cplusplus
+
+#include &lt;assert.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;time.h&gt;
+
+struct circle {
+    double radius;
+};
+#define CIRCLE_TAG 1
+
+struct square {
+    double side;
+};
+#define SQUARE_TAG 2
+
+struct rectangle {
+    double width;
+    double height;
+};
+#define RECTANGLE_TAG 3
+
+struct shape {
+    int tag;
+    union {
+        struct circle circle;
+        struct square square;
+        struct rectangle rectangle;
+    };
+};
+
+double shape_area(struct shape* s) {
+    switch (s-&gt;tag) {
+        case CIRCLE_TAG:
+            return 3.14 * s-&gt;circle.radius * s-&gt;circle.radius;
+        case SQUARE_TAG:
+            return s-&gt;square.side * s-&gt;square.side;
+        case RECTANGLE_TAG:
+            return s-&gt;rectangle.width * s-&gt;rectangle.height;
+        default:
+            assert(0);
+            break;
+    }
+    return 0;
+}
+
+int run_test(const char* message, int (*test)(void)) {
+    time_t start = clock();
+    int r = test();
+    printf(&quot;%s %d\n&quot;, message, (int)(clock() - start));
+    return r;
+}
+
+void TestC() {}
+
+int main() {
+    struct shape s[] = {
+        {.tag = CIRCLE_TAG, .circle.radius = 5},
+        {.tag = SQUARE_TAG, .square.side = 2},
+        {.tag = RECTANGLE_TAG, .rectangle.width = 4, .rectangle.height = 5},
+        {.tag = CIRCLE_TAG, .circle.radius = 5},
+        {.tag = SQUARE_TAG, .square.side = 2},
+        {.tag = RECTANGLE_TAG, .rectangle.width = 4, .rectangle.height = 5},
+        {.tag = CIRCLE_TAG, .circle.radius = 5},
+        {.tag = SQUARE_TAG, .square.side = 2},
+        {.tag = RECTANGLE_TAG, .rectangle.width = 4, .rectangle.height = 5} };
+
+    double area = 0;
+    time_t start = clock();
+    for (int j = 0; j &lt; MAXCOUNT; j++) {
+        area = 0;
+        for (int i = 0; i &lt; sizeof(s) / sizeof(s[0]); i++) {
+            area += shape_area(&amp;s[i]);
+        }
+    }
+    printf(&quot;%d\n&quot;, (int)(clock() - start));
+    printf(&quot;%f&quot;, area);
+
+    return 0;
+}
+#else
+
+#include &lt;ctime&gt;
+#include &lt;iostream&gt;
+#include &lt;memory&gt;
+#include &lt;variant&gt;
+#include &lt;vector&gt;
+
+struct circle {
+    circle(double const radius_) : radius(radius_) {}
+    double  radius;
+};
+
+struct square {
+    square(double const side_) : side(side_) {}
+    double  side;
+};
+
+struct rectangle {
+    rectangle(double width_, double height_)
+        : width(width_), height(height_) {}
+    double  width;
+    double  height;
+};
+
+double area(circle const&amp; c) {
+    return 3.14 * c.radius * c.radius;
+}
+double area(square const&amp; s) {
+    return s.side * s.side;
+}
+double area(rectangle const&amp; r) {
+    return r.width * r.height;
+}
+
+using shape = std::variant&lt;circle, square, rectangle&gt;;
+
+int main() {
+    shape shapes[] = { circle(5), square(2), rectangle(4, 5),
+                      circle(5), square(2), rectangle(4, 5),
+                      circle(5), square(2), rectangle(4, 5) };
+
+    double total_area = 0;
+
+    time_t start = clock();
+    for (int j = 0; j &lt; MAXCOUNT; j++) {
+        total_area = 0;
+        for (int i = 0; i &lt; sizeof(shapes) / sizeof(shapes[0]); i++) {
+            std::visit([&amp;](auto const&amp; shape) { total_area += area(shape); },
+                       shapes[i]);
+        }
+    }
+    printf(&quot;time: %d\n\n&quot;, (int)(clock() - start));
+    std::cout &lt;&lt; &quot;Area total: &quot; &lt;&lt; total_area &lt;&lt; std::endl;
+    return 0;
+}
+
+#endif
+
+
+</code></pre>
+</body></html>

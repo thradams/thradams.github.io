@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>===Alternativa ao interface_cast===</p>
+
+<p>(Ver o post anterior sobre o interface-cast.)</p>
+
+<p>Seguindo a motivação original:</p>
+
+<h1 id="toc_0">O objeto não precisa saber como os outros o veem</h1>
+
+<h1 id="toc_1">O polimorfismo pode ser adicionado depois</h1>
+
+<p>Digamos que eu tenha a classe Button:
+{{{cpp
+struct Button {
+  void Draw(Args args) {...}
+  void KeyDown(int key) {...}
+  void MouseDown(int x, int y) {...}
+};
+}}}
+Eu poderia usar esta classe diretamente desta forma:</p>
+
+<p>{{{cpp
+struct Window
+{
+  Button button;<br>
+  void OnPaint()  {  ... button.Draw(args); ... }
+  ...
+}
+}}}
+Agora, digamos que eu queria ver o Button de uma maneira polimórfica como um Control e assim ter uma lista de controles implementando esta interface.
+Eu poderia fazer o Control derivado de &quot;KeyEventReceiver&quot;, &quot;MouseEventReceiver&quot; e &quot;IDraw&quot; ou simplesmente colocar todas as funções dentro de Control sem nenhuma hierarquia extra. Porém eu não quero decidir nada antes de ver os algoritmos e o uso.\
+A alternativa para o interface_cast poderia ser:</p>
+
+<p>{{{cpp
+struct NonPolymorphic {};
+Template<class TInterface = NonPolymorphic>
+struct Button : public TInterface {
+  void Draw(Args args) {...} 
+  void KeyDown(int key) {...}
+  void MouseDown(int x, int y) {...}
+};
+}}}
+Agora, nós temos a classe Button e uma interface. O Button não precisa conhecer nada sobre a TInterface. (1)</p>
+
+<p>Para usar um Button não polimórfico nós poderíamos fazer:
+{{{cpp
+ Button&lt;&gt; button;
+}}}</p>
+
+<p>Para ver o Button como um Control polimórfico nós poderíamos fazer: </p>
+
+<p>Primeiro declarar a interface. (Como queremos ver o Button?) (2)</p>
+
+<p>{{{cpp
+struct Control<br>
+{
+  virtual void Draw(Args args) =0;
+  virtual void KeyDown(int key) =0;
+  virtual void MouseDown(int x, int y) =0;
+ }
+}}}
+Depois passar esta interface para o parâmetro do template, e o uso seria:
+{{{cpp
+vector<Control*> v;
+v.push_back( new Button<Control> );
+}}}
+Basicamente o padrão é deixar em branco a classe Base. A interface é decidida de acordo com o uso. Se o Button for sempre visto de maneira polimórfica é melhor ter um typedef do que ficar vendo o template  o tempo todo.</p>
+</body></html>

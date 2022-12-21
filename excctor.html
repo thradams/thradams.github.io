@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Exceptions in constructors</h2>
+
+<p>Everything you need to know about exceptions in the class constructor is:</p>
+
+<p><strong>If you throw an exception in your constructor, your destructor will never be called.</strong></p>
+
+<p>Everything else is done automatically for you.</p>
+
+<p>So:</p>
+
+<pre><code class="language-cpp">
+class X
+{
+    Object * m_p1;
+    Object * m_p2;
+
+    //don&#39;t do this
+    X()
+    {
+        m_p1 = new Object;
+        m_p2 = new Object; // LineB
+    }
+
+    //do this!
+    X()
+    {
+        std::auto_ptr&lt;Object&gt; sp1(new Object);
+        std::auto_ptr&lt;Object&gt; sp2(new Object);
+        m_p1 = sp1.release();
+        m_p2 = sp2.release();
+    }
+
+    ~X()
+    {
+        delete m_p1;
+        delete m_p2;
+    }
+};
+</code></pre>
+
+<p>Why the first one is wrong?\
+Because if some exception occurs in the &#39;LineB&#39; in the Object constructor or in the new operator the ~X destructor will never be called.
+So we will have a memory leak in m_p1.</p>
+
+<p>Is it a good idea to throw in constructor?
+Yes. Because you will have a simpler class invariant</p>
+</body></html>

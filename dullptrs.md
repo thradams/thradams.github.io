@@ -3,6 +3,7 @@
 Normal pointers and references to shared objects.
 
 Sample
+
 ```cpp
    
    //Creates a new shared object (ref counted)
@@ -127,6 +128,7 @@ AtomicHolder<T>* new_shared_object(A1&& a1, A2&& a2) //0..N arguments
 ```
 
 Sample
+
 ```cpp
 using namespace std;
 
@@ -271,5 +273,6 @@ Line
 ~Point(1, 0)
 ~Line
 ```
+
 See also:
 [http://www.thradams.com/codeblog/shared_ptr.htm](shared_ptr)

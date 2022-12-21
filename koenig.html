@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Using the Koenig lookup - Argument dependent name lookup (ADL)</h1>
+
+<p>1 August 2005</p>
+
+<p>The Koenig lookup or Argument dependent name lookup (ADL), can be used in many situations.</p>
+
+<p>I am going to show one example that I think in quite useful. 
+Imagine one class where you want to declare the operator &lt;&lt; to use with streams. If you are using templates, you should provide the operator &lt;&lt; for each type that you instantiate. 
+Using the ADL this is not necessary, because the declaration of the function can be done inline inside a class type.</p>
+
+<pre><code class="language-cpp">template&lt;class T&gt;
+class X
+{
+    T m_value;
+
+    friend std::ostream &amp; operator &lt;&lt; (std::ostream &amp;os, const X &amp; x)
+    {
+        os &lt;&lt; x.m_value;
+        return os;
+    }
+
+    friend void swap(X &amp;a, X &amp; b)
+    {
+        X temp(b);
+        a = b;
+        b = temp;
+    }
+
+public:
+    X(const T&amp; v) : m_value(v){}
+};
+
+int main()
+{
+    X&lt;double&gt; x(2.3);
+    cout &lt;&lt; x;
+
+    X&lt;double&gt; y(1);
+    swap(x, y);
+
+    std::swap(x,y); // compare with this one.
+}
+</code></pre>
+</body></html>

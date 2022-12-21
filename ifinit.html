@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Macro emulating a new feature for the C language that allow
+if with initialization and  &quot;defer&quot;</p>
+
+<p>One macro also emulating c++ 17 if initializer</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define defer(init, defer) for(init, *ptemp=(void*)1; ptemp; (defer), ptemp=0)
+
+#define _if(init, condition) for(init, *ptemp=(void*)1; (condition) &amp;&amp; ptemp; ptemp=0)
+
+#define __if(init, condition, defer) for(init, *ptemp=(void*)1; ptemp &amp;&amp; (condition)  ; (defer), ptemp=0)
+
+int main()
+{
+
+  _if(char* s = malloc(10), s)
+  {
+  }
+
+  __if(FILE* f = fopen(&quot;file.txt&quot;, &quot;w&quot;), f, fclose(f))
+  {
+    fprintf(f, &quot;hi!&quot;);
+  }
+
+  __if(char* s = malloc(10), s, free(s))
+  {
+  }
+}
+
+
+
+</code></pre>
+
+<p>References:</p>
+
+<ul>
+<li>C++ if - <a href="https://en.cppreference.com/w/cpp/language/if">https://en.cppreference.com/w/cpp/language/if</a></li>
+<li><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html</a> -  proposal P00305r0</li>
+</ul>
+</body></html>

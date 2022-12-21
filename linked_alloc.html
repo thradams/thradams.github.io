@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Linked malloc</h2>
+
+<p>This code implements an allocator that accepts a destructor for each item.</p>
+
+<p>It calls the destructor if not null before free.</p>
+
+<p>Items can be removed using free (double linked list for this) but they also
+will be destroyed together with the allocator.</p>
+
+<p>Removing allocator_free we can use singled linked list.</p>
+
+<p>Sample:
+```cpp</p>
+
+<h1 id="toc_1">include <stdio.h></h1>
+
+<h1 id="toc_2">include <stdlib.h></h1>
+
+<h1 id="toc_3">include <string.h></h1>
+
+<p>union header {
+    struct {
+        union header* prev; /* next block<em>/
+        union header</em> next; /* next block<em>/
+        void (</em>DTOR)(void<em>);     /</em> destructor <em>/
+    } s;
+    long double x;         /</em> force alignment of blocks */
+};</p>
+
+<p>struct allocator
+{
+    union header* head;
+};</p>
+
+<p>void* alloc(struct allocator* allocator, int nbytes, void (<em>F)(void</em>))
+{
+    int nunits = (nbytes + sizeof(union header) - 1) / sizeof(union header) + 1;
+    union header* p = malloc(nunits * sizeof(union header));
+    if (p)
+    {
+        p-&gt;s.prev = NULL;
+        p-&gt;s.next = allocator-&gt;head;
+        p-&gt;s.DTOR = F;
+        if (allocator-&gt;head != NULL)
+        {
+            allocator-&gt;head-&gt;s.prev = p;
+        }
+        allocator-&gt;head = p;</p>
+
+<pre><code>    return (void*)(p + 1);
+}
+return NULL;
+</code></pre>
+
+<p>}
+void allocator_free(struct allocator* allocator, void* p)
+{</p>
+
+<pre><code>union header* del = ((union header*)p) - 1;
+
+/* If node to be deleted is head node */
+if (allocator-&gt;head == del)
+    allocator-&gt;head = del-&gt;s.next;
+
+/* Change next only if node to be
+deleted is NOT the last node */
+if (del-&gt;s.next != NULL)
+    del-&gt;s.next-&gt;s.prev = del-&gt;s.prev;
+
+/* Change prev only if node to be
+deleted is NOT the first node */
+if (del-&gt;s.prev != NULL)
+    del-&gt;s.prev-&gt;s.next = del-&gt;s.next;
+
+
+if (del-&gt;s.DTOR)
+{
+    void* pobj = (void*)((union header*)p + 1);
+    del-&gt;s.DTOR(pobj);
+}
+
+/* Finally, free the memory occupied by del*/
+free(del);
+return;
+</code></pre>
+
+<p>}</p>
+
+<p>void allocator_destroy(struct allocator* allocator)
+{
+    union header* p = allocator-&gt;head;
+    while (p)
+    {
+        union header* next = p-&gt;s.next;
+        if (p-&gt;s.DTOR)
+        {
+            void* pobj = (void<em>)((union header</em>)p + 1);
+            p-&gt;s.DTOR(pobj);
+            free(p);
+        }
+        p = next;
+    }
+}</p>
+
+<p>struct X
+{
+    char* name;
+};</p>
+
+<p>void DestroyX(struct X* p)
+{
+    printf(&quot;DestroyX&quot;);
+}</p>
+
+<p>int main()
+{
+    struct allocator allocator = { 0 };
+    struct X* pX = alloc(&amp;allocator, sizeof(struct X), DestroyX);
+    if (pX)
+    {
+        pX-&gt;name = alloc(&amp;allocator, strlen(&quot;teste&quot;), NULL);
+        strcpy(pX-&gt;name, &quot;teste&quot;);
+        allocator_free(&amp;allocator, pX-&gt;name);
+    }</p>
+
+<pre><code>allocator_free(&amp;allocator, pX);
+
+allocator_destroy(&amp;allocator);
+</code></pre>
+
+<p>}</p>
+
+<pre><code>
+
+Without free.
+
+```cpp
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;.
+#include &lt;string.h&gt;
+
+
+union header {
+    struct {
+        union header* next; /* next block*/
+        void (*DTOR)(void*);     /* destructor */
+    } s;
+    long double x;         /* force alignment of blocks */
+};
+
+struct allocator
+{
+    union header* head;
+};
+
+void* alloc(struct allocator* allocator, int nbytes, void (*F)(void*))
+{
+    int nunits = (nbytes + sizeof(union header) - 1) / sizeof(union header) + 1;
+    union header* p = malloc(nunits * sizeof(union header));
+    if (p)
+    {        
+        p-&gt;s.next = allocator-&gt;head;
+        p-&gt;s.DTOR = F;        
+        allocator-&gt;head = p;
+
+
+        return (void*)(p + 1);
+    }
+    return NULL;
+}
+
+void allocator_destroy(struct allocator* allocator)
+{
+    union header* p = allocator-&gt;head;
+    while (p)
+    {
+        union header* next = p-&gt;s.next;
+        if (p-&gt;s.DTOR)
+        {
+            void* pobj = (void*)((union header*)p + 1);
+            p-&gt;s.DTOR(pobj);
+            free(p);
+        }
+        p = next;
+    }
+}
+
+struct X
+{
+    char* name;
+};
+
+void DestroyX(struct X* p)
+{
+    printf(&quot;DestroyX&quot;);
+}
+
+int main()
+{
+    struct allocator allocator = { 0 };
+    struct X* pX = alloc(&amp;allocator, sizeof(struct X), DestroyX);
+    if (pX)
+    {
+        pX-&gt;name = alloc(&amp;allocator, strlen(&quot;teste&quot;), NULL);
+        strcpy(pX-&gt;name, &quot;teste&quot;);
+        
+    }
+    
+
+    allocator_destroy(&amp;allocator);
+}
+
+
+</code></pre>
+</body></html>

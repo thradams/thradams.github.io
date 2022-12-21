@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">TklGen</h2>
+
+<h3>Introduction</h3>
+
+<p>Tklgen is a scanner and parser generator.</p>
+
+<p>The grammar used by tklgen is LL(1) and the generated parser is C++ top-down recursive-descendent.</p>
+
+<p>The input file is a grammar LL(1) describing productions and terminals.</p>
+
+<h3>Grammar syntax</h3>
+
+<pre><code class="language-tklgen">module tklgen
+{
+  language tklgen
+  {
+    //tokens (terminals)
+    //syntax (productions)
+  }
+}
+</code></pre>
+
+<p>You can comment your grammar using line or block comments in the same way of C++.</p>
+
+<p>The identifier after the <strong>module</strong> keyword is used to name the output files. </p>
+
+<p>The identifer after the <strong>language</strong> keyword is used as C++ namespaces to avoid name conflits.</p>
+
+<p>Inside the language there are token declarations (terminals), and syntax declarations (productions).  </p>
+
+<p>The <strong>token</strong> declaration is used to tell all the terminal symbols.</p>
+
+<p>Sample:
+<code>tklgen
+  token Integer  = (&#39;0&#39;..&#39;9&#39;)+;
+</code></p>
+
+<p>Tokens operators</p>
+
+<pre><code> ?         : Optional
+ +         : One or more
+ *         : Zero or more
+ |         : Or operator
+ &#39;a&#39;...&#39;z&#39; : Range
+ &quot;string&quot;  : Sequence of characteres
+ &#39;c&#39;       : One characteres
+
+ Escape
+ &#39;\0&#39; &#39;\t&#39; &#39;\b&#39; &#39;\f&#39; &#39;\n&#39; &#39;\t&#39;
+
+ Unicode
+ &quot;\u0000&quot;
+ &#39;\u0000&#39;
+</code></pre>
+
+<p>Tklgen don&#39;t suport negation. &quot;Any char except this one&quot;
+For this task I use this script [[excludechar.html|exclude char]]</p>
+
+<p>The <strong>interleave</strong> is an especial token that is ignored by the scanner. </p>
+
+<p>Sample:
+<code>tklgen
+  interleave Blanks = (&#39; &#39; | &#39;\n&#39; | &#39;\r&#39;)+;
+</code></p>
+
+<p>The <strong>syntax</strong> declaration declares the production. The &quot;Main&quot; production is obrigatory.</p>
+
+<p>Sample:
+<code>tklgen
+  syntax Main = A;
+  syntax A = Integer | empty;
+</code></p>
+
+<p>The <strong>empty</strong> keyword declares an empty production.\
+The or &quot;|&quot; symbol is used to declare multiple productions.</p>
+
+<p>A complete sample is the tklgen grammar used to describe itself:</p>
+
+<p><a href="tklgengrammar2.md">TKLGEN Grammar</a></p>
+
+<h3>Parser components:</h3>
+
+<p>Generated files:</p>
+
+<ul>
+<li>Parser (header and cpp)</li>
+<li>DFA  (used by tokenizer)</li>
+</ul>
+
+<p>Existing files:</p>
+
+<ul>
+<li>InputStream: [[FileStream2.htm|FileStream]], [[StringStream2.htm|StringStream]]</li>
+<li>Tokenizer: [[Tokenizertklgen2.htm|Tokenizer]]</li>
+<li>StringStream + Tokenizer togeter [[StringStreamTokenizer.htm|StringStreamTokenizer]]</li>
+</ul>
+
+<h2 id="toc_1">Calculator</h2>
+
+<p><a href="expressionsample2.md">Expression Sample</a></p>
+
+<p><a href="jsonsample.md">JSON grammar sample</a></p>
+
+<h3>References</h3>
+
+<ul>
+<li>&quot;Compilers: Principles, Techniques, and Tools&quot;, Alfred V. Aho , Ravi Sethi , Jeffrey D. Ullman</li>
+</ul>
+
+<h3>Download</h3>
+
+<p>Requires a serial key. Please send me an e-mail.</p>
+
+<p>Download : [[2013<em>09</em>27<em>tklgen.zip|2013</em>09<em>27</em>tklgen.zip]]</p>
+</body></html>

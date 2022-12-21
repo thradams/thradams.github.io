@@ -13,6 +13,7 @@ Here is the javascript generator. Today it works only for int and const char*.
 
 
 For this struct...
+
 ```cpp
   struct obj
   { 
@@ -25,6 +26,7 @@ For this struct...
 The generated especial functions would be
 
 Header
+
 ```cpp
 /*forward declarations*/
 
@@ -48,6 +50,7 @@ void obj_delete(struct obj* obj);
 ```
 
 Source
+
 ```cpp
 /*implementation*/
 

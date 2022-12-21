@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Some ideas about dot operator overloding.</p>
+
+<h3>Sample 1:</h3>
+
+<pre><code class="language-cpp">class C { 
+public:
+ int get() { return 1; }
+};
+
+int operator . square(const C&amp; r) 
+{
+     return r.get() * r.get();   
+}
+
+int main()
+{
+  C c;
+  c.square(); //ok
+  square(c);  //ok
+}
+</code></pre>
+
+<h3>Sample 2:</h3>
+
+<p>What happens if C::square exists?
+```cpp
+class C { 
+public:
+ int get() { return 1; }</p>
+
+<p>int square() const
+  {
+     return r.get() * r.get();<br>
+  }
+};</p>
+
+<p>//Error, ambiguous C already have C::square
+int operator . square(const C&amp; r) 
+{
+     return r.get() * r.get();<br>
+}
+```</p>
+
+<h3>Sample 3:</h3>
+
+<p>Enabling uniform call.</p>
+
+<pre><code class="language-cpp">class C { 
+public:
+ int get() { return 1; }
+
+  int square() const
+  {
+     return r.get() * r.get();   
+  }
+};
+
+using int operator . square(const C&amp; r);
+
+int main()
+{
+  C c;
+  c.square(); //ok
+  square(c);  //ok
+}
+</code></pre>
+
+<h3>Sample 3:</h3>
+
+<p>Uniform call not enabled.</p>
+
+<pre><code class="language-cpp">class C { 
+public:
+ int get() { return 1; }
+
+  int square() const
+  {
+     return r.get() * r.get();   
+  }
+};
+
+int main()
+{
+  C c;
+  c.square(); //ok
+  square(c);  //error
+}
+</code></pre>
+
+<h3>Sample 4:</h3>
+
+<p>For non-class types.</p>
+
+<pre><code class="language-cpp">std::string operator . tostring(int i)
+{
+...
+}
+
+int main()
+{
+  int i = 1;
+  std::string s = i.tostring();
+}
+
+</code></pre>
+
+<h3>Sample 5:</h3>
+
+<p>Syntax alternatives</p>
+
+<pre><code class="language-cpp">class C { 
+public:
+ int get() { return 1; }
+};
+
+int operator C::square() const
+{
+     return this.get() * this.get();   
+}
+</code></pre>
+
+<h2 id="toc_0">References</h2>
+
+<p><a href="http://drdobbs.com/184401197">How Non-Member Functions Improve Encapsulation - Scott Meyers</a></p>
+
+<p><a href="http://drdobbs.com/blogs/cpp/232700394">Uniform Function Call Syntax - Walter Bright</a></p>
+
+<p><a href="https://groups.google.com/group/comp.lang.c++.moderated/browse_frm/thread/70bee02fdf74fb81/cb54bcba598c4a12?hl=pt&amp;lnk=gst&amp;q=dot+overloding#cb54bcba598c4a12">comp.lang.c++.moderated</a></p>
+
+<p><a href="http://www2.research.att.com/%7Ebs/bs_faq2.html">FAQ Stroustrup</a></p>
+</body></html>

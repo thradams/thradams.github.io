@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Algums esclarecimentos sobre o std::function</h2>
+
+<p>O function não representa exatamente um ponteiro para função.
+E não existe como fazer um ponteiro genérico de função membro. </p>
+
+<p>O function faz uma chamada através de uma assinatura pré-determinada para um objeto função, para um função solta ou uma função membro. </p>
+
+<p>Essa assinatura é o parâmetro do template. </p>
+
+<p>Por exemplo: 
+<code>cpp
+function&lt;int (X*)&gt; f; 
+</code>
+Isso quer dizer que &quot;f&quot; vai ser chamada passando um X* e retornando um 
+int. </p>
+
+<p>O function não determina se vai fazer uma chamada para função solta, 
+função membro ou objeto função. </p>
+
+<p>Mas a lógica da chamada é modificada para o caso de ponteiros de 
+função membro. </p>
+
+<p>Vou explicar com exemplos: </p>
+
+<p>Por exemplo, se apontar para uma função solta: 
+<code>cpp
+int func2(X*) { return 2; } 
+void main() 
+{ 
+  function&lt;int (X*)&gt; f; 
+  f = &amp;func2; 
+  X x; 
+  f(&amp;x); 
+} 
+</code></p>
+
+<p>Neste exemplo o &quot;f(&amp;x);&quot; vai chamar a func2 passando o argumento X. \
+Mas se eu apontar para uma função membro:</p>
+
+<pre><code class="language-cpp">
+struct X { 
+  int func() { return 2; } 
+};
+
+void main() 
+{ 
+  function&lt;int (X*)&gt; f; 
+  f = &amp;X::func; 
+  X x; 
+  f(&amp;x); 
+} 
+</code></pre>
+
+<p>Vai chamar a X::func da instância &amp;x sem passar parâmetros. </p>
+
+<p>Resumindo a lógica é a seguinte: </p>
+
+<p>Se é um ponteiro para função membro, então o primeiro argumento é 
+considerado o &quot;this&quot; do objeto. </p>
+
+<p>Caso contrário ele é tratado como um argumento convencional. </p>
+
+<p>Ou seja, é preciso dizer o tipo do objeto para funções membro.
+Então 
+não é possível criar um ponteiro para uma classe qualquer. </p>
+
+<p>Então não serve para nada? </p>
+
+<p>Serve, pois é só fazer um objeto função que faça a tradução da 
+chamada: 
+```cpp
+struct X { 
+  int func() { return 2; } 
+}; </p>
+
+<p>struct callX 
+{ 
+  X &x; 
+  callX(X &amp;x<em>) : x(x</em>){} 
+  int operator ()() 
+  { 
+    return x.func(); 
+  } 
+}; </p>
+
+<p>void main() 
+{ 
+  function<int (void)> f; 
+  X x; 
+  f = callX(x); 
+  f(); 
+} 
+```
+A regra para objetos função é a mesma que para funções não membro. 
+(por isso eu removi o X* da assinatura) \
+Ok, agora eu posso usar para qualquer tipo de classe. Mas vou ter que 
+criar este adaptador cada vez que eu precisar chamar uma classe 
+diferente? </p>
+
+<p>Não, você não precisa. Para isso que serve o bind. (além de outras 
+coisas...) </p>
+
+<p>A função bind cria adaptadores para você dos mais variados tipos. </p>
+
+<p>Então por exemplo:
+<code>cpp
+void main() 
+{ 
+  function&lt;int (void)&gt; f; 
+  X x; 
+  f = bind(&amp;X::func, &amp;x); 
+  f(); 
+} 
+</code>
+Neste exemplo o bind vai criar um objeto como o criado &quot;na mão&quot; 
+anteriormente. 
+Se voce quiser o bind também pode ser usado para levar argumentos para 
+você. 
+```cpp
+struct X { 
+  int func(int ) { return 2; } 
+}; </p>
+
+<p>void main() 
+{ 
+  function<int (void)> f; 
+  X x; 
+  f = bind(&amp;X::func, &amp;x, 1); 
+  f(); 
+} 
+```</p>
+
+<p>(Este texto foi colocado por mim na lista <a href="http://groups.google.com.br/group/ccppbrasil">http://groups.google.com.br/group/ccppbrasil</a> em 8 abr 2008)</p>
+</body></html>

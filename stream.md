@@ -7,6 +7,7 @@ Can load files or use strings.
 Can track the position in memory. (line col bytepos)
 
 Sample
+
 ```cpp
 #include  "Stream.h"
 #include <assert.h>

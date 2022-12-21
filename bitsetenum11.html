@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>See also: <a href="enum.html">enum.htm</a></p>
+
+<pre><code class="language-cpp">enum Font
+{
+  Bold   = 1 &lt;&lt; 0,
+  Italic = 1 &lt;&lt; 1,
+  Underline = 1 &lt;&lt; 2,
+};
+
+inline Font operator | (Font a, Font b)
+{
+  typedef std::underlying_type&lt;Font&gt;::type Type;
+  return Font(Type(a) | Type(b));
+}
+
+inline Font operator~(Font a)
+{
+  typedef std::underlying_type&lt;Font&gt;::type Type;
+  return Font(~Type(a));
+}
+
+inline Font operator&amp; (Font a, Font b)
+{
+  typedef std::underlying_type&lt;Font&gt;::type Type;
+  return Font(Type(a) &amp; Type(b));
+}
+
+inline Font&amp; operator&amp;=(Font&amp; a, Font b)
+{
+  a = a &amp; b;
+  return a;
+}
+
+inline Font&amp; operator|=(Font&amp; a, Font b)
+{
+  a = a | b;
+  return a;
+}
+
+inline void Add(Font&amp; e, Font items)
+{
+  e = e | items;
+}
+
+inline void Remove(Font&amp; e, Font items)
+{
+  e = e &amp; ~items;
+}
+
+//Determines whether all bits
+//are set in the &quot;e&quot;.
+inline bool HasAllFlags(Font e, Font items)
+{
+  typedef std::underlying_type&lt;Font&gt;::type Type;
+  return (Type(e) &amp; Type(items)) == Type(items);
+}
+
+//Determines whether one or more bit fields
+//are set in the &quot;e&quot;.
+inline bool HasFlag(Font e, Font items)
+{
+  typedef std::underlying_type&lt;Font&gt;::type Type;
+  return (Type(e) &amp; Type(items)) != Type(0);
+}
+</code></pre>
+
+<p>Test program:
+```cpp</p>
+
+<p>std::string to_string(Font f)
+{
+  std::string ws;</p>
+
+<p>if (HasFlag(f, Font::Bold))
+    ws += &quot;Bold&quot;;</p>
+
+<p>if (HasFlag(f, Font::Italic))
+  {
+    if (!ws.empty())
+      ws += &quot; | &quot;;</p>
+
+<pre><code>ws += &quot;Italic&quot;;
+</code></pre>
+
+<p>}</p>
+
+<p>if (HasFlag(f, Font::Underline))
+  {
+    if (!ws.empty())
+      ws += &quot; | &quot;;</p>
+
+<pre><code>ws += &quot;Underline&quot;;
+</code></pre>
+
+<p>}</p>
+
+<p>return ws;
+}</p>
+
+<p>int main()
+{
+  Font f = Font::Bold;
+  f = f | Font::Italic;
+  std::cout &lt;&lt; &quot;HasFlag(underline) = &quot; &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;HasFlag(italic) = &quot; &lt;&lt; HasFlag(f, Font::Italic) &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;HasFlag(italic | bold) = &quot; &lt;&lt; HasFlag(f, Font::Italic | Font::Bold) &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;HasAllFlags(bold | underline) = &quot; &lt;&lt; HasAllFlags(f, Font::Bold | Font::Underline) &lt;&lt; std::endl;</p>
+
+<p>std::cout &lt;&lt; &quot;Add(underline)&quot; &lt;&lt; std::endl;
+  Add(f, Font::Underline);
+  std::cout &lt;&lt; &quot;HasFlag(underline) = &quot; &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;HasAllFlags(bold | underline) = &quot; &lt;&lt; HasAllFlags(f, Font::Bold | Font::Underline) &lt;&lt; std::endl;</p>
+
+<p>std::cout &lt;&lt; &quot;Remove(underline)&quot; &lt;&lt; std::endl;</p>
+
+<p>Remove(f, Font::Underline);
+  std::cout &lt;&lt; &quot;HasFlag(underline) = &quot; &lt;&lt; HasFlag(f, Font::Underline) &lt;&lt; std::endl;</p>
+
+<p>return 0;
+}
+```</p>
+</body></html>

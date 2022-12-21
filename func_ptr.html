@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Almost generic member function pointer</h2>
+
+<p>Motivation:</p>
+
+<p>I have a class called MyDialog.\
+Inside it, I have a Button that needs to send events to MyDialog.</p>
+
+<p>For instance, button.OnClick should call &quot;MyDialog::ButtonClick&quot;.</p>
+
+<p>of MyDialog and I want to use this pointer to call functions of MyDialog. (Button events)</p>
+
+<p>In other words, the button needs to call functions in an unknown type. But he knows that it will be inserted inside a dialog or some class derived from dialog.</p>
+
+<p>The simple solution is to use std::function and bind.</p>
+
+<pre><code class="language-cpp">
+struct Button {
+ Dialog* parent;
+ std::function&lt;void (void)&gt; onclick;
+};
+
+struct MyDialog : public Dialog {
+ Button btn;
+ MyDialog()  {
+   btn.parent = this;
+   btn.onclick = &amp;std::bind(MyDialog::OnBtnClick, this);
+ }
+ void OnBtnClick() {}
+};
+
+</code></pre>
+
+<p>The std::function will cost 24 bytes plus 24 bytes of bind dynamic
+allocation (using VC++).</p>
+
+<p>Instead of to keep one pointer for each event I would like to use the pointer I already have in Button to call all events in MyDialog.</p>
+
+<p>Solution:</p>
+
+<p>The button class doesn&#39;t known &quot;MyDialog&quot;, but it knowns a function signature that can make the call casting from Dialog to MyDialog.</p>
+
+<p>If the class Dialog is polimorphic we can use dynamic_cast and return do MyDialog pointer.</p>
+
+<p>For non polimorphic classes, the programmer must ensure that the pointer will point do some object of the type MyDialog. The static_cast will set the pointer correctly if the classes have correlation.</p>
+
+<pre><code class="language-cpp">
+template&lt;class T, class KnownType, void (T::*pmf)(void)&gt;
+void call(KnownType* pobject)
+{
+ // programer responsability
+ T* p = static_cast&lt;T*&gt;(pobject);
+
+ //runtime check if avaiable (polimorphic type)
+ //p = dynamic_cast&lt;T*&gt;(pobject);
+
+ (p-&gt;*pmf)();
+}
+
+typedef void (*OnClickEvent)(Dialog*);
+
+struct Button {
+ Dialog* parent;
+ OnClickEvent onclick;
+};
+
+struct MyDialog : public Dialog {
+ Button btn;
+ MyDialog()  {
+   btn.parent = this;
+   btn.onclick = &amp;call&lt;MyDialog, Dialog, &amp;MyDialog::OnBtnClick&gt;;
+ }
+ void OnBtnClick() {}
+};
+
+Button::FireEvent()
+{
+  btn.onclick(parent);
+}
+
+</code></pre>
+
+<p>This way, each event will cost 4 bytes with no dynamic memory allocation.</p>
+
+<p>Using std::function I could call different objects
+but most of the time the call is just for parent.</p>
+</body></html>

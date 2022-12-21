@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Vector of string</h1>
+
+<p><a href="makecontainer.md">Make container</a></p>
+
+<pre><code class="language-cpp">
+#include &lt;stdbool.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+
+#define strdup _strdup
+
+
+struct str_array
+{
+    const char** data;
+    int size;
+    int capacity;
+};
+
+
+int str_array_push(struct str_array* p, const char* textSource)
+{
+    char* text = strdup(textSource);
+    if (text)
+    {
+        if (p-&gt;size + 1 &gt; p-&gt;capacity)
+        {
+            int n = p-&gt;capacity * 2;
+            if (n == 0)
+            {
+                n = 1;
+            }
+            const char** pnew = p-&gt;data;
+            pnew = (const char**)realloc((void*)pnew, n * sizeof(const char*));
+            if (pnew)
+            {
+                p-&gt;data = pnew;
+                p-&gt;capacity = n;
+            }
+            else
+            {
+                free(text);
+                text = 0;
+            }
+        }
+        if (text)
+        {
+            p-&gt;data[p-&gt;size] = text;
+            p-&gt;size++;
+        }
+    }
+    return text != 0;
+}
+
+void str_array_destroy(struct str_array* p)
+{
+    for (int i = 0; i &lt; p-&gt;size; i++)
+    {
+        free((void*)p-&gt;data[i]);
+    }
+    free((void*)p-&gt;data);
+}
+
+
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    struct str_array a = { 0 };
+    str_array_push(&amp;a, &quot;text1&quot;);
+    str_array_push(&amp;a, &quot;text2&quot;);
+    for (int i = 0; i &lt; a.size; i++)
+    {
+        printf(&quot;%s\n&quot;, a.data[i]);
+    }
+    str_array_destroy(&amp;a);
+}
+
+
+</code></pre>
+</body></html>

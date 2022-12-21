@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Search engine</h1>
+
+<p>Simple search engine to find words in documents.</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+
+#define strdup _strdup
+
+struct document
+{
+    const char* url;
+    const char* title;
+};
+
+struct documents
+{
+    struct document** data;
+    int size;
+    int capacity;
+};
+
+void document_delete(struct document* p)
+{
+    free(p);
+}
+
+int documents_reserve(struct documents* p, int n)
+{
+    if (n &gt; p-&gt;capacity)
+    {
+        void* pnew = realloc(p-&gt;data, n * sizeof(p-&gt;data[0]));
+        if (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = n;
+        }
+        else
+            return 0; /*out of mem*/
+    }
+
+    return p-&gt;capacity;
+}
+
+int documents_push(struct documents* p, struct document* pitem)
+{
+    if (p-&gt;size + 1 &gt; p-&gt;capacity)
+    {
+        int n = p-&gt;capacity * 2;
+        if (n == 0)
+            n = 1;
+
+        if (documents_reserve(p, n) == 0)
+        {
+            document_delete(pitem); /*design choice*/
+            return 0;
+        }
+    }
+
+    p-&gt;data[p-&gt;size] = pitem;
+    p-&gt;size++;
+
+    return p-&gt;size - 1;
+}
+
+void documents_destroy(struct documents* p)
+{
+    for (int i = 0; i &lt; p-&gt;size; i++)
+        document_delete(p-&gt;data[i]);
+
+    free(p-&gt;data);
+}
+
+#define BITSET_NUM_BITS_PER_WORD (CHAR_BIT * (int)sizeof(unsigned long))
+
+struct bitset
+{
+    unsigned long* bits;
+    int size;
+};
+
+inline bool bitset_getbit(struct bitset* bitset, int index)
+{
+    assert(index / BITSET_NUM_BITS_PER_WORD &lt; bitset-&gt;size);
+    return (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp;
+           (1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != 0;
+}
+
+int bitset_resize(struct bitset* p, int newSize);
+
+struct search_index_entry {
+    struct search_index_entry* next;
+    unsigned int hash;
+    char* key;
+    struct bitset bitset;
+};
+
+struct search_index {
+
+    struct search_index_entry** table;
+    unsigned int capacity;
+    int  size;
+};
+
+int bitset_resize(struct bitset* p, int newSize)
+{
+    if (newSize &gt; p-&gt;size)
+    {
+        int oldsize = p-&gt;size;
+        unsigned long* pnew = realloc(p-&gt;bits, newSize * sizeof(p-&gt;bits[0]));
+        if (pnew)
+        {
+            memset(pnew + oldsize, 0, sizeof(p-&gt;bits[0]) * (newSize - oldsize));
+            p-&gt;bits = pnew;
+            p-&gt;size = newSize;
+        }
+        else
+        {
+            return 0; /*out of mem*/
+        }
+    }
+
+    return p-&gt;size;
+}
+
+void bitset_setbit(struct bitset* bitset, int index, bool b)
+{
+    int wordindex = index / BITSET_NUM_BITS_PER_WORD;
+
+    if ((wordindex + 1) &gt; bitset-&gt;size)
+    {
+        if (bitset_resize(bitset, wordindex + 1) == 0)
+            return;
+    }
+
+    unsigned long bit = 1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD;
+    if (b)
+        bitset-&gt;bits[wordindex] |= bit;
+    else
+        bitset-&gt;bits[wordindex] &amp;= ~bit;
+}
+
+void bitset_destroy(struct bitset* p)
+{
+    free(p-&gt;bits);
+}
+
+void search_index_remove_all(struct search_index* pMap) {
+
+    if (pMap-&gt;table != NULL)
+    {
+        for (unsigned int i = 0; i &lt; pMap-&gt;capacity; i++)
+        {
+            struct search_index_entry* pentry = pMap-&gt;table[i];
+
+            while (pentry != NULL)
+            {
+                struct search_index_entry* pentryCurrent = pentry;
+
+                bitset_destroy(&amp;pentryCurrent-&gt;bitset);
+
+                pentry = pentry-&gt;next;
+                free(pentryCurrent-&gt;key);
+                free(pentryCurrent);
+            }
+        }
+
+        free(pMap-&gt;table);
+        pMap-&gt;table = NULL;
+        pMap-&gt;size = 0;
+    }
+}
+
+void search_index_destroy(struct search_index* pMap)
+{
+    search_index_remove_all(pMap);
+}
+
+unsigned int stringhash(const char* key)
+{
+    unsigned int uHashVal = 2166136261U;
+    unsigned int uFirst = 0;
+    unsigned int uLast = (unsigned int)strlen(key);
+    unsigned int uStride = 1 + uLast / 10;
+
+    for (; uFirst &lt; uLast; uFirst += uStride)
+    {
+        uHashVal = 16777619U * uHashVal ^ (unsigned int)key[uFirst];
+    }
+
+    return (uHashVal);
+}
+
+struct bitset* search_index_find(struct search_index* pMap, const char* key)
+{
+    struct bitset* p = NULL;
+
+    unsigned int hash = stringhash(key);
+    int index = hash % pMap-&gt;capacity;
+
+    struct search_index_entry* pentry = pMap-&gt;table[index];
+
+    for (; pentry != NULL; pentry = pentry-&gt;next)
+    {
+        if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0) 
+        {
+            p = &amp;pentry-&gt;bitset;
+            break;
+        }
+    }
+
+    return p;
+}
+
+
+int search_index_set(struct search_index* pMap, const char* key, int docindex)
+{
+    int result = 0;
+
+    if (pMap-&gt;table == NULL)
+    {
+        if (pMap-&gt;capacity &lt; 1) 
+        {
+            pMap-&gt;capacity = 1000;
+        }
+
+        pMap-&gt;table = calloc(pMap-&gt;capacity, sizeof(pMap-&gt;table[0]));
+    }
+
+    if (pMap-&gt;table != NULL)
+    {
+        unsigned int hash = stringhash(key);
+        int index = hash % pMap-&gt;capacity;
+
+        struct search_index_entry* pentry = pMap-&gt;table[index];
+
+        for (; pentry != NULL; pentry = pentry-&gt;next) 
+        {
+            if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0) 
+            {
+                break;
+            }
+        }
+
+        if (pentry == NULL)
+        {
+            pentry = calloc(1, sizeof(*pentry));
+            pentry-&gt;hash = hash;
+
+            pentry-&gt;key = strdup(key);
+            pentry-&gt;next = pMap-&gt;table[index];
+            pMap-&gt;table[index] = pentry;
+            pMap-&gt;size++;
+            result = 0;
+            bitset_setbit(&amp;pentry-&gt;bitset, docindex, 1);
+        }
+        else
+        {
+            result = 1;
+            bitset_setbit(&amp;pentry-&gt;bitset, docindex, 1);
+        }
+    }
+
+    return result;
+}
+
+
+void find_docs(int nwords,
+               const char* words[/*nwords*/],
+               struct search_index* search_index,
+               struct bitset* result)
+{
+    bool bFirst = true;
+    for (int i = 0; i &lt; nwords; i++)
+    {
+        struct bitset* bitset = search_index_find(search_index, words[i]);
+        if (bitset)
+        {
+            if (bFirst)
+            {
+                for (int j = 0; j &lt; bitset-&gt;size; j++)
+                {
+                    if ((j + 1) &gt; result-&gt;size)
+                    {
+                        bitset_resize(result, j + 1);
+                    }
+                    result-&gt;bits[j] = bitset-&gt;bits[j];
+                }
+                bFirst = false;
+            }
+            else
+            {
+                for (int j = 0; j &lt; bitset-&gt;size; j++)
+                {
+                    if (j &gt; result-&gt;size)
+                    {
+                        bitset_resize(result, j + 1);
+                    }
+                    result-&gt;bits[j] &amp;= bitset-&gt;bits[j];
+                }
+            }
+        }
+    }
+}
+
+void print_results(struct bitset* bitset, struct documents* documents)
+{
+    for (int i = 0; i &lt; bitset-&gt;size * BITSET_NUM_BITS_PER_WORD; i++)
+    {
+        if (bitset_getbit(bitset, i))
+        {
+            printf(&quot;%s\n&quot;, documents-&gt;data[i]-&gt;title);
+        }
+    }
+}
+
+int main(void) {
+
+    struct documents documents = { 0 };
+    struct search_index search_index = { 0 };
+
+    struct document* pdoc = calloc(1, sizeof * pdoc);
+    if (pdoc)
+    {
+        pdoc-&gt;url = strdup(&quot;doc1&quot;);
+        pdoc-&gt;title = strdup(&quot;document 1&quot;);
+
+        int docindex1 = documents_push(&amp;documents, pdoc);
+        search_index_set(&amp;search_index, &quot;1&quot;, docindex1);
+        search_index_set(&amp;search_index, &quot;document&quot;, docindex1);
+
+        struct document* pdoc2 = calloc(1, sizeof * pdoc2);
+        if (pdoc2)
+        {
+            pdoc2-&gt;url = strdup(&quot;doc2&quot;);
+            pdoc2-&gt;title = strdup(&quot;document 2&quot;);
+
+            int docindex2 = documents_push(&amp;documents, pdoc2);
+            search_index_set(&amp;search_index, &quot;2&quot;, docindex2);
+            search_index_set(&amp;search_index, &quot;document&quot;, docindex2);
+
+            struct bitset bitset = { 0 };            
+            find_docs(1, (const char* []) { &quot;1&quot; }, &amp;search_index, &amp;bitset);
+            print_results(&amp;bitset, &amp;documents);
+            bitset_destroy(&amp;bitset);
+
+            printf(&quot;---\n&quot;);
+
+            struct bitset bitset2 = { 0 };
+            find_docs(1, (const char* []) {&quot;document&quot;}, &amp;search_index, &amp;bitset2);
+            print_results(&amp;bitset2, &amp;documents);            
+            bitset_destroy(&amp;bitset2);
+        }
+    }
+
+    
+    documents_destroy(&amp;documents);
+    search_index_destroy(&amp;search_index);
+}
+
+
+</code></pre>
+</body></html>

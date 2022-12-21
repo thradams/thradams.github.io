@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<pre><code class="language-cpp">#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stddef.h&gt;
+
+typedef long Align; /* for alignment to long boundary */
+
+union header {      /* block header: */
+    struct {
+        union header* pnext;    /* next block if on free list */
+        unsigned size;      /* size of this block */
+    } s;
+    Align x;        /* force alignment of blocks */
+};
+
+typedef union header Header;
+
+
+static Header base;     /* empty list to get started */
+static Header* freep = NULL;    /* start of free list */
+Header* morecore(unsigned);
+
+/* malloc: general-purpose storage allocator */
+void* malloc2(unsigned nbytes)
+{
+    unsigned nunits = (nbytes + sizeof(Header) - 1) / sizeof(Header) + 1;
+
+    Header* prevp = freep;
+
+    if (prevp == NULL)
+    {   /* no free list yet */
+        freep = &amp;base;
+        base.s.pnext = freep;
+        prevp = freep;
+        base.s.size = 0;
+    }
+
+    for (Header* p = prevp-&gt;s.pnext; ; prevp = p, p = p-&gt;s.pnext)
+    {
+        if (p-&gt;s.size &gt;= nunits)
+        {   /* big enough */
+            if (p-&gt;s.size == nunits)    /* exactly */
+            {
+                prevp-&gt;s.pnext = p-&gt;s.pnext;
+            }
+            else
+            {           /* allocate tail end */
+                p-&gt;s.size -= nunits;
+                p += p-&gt;s.size;
+                p-&gt;s.size = nunits;
+            }
+            freep = prevp;
+            return (void*)(p + 1);
+        }
+
+        if (p == freep)     /* wrapped around free list */
+        {
+            if ((p = morecore(nunits)) == NULL)
+                return NULL;    /* none left */
+        }
+    }
+}
+
+#define NALLOC 1024 /* minimum units to request */
+void free2(void* ap);
+
+/* morecore: ask system for more memory */
+static Header* morecore(unsigned nu)
+{
+
+
+
+    if (nu &lt; NALLOC)
+        nu = NALLOC;
+    char* cp = malloc(nu * sizeof(Header));
+    if (cp == 0)    /* no space at all */
+        return NULL;
+    Header* up = (Header*)cp;
+    up-&gt;s.size = nu;
+    free2((void*)(up + 1));
+    return freep;
+}
+
+/* free: put block ap in free list */
+void free2(void* ap)
+{
+    Header* p;
+
+    Header* bp = (Header*)ap - 1;
+    for (p = freep; !(bp &gt; p &amp;&amp; bp &lt; p-&gt;s.pnext); p = p-&gt;s.pnext)
+    {
+        if (p &gt;= p-&gt;s.pnext &amp;&amp; (bp &gt; p || bp &lt; p-&gt;s.pnext))
+            break;
+    }
+
+    if (bp + bp-&gt;s.size == p-&gt;s.pnext) {
+        bp-&gt;s.size += p-&gt;s.pnext-&gt;s.size;
+        bp-&gt;s.pnext = p-&gt;s.pnext-&gt;s.pnext;
+    }
+    else {
+        bp-&gt;s.pnext = p-&gt;s.pnext;
+    }
+
+    if (p + p-&gt;s.size == bp) {
+        p-&gt;s.size += bp-&gt;s.size;
+        p-&gt;s.pnext = bp-&gt;s.pnext;
+    }
+    else {
+        p-&gt;s.pnext = bp;
+    }
+    freep = p;
+}
+
+struct Person {
+    char* name;
+};
+
+char* strdup2(const char* s)
+{
+    int sz = strlen(s);
+    char* r = malloc2(sz + 1);
+    if (r)
+        memcpy(r, s, sz + 1);
+    return r;
+}
+
+
+
+
+struct Block {
+    struct Block* pNext;
+    char data[];
+};
+
+struct Allocator {
+    struct Block* pHead, *pTail;
+    unsigned bytesUsed; /*bytes used at the tail block*/
+    unsigned BLOCK_SIZE;
+};
+
+#define ALLOCATOR_INIT {0,0,0, 1024} 
+
+
+void* allocator_aligned_alloc(struct Allocator* allocator, unsigned alignment, unsigned size)
+{
+    void* pointer = NULL;
+
+    int alignedPos = allocator-&gt;bytesUsed;
+    if (allocator-&gt;bytesUsed % alignment != 0)
+    {
+        /*fixing aligment*/
+        alignedPos = ((allocator-&gt;bytesUsed / alignment) + 1) * alignment;
+    }
+
+    if (allocator-&gt;pHead == NULL) {
+        
+        /*creating the first block*/
+
+        struct Block* pNew = 
+            malloc(sizeof(struct Block) + (size &lt; allocator-&gt;BLOCK_SIZE ? allocator-&gt;BLOCK_SIZE : size));
+
+        if (pNew)
+        {
+            pNew-&gt;pNext = 0;
+            allocator-&gt;bytesUsed = size;
+            pointer = pNew-&gt;data + alignedPos;
+            allocator-&gt;pHead = pNew;
+            allocator-&gt;pTail = pNew;
+        }
+    }
+    else
+    {
+        if (allocator-&gt;bytesUsed &lt; allocator-&gt;BLOCK_SIZE &amp;&amp;
+            allocator-&gt;BLOCK_SIZE - alignedPos &gt; size)
+        {
+            /*we have space at the current tail block*/
+            pointer = allocator-&gt;pTail-&gt;data + alignedPos;
+            allocator-&gt;bytesUsed = alignedPos + size;
+        }
+        else
+        {
+            /*we dont have space at the current tail block*/
+            if (size &gt; allocator-&gt;BLOCK_SIZE)
+            {
+                struct Block* pNew = malloc(sizeof(struct Block) + size);
+                if (pNew)
+                {
+                    /*new block is created without changing the tail block*/
+                    pNew-&gt;pNext = allocator-&gt;pHead;
+                    allocator-&gt;pHead = pNew;
+                    pointer = pNew + 1;
+                }
+            }
+            else
+            {
+                /*
+                 new tail block is created and some memory is wasted at the previous
+                 tail block
+                */
+                struct Block* pNew = malloc(sizeof(struct Block) + allocator-&gt;BLOCK_SIZE);
+                if (pNew)
+                {
+                    pNew-&gt;pNext = 0;
+                    allocator-&gt;pTail-&gt;pNext = pNew;
+                    pointer = pNew + 1;
+                    allocator-&gt;bytesUsed = size;
+                }
+            }
+        }
+    }
+
+    return pointer;
+}
+
+void* allocator_malloc(struct Allocator* allocator, int sz)
+{
+    return allocator_aligned_alloc(allocator, 8 /*default aligment*/, sz);
+}
+
+char* StrDup(struct Allocator* allocator, const char* s)
+{
+    int sz = strlen(s);
+    char* r = allocator_malloc(allocator, sz + 1);
+    if (r)
+        memcpy(r, s, sz + 1);
+    return r;
+}
+
+void allocator_free(struct Allocator* allocator) {
+    
+    for (struct Block* p = allocator-&gt;pHead; p; ) {
+        struct Block* temp = p;
+        p = p-&gt;pNext;
+        free(temp);
+    }
+}
+
+void Test1()
+{
+    struct Allocator allocator = { .BLOCK_SIZE = 8 };
+    char* s = allocator_malloc(&amp;allocator, 4);
+    assert(allocator.pHead != NULL);
+    assert(allocator.pTail != NULL);
+    assert(allocator.pHead == allocator.pTail);
+    assert(allocator.bytesUsed == 4);
+
+    allocator_free(&amp;allocator);
+}
+
+int main()
+{
+    struct Allocator allocator = ALLOCATOR_INIT;
+    char* text = 0;
+    text = StrDup(&amp;allocator, &quot;1&quot;);
+    text = StrDup(&amp;allocator, &quot;1234567890ABCD&quot;);
+    text = StrDup(&amp;allocator, &quot;test2&quot;);
+
+    allocator_free(&amp;allocator);
+}
+</code></pre>
+</body></html>

@@ -8,6 +8,7 @@ And:
 http://www.boost.org/doc/libs/1_37_0/doc/html/boost_staticassert.html
 
 For simple cases we can use today:
+
 ```cpp
 #include <cassert>
 namespace private_assertion_namespace
@@ -22,3 +23,4 @@ namespace private_assertion_namespace
 #define static_assert(x)  assert(private_assertion_namespace::assertion_class<(x)>::value);
 
 ```
+

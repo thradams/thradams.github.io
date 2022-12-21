@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Rational Number class</h2>
+
+<p>Rational class (scratch).</p>
+
+<p>When using rational classes is not uncommon to have overflows. In this case is interesting to use a Safe int type to catch errors.</p>
+
+<p>You can find a safe int class in:<a href="http://safeint.codeplex.com/">http://safeint.codeplex.com/</a></p>
+
+<pre><code class="language-cpp">// Copyright (C) 2009, Thiago Adams (thiago.adams@gmail.com)
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+
+template&lt;class T&gt;
+T GreatestCommonDivisor(T a, T b)
+{
+  if (a &lt; 0)
+    a = -a;
+  
+  if (b &lt; 0) 
+    b = -b;
+
+  if (a == 0 &amp;&amp; b == 0) 
+    return 0;
+
+  T temp;
+  while (b)
+  {
+    temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+}
+
+template&lt;class T&gt;
+class Rational
+{
+    T m_d;
+    T m_n;
+
+public:
+    Rational() : m_n(0) , m_d(1) { }
+    Rational(T n) : m_n(n) , m_d(1) { }
+    Rational(T n,T d) : m_n(n), m_d(d) { }
+    
+    Rational&amp; operator = (const Rational&amp; other)
+    {
+        m_n = other.N();
+        m_d = other.D();;
+        return *this;
+    }
+    
+    const T&amp; D() const
+    {
+        return m_d;
+    }
+
+    const T&amp; N() const
+    {
+        return m_n;
+    }
+
+    const T&amp; Denominator() const
+    {
+        return D();
+    }
+
+    const T&amp; Numerator() const
+    {
+        return N();
+    }
+
+    T IntegerPart() const
+    {
+      return Numerator() / Denominator();
+    }
+    
+    T Remain() const
+    {
+        return Numerator() % Denominator();
+    }
+
+    bool IsInteger() const
+    {
+        return  Remain() == 0;
+    }
+
+    void Simplify()
+    {
+        T n = GreatestCommonDivisor(Numerator(), Denominator());
+
+        if (n != 0)
+        {
+            m_n = Numerator() / n;
+            m_d = Denominator() / n;
+        }
+    }
+};
+typedef Rational&lt;int&gt; RationalInt;
+typedef Rational&lt;long long&gt; Rational64;
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator - (const Rational&lt;T&gt;&amp; left, const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(left.N() * other.D() - left.D() * other.N(), left.D() * other.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator - (const T&amp; left, const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(left * other.D() - 1 * other.N(),  other.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator + (const Rational&lt;T&gt;&amp; left,const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(left.N() * other.D() + left.D() * other.N(), left.D() * other.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator * (const Rational&lt;T&gt;&amp; left,const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(left.N() * other.N(), left.D() * other.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator * (const T&amp; v, const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(v * other.N(), other.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator * (const Rational&lt;T&gt;&amp; left,const T&amp; other)
+{
+  return Rational&lt;T&gt;(left.N() * other, left.D());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator / (const Rational&lt;T&gt;&amp; left,const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(left.N() * other.D(), left.D() * other.N());
+}
+
+template&lt;class T&gt;
+Rational&lt;T&gt; operator / (const Rational&lt;T&gt;&amp; left, const T&amp; v)
+{
+  return Rational&lt;T&gt;(left.N(), left.D() * v);
+}
+
+template&lt;class T&gt;
+bool operator == (const Rational&lt;T&gt;&amp; left,const Rational&lt;T&gt;&amp; other)
+{
+  return Rational&lt;T&gt;(other - left).N() == 0;
+}
+
+template&lt;class T&gt;
+bool operator == (const Rational&lt;T&gt;&amp; left,const T&amp; other)
+{
+  return Rational&lt;T&gt;(other - left).N() == 0;
+}
+
+template&lt;class T&gt;
+bool operator != (const Rational&lt;T&gt;&amp; left,const Rational&lt;T&gt;&amp; other)
+{
+  return !operator ==(other);
+}
+
+//Add more operators here...
+
+template&lt;class _Elem, class _Tr, class T&gt;
+std::basic_ostream&lt;_Elem, _Tr&gt; &amp;
+operator &lt;&lt; (std::basic_ostream&lt;_Elem, _Tr&gt; &amp; stream,
+             const Rational&lt;T&gt; &amp; r)
+{
+    stream &lt;&lt; r.Numerator() &lt;&lt; (_Elem)&#39;\\&#39; &lt;&lt; r.Denominator();    
+    return stream;
+}
+
+typedef Rational&lt;int&gt; RationalInt;
+typedef Rational&lt;long long&gt; Rational64;
+
+Tests
+
+
+using namespace UnitTest;
+
+TEST_FUNCTION(Test1)()
+{
+    AreEqual(RationalInt(), 0);
+}
+
+TEST_FUNCTION(Test2)()
+{
+    AreEqual(RationalInt(1), 1);
+}
+
+TEST_FUNCTION(Test3)()
+{
+    AreEqual(RationalInt(2, 1), RationalInt(10, 5));
+}
+TEST_FUNCTION(Test4)()
+{
+    RationalInt r1(1, 3);
+    r1 = r1 + r1 + r1;
+    RationalInt r2(1);
+    AreEqual(r1, r2);
+}
+TEST_FUNCTION(Test5)()
+{
+    RationalInt r1(1, 3);
+    r1 = r1 + r1 + r1;
+    RationalInt r2 = r1 / 3;
+    AreEqual(r2, RationalInt(1, 3));
+}
+
+TEST_FUNCTION(Test6)()
+{
+    IsTrue(RationalInt(1).IsInteger());
+    IsTrue(RationalInt().IsInteger());
+    IsTrue(RationalInt(3, 1).IsInteger());    
+}
+
+TEST_FUNCTION(Test7)()
+{
+    RationalInt r1(200);
+    r1 = r1 / 3;
+    r1 = r1 * 3;
+    AreEqual(r1, 200);
+}
+
+int main()
+{
+    ConsoleReport rep;
+    RunAll(rep);
+    return rep.GetFailedCount();
+}
+
+</code></pre>
+</body></html>

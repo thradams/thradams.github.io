@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Multiplatform build with ZERO dependencies for C/C++</h1>
+
+<p>I will show here a simple alternative for build. </p>
+
+<p>We can add much more features starting from this simple idea.</p>
+
+<p>I will use two files main.c and file.c to show the idea:</p>
+
+<p>main.c</p>
+
+<pre><code class="language-cpp">#include &quot;file.h&quot;
+int main() {  F(); }
+</code></pre>
+
+<p>file.h
+```cpp</p>
+
+<h1 id="toc_1">pragma once</h1>
+
+<p>void F();
+<code>
+file.c
+</code>cpp</p>
+
+<h1 id="toc_2">include <stdio.h></h1>
+
+<h1 id="toc_3">include &quot;file.h&quot;</h1>
+
+<p>void F() { printf(&quot;hello world\n&quot;); }
+```</p>
+
+<p>Now lets create our <strong>build.c</strong> script:</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+/*Compiler and platform detection*/
+
+#ifdef _MSC_VER
+#define COMPILER &quot;cl &quot;
+#elif __GNUC__ != 0
+#define COMPILER &quot;gcc &quot;
+#else
+#error compiler not defined
+#endif
+
+/*Files you want*/
+#define FILES &quot;hellobuild.c file.c&quot;
+
+/*output*/
+#define OUT &quot;hellobuild&quot;
+
+#define COMMAND_LINE  COMPILER  &quot; &quot; FILES &quot; -o &quot; OUT
+
+int main()
+{
+  printf(&quot;%s\n&quot;, COMMAND_LINE);
+  system(COMMAND_LINE); 
+}
+
+</code></pre>
+
+<p>How to build on linux:
+<code>
+   gcc build.c -o build; ./build; rm build
+   clang build.c -o build; ./build; rm build
+</code></p>
+
+<p>How to build on windows -  Open Developer command prompt</p>
+
+<pre><code>   clang build.c -o build.exe &amp;&amp; build &amp;&amp; del build.exe
+   cl build.c -o build.exe &amp;&amp; build &amp;&amp; del build.exe
+</code></pre>
+
+<p>That&#39;s it!</p>
+
+<p>Now we can add warnings, includes, libs for each platform and each compiler...</p>
+
+<p>We can make the build script more static using macros or it also can be dynamic using the args and build strings before calling 
+system. </p>
+
+<p>It is up to you. </p>
+
+<p>I will try this in a real project. Comment on twitter.</p>
+
+<h3>Extras</h3>
+
+<p>Visual C++ command line. Adding resources.</p>
+
+<pre><code>rc TesteWindowsApp.rc
+cl /W4 TesteWindowsApp.cpp TesteWindowsApp.res  kernel32.lib 
+   user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib
+   shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
+</code></pre>
+
+<p>The cl compiler call the linker automatically.</p>
+
+<p><a href="https://docs.microsoft.com/en-us/cpp/build/reference/compiler-command-line-syntax?view=msvc-160">See also</a></p>
+</body></html>

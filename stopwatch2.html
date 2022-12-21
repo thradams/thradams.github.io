@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Stopwatch class</h2>
+
+<p>Stopwatch class using clock_t.</p>
+
+<p>See also:
+<a href="Stopwatch.md">Stopwatch QueryPerformanceCounter</a></p>
+
+<pre><code class="language-cpp">//
+// Copyright (C) 2010, Thiago Adams
+//
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+//
+
+
+#pragma once
+
+#include &lt;ctime&gt;
+#include &lt;cassert&gt;
+
+class Stopwatch
+{
+  clock_t m_StartCount;
+  clock_t m_StopCount;
+
+public:
+
+    Stopwatch()
+    {
+        Reset();
+    }
+
+    Stopwatch(bool start)
+    {
+        Reset();
+        if (start)
+           Start();
+    }
+
+    static size_t GetFrequency() //in milliseconds
+    {
+      //static_assert(CLOCKS_PER_SEC &gt;= 1000);
+      return CLOCKS_PER_SEC / 1000;
+    }
+
+    void Reset()
+    {
+        m_StopCount = 0;
+        m_StartCount = 0;
+
+        assert(!IsRunning());
+        assert(GetElapsedTicks() == 0);
+    }
+
+    void Start()
+    {
+        if (IsRunning())
+            return;
+
+        const bool resume = (m_StartCount != 0);
+        if (resume)
+            m_StopCount = 0;
+        else
+        {
+            m_StartCount = clock();
+        }
+
+        assert(IsRunning());
+    }
+
+    void Stop()
+    {
+        if (!IsRunning())
+            return;
+        
+        m_StopCount = clock();
+
+        assert(!IsRunning());
+    }
+
+    clock_t GetElapsedTicks() const
+    {
+        if (IsRunning())
+           return (clock() - m_StartCount);
+         
+        return (m_StopCount - m_StartCount);
+    }
+
+    clock_t GetElapsedMilliseconds() const
+    {
+        return GetElapsedTicks() / GetFrequency();
+    }
+
+    bool IsRunning() const
+    {
+        return m_StartCount != 0 &amp;&amp; m_StopCount == 0;
+    }
+};
+</code></pre>
+</body></html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h2 id="toc_0">Polymorphism without inheritance and abstract classes</h2>
+
+<p>type_ptr is a type that can be used to hold objects in a container for instance, and can be used to select function in runtime.</p>
+
+<p>Compiled with:</p>
+
+<p>Visual C++ Compiler Nov 2013 CTP (CTP_Nov2013)</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-cpp">
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &quot;type_ptr.h&quot;
+
+class box
+{
+};
+class circle
+{
+};
+
+void draw(const box &amp;)
+{
+    std::cout &lt;&lt; &quot;in a box&quot; &lt;&lt; std::endl;
+}
+
+void draw(const circle &amp;)
+{
+    std::cout &lt;&lt; &quot;in a circle&quot; &lt;&lt; std::endl;
+}
+
+int main()
+{    
+    std::vector&lt;type_ptr&gt; v;
+    v.emplace_back(new box());
+    v.emplace_back(new circle());
+
+    for (auto&amp; item : v)
+    {
+        select&lt;box, circle&gt;(item, [](auto s){ draw(s); });
+    }     
+    
+}
+
+</code></pre>
+
+<p>type_ptr.h</p>
+
+<pre><code class="language-cpp">#pragma once
+
+#include &lt;cassert&gt;
+
+class type_ptr
+{
+    template&lt;class T&gt;
+    static void Delete(void* p)
+    {
+        delete (T*) p;
+    }
+
+protected:
+
+    void(*DeleteF)(void*);
+    void * ptr;
+
+public:
+
+    type_ptr(type_ptr&amp;&amp; other)
+    {
+        ptr = other.ptr;
+        DeleteF = other.DeleteF;
+
+        other.ptr = nullptr;
+        other.DeleteF = nullptr;
+    }
+
+    template&lt;class T&gt;
+    type_ptr(T* p)
+    {
+        ptr = p;
+        DeleteF = &amp;Delete&lt;T&gt;;
+    }
+
+    type_ptr()
+    {
+        ptr = nullptr;
+        type_info* tinfo = nullptr;
+    }
+
+    ~type_ptr()
+    {
+        if (DeleteF != nullptr)
+        {
+            DeleteF(ptr);
+            ptr = nullptr;
+        }
+    }
+
+    template&lt;class T&gt;
+    bool is() const
+    {
+        return DeleteF == &amp;Delete&lt;T&gt;;
+    }
+
+    template&lt;class T&gt;
+    T* is_ptr() const
+    {
+        if (is&lt;T&gt;())
+        {
+            return (T*) ptr;
+        }
+        return nullptr;
+    }
+
+    template&lt;class T&gt;
+    T&amp; ref()
+    {
+        assert(is_ptr&lt;T&gt;() != nullptr);
+        return *((T*) ptr);
+    }
+};
+
+
+template&lt;class... N&gt;
+struct select
+{
+    template&lt;class F&gt;
+    select(type_ptr &amp;, const F &amp;)
+    {
+    }
+};
+
+template&lt;class T1, class... Tn&gt;
+struct select&lt;T1, Tn...&gt;
+{
+    template&lt;class F&gt;
+    select(type_ptr &amp;p, const F &amp;f)
+    {
+        if (p.is&lt;T1&gt;())
+            f(p.ref&lt;T1&gt;());
+        else
+            select&lt;Tn...&gt;(p, f);
+    }
+};
+
+template&lt;class... TN, class List, class F&gt;
+void for_each(List&amp; list, F f)
+{
+    for (auto&amp; item : list)
+    {
+        select&lt;TN...&gt;(item, f);
+    }
+}
+
+</code></pre>
+</body></html>

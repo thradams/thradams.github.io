@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p><a href="makecontainer.md">Make container</a></p>
+
+<pre><code class="language-cpp">
+
+#pragma once
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+
+struct int_array
+{
+    int* data;
+    int size;
+    int capacity;
+};
+
+int int_array_reserve(struct int_array* p, int n)
+{
+    if (n &gt; p-&gt;capacity)
+    {
+        void* pnew = realloc(p-&gt;data, n * sizeof(p-&gt;data[0]));
+        if (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = n;
+        }
+        else
+        {
+            return 0; /*out of mem*/
+        }
+    }
+    
+    return p-&gt;capacity;
+}
+
+int int_array_push(struct int_array* p, int value)
+{
+    if (p-&gt;size + 1 &gt; p-&gt;capacity)
+    {
+        int n = p-&gt;capacity * 2;
+        if (n == 0)
+        {
+            n = 1;
+        }
+        if (int_array_reserve(p, n) == 0)
+        {
+            return 0;
+        }
+    }
+
+    p-&gt;data[p-&gt;size] = value;
+    p-&gt;size++;
+
+    return p-&gt;size;
+}
+
+void int_array_destroy(struct int_array* p)
+{
+    free(p-&gt;data);
+}
+
+
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    struct int_array a = { 0 };
+    int_array_push(&amp;a, 1);
+    int_array_push(&amp;a, 2);
+    for (int i = 0; i &lt; a.size; i++)
+    {
+        printf(&quot;%d\n&quot;, a.data[i]);
+    }
+    int_array_destroy(&amp;a);
+}
+
+
+</code></pre>
+</body></html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<pre><code class="language-cpp">#pragma once
+#include &lt;stdarg.h&gt;
+
+struct error
+{
+    char* str; /*c-string*/
+    int size; /*number of chars excluding the 0 at end*/
+    int capacity; /*size in bytes including 0 at the end*/
+};
+
+#define thread_local __declspec(thread)
+extern thread_local struct error* tls_error;
+int error(const char* fmt, ...);
+</code></pre>
+
+<pre><code class="language-cpp">#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+#include &quot;error.h&quot;
+
+
+ thread_local struct error* tls_error;
+
+
+int error_vafprintf(struct error* error, const char* fmt, va_list args)
+{
+    int size = 0;
+    va_list tmpa;
+    va_copy(tmpa, args);
+    size = vsnprintf(error-&gt;str + error-&gt;size, error-&gt;capacity - error-&gt;size, fmt, tmpa);
+    va_end(tmpa);
+
+    if (size &lt; 0)
+        return -1;
+
+    error-&gt;size += size;
+
+    if (error-&gt;size &gt; error-&gt;capacity)  /*truncated*/ {        
+        error-&gt;size = error-&gt;capacity - 1;
+    }
+
+    return size;
+}
+
+int error(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    int size = error_vafprintf(tls_error, fmt, args);
+    va_end(args);
+    return size;
+}
+
+</code></pre>
+
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+#include &quot;tinycthread.h&quot;
+#include  &quot;error.h&quot;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+
+bool F()
+{
+    error(&quot;1234&quot;);
+    return false;
+}
+
+int Start(void* arg)
+{
+    char buffer[50] = {0};
+    struct error er = { .str = buffer, .capacity = sizeof(buffer)};
+    tls_error = &amp;er;
+    
+    if (!F())
+    {
+        //tls_error
+    }
+
+    return 1;
+}
+
+int main()
+{
+    thrd_t thr1;
+    int r = thrd_create(&amp;thr1, Start, 0);
+    
+    thrd_t thr2;
+    r = thrd_create(&amp;thr2, Start, 0);
+    
+
+    int res;
+    thrd_join(thr1, &amp;res);
+    thrd_join(thr2, &amp;res);
+}
+
+</code></pre>
+</body></html>

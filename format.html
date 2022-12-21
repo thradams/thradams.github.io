@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<pre><code class="language-cpp">
+#define _CRT_SECURE_NO_WARNINGS
+
+#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdarg.h&gt;
+
+int format(char* s, size_t n, const char* format, ...)
+{
+    const char* arg[10] = { 0 };
+    _Static_assert(sizeof(arg) / sizeof(arg[0]) == 10, &quot;0-9&quot;);
+
+    va_list args;
+    va_start(args, format);
+    const char* p = format;
+    while (*p)
+    {
+        if (*p == &#39;%&#39; &amp;&amp; (*(p + 1) != &#39;%&#39;))
+        {
+            p++;
+            int index = (*p - &#39;0&#39;);
+            if (index &gt;= 0 &amp;&amp; index &lt;= 9)
+            {
+                if (arg[index] == 0)
+                {
+                    arg[index] = va_arg(args, char*);
+                    printf(&quot;SET %d = %s\n&quot;, index, arg[index]);
+                }
+            }
+
+        }
+        p++;
+    }
+    va_end(args);
+
+
+    p = format;
+    int count = 0;
+    while (*p)
+    {
+        if (*p == &#39;%&#39;)
+        {
+            p++; //skip %
+            if (*p &gt;= &#39;0&#39; &amp;&amp; *p &lt;= &#39;9&#39;)
+            {
+                int index = (*p - &#39;0&#39;);
+                const char* from = arg[index];
+                
+                if (from == NULL)
+                {
+                    from = &quot;???&quot;;
+                }
+
+                while (from &amp;&amp; *from)
+                {
+                    if (count &lt; n - 1)
+                    {
+                        s[count] = *from;
+                    }
+                    count++;
+                    from++;
+                }
+                p++;
+            }
+            else if (*p == &#39;%&#39;)
+            {
+                if (count &lt; n - 1)
+                {
+                    s[count] = *p;
+                }
+                count++;
+                p++;
+            }
+            else
+            {
+                /*error?*/
+            }
+        }
+        else
+        {
+            if (count &lt; n - 1)
+            {
+                s[count] = *p;
+            }
+            count++;
+            p++;
+        }
+    }
+
+    if (count &lt; n)
+    {
+        s[count] = 0;
+    }
+    else
+    {
+        if (n &gt; 0)
+          s[n - 1] = 0;
+    }
+
+    return count;
+}
+
+int main()
+{
+    printf(&quot;A %1$s B %2$s C %1$s&quot;, &quot;ONE&quot;, &quot;TWO&quot;);
+
+    char buffer[50];
+    int n = format(buffer, sizeof buffer, &quot;A %% %1&quot;, &quot;ONE&quot;);
+    assert(strcmp(buffer, &quot;A % ONE&quot;) == 0);
+    assert(n == 7);
+
+    n = format(buffer, sizeof buffer, &quot;A %0 B %1 C %0&quot;, &quot;ONE&quot;, &quot;TWO&quot;);
+    assert(n == 17);
+    assert(strcmp(buffer, &quot;A ONE B TWO C ONE&quot;) == 0);
+
+
+    char buffer3[3];
+    n = format(buffer3, sizeof buffer3, &quot;%0&quot;, &quot;ABC&quot;);
+    assert(n == 3);
+    assert(strcmp(buffer3, &quot;AB&quot;) == 0);
+
+}
+</code></pre>
+</body></html>

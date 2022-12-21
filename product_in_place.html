@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>[[algorithms.htm| Algorithms]]</p>
+
+<p>Multiplies a sequence of digits by a single digit value returning the result in the input sequence.</p>
+
+<p><strong>Extra digit zero must be reserved.</strong></p>
+
+<p>** Assume same base**</p>
+
+<p>{{{</p>
+
+<p>{0, 1, 0, 3 }      (u)
+              10
+*          {2}
+              10</p>
+
+<hr>
+
+<p>{0, 2, 0, 6 }   (u)
+               10
+}}}</p>
+
+<hr>
+
+<p>===Implementation===</p>
+
+<p>{{{cpp
+template<unsigned long long base, class It>
+void product<em>in</em>place(It first,
+                      It last,
+                      unsigned long long value)
+{
+    assert(value &lt; base);</p>
+
+<pre><code>--last;
+
+//extra non-significant digit zero must be reserved!
+assert(*last == 0);
+
+unsigned long long carry = 0;
+
+for (; first != last; ++first)
+{
+    unsigned long long temp = *first;
+    temp *= value;
+    temp += carry;
+
+    *first = temp % base;
+    carry = temp / base;
+};
+
+*first = carry;
+</code></pre>
+
+<p>};
+}}}</p>
+
+<p>===Sample===</p>
+
+<p>{{{cpp
+void product<em>in</em>place_test()
+{
+  using namespace std;</p>
+
+<p>int n[] = { 0, 0, 0 , 0 }; 
+  set_digits<10>(103, begin(n), end(n));
+  assert(n[2] == 1 &amp;&amp; n[1] == 0 &amp;&amp; n[0] == 3);</p>
+
+<p>product<em>in</em>place<10>(begin(n), end(n), 2);
+  assert(n[2] == 2 &amp;&amp; n[1] == 0 &amp;&amp; n[0] == 6);</p>
+
+<p>product<em>in</em>place<10>(begin(n), end(n), 2);
+  assert(n[2] == 4 &amp;&amp; n[1] == 1 &amp;&amp; n[0] == 2);</p>
+
+<p>product<em>in</em>place<10>(begin(n), end(n), 3);
+  assert(n[3] == 1 &amp;&amp; n[2] == 2 &amp;&amp; n[1] == 3 &amp;&amp; n[0] == 6);</p>
+
+<p>//ASSERT!
+  //product<em>in</em>place<10>(begin(n), end(n), 9);
+}
+}}}</p>
+</body></html>

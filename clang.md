@@ -4,8 +4,8 @@ April 2021
 
 Most of these features have been implemented in my transpiler that can be  visualized here:
 
-[cprime V2 online](/web2/cprime.html)
-[cprime V3 online](/web3/index.html)
+[cprime V2 online](./web2/cprime.html) <br>
+[cake V3 online](./cake/index.html)
 
 
 
@@ -14,7 +14,7 @@ Most of these features have been implemented in my transpiler that can be  visua
 struct members can be annotated with their respective 
 initialization value.
 
-```cpp
+```c
 
 struct X {
    int i = 1;

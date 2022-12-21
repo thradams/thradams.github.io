@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<pre><code class="language-c">
+#include &lt;stdbool.h&gt;
+
+struct StringSetEntry
+{
+    struct StringSetEntry* pNext;
+    unsigned int HashValue;
+    const char Key[];
+};
+
+struct StringSet
+{
+    struct StringSetEntry** pHashTable;
+    unsigned int nHashTableSize;
+    int Count;
+};
+
+#define STRING_SET_INIT \
+  { NULL, 100, 0 }
+
+
+bool StringSet_Find(struct StringSet* pMap, const char* Key);
+bool StringSet_Remove(struct StringSet* pMap, const char* Key);
+void StringSet_RemoveAll(struct StringSet* pMap);
+int StringSet_Add(struct StringSet* pMap, const char* Key);
+void StringSet_Destroy(struct StringSet* pMap);
+</code></pre>
+
+<pre><code class="language-c">#include &quot;StringSet.h&quot;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+static unsigned int String2_HashKey(const char* Key)
+{
+    // hash key to unsigned int value by pseudorandomizing transform
+    // (algorithm copied from STL string hash in xfunctional)
+    unsigned int uHashVal = 2166136261U;
+    unsigned int uFirst = 0;
+    unsigned int uLast = (unsigned int) strlen(Key);
+    unsigned int uStride = 1 + uLast / 10;
+
+    for (; uFirst &lt; uLast; uFirst += uStride)
+    {
+        uHashVal = 16777619U * uHashVal ^ (unsigned int) Key[uFirst];
+    }
+
+    return (uHashVal);
+}
+
+void StringSet_RemoveAll(struct StringSet* pMap)
+{
+    if (pMap-&gt;pHashTable != NULL)
+    {
+        for (unsigned int nHash = 0; nHash &lt; pMap-&gt;nHashTableSize; nHash++)
+        {
+            struct StringSetEntry* pKeyValue = pMap-&gt;pHashTable[nHash];
+
+            while (pKeyValue != NULL)
+            {
+                struct StringSetEntry* pKeyValueCurrent = pKeyValue;
+                pKeyValue = pKeyValue-&gt;pNext;
+                free(pKeyValueCurrent);
+            }
+            pMap-&gt;pHashTable[nHash] = NULL;
+        }
+        
+        pMap-&gt;Count = 0;
+    }
+}
+
+void StringSet_Destroy(struct StringSet* pMap)
+{
+    StringSet_RemoveAll(pMap);
+    free(pMap-&gt;pHashTable);
+    pMap-&gt;pHashTable = NULL;
+}
+
+static struct StringSetEntry* StringSet_GetAssocAt(struct StringSet* pMap,
+    const char* Key,
+    unsigned int* nHashBucket,
+    unsigned int* HashValue)
+{
+    if (pMap-&gt;pHashTable == NULL)
+    {
+        *HashValue = 0;
+        *nHashBucket = 0;
+        return NULL;
+    }
+
+    *HashValue = String2_HashKey(Key);
+    *nHashBucket = *HashValue % pMap-&gt;nHashTableSize;
+
+    struct StringSetEntry* pResult = NULL;
+
+    struct StringSetEntry* pKeyValue = pMap-&gt;pHashTable[*nHashBucket];
+
+    for (; pKeyValue != NULL; pKeyValue = pKeyValue-&gt;pNext)
+    {
+        if (pKeyValue-&gt;HashValue == *HashValue &amp;&amp;
+            strcmp(pKeyValue-&gt;Key, Key) == 0)
+        {
+            pResult = pKeyValue;
+            break;
+        }
+    }
+
+    return pResult;
+}
+
+bool StringSet_Find(struct StringSet* pMap, const char* Key)
+{
+    bool bResult = false;
+
+    unsigned int nHashBucket, HashValue;
+    struct StringSetEntry* pKeyValue = StringSet_GetAssocAt(pMap, Key, &amp;nHashBucket, &amp;HashValue);
+
+    return pKeyValue != NULL;
+}
+
+
+bool StringSet_Remove(struct StringSet* pMap, const char* Key)
+{
+    bool bResult = false;
+
+    if (pMap-&gt;pHashTable != NULL)
+    {
+        unsigned int HashValue = String2_HashKey(Key);
+
+        struct StringSetEntry** ppKeyValuePrev =
+            &amp;pMap-&gt;pHashTable[HashValue % pMap-&gt;nHashTableSize];
+
+        struct StringSetEntry* pKeyValue = *ppKeyValuePrev;
+
+        for (; pKeyValue != NULL; pKeyValue = pKeyValue-&gt;pNext)
+        {
+            if ((pKeyValue-&gt;HashValue == HashValue) &amp;&amp;
+                (strcmp(pKeyValue-&gt;Key, Key) == 0))
+            {
+                // remove from list
+                *ppKeyValuePrev = pKeyValue-&gt;pNext;
+                free(pKeyValue);
+                bResult = true;
+                pMap-&gt;Count--;
+                break;
+            }
+
+            ppKeyValuePrev = &amp;pKeyValue-&gt;pNext;
+        }
+    }
+
+    return bResult;
+}
+
+int StringSet_Add(struct StringSet* pMap, const char* Key)
+{
+    int result = 0;
+
+    if (pMap-&gt;pHashTable == NULL)
+    {
+        if (pMap-&gt;nHashTableSize &lt; 1)
+        {
+            pMap-&gt;nHashTableSize = 1000;
+        }
+
+        struct StringSetEntry** pHashTable =
+            (struct StringSetEntry**) malloc(sizeof(struct StringSetEntry*) * pMap-&gt;nHashTableSize);
+
+        if (pHashTable != NULL)
+        {
+            memset(pHashTable, 0, sizeof(struct StringSetEntry*) * pMap-&gt;nHashTableSize);
+            pMap-&gt;pHashTable = pHashTable;
+        }
+    }
+
+    if (pMap-&gt;pHashTable != NULL)
+    {
+        unsigned int nHashBucket, HashValue;
+        struct StringSetEntry* pKeyValue =
+            StringSet_GetAssocAt(pMap, Key, &amp;nHashBucket, &amp;HashValue);
+
+        if (pKeyValue == NULL)
+        {
+            pKeyValue = (struct StringSetEntry*)malloc(sizeof(struct StringSetEntry) + strlen(Key) * sizeof(char) + 1);
+            pKeyValue-&gt;HashValue = HashValue;
+            strcpy((char*) pKeyValue-&gt;Key, Key);
+
+            pKeyValue-&gt;pNext = pMap-&gt;pHashTable[nHashBucket];
+            pMap-&gt;pHashTable[nHashBucket] = pKeyValue;
+            pMap-&gt;Count++;
+            result = 1; //inserted
+        }
+        else
+        {
+            //already exist
+        }
+    }
+    else
+    {
+        result = -1;//out of memory
+    }
+
+    return result;
+}
+</code></pre>
+</body></html>

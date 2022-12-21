@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>In C, we can have closures passing a context to the function called.</p>
+
+<p>The only thing the function Call needs to known is the signature of the function to call (f).</p>
+
+<pre><code class="language-cpp">void Call(void* p, void(*f)(void*))
+{
+  f(p);
+}
+</code></pre>
+
+<pre><code class="language-cpp">void f(void* pv)
+{
+  printf(&quot;hello world!&quot;);
+}
+
+int main()
+{
+  Call(0, &amp;f);
+  return 0;
+}
+</code></pre>
+
+<p>Now, let&#39;s capture one string.\
+Note that the function &quot;Call&quot; didn&#39;t change.</p>
+
+<pre><code class="language-cpp">void f(void* pv)
+{
+  const char * s = (const char*)pv;
+  printf(&quot;hello %s!&quot;, s);
+}
+
+int main()
+{
+  Call((void*)&quot;closure&quot;, &amp;f);
+  return 0;
+}
+</code></pre>
+
+<p>In case we need two or more variables.</p>
+
+<pre><code class="language-cpp">struct strings2
+{
+  const char* s1;
+  const char* s2;
+};
+
+void f(void* pv)
+{
+  struct strings2 * p = (struct strings2 *)pv;
+  printf(&quot;%s %s!&quot;, p-&gt;s1, p-&gt;s2);
+}
+
+int main()
+{
+  struct strings2 c = { &quot;Hi&quot;, &quot;closure&quot; };
+  Call((void*)&amp;c, &amp;f);
+  return 0;
+}
+
+</code></pre>
+
+<p>How to store closures and use them in a polimorphic way.</p>
+
+<pre><code class="language-cpp">
+#include &quot;closure.h&quot;
+
+void f(void*)
+{
+  printf(&quot;hello closure!\n&quot;);
+}
+
+void f2(void* pv)
+{
+  struct closure_void_str* p = (struct closure_void_str*)pv;
+  printf(&quot;hello %s!\n&quot;, p-&gt;text);
+}
+
+
+int main()
+{
+  struct closure_void cv = CLOSURE_VOID_INIT(&amp;f);
+  struct closure_void * p = closure_void_new(&amp;f);
+
+  closure_void_call(&amp;cv);
+  closure_void_call(p);
+
+  closure_void_delete(p);
+
+
+  struct closure_void * p2 = closure_void_str_new(&amp;f2, &quot;thiago&quot;);
+  closure_void_call(p2);
+  closure_void_delete(p2);
+}
+
+</code></pre>
+
+<p>closure.h</p>
+
+<pre><code class="language-cpp">
+#ifndef _CLOSURE_H
+#define _CLOSURE_H
+
+
+struct closure_void
+{
+  void(*call)(void*);
+  void(*free)(void*);
+};
+
+#define CLOSURE_VOID_INIT(f) { f , 0 }
+
+void closure_void_init(struct closure_void* p,
+                       void(*call)(void*),
+                       void(*free)(void*));
+
+struct closure_void* closure_void_new(void(*pf)(void*));
+
+void closure_void_call(struct closure_void* p);
+void closure_void_free(struct closure_void* p);
+void closure_void_delete(struct closure_void* p);
+
+
+struct closure_void_str
+{
+  void(*call)(void*);
+  void(*free)(void*);
+  const char* text;
+};
+
+struct closure_void* closure_void_str_new(void(*pf)(void*), const char* text);
+
+#endif //_CLOSURE_H
+
+</code></pre>
+
+<p>Closure.cpp
+```cpp</p>
+
+<h1 id="toc_0">include &quot;closure.h&quot;</h1>
+
+<h1 id="toc_1">include <stdlib.h></h1>
+
+<h1 id="toc_2">include <string.h></h1>
+
+<p>void closure<em>void</em>init(struct closure_void* p,
+  void(<em>call)(void</em>),
+  void(<em>free)(void</em>))
+{
+  p-&gt;call = call;
+  p-&gt;free = free;
+}</p>
+
+<p>struct closure<em>void* closure</em>void<em>new(void(<em>pf)(void</em>))
+{
+  struct closure</em>void* p = (struct closure<em>void*) malloc(sizeof(struct closure</em>void));
+  closure<em>void</em>init(p, pf, 0);
+  return p;
+}</p>
+
+<p>void closure<em>void</em>call(struct closure_void* p)
+{
+  p-&gt;call(p);
+}</p>
+
+<p>void closure<em>void</em>free(struct closure_void* p)
+{
+  if (p-&gt;free)
+    p-&gt;free(p);
+}</p>
+
+<p>void closure<em>void</em>delete(struct closure<em>void* p)
+{
+  closure</em>void_free(p);
+  free(p);
+}</p>
+
+<p>//////////////////</p>
+
+<p>static void closure<em>void</em>str<em>free(void* pv)
+{
+  struct closure</em>void<em>str * p = (struct closure</em>void_str <em>)(pv);
+  free((void</em>)p-&gt;text);
+}</p>
+
+<p>struct closure<em>void* closure</em>void<em>str</em>new(void(<em>pf)(void</em>), const char* text)
+{
+  struct closure<em>void</em>str * p = (struct closure<em>void</em>str<em>)malloc(sizeof(struct closure<em>void</em>str));
+  p-&gt;call = pf;
+  p-&gt;free = &amp;closure<em>void</em>str_free;
+  p-&gt;text = (const char</em>)malloc(sizeof(char) * (strlen(text) + 1));
+  strcpy((char<em>)p-&gt;text, text);
+  return (struct closure_void</em>)p;
+}</p>
+
+<pre><code>
+
+</code></pre>
+</body></html>

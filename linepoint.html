@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<p>Distance between a point and a line segment.</p>
+
+<p><img src="line.png" alt=""></p>
+
+<p>Parametric equation of line</p>
+
+<pre><code>  dx = x1 - x0
+  dy = y1 - y0
+
+  x(t) = x0 + dx * t
+  y(t) = y0 + dy * t
+</code></pre>
+
+<p>Distance from (px, py) to point (x(t), y(t)).</p>
+
+<pre><code>
+             +--------------------------------------------
+             |                    2                       2
+ distance = \| (px - (x0 + dx * t))  + (py - (y0 + dy * t))
+
+            
+         2                       2                       2
+ distance =  (px - (x0 + dx * t))  + (py - (y0 + dy * t))
+
+
+</code></pre>
+
+<p>Derive in t, make equal zero to find the minimum
+```</p>
+
+<p>0 = 2 * dx * (x0 - px + dx * t) + 2 * dy *(y0 - py + dy * t)</p>
+
+<pre><code>
+Solve for t
+
+</code></pre>
+
+<pre><code>   dx * px + dy * py - dx * x0 - dy*y0
+</code></pre>
+
+<p>t = ------------------------------------
+               2      2
+             dx  + dy</p>
+
+<pre><code> dx *(px - x0) + dy * (py - y0)
+</code></pre>
+
+<p>t = -----------------------------
+               2      2
+             dx  + dy</p>
+
+<p>This t will generate the minimum distance</p>
+
+<pre><code>
+</code></pre>
+
+<p>If t &gt;= 0 and t &lt;= 1 then
+ calculate distance from (px, py) to (x(t), y(t))</p>
+
+<p>if (t &lt; 0)</p>
+
+<p>calculate distance from (px, py) to (x0, y0)</p>
+
+<p>if (t &gt; 1)</p>
+
+<p>calculate distance from (px, py) to (x1, y1)</p>
+
+<pre><code>
+----
+
+
+```cpp
+#include &lt;cmath&gt;
+
+double Distance(double px, double py, 
+        double x0, double y0,
+        double x1, double y1)
+{
+  const double dx = x1 - x0;
+  const double dy = y1 - y0;
+  const double t = (dx * (px - x0) + dy * (py - y0)) / (dx * dx + dy * dy);
+  
+  if (t &lt;= 0.0)
+  {
+    return _hypot(px - x0, py - y0);
+  }
+  else if (t &gt;= 1.0)
+  {
+    return _hypot(px - x1, py - y1);
+  }
+  
+  return _hypot(px - (x0 + dx * t), py - (y0 + dy * t));  
+}
+</code></pre>
+
+<h3>History</h3>
+
+<ul>
+<li>28/03/2013 Bug fixed (parenteses added on  const double t )</li>
+</ul>
+</body></html>
