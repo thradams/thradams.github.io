@@ -1,6 +1,6 @@
 #Welcome
 
-![](figs/park2.JPG)
+![](figs/parcao.JPG)
 
 Thanks for visiting my webpage!
 
