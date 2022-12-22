@@ -51,7 +51,10 @@ struct line {
 };
 
 int main() {
-  struct line line = { .point = { .x = 5} };
+  struct line line = { .point = { .x = 5 } };
+
+  // Is line.point.y 2 or 4?
+
   printf("%d\n", line.point.y);
 }
 
@@ -78,7 +81,7 @@ This is the same of C++ 17.  See [https://en.cppreference.com/w/cpp/language/if]
   
   //pX out of scope
 
-````
+```
 
 ## if with initializer and defer-expression
 
@@ -124,7 +127,8 @@ and jump to the end of statement of inside catch block.
 ```
 
 The difference for C++ is that throw can only be used 
-inside try-blocks making the jump path visible.
+inside try-blocks making the jump always local.
+
 
 ## defer
 
@@ -139,6 +143,7 @@ inside try-blocks making the jump path visible.
 ## Function Literal
   
 Syntax:
+
 ```cpp
    int (*f) (int arg1, int arg2) = 
           (int (int arg1, int arg2)) { return arg1 + arg2; };
@@ -224,6 +229,7 @@ int main() {
 }
 
 ```
+
 Comparison with C++: There is not constructor here. There is no need for exceptions.
 
 
@@ -447,6 +453,7 @@ int main()
 The discriminant can be constant strings or enuns etc.
 
 ```cpp
+
 struct Box {
     const char * type= "box";
 };
@@ -466,6 +473,7 @@ struct Box *pBox = dynamic_cast<struct Box*>(pShape);
 ```
 
 Alternatives:
+
 ```cpp
 struct Box *pBox = pShape as Box;
 
@@ -474,88 +482,7 @@ if (pShape is Box)
 
 }
 ```
+
 Cast from box to shape for instance are normal casts but in the future 
 the compiler can check the if the types are on the same set. 
-
-
-## Resizable arrays [auto]
-
-
-```cpp
-int a[auto];
- 
-  capacity(a);
-  size(a);
-  push(a, 1);
-  reserve(a, 10);
-  a[0] = 1; //ok
- 
-```
-
-(not implemented yet)
-
-
-
-## Parametrized types
-
-(not implemented yet)
-
-```cpp
-template <typename T>
-struct vector{
-  T * data;
-  int size;
-  int capacity;
-};
-
-void F(vector<int> * v) {}
-
-```
-
-## Parametrized functions
-
-
-```cpp
-template <typename T>
-struct vector
-{
-  T * data;
-  int size;
-  int capacity;
-};
-
-template<class T>
-void destroy(vector<T> * v) 
-{
-
-}
-
-template<class T>
-void push(vector<T> * v, T i) {
-
-}
-
-int main()
-{
-   vector<int> v = {};
-   push(v, 1);
-   destroy(v);
-}
-/*
-  if T is struct is is passed by pointer otherwise by copy. 
-*/
-
-```
-
-## Pragmas 
-
-This are just for the cprime generator.
-
-```cpp
-#define DEL(T) void Delete_##T(struct T* p){ if (p) {destroy(*p); free(p);} }
-
-#pragma expand on
-DEL(House)
-#pragma expand off
-```
 

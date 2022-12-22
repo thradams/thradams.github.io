@@ -11,3 +11,6 @@
 /header.htm
 /footer.htm
 *.obj
+/hoedown.exe
+/src/build.exe
+/src/build.obj

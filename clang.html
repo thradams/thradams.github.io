@@ -58,7 +58,10 @@ struct line {
 };
 
 int main() {
-  struct line line = { .point = { .x = 5} };
+  struct line line = { .point = { .x = 5 } };
+
+  // Is line.point.y 2 or 4?
+
   printf(&quot;%d\n&quot;, line.point.y);
 }
 
@@ -83,15 +86,14 @@ int main() {
   
   //pX out of scope
 
-````
+</code></pre>
 
-## if with initializer and defer-expression
+<h2 id="toc_3">if with initializer and defer-expression</h2>
 
-Considering the interesting pattern above (that is very useful to avoid bugs) 
-we also have an option with &#39;defer&#39; to put everything at same line.
+<p>Considering the interesting pattern above (that is very useful to avoid bugs) 
+we also have an option with &#39;defer&#39; to put everything at same line.</p>
 
-```cpp
-  if (FILE* f = fopen(&quot;file.txt&quot;, &quot;r&quot;); f; fclose(f))
+<pre><code class="language-cpp">  if (FILE* f = fopen(&quot;file.txt&quot;, &quot;r&quot;); f; fclose(f))
   {        
      
   }
@@ -103,7 +105,7 @@ the defer is called before the jump.</p>
 <p>When return is called first the result is copied to a local 
 variable then defer is called then  copied variable is returned.</p>
 
-<h2 id="toc_3">try-block statement and throw</h2>
+<h2 id="toc_4">try-block statement and throw</h2>
 
 <p>try block statement creates a region where we can use throw 
 and jump to the end of statement of inside catch block.</p>
@@ -126,9 +128,9 @@ and jump to the end of statement of inside catch block.</p>
 </code></pre>
 
 <p>The difference for C++ is that throw can only be used 
-inside try-blocks making the jump path visible.</p>
+inside try-blocks making the jump always local.</p>
 
-<h2 id="toc_4">defer</h2>
+<h2 id="toc_5">defer</h2>
 
 <p>Using defer the statement is executed at the end of scope
  or before leaving the scope with jumps like return break etc.</p>
@@ -136,18 +138,18 @@ inside try-blocks making the jump path visible.</p>
 <pre><code class="language-cpp">  defer statement
 </code></pre>
 
-<h2 id="toc_5">Function Literal</h2>
+<h2 id="toc_6">Function Literal</h2>
 
-<p>Syntax:
-```cpp
-   int (*f) (int arg1, int arg2) = 
-          (int (int arg1, int arg2)) { return arg1 + arg2; };</p>
+<p>Syntax:</p>
 
-<pre><code>
-Grammar changes:
+<pre><code class="language-cpp">   int (*f) (int arg1, int arg2) = 
+          (int (int arg1, int arg2)) { return arg1 + arg2; };
 
-```cpp
-  postfix-expression:
+</code></pre>
+
+<p>Grammar changes:</p>
+
+<pre><code class="language-cpp">  postfix-expression:
     primary-expression
     postfix-expression [ expression ]
     postfix-expression ( argument-expression-listopt )
@@ -160,7 +162,7 @@ Grammar changes:
     ( type-name ) compound-statement           &lt;---- if typename is function type
 </code></pre>
 
-<h2 id="toc_6">Literal string copy to fixed array</h2>
+<h2 id="toc_7">Literal string copy to fixed array</h2>
 
 <pre><code class="language-cpp">
    char s[3];
@@ -226,7 +228,7 @@ other alternatives to make it generic without adding C++ complexity.</p>
 <pre><code class="language-cpp">struct X* p = malloc(sizeof * p) *= {struct X}{};
 </code></pre>
 
-<h2 id="toc_7">Destroy operator</h2>
+<h2 id="toc_8">Destroy operator</h2>
 
 <p>Destroy operator instantiates an especial function that is used 
 to destroy object parts recursively.</p>
@@ -255,7 +257,7 @@ int main()
 
 </code></pre>
 
-<h2 id="toc_8">Auto pointers</h2>
+<h2 id="toc_9">Auto pointers</h2>
 
 <p>(
   Maybe will be removed because of the different possibilities of allocation.
@@ -334,7 +336,7 @@ solution is auto() to say it is the owner pointer
 but don&#39;t use this information to free it, I will do it manually
 for instance at the destructor.</p>
 
-<h2 id="toc_9">Polymorphism</h2>
+<h2 id="toc_10">Polymorphism</h2>
 
 <p>Pointers that can point to a specific <strong>set of struct types</strong>. </p>
 
@@ -417,7 +419,8 @@ int main()
 
 <p>The discriminant can be constant strings or enuns etc.</p>
 
-<pre><code class="language-cpp">struct Box {
+<pre><code class="language-cpp">
+struct Box {
     const char * type= &quot;box&quot;;
 };
 
@@ -434,88 +437,16 @@ the C++ syntax can be used.</p>
 <pre><code class="language-cpp">struct Box *pBox = dynamic_cast&lt;struct Box*&gt;(pShape);
 </code></pre>
 
-<p>Alternatives:
-```cpp
-struct Box *pBox = pShape as Box;</p>
+<p>Alternatives:</p>
 
-<p>if (pShape is Box)
-{</p>
+<pre><code class="language-cpp">struct Box *pBox = pShape as Box;
 
-<p>}
-```
-Cast from box to shape for instance are normal casts but in the future 
+if (pShape is Box)
+{
+
+}
+</code></pre>
+
+<p>Cast from box to shape for instance are normal casts but in the future 
 the compiler can check the if the types are on the same set. </p>
-
-<h2 id="toc_10">Resizable arrays [auto]</h2>
-
-<pre><code class="language-cpp">int a[auto];
- 
-  capacity(a);
-  size(a);
-  push(a, 1);
-  reserve(a, 10);
-  a[0] = 1; //ok
- 
-</code></pre>
-
-<p>(not implemented yet)</p>
-
-<h2 id="toc_11">Parametrized types</h2>
-
-<p>(not implemented yet)</p>
-
-<pre><code class="language-cpp">template &lt;typename T&gt;
-struct vector{
-  T * data;
-  int size;
-  int capacity;
-};
-
-void F(vector&lt;int&gt; * v) {}
-
-</code></pre>
-
-<h2 id="toc_12">Parametrized functions</h2>
-
-<pre><code class="language-cpp">template &lt;typename T&gt;
-struct vector
-{
-  T * data;
-  int size;
-  int capacity;
-};
-
-template&lt;class T&gt;
-void destroy(vector&lt;T&gt; * v) 
-{
-
-}
-
-template&lt;class T&gt;
-void push(vector&lt;T&gt; * v, T i) {
-
-}
-
-int main()
-{
-   vector&lt;int&gt; v = {};
-   push(v, 1);
-   destroy(v);
-}
-/*
-  if T is struct is is passed by pointer otherwise by copy. 
-*/
-
-</code></pre>
-
-<h2 id="toc_13">Pragmas</h2>
-
-<p>This are just for the cprime generator.</p>
-
-<pre><code class="language-cpp">#define DEL(T) void Delete_##T(struct T* p){ if (p) {destroy(*p); free(p);} }
-
-#pragma expand on
-DEL(House)
-#pragma expand off
-</code></pre>
 </body></html>
