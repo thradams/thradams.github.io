@@ -72,8 +72,8 @@ the type size.
 
 ```
 
-The problem in this case the syntax becames (*a)[index] instead
-of just a[index]. 
+The problem in this case the syntax becames ```(*a)[index]``` instead
+of just ```a[index]```. 
 
 Another alternative is use static
 
