@@ -201,3 +201,19 @@ We also need to take into account that varible modified arrays
 can have more dimensions, or in other words, it may depend on
 more than one variable.
 
+
+We may also need a something like:
+
+```c
+
+  int a[5] = { 0, 1, 2, 3, 4};
+  
+  int *[5] p = a;
+
+```
+
+p is not a pointer to array of 5. It is instead a variable modifed
+pointer type pointing to first element of n elements.
+But the implications are huge.. e.g ```p++```  so I am just 
+thinking aloud here.
+

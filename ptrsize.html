@@ -197,4 +197,18 @@ knowing the pointer variable associated with it.</p>
 <p>We also need to take into account that varible modified arrays
 can have more dimensions, or in other words, it may depend on
 more than one variable.</p>
+
+<p>We may also need a something like:</p>
+
+<pre><code class="language-c">
+  int a[5] = { 0, 1, 2, 3, 4};
+  
+  int *[5] p = a;
+
+</code></pre>
+
+<p>p is not a pointer to array of 5. It is instead a variable modifed
+pointer type pointing to first element of n elements.
+But the implications are huge.. e.g <code>p++</code>  so I am just 
+thinking aloud here.</p>
 </body></html>
