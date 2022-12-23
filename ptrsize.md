@@ -159,14 +159,14 @@ take into account the size we declare here.
 
 ```c
  void f(int a[4]){}
- ```
+```
 
- I didn`d find more details about  ```int p[..] = a;``` idea
- but it should try to address any of the problems we have
- today maybe ofering a better ergonomy.
+I didn`d find more details about  ```int p[..] = a;``` idea
+but it should try to address any of the problems we have
+today maybe ofering a better ergonomy.
 
- For instance, having to pass the size manually and
- before the variable modified array.
+For instance, having to pass the size manually and
+before the variable modified array.
 
 ```c
 #include <stdlib.h>
@@ -190,7 +190,9 @@ take into account the size we declare here.
 
 ```
 
-or better syntax to not having to use (*a)[index] and just a[index]
+or better syntax to not having to use ```(*a)[index]``` and just ```a[index]```
 knowing the pointer variable associated with it.
 
 
+
+Maybe also making it possible to be used in struct members.
