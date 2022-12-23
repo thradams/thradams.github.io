@@ -161,7 +161,7 @@ take into account the size we declare here.
  void f(int a[4]){}
 ```
 
-I didn`d find more details about  ```int p[..] = a;``` idea
+I didn'd find more details about ```int p[..] = a;``` idea
 but it should try to address any of the problems we have
 today maybe ofering a better ergonomy.
 
