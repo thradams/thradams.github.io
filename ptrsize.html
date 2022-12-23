@@ -96,7 +96,7 @@ of just <code>a[index]</code>. </p>
 
 <p>Doing this the compiler may or may not complaing if we pass
 the an smaller size. The problem is that there is no garantee. Some compilers (msvc) 
-dont even parse this.</p>
+dont even parse this and variable a still just a pointer inside f.</p>
 
 <p>We also can use variable modified types. Doing this the type has a connection
 with a variable that have the size.</p>
@@ -120,10 +120,10 @@ with a variable that have the size.</p>
 <p>In this case the size is not magically hidden
 inside the type. Instead it is explicitly in some variable
 that needs to be present. In this case the size was
-passed as first argument.</p>
+passed as first argument. variable a is not just a pointer here.</p>
 
 <p>There is one problem. The size argument needs to come 
-before the array. And we cannot this type as structs member
+before the array variable  and we cannot this type as structs member
 because there is not way to connect to the struct member
 that represents the size.</p>
 
@@ -158,6 +158,8 @@ take into account the size we declare here.</p>
 
 <pre><code class="language-c"> void f(int a[4]){}
 </code></pre>
+
+<p>What compiler cannot do is to modify the semantics of sizeof(a) for instance.</p>
 
 <p>I didn&#39;d find more details about <code>int p[..] = a;</code> idea
 but it should try to address any of the problems we have

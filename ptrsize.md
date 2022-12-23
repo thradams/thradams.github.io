@@ -93,7 +93,8 @@ Another alternative is use static
 
 Doing this the compiler may or may not complaing if we pass
 the an smaller size. The problem is that there is no garantee. Some compilers (msvc) 
-dont even parse this.
+dont even parse this and variable a still just a pointer inside f.
+
 
 We also can use variable modified types. Doing this the type has a connection
 with a variable that have the size.
@@ -119,10 +120,10 @@ with a variable that have the size.
 In this case the size is not magically hidden
 inside the type. Instead it is explicitly in some variable
 that needs to be present. In this case the size was
-passed as first argument.
+passed as first argument. variable a is not just a pointer here.
 
 There is one problem. The size argument needs to come 
-before the array. And we cannot this type as structs member
+before the array variable  and we cannot this type as structs member
 because there is not way to connect to the struct member
 that represents the size.
 
@@ -160,6 +161,7 @@ take into account the size we declare here.
 ```c
  void f(int a[4]){}
 ```
+What compiler cannot do is to modify the semantics of sizeof(a) for instance.
 
 I didn'd find more details about ```int p[..] = a;``` idea
 but it should try to address any of the problems we have
@@ -192,7 +194,5 @@ before the variable modified array.
 
 or better syntax to not having to use ```(*a)[index]``` and just ```a[index]```
 knowing the pointer variable associated with it.
-
-
 
 Maybe also making it possible to be used in struct members.
