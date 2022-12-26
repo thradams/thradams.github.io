@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<a class = "linkbox" href = "codeblog.html">CODE-BLOG</a>
+<a class = "linkbox" href = "about.html">ABOUT </a>
+<h1 id="toc_0">Borrow Checker jorney in cake</h1>
+
+<p>First of all, I chose the title borrow checker because Rust made 
+the term popular and it may be easier to transmit the idea.</p>
+
+<p>The feature I want for C is &quot;imaginary flags&quot;. They are imaginary because
+they don´t exist in runtime.</p>
+
+<p>These flags are meant to describe in code something already described 
+in documentation in a way compiler can check the code. </p>
+
+<p>For instance, if we use the <code>malloc</code> and it returns a non 
+null pointer, then we need to call <code>free</code>. 
+Compiler is not checking this.</p>
+
+<p>They jorney of cake compiler for these imaginary flags started with
+5 operations (set, clear, scope_set, scope_clear and check). </p>
+
+<p>Each declarator can have 32 imaginary flags. They are bits.</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-c">#define FLAG_1 1
+int d;
+_set_flag(d, FLAG_1);
+static_assert(_check(d, FLAG_1) == 1);
+_clear_flag(d, FLAG_1);
+static_assert(_check(d, FLAG_1) == 0);
+</code></pre>
+
+<p>These imaginary operations are not dependent on runtime conditions.</p>
+
+<p>For instance:</p>
+
+<pre><code class="language-c">void f(int i)
+ int d;
+ if (i &gt; 3)
+ {
+      _set_flag(d, 1);
+ }
+ static_assert(_check(d, 1) == 1);
+</code></pre>
+
+<p>flag will be set doens&#39;t matter the condition.</p>
+
+<p>The diference from scope_set and scope_clear is that it changes
+de flag and returns to the previous state after leaving the scope.</p>
+
+<pre><code class="language-c"> void * p = malloc(1);
+ if (p)
+ {
+      _scope_set_flag(d, NOT_NULL);
+ }
+</code></pre>
+
+<p>The sample above makes we think that we could have some default flags like 
+ MAYBE_NULL or NOT_NULL. It also makes we think that we could have these
+ default imaginary flags set automatically for us.</p>
+
+<p>We can do this using C23 attributes.</p>
+
+<pre><code class="language-c"> [[free]] void *malloc(int size);
+</code></pre>
+
+<p>The attribute free for instance can set the flag &quot;must free&quot;. And now
+ we can add not only default flags but default semantics on these flags.</p>
+
+<p>Cake will check if the flag &quot;must free&quot; is cleared at the end of scope,
+ otherwise it will print an warning.</p>
+
+<p>To clear this flag we can declare and call a function.</p>
+
+<pre><code class="language-c"> void free([[free]]void * p);
+</code></pre>
+
+<pre><code class="language-c"> void * p = malloc(1);
+ if (p)
+ {
+      free(p);
+ }
+</code></pre>
+
+<p>or </p>
+
+<pre><code class="language-c"> void * p = malloc(1);
+ /*flag must free is ON*/
+ if (p)
+ {
+
+ }
+ free(p);
+ /*flag must free is OFF*/
+</code></pre>
+
+<p>So cake has these imaginary flags</p>
+
+<ul>
+<li>must free</li>
+<li>must destroy</li>
+<li>uninitialized</li>
+<li>maybe null</li>
+<li>not null</li>
+</ul>
+
+<p>Must destroy flag is similar of &quot;must free&quot;. The diference 
+it may be applied to structs in this way.</p>
+
+<pre><code class="language-c"> 
+struct [[destroy]] X {
+  int i;
+};
+
+void x_destroy([[destroy]] struct x *p) { }
+
+int main() {
+   struct X x = {0};   
+   /*flag must destroy is ON*/
+   
+   x_destroy(&amp;x);
+
+   /*flag must destroy is OFF*/
+}
+
+</code></pre>
+
+<p>continues...</p>
+
+<p>implementation is instable  at</p>
+
+<p><a href="http://thradams.com/cake/playground.html">http://thradams.com/cake/playground.html</a></p>
+</body></html>
