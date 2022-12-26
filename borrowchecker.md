@@ -6,7 +6,7 @@ First of all, I chose the title borrow checker because Rust made
 the term popular and it may be easier to transmit the idea.
 
 The feature I want for C is "imaginary flags". They are imaginary because
-they don´t exist in runtime.
+they donÂ´t exist in runtime.
 
 These flags are meant to describe in code something already described 
 in documentation in a way compiler can check the code. 
