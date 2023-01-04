@@ -17,12 +17,11 @@
 
 ## 2023
 
+[What if structs were passed by pointer](ptrstruct.html) Dez 2022
+
 
 ----
 ## 2022
-
-
-[borrow checker](borrowchecker.html) Dez 2022
 
 [pointer + size in C](ptrsize.html) Dez 2022
 

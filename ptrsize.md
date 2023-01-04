@@ -1,7 +1,7 @@
 
 ## Pointer + size in C
 
-I created this post in response of 
+I created this post in respose of 
 https://news.ycombinator.com/edit?id=34084894
 
 
@@ -20,8 +20,6 @@ Sample there was
 
 ```
 
-
-
 We can do this in C.
 
 ```c
@@ -29,11 +27,11 @@ We can do this in C.
     int (*p)[sizeof(a)/sizeof(a[0])] = &a;  // p points to array of 5 elements.
 ```
 
-The difference is that we have a pointer to array of 5 elements. 
+The diference is that we have a pointer to array of 5 elements. 
 and not a pointer to the first element of a sequence of 5.
 
 
-Let's see our current options.
+Let`s see your current options.
 
 For fixed size we can have just
 
@@ -54,12 +52,11 @@ But, passing an array to a function it will lose the size
      int a[5] = { 0, 1, 2, 3, 4};
      f(a);
  }
- }
 
 ```
 
 
-One  alternative is to pass a pointer to array[5] then we don't lose
+One  alternative is to pass a pointer to array[5] then we don`t lose
 the type size.
 
 ```c
@@ -75,7 +72,7 @@ the type size.
 
 ```
 
-The problem in this case the syntax became ```(*a)[index]``` instead
+The problem in this case the syntax becames ```(*a)[index]``` instead
 of just ```a[index]```. 
 
 Another alternative is use static
@@ -94,9 +91,9 @@ Another alternative is use static
 
 ```
 
-Doing this the compiler may or may not complaining  if we pass
-the an smaller size. The problem is that there is no guarantee. Some compilers (msvc) 
-don't even parse this and variable a still just a pointer inside f.
+Doing this the compiler may or may not complaing if we pass
+the an smaller size. The problem is that there is no garantee. Some compilers (msvc) 
+dont even parse this and variable a still just a pointer inside f.
 
 
 We also can use variable modified types. Doing this the type has a connection
@@ -164,12 +161,11 @@ take into account the size we declare here.
 ```c
  void f(int a[4]){}
 ```
-
 What compiler cannot do is to modify the semantics of sizeof(a) for instance.
 
 I didn'd find more details about ```int p[..] = a;``` idea
 but it should try to address any of the problems we have
-today maybe offering better ergonomics.
+today maybe ofering a better ergonomy.
 
 For instance, having to pass the size manually and
 before the variable modified array.

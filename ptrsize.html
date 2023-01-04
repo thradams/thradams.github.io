@@ -13,7 +13,7 @@
 <a class = "linkbox" href = "about.html">ABOUT </a>
 <h2 id="toc_0">Pointer + size in C</h2>
 
-<p>I created this post in response of 
+<p>I created this post in respose of 
 <a href="https://news.ycombinator.com/edit?id=34084894">https://news.ycombinator.com/edit?id=34084894</a></p>
 
 <p>Sample there was</p>
@@ -36,10 +36,10 @@
     int (*p)[sizeof(a)/sizeof(a[0])] = &amp;a;  // p points to array of 5 elements.
 </code></pre>
 
-<p>The difference is that we have a pointer to array of 5 elements. 
+<p>The diference is that we have a pointer to array of 5 elements. 
 and not a pointer to the first element of a sequence of 5.</p>
 
-<p>Let&#39;s see our current options.</p>
+<p>Let`s see your current options.</p>
 
 <p>For fixed size we can have just</p>
 
@@ -58,11 +58,10 @@ and not a pointer to the first element of a sequence of 5.</p>
      int a[5] = { 0, 1, 2, 3, 4};
      f(a);
  }
- }
 
 </code></pre>
 
-<p>One  alternative is to pass a pointer to array[5] then we don&#39;t lose
+<p>One  alternative is to pass a pointer to array[5] then we don`t lose
 the type size.</p>
 
 <pre><code class="language-c">
@@ -77,7 +76,7 @@ the type size.</p>
 
 </code></pre>
 
-<p>The problem in this case the syntax became <code>(*a)[index]</code> instead
+<p>The problem in this case the syntax becames <code>(*a)[index]</code> instead
 of just <code>a[index]</code>. </p>
 
 <p>Another alternative is use static</p>
@@ -95,9 +94,9 @@ of just <code>a[index]</code>. </p>
 
 </code></pre>
 
-<p>Doing this the compiler may or may not complaining  if we pass
-the an smaller size. The problem is that there is no guarantee. Some compilers (msvc) 
-don&#39;t even parse this and variable a still just a pointer inside f.</p>
+<p>Doing this the compiler may or may not complaing if we pass
+the an smaller size. The problem is that there is no garantee. Some compilers (msvc) 
+dont even parse this and variable a still just a pointer inside f.</p>
 
 <p>We also can use variable modified types. Doing this the type has a connection
 with a variable that have the size.</p>
@@ -164,7 +163,7 @@ take into account the size we declare here.</p>
 
 <p>I didn&#39;d find more details about <code>int p[..] = a;</code> idea
 but it should try to address any of the problems we have
-today maybe offering better ergonomics.</p>
+today maybe ofering a better ergonomy.</p>
 
 <p>For instance, having to pass the size manually and
 before the variable modified array.</p>
