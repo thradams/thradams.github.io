@@ -342,18 +342,22 @@ int main(void) {
 
  We need a way to sort the best results first.
 
- One alternative is to create a index for the title of the document 
- and other for the body. Then first we print the documents that have the words on the title.
+ One alternative is to create a index for the title 
+ and other for the body. Then we search first for titles.
 
- We also can have a number in each document representing its importance.
- At the end we sort the result with the best first.
- This number can be the number of visualization for each document, or the number
- of references or the number of clicks for instance.
+ We also can have a value in each document representing its importance.
 
+ At the end we sort the results using this value. This value can be the
+ number of clicks or references this document has. More clicks or 
+ more references is better and it is listed first.
+ 
 
 ### Improvements?
-We also can make changes where we accept documents with just one word missing.
-The index should normalized with lowercase for instance.
+
+* We also can make changes where we accept documents with just one word missing.
+* The index should normalized with lowercase for instance.
+* The index should be created automatically parsing words inside the documents.
+* We can download html pages from the internet and index by the url.
 
 ### Data structures
 
