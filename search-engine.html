@@ -15,6 +15,40 @@
 
 <p>Simple search engine to find words in documents.</p>
 
+<h3>How it works?</h3>
+
+<p>We have a list of indexed documents. Each document has a text.
+In our sample I have two documents:</p>
+
+<pre><code>Index | Text
+------|------------
+0     |&quot;document 1&quot;
+1     |&quot;document 2&quot;
+</code></pre>
+
+<p>We also have a hash map data structure mapping each word (from any document) to a bitset.
+When the bit N is ON that means that the word is present at document index N.</p>
+
+<p>For instance</p>
+
+<pre><code>
+Word          BITSET
+------------------------------
+&quot;document&quot; [11000000...]         
+&quot;1&quot;        [10000000...]
+&quot;2&quot;        [01000000...]
+
+</code></pre>
+
+<p>The <em>find_docs</em> algorithm will return a bitset where each
+bit N ON means all words are inside the document N.</p>
+
+<p>For instance, for word &quot;1&quot; it will find [10000000...] then
+we do  logical AND with the others words we have.</p>
+
+<p>To print the result we walk on the bit set and if we find bit N ON
+we print the document index N.</p>
+
 <pre><code class="language-cpp">
 #include &lt;stdlib.h&gt;
 #include &lt;string.h&gt;
@@ -26,67 +60,9 @@
 
 struct document
 {
-    const char* url;
-    const char* title;
+    const char* text;
 };
 
-struct documents
-{
-    struct document** data;
-    int size;
-    int capacity;
-};
-
-void document_delete(struct document* p)
-{
-    free(p);
-}
-
-int documents_reserve(struct documents* p, int n)
-{
-    if (n &gt; p-&gt;capacity)
-    {
-        void* pnew = realloc(p-&gt;data, n * sizeof(p-&gt;data[0]));
-        if (pnew)
-        {
-            p-&gt;data = pnew;
-            p-&gt;capacity = n;
-        }
-        else
-            return 0; /*out of mem*/
-    }
-
-    return p-&gt;capacity;
-}
-
-int documents_push(struct documents* p, struct document* pitem)
-{
-    if (p-&gt;size + 1 &gt; p-&gt;capacity)
-    {
-        int n = p-&gt;capacity * 2;
-        if (n == 0)
-            n = 1;
-
-        if (documents_reserve(p, n) == 0)
-        {
-            document_delete(pitem); /*design choice*/
-            return 0;
-        }
-    }
-
-    p-&gt;data[p-&gt;size] = pitem;
-    p-&gt;size++;
-
-    return p-&gt;size - 1;
-}
-
-void documents_destroy(struct documents* p)
-{
-    for (int i = 0; i &lt; p-&gt;size; i++)
-        document_delete(p-&gt;data[i]);
-
-    free(p-&gt;data);
-}
 
 #define BITSET_NUM_BITS_PER_WORD (CHAR_BIT * (int)sizeof(unsigned long))
 
@@ -100,7 +76,7 @@ inline bool bitset_getbit(struct bitset* bitset, int index)
 {
     assert(index / BITSET_NUM_BITS_PER_WORD &lt; bitset-&gt;size);
     return (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp;
-           (1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != 0;
+        (1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != 0;
 }
 
 int bitset_resize(struct bitset* p, int newSize);
@@ -219,7 +195,7 @@ struct bitset* search_index_find(struct search_index* pMap, const char* key)
 
     for (; pentry != NULL; pentry = pentry-&gt;next)
     {
-        if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0) 
+        if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0)
         {
             p = &amp;pentry-&gt;bitset;
             break;
@@ -236,7 +212,7 @@ int search_index_set(struct search_index* pMap, const char* key, int docindex)
 
     if (pMap-&gt;table == NULL)
     {
-        if (pMap-&gt;capacity &lt; 1) 
+        if (pMap-&gt;capacity &lt; 1)
         {
             pMap-&gt;capacity = 1000;
         }
@@ -251,9 +227,9 @@ int search_index_set(struct search_index* pMap, const char* key, int docindex)
 
         struct search_index_entry* pentry = pMap-&gt;table[index];
 
-        for (; pentry != NULL; pentry = pentry-&gt;next) 
+        for (; pentry != NULL; pentry = pentry-&gt;next)
         {
-            if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0) 
+            if (pentry-&gt;hash == hash &amp;&amp; strcmp(pentry-&gt;key, key) == 0)
             {
                 break;
             }
@@ -283,9 +259,9 @@ int search_index_set(struct search_index* pMap, const char* key, int docindex)
 
 
 void find_docs(int nwords,
-               const char* words[/*nwords*/],
-               struct search_index* search_index,
-               struct bitset* result)
+    const char* words[/*nwords*/],
+    struct search_index* search_index,
+    struct bitset* result)
 {
     bool bFirst = true;
     for (int i = 0; i &lt; nwords; i++)
@@ -320,61 +296,64 @@ void find_docs(int nwords,
     }
 }
 
-void print_results(struct bitset* bitset, struct documents* documents)
+void print_results(struct bitset* bitset, struct document* documents)
 {
     for (int i = 0; i &lt; bitset-&gt;size * BITSET_NUM_BITS_PER_WORD; i++)
     {
         if (bitset_getbit(bitset, i))
         {
-            printf(&quot;%s\n&quot;, documents-&gt;data[i]-&gt;title);
+            printf(&quot;%s\n&quot;, documents[i].text);
         }
     }
 }
 
 int main(void) {
 
-    struct documents documents = { 0 };
+    struct document documents[] = {
+        {.text = &quot;document 1&quot;},
+        {.text = &quot;document 2&quot;}
+    };
+
     struct search_index search_index = { 0 };
 
-    struct document* pdoc = calloc(1, sizeof * pdoc);
-    if (pdoc)
-    {
-        pdoc-&gt;url = strdup(&quot;doc1&quot;);
-        pdoc-&gt;title = strdup(&quot;document 1&quot;);
+    /*manually creating index with first document*/
+    search_index_set(&amp;search_index, &quot;1&quot;, 0 /*index 0*/);
+    search_index_set(&amp;search_index, &quot;document&quot;, 0 /*index 0*/);
 
-        int docindex1 = documents_push(&amp;documents, pdoc);
-        search_index_set(&amp;search_index, &quot;1&quot;, docindex1);
-        search_index_set(&amp;search_index, &quot;document&quot;, docindex1);
+    /*manually creating index with second document*/
+    search_index_set(&amp;search_index, &quot;2&quot;, 1 /*index 1*/);
+    search_index_set(&amp;search_index, &quot;document&quot;, 1 /*index 1*/);
 
-        struct document* pdoc2 = calloc(1, sizeof * pdoc2);
-        if (pdoc2)
-        {
-            pdoc2-&gt;url = strdup(&quot;doc2&quot;);
-            pdoc2-&gt;title = strdup(&quot;document 2&quot;);
+    struct bitset bitset = { 0 };
+    find_docs(1, (const char* []) { &quot;1&quot; }, &amp; search_index, &amp; bitset);
+    print_results(&amp;bitset, &amp;documents);
+    bitset_destroy(&amp;bitset);
 
-            int docindex2 = documents_push(&amp;documents, pdoc2);
-            search_index_set(&amp;search_index, &quot;2&quot;, docindex2);
-            search_index_set(&amp;search_index, &quot;document&quot;, docindex2);
+    printf(&quot;---\n&quot;);
 
-            struct bitset bitset = { 0 };            
-            find_docs(1, (const char* []) { &quot;1&quot; }, &amp;search_index, &amp;bitset);
-            print_results(&amp;bitset, &amp;documents);
-            bitset_destroy(&amp;bitset);
-
-            printf(&quot;---\n&quot;);
-
-            struct bitset bitset2 = { 0 };
-            find_docs(1, (const char* []) {&quot;document&quot;}, &amp;search_index, &amp;bitset2);
-            print_results(&amp;bitset2, &amp;documents);            
-            bitset_destroy(&amp;bitset2);
-        }
-    }
-
-    
-    documents_destroy(&amp;documents);
+    struct bitset bitset2 = { 0 };
+    find_docs(1, (const char* []) { &quot;document&quot; }, &amp; search_index, &amp; bitset2);
+    print_results(&amp;bitset2, &amp;documents);
+    bitset_destroy(&amp;bitset2);
     search_index_destroy(&amp;search_index);
 }
 
-
 </code></pre>
+
+<h3>What is missing here?</h3>
+
+<p>We need a way to sort the best results first.</p>
+
+<p>One alternative is to create a index for the title of the document 
+ and other for the body. Then first we print the documents that have the words on the title.</p>
+
+<p>We also can have a number in each document representing its importance.
+ At the end we sort the result with the best first.
+ This number can be the number of visualization for each document, or the number
+ of references or the number of clicks for instance.</p>
+
+<h3>Improvements?</h3>
+
+<p>We also can make changes where we accept documents with just one word missing.
+The index should normalized with lowercase for instance.</p>
 </body></html>
