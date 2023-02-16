@@ -40,6 +40,8 @@ we do  logical AND with the others words we have.
 To print the result we walk on the bit set and if we find bit N ON
 we print the document index N.
 
+Searching for "1" it returns just the first document. But seaching
+for "document" it returns document 0 and 1.
 
 ```cpp
 
@@ -352,3 +354,11 @@ int main(void) {
 ### Improvements?
 We also can make changes where we accept documents with just one word missing.
 The index should normalized with lowercase for instance.
+
+### Data structures
+
+* Hashmap for word index
+* dynamic bit set that can expanded automatically
+
+
+
