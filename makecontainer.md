@@ -3,6 +3,8 @@
 
 Copy this code and customize.
 
+See [generator](generator/dynamic_array.html)
+
 ## Vector of
 
 [struct item](vecitem.md)

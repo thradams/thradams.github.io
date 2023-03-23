@@ -1,0 +1,16 @@
+
+.leftpanel {
+    text-align: left;
+    vertical-align: top;
+    background-color: antiquewhite;
+    padding-right: 20px;
+    font-family:'Consolas','Lucida Console'
+    
+}
+
+.rightpanel {
+    text-align: left;
+    vertical-align: top;
+    padding-left: 20px;
+    overflow: auto;
+}
