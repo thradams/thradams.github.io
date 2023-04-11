@@ -324,6 +324,7 @@ struct X {int i;} x;
 int main()
 {
    auto s = "hello auto";
+
    auto p = &x;
    auto *p2 = &x;
    const auto d = 1.0;
@@ -331,6 +332,9 @@ int main()
    int a = 1;
    int b = 2;
    SWAP(a, b);
+
+   auto bb = true;
+   auto p = nullptr;
 }
 
 `;
@@ -356,6 +360,9 @@ int main()
 {
   void * p = nullptr;
   void * p2 = NULL;
+
+  auto a = nullptr;
+  static_assert(_is_same(typeof(a), typeof(nullptr)));
 }
 
 /*
@@ -476,14 +483,6 @@ void x_destroy(struct X* p)
 ;
 
    
-
-sample["Extension typeid"] =
-`
-int a[10];
-static_assert(typeid(a) == typeid(double [10]), "types are different");
-
-`;
-
 sample["Extension try catch throw"] =
 `
 #include <stdio.h>
