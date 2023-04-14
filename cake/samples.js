@@ -44,6 +44,11 @@ sample["C11 _Generic"] =
 int main(void)
 {
     cbrt(1.0);
+
+    const int * const p;
+    _Static_assert(_Generic(p, const int * : 1 ), "");
+    _Static_assert(_Generic(&p, const int * const * : 1 ), "");
+    _Static_assert(_Generic(main, int (*)(void) : 1 ), "");
 }
 
 `;
@@ -414,19 +419,34 @@ int main()
 
 sample["C23 bool true false"] =
  `
+#include <stdio.h>
+
+
 int main()
 {
   bool b = true;
   b = false;
   static_assert(1 == true);
   static_assert(0 == false);
+
+  printf("%s", _Generic(true, bool : "bool"));
+  printf("%s", _Generic(false, bool : "bool"));
+
+  printf("%s", _Generic(b, bool : "bool"));
+
+  auto b2 = true;
+  printf("%s", _Generic(b2, bool : "bool"));
+
 }
+
 
 `;
 
 sample["C23 nullptr"] =
 `
+
 #include <stdlib.h>
+#include <stdio.h>
 
 int main()
 {
@@ -435,6 +455,8 @@ int main()
 
   auto a = nullptr;
   static_assert(_is_same(typeof(a), typeof(nullptr)));
+
+  printf("%s", _Generic(nullptr, typeof(nullptr) : "nullptr_t"));
 }
 
 /*
@@ -450,6 +472,7 @@ int F()
     void * p = nullptr;
     void * p2 = NULL;
 }
+
 `;
 
 
@@ -517,6 +540,38 @@ void call(void) {
 
 
 `;
+
+sample["Extension _Generic with type name"] =
+`
+
+
+#define f(s)  \\
+ static_assert(_Generic(typeof(s),char [2]: 1), "we want buffer of 2");  \\
+ fimp(2)
+
+void fimp([[maybe_unused]] char s[2]) {
+
+}
+
+
+int main()
+{
+    const int * const p;
+    static_assert(_Generic(p, const int *: 1));
+
+    /*extension*/
+    static_assert(_Generic(int, int : 1));
+    static_assert(_Generic(typeof(p), const int * const: 1));
+
+    char s[2];/*try diferent size here*/
+    f(s);
+
+}
+
+
+`
+;
+
 
 sample["Extension _Hashof"] =
 `
