@@ -23,6 +23,38 @@ const double dmin = 0x1p-1022;
 */
 `;
 
+sample["C99 (int a[static])"] =
+`
+#include <stdlib.h>
+
+void F(int a[static 5]) 
+{
+}
+
+void F(int a[static const 5]) 
+{
+    static_assert((typeof(a)) == (int * const));
+    a = 1;
+}
+
+
+int main() {
+    
+    F(0);
+    F(NULL);
+    F(nullptr);
+
+    int a[] = {1, 2, 3};    
+    F(a);
+    
+    int b[] = { 1, 2, 3 , 4, 5};
+    F(b);
+
+    int c[] = { 1, 2, 3 , 4, 5, 6};
+    F(c);
+}
+
+`;
 
 
 sample["C11 _Generic"] =
@@ -407,7 +439,7 @@ void f()
 auto literal_string = "hello auto";
 
 struct {int i;} x;
-auto x2 = x; /*not working yet*/
+auto x2 = x;
 
 auto bb = true;
 auto pnull = nullptr;
