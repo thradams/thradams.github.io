@@ -15,16 +15,20 @@ void generate_doc(const char* mdfilename, const char* outfile)
         "  <script>hljs.highlightAll(); </script>\n"
         " <link rel = \"stylesheet\" href = \"style.css\"/>\n"
         "</head>\n"
-        "<body>\n"
-        "<a class = \"linkbox\" href = \"index.html\" > HOME</a>\n"
-        "<a class = \"linkbox\" href = \"codeblog.html\">CODE-BLOG</a>\n"
-        "<a class = \"linkbox\" href = \"about.html\">ABOUT </a>\n";
+        "<body>\n";
     
 
     FILE* f2 = fopen(outfile /*"./web/index.html"*/, "w");
     if (f2)
     {
-        fwrite(header, 1, strlen(header), f2);
+        fputs(header, f2);
+        if (strcmp(mdfilename, "index.md") != 0)
+        {
+            const char* menu = "<a class = \"linkbox\" href = \"index.html\" > HOME</a>\n";
+            fputs(menu, f2);
+        }
+        
+        
         fclose(f2);
     }
     char cmd[200];

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>{{TOC}}</p>
+
+<h2 id="toc_0">Abstract</h2>
+
+<p>In C, there are several functions that must be called in pairs. For instance, <code>fopen/fclose</code>, <code>malloc/free</code> and so on.    </p>
+
+<p>In this text, I will use the term &quot;destructor&quot; to refer to the closing function, such as <code>fclose</code> and <code>free</code>.</p>
+
+<p>When the programmer forgets to call the destructor, it can lead to memory leaks and other problems. In many scenarios, they are silent problems, as they may not affect the program&#39;s behavior or cause immediate issues.  They can even go undetected during unit tests, giving a false sense of stability.</p>
+
+<p>Our objective, is to check the correct usage of the destructor during the compilation issuing warnings when the programmer forgets to call it. </p>
+
+<h2 id="toc_1">Defining destructors</h2>
+
+<p>The following types can have destructors:</p>
+
+<ul>
+<li>structs/unions</li>
+<li>pointers</li>
+<li>arrays</li>
+</ul>
+
+<h2 id="toc_2">Destructors for struct/union</h2>
+
+<p>We declare struct/union have a destructor adding ~ before the tag name. </p>
+
+<pre><code class="language-c">struct ~ X {...};  
+</code></pre>
+
+<p>Then if we don&#39;t call it&#39;s destructor we have a warning</p>
+
+<pre><code class="language-c">int main()
+{
+  struct X x = {};
+  //warning destructor of x not called
+}
+</code></pre>
+
+<p>To eliminate the warning we need to destroy the variable before the end of scope.   </p>
+
+<p>For this task, what we have is a kind of destructive parameter. We define this parameter adding ~.</p>
+
+<pre><code class="language-c">void x_destroy(~ struct X * p){...}
+</code></pre>
+
+<p>Then:</p>
+
+<pre><code class="language-c">int main()
+{
+  struct X x = {};
+  x_destroy(&amp;x);
+}
+</code></pre>
+
+<p>In case we have struct members with destructors, at the destructor implementation we need to call all destructors members as well.</p>
+
+<pre><code class="language-c">struct ~ Y {...};  
+
+struct ~ X {
+   struct Y y;
+};
+
+void x_destroy(~ struct X * p) {
+  /*
+    warning destructor 
+    of p-&gt;y not called
+  */
+}
+</code></pre>
+
+<h2 id="toc_3">Destructors for pointers</h2>
+
+<p>Adding auto after * (like const qualifier) creates a pointer that needs destructor. We are going to call them owner pointer.</p>
+
+<p>Sample
+```c
+void * auto malloc(size_t n);</p>
+
+<p>int main()
+{
+  int * auto p = malloc(1);
+  //warning destructor of p not called
+} 
+```</p>
+
+<p>The destructor syntax of owner pointer is </p>
+
+<pre><code class="language-c">void free(~ int * auto p);
+</code></pre>
+
+<p><strong>Rule</strong> : We cannot call pointer destructor for non owner pointers.</p>
+
+<p><strong>Rule</strong>: If the pointed object has destructor then we also need to call the destructor of the pointed object.</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-c">int main() {
+  struct X * auto p = malloc(sizeof(struct X));
+  free(p);
+} //warning, not calling the destructor of the pointed object
+</code></pre>
+
+<p>We can do the following</p>
+
+<pre><code class="language-c">void x_delete(~struct X * auto p) {
+   x_destroy(p-&gt;x);
+   free((void*)p);
+}
+int main() {
+  struct X * auto p = malloc(1);
+  x_delete(p);
+}
+</code></pre>
+
+<p><strong>Rule</strong> Similarly of what happens with struct members, the compiler must check that at the implementation of x_delete we call the destructor of struct X or each destructor of x members.</p>
+
+<pre><code class="language-c">void x_delete(~struct X * auto p) {  
+  //x_destroy(p);
+  free(p);
+} //warning destructor of X not called
+</code></pre>
+
+<p>We can pass owner pointers normally for function using non owning pointers.</p>
+
+<pre><code class="language-c">void x_print(struct X * p);   
+int main(){
+  struct X * auto p = malloc(sizeof(struct X));
+  x_printf(p);
+  x_delete(p);
+}
+</code></pre>
+
+<p>Destructor for void * is an especial case.</p>
+
+<h2 id="toc_4">Destructor for arrays</h2>
+
+<p>We use [auto] to declare the array needs a destructor, and like pointer we add ~in function arguments to create destructors.</p>
+
+<pre><code class="language-c">void x_array_destroy(int n, ~ struct X x[auto n]){
+  for (int i = 0; i &lt; n; i++) x_destroy(x[i]);  
+}
+int main() {
+  struct X a[auto 10] = {};
+  x_array_destroy(10, a);
+}
+</code></pre>
+
+<p>We also can call array destructors using owner pointers.</p>
+
+<pre><code class="language-c">void f() {
+  struct X * auto p = calloc(10, sizeof(struct X));
+  x_array_destroy(10, p);
+  free(p);
+}
+</code></pre>
+
+<h2 id="toc_5">Checking the rules I</h2>
+
+<p>Let&#39;s check if these rules can help us with <code>fopen/fclose</code>.</p>
+
+<pre><code class="language-c">FILE* auto fopen(char const* name,char const* mode);
+int fclose(~ FILE* auto f);
+</code></pre>
+
+<pre><code class="language-c">int main() {
+  FILE * auto p = fopen(&quot;text.txt&quot;, &quot;r&quot;);
+  if (p) {
+    fclose(p);
+  }
+}
+</code></pre>
+
+<p>We have a problem, because the not all control paths are calling the destructor and the compiler will emit an warning.</p>
+
+<p>However, the code is correct because we don&#39;t need, and we cannot, call fclose on null pointer.</p>
+
+<p>To solve this problem we also need null-checks in your static analyzer.  </p>
+
+<p><strong>Rule</strong>:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don&#39;t need to destroy the object.</p>
+
+<h2 id="toc_6">Move assignment</h2>
+
+<p>We can move one variable to another using the move assignment.</p>
+
+<pre><code>a = move b;
+</code></pre>
+
+<p>This move will make b &#39;uninitialized&#39;.
+The variable a must be null (all zeros) or &#39;uninitialized&#39;.</p>
+
+<p>a and b types must have destructor.</p>
+
+<p>a object is ending it&#39;s live time, we need ensure it is null, all zero, or uninitialized.</p>
+
+<p>This may be a little hard for struct member, then we can override this information using assert.</p>
+
+<h2 id="toc_7">Returning types with destructor</h2>
+
+<p>When returning local variable (pointer or struct/union) that have destructor the object is moved automatically.</p>
+
+<p><strong>Rule</strong> Returning a type with destructor requires the caller to not ignore the result.</p>
+
+<h2 id="toc_8">Moving variables to function arguments</h2>
+
+<p>We also can move objects to function arguments, similarly of the move assignment.</p>
+
+<pre><code class="language-c">void list_add(struct list* list, struct node item){}
+list_add(&amp;list, move item);
+//item is uninitialized here
+</code></pre>
+
+<pre><code>void list_add(struct list* list, struct node* auto item){}
+list_add(&amp;list, move p_item);
+//p_item is uninitialized here
+</code></pre>
+
+<h2 id="toc_9">Checking the rules II</h2>
+
+<pre><code class="language-c">struct book {
+    char * auto title;
+};
+
+void book_destroy(~ struct book* book)
+{ 
+  free(book-&gt;title);
+}
+
+void book_delete(~ struct book* auto book) {
+    if (book) {
+       book_destroy(book);
+       free(book);
+    }
+}
+
+struct books {
+    struct book * auto * auto data;
+    int size;
+    int capacity;
+};
+
+void books_destroy(~ struct books * books) {
+   for (int i = 0; i &lt; books-&gt;size; i++) {
+     book_delete(books-&gt;data[i]);
+   }
+   free(books-&gt;data);
+}
+
+int main() 
+{
+   struct books books = {};
+   struct book* auto book = calloc(1, sizeof (struct book));
+   if (book == NULL) goto continuation;
+   
+   book-&gt;title = strdup(&quot;book1&quot;);
+   if (book-&gt;title == NULL) goto continuation;
+   
+   if (books_push_back(&amp;books, move book) == 0) {
+     book = NULL;
+   }
+ continuation:
+  book_delete(book);
+  books_destroy(&amp;books);
+}
+</code></pre>
+
+<h2 id="toc_10">Checking the rules III</h2>
+
+<pre><code class="language-c">int main()
+{
+  FILE * auto f = NULL;
+  if (fopen_s( &amp;f,&quot;f.txt&quot;, &quot;r&quot;) == 0)  {
+    fclose(f);
+  }
+}
+</code></pre>
+
+<p>The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.</p>
+
+<p>One way we could fix this is adding assert(f == NULL) for the else path.</p>
+
+<pre><code class="language-c">int main()
+{
+  FILE * auto f = NULL;
+  if (fopen_s( &amp;f,&quot;f.txt&quot;, &quot;r&quot;) == 0)  {
+    fclose(f);
+  }
+  else
+    assert(f == NULL);
+}
+</code></pre>
+</body></html>
