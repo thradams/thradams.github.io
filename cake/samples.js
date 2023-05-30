@@ -717,14 +717,20 @@ void f(int n) {
 
 sample["C23 constexpr"] =
 `
-/*
-  NOT IMPLEMENTED YET
-  Just parsed and constexpr is removed.  
-*/
-constexpr int i = 1;
+#include <stdio.h>
 
-/*floating point now works in constant expressions*/
-static_assert(2.0 == 2.0);
+constexpr int c = 123;
+
+int a[c];
+
+constexpr double PI = 3.14;
+
+static_assert(PI + 1 == 3.14 + 1.0);
+
+int main()
+{
+   printf("%f", PI);
+}
 `;
 
 sample["C23 enum"] =
@@ -759,14 +765,22 @@ int main()
     x_destroy(&x);
 }
 
-
-
 void x_destroy(struct X* p)
 {
-    /*In a far away galaxy*/
-    static_assert(_Hashof(p) == 283780300, "check this function x_destroy");
+    static_assert(_Hashof(struct X) == 283780300);
 }
 
+void x_print(struct X* p)
+{
+    static_assert(_Hashof(struct X) == 283780300);
+}
+
+struct X x_clone(const struct X* p)
+{
+  struct X x = *p;
+  static_assert(_Hashof(struct X) == 283780300);
+  return x;
+}
 
 `
 ;
