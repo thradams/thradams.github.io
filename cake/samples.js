@@ -721,6 +721,8 @@ sample["C23 constexpr"] =
 
 constexpr int c = 123;
 
+constexpr int c2 = c + 1000;
+
 int a[c];
 
 constexpr double PI = 3.14;
@@ -729,7 +731,9 @@ static_assert(PI + 1 == 3.14 + 1.0);
 
 int main()
 {
-   printf("%f", PI);
+    constexpr char ch = 'a';
+
+    printf("%f %c", PI, ch);
 }
 `;
 
