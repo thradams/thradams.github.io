@@ -9,8 +9,6 @@
 </head>
 <body>
 <a class = "linkbox" href = "index.html" > HOME</a>
-<p>{{TOC}}</p>
-
 <h2 id="toc_0">Abstract</h2>
 
 <p>In C, there are several functions that must be called in pairs. For instance, <code>fopen/fclose</code>, <code>malloc/free</code> and so on.    </p>
@@ -83,16 +81,16 @@ void x_destroy(~ struct X * p) {
 
 <p>Adding auto after * (like const qualifier) creates a pointer that needs destructor. We are going to call them owner pointer.</p>
 
-<p>Sample
-```c
-void * auto malloc(size_t n);</p>
+<p>Sample</p>
 
-<p>int main()
+<pre><code class="language-c">void * auto malloc(size_t n);
+
+int main()
 {
   int * auto p = malloc(1);
   //warning destructor of p not called
 } 
-```</p>
+</code></pre>
 
 <p>The destructor syntax of owner pointer is </p>
 

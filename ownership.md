@@ -1,4 +1,3 @@
-{{TOC}}
 
 ## Abstract
 In C, there are several functions that must be called in pairs. For instance, ```fopen/fclose```, ```malloc/free``` and so on.    
@@ -75,6 +74,7 @@ void x_destroy(~ struct X * p) {
 Adding auto after * (like const qualifier) creates a pointer that needs destructor. We are going to call them owner pointer.
 
 Sample
+
 ```c
 void * auto malloc(size_t n);
 
