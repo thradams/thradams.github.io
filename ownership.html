@@ -9,7 +9,7 @@
 </head>
 <body>
 <a class = "linkbox" href = "index.html" > HOME</a>
-<p>V0.2 - 30/06/2023</p>
+<p>V0.3 - 30/06/2023</p>
 
 <h2 id="toc_0">Abstract</h2>
 
@@ -78,21 +78,21 @@ int main()
 } //warning owner variable p not destroyed/moved
 </code></pre>
 
-<pre><code>int main()
+<pre><code class="language-c">int main()
 {
  struct X * owner p = calloc(1, sizeof(*p));
  free(p);
 } //warning object pointed by p, not moved/destroyed
 </code></pre>
 
-<pre><code>int main()
+<pre><code class="language-c">int main()
 {
  struct X * owner p = calloc(1, sizeof(*p));
  x_destroy(p);
 } //warning memory pointed by p not destroyed/moved
 </code></pre>
 
-<pre><code>owner struct X { ... };
+<pre><code class="language-c">owner struct X { ... };
 int main()
 {
  struct X * owner p = calloc(1, sizeof(*p));
@@ -139,7 +139,6 @@ struct list list = {0};
 struct node node = {0}
 ...
 list_add(&amp;list, move node);
-
 </code></pre>
 
 <h2 id="toc_5">Implicit move</h2>

@@ -1,9 +1,9 @@
 
-V0.2 - 30/06/2023
+V0.3 - 30/06/2023
 
 ## Abstract
 
-In C, resources such as memory are managed manually. For example, we utilize the ```malloc``` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by malloc to be able to call ```free```.  
+In C, resources such as memory are managed manually. For example, we utilize the `malloc` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by malloc to be able to call `free`.  
 
 Therefore, the variable holding the address is considered the owner of the memory, as this address cannot be simply discarded, otherwise we have a memory leak.
 
@@ -74,7 +74,7 @@ int main()
 } //warning owner variable p not destroyed/moved
 ```
 
-```
+```c
 int main()
 {
  struct X * owner p = calloc(1, sizeof(*p));
@@ -82,7 +82,7 @@ int main()
 } //warning object pointed by p, not moved/destroyed
 ```
 
-```
+```c
 int main()
 {
  struct X * owner p = calloc(1, sizeof(*p));
@@ -90,7 +90,7 @@ int main()
 } //warning memory pointed by p not destroyed/moved
 ```
 
-```
+```c
 owner struct X { ... };
 int main()
 {
@@ -143,7 +143,6 @@ struct list list = {0};
 struct node node = {0}
 ...
 list_add(&list, move node);
-
 ```
 
 ## Implicit move
@@ -344,6 +343,7 @@ int main()
 
 
 ## Checking the rules III
+
 ```c
 int main()
 {
@@ -353,6 +353,7 @@ int main()
   }
 }
 ```
+
 The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.
 
 One way we could fix this is adding assert(f == NULL) for the else path.
