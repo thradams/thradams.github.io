@@ -9,34 +9,35 @@
 </head>
 <body>
 <a class = "linkbox" href = "index.html" > HOME</a>
-<p>V0.3 - 30/06/2023</p>
+<p>V0.4 - 30/06/2023</p>
 
-<h2 id="toc_0">Abstract</h2>
+<h1 id="toc_0">Ownership checks for C</h1>
 
-<p>In C, resources such as memory are managed manually. For example, we utilize the <code>malloc</code> function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by malloc to be able to call <code>free</code>.  </p>
+<h2 id="toc_1">Abstract</h2>
+
+<p>In C, resources such as memory are managed manually. For example, we utilize the <code>malloc</code> function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by <code>malloc</code> to be able to call <code>free</code>.  </p>
 
 <p>Therefore, the variable holding the address is considered the owner of the memory, as this address cannot be simply discarded, otherwise we have a memory leak.</p>
 
 <p>Resource leaks pose a significant challenge as they tend to be silent problems that don&#39;t immediately impact a program&#39;s behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.</p>
 
-<p>I propose we add new type qualifiers <code>owner</code>, <code>view</code>, <code>obj_owner</code>.</p>
+<p>To check the correctness of owner variables this proposal suggests new type qualifiers <code>owner</code>, <code>view</code> and <code>obj_owner</code> and a move assignment.</p>
 
-<p>The owner qualifier will qualify the variable as the <code>owner</code> and <code>view</code> can be used to override (negate) owner.</p>
+<p>The <code>owner</code> qualifier will qualify the variable as the <code>owner</code> and <code>view</code> can be used to override (negate) <code>owner</code>.</p>
 
-<p>Owner variables cannot be discarded, they must be moved or destroyed.</p>
+<p>Owner variables cannot be discarded, they must be <em>moved</em> or <em>destroyed</em>.</p>
 
-<p>The <code>obj_owner</code> is unfortunately a special case of <code>owner</code> and it will be explained later.</p>
+<p>The <code>obj_owner</code> is a special case of <code>owner</code> pointer and it will be explained later.</p>
 
-<h2 id="toc_1">Syntax</h2>
+<h2 id="toc_2">Syntax</h2>
 
 <p>The syntax of owner qualifier is similar of const and others. </p>
 
-<pre><code class="language-c">typedef owner int handle; 
-handle a;
+<pre><code class="language-c">owner int handle;
 
-void * owner p = malloc(1);
+void * owner ptr = malloc(1);
 
-int a[owner 10];
+int arr[owner 10];
 </code></pre>
 
 <p>structs/unions/enuns can be qualified at declaration.</p>
@@ -44,64 +45,34 @@ int a[owner 10];
 <pre><code class="language-c">owner struct X { ... };
 </code></pre>
 
-<p>The compiler will emit a warning in case this variable goes out of scope without being moved or destroyed.</p>
+<h2 id="toc_3">Variable checks</h2>
+
+<p>When a owner variable leaves scope without begin moved/destroy we have this warning. </p>
 
 <pre><code class="language-c">int main() {
   void * owner p = malloc(1);
 } //warning variable p not moved/destroyed
-
 </code></pre>
 
-<p><code>view</code> qualifier can be used to override the owner qualifier used at the struct declaration.</p>
+<h2 id="toc_4">Owner pointer checks</h2>
 
-<pre><code>owner struct X { ... };
-int main()
-{
- struct X x1;
- view struct X x2;
- x2 = x1;
-}
-</code></pre>
-
-<h2 id="toc_2">Owner pointer to owner object</h2>
-
-<p>When we have owner pointer to a owner object, the compiler will check if both, pointer and pointed object are moved/destroyed.  </p>
+<p>When we have owner pointer to a owner object, the compiler will check if both, pointer and pointed object are moved/destroyed before the end of scope.  </p>
 
 <pre><code class="language-c">owner struct X { ... };
-</code></pre>
-
-<pre><code class="language-c">int main()
-{
- struct X * owner p = calloc(1, sizeof(*p)); 
-} //warning owner variable p not destroyed/moved
-</code></pre>
-
-<pre><code class="language-c">int main()
-{
- struct X * owner p = calloc(1, sizeof(*p));
- free(p);
-} //warning object pointed by p, not moved/destroyed
-</code></pre>
-
-<pre><code class="language-c">int main()
-{
- struct X * owner p = calloc(1, sizeof(*p));
- x_destroy(p);
-} //warning memory pointed by p not destroyed/moved
-</code></pre>
-
-<pre><code class="language-c">owner struct X { ... };
-int main()
-{
+int main() {
  struct X * owner p = calloc(1, sizeof(*p));
  x_destroy(p);
  free(p);
 }//ok
 </code></pre>
 
-<h2 id="toc_3">Move assignment</h2>
+<h2 id="toc_5">Move assignment</h2>
 
-<p>The move assignment is used to transfer the ownership. After this assignment the source variable became uninitialized. The uninitialized state is not something in runtime, it is just conceptual state. If we try to use p2 after move, we receive a warning &quot;using a uninitialized variable&quot;.</p>
+<p>The <em>move assignment</em> also <em>move initialization</em> is used to transfer the ownership of some owner variable to another owner variable.</p>
+
+<p>For the variable receiving the value, we have a situation similar of leaving the scope. Compiler must check if the variable is uninitialized or null before receiving the new value.</p>
+
+<p>After the <em>move assignment</em> / <em>move initialization</em> the source variable became uninitialized. The uninitialized is just conceptual state, nothing changes at runtime.</p>
 
 <pre><code class="language-c">void * owner p1 = malloc(1);
 void * owner p2 = nullptr;
@@ -109,24 +80,12 @@ p2 = move p1;
 free(p2);
 </code></pre>
 
-<p>Assignment a non owner variable creates a &quot;view&quot;. </p>
+<p>If we try to use p1 after move, we receive a warning &quot;using a uninitialized variable&quot;.</p>
 
-<pre><code class="language-c">void * owner p1 = malloc(1);
-void * p2 = nullptr;
-p1 = p2;
-free(p1);
-</code></pre>
+<p>We can assign a owner variable to a non owned variable.
+In this case we have a view only.</p>
 
-<p>We also can use move at initialization</p>
-
-<pre><code class="language-c">void * owner p1 = malloc(1);
-void * p2 = move p1;
-free(p2);
-</code></pre>
-
-<p>Only types qualified with owner can be on the right side of the move assignment. </p>
-
-<h2 id="toc_4">Moving to function arguments</h2>
+<h2 id="toc_6">Moving to function arguments</h2>
 
 <p>Passing a variable to a function is very similar of assignment. The same rules apply.</p>
 
@@ -139,7 +98,7 @@ struct node node = {0}
 list_add(&amp;list, move node);
 </code></pre>
 
-<h2 id="toc_5">Implicit move</h2>
+<h2 id="toc_7">Implicit move</h2>
 
 <p>Some moves are so obvious that we can make them optional. For instance, free, close, destroy and delete are good candidates.
 For this job we can use the attribute [[implicit]].</p>
@@ -153,7 +112,7 @@ int main()
 }
 </code></pre>
 
-<h2 id="toc_6">Returning owner type</h2>
+<h2 id="toc_8">Returning owner type</h2>
 
 <p>Returning a owner variable is the same of moving it and it is implicit.</p>
 
@@ -164,7 +123,7 @@ int main()
 }
 </code></pre>
 
-<h2 id="toc_7">obj_owner qualifier</h2>
+<h2 id="toc_9">obj_owner qualifier</h2>
 
 <p>We can create destructors like this</p>
 
@@ -193,11 +152,9 @@ int main()
 }
 </code></pre>
 
-<p>Taking the address of some owner variable does not result in a owner pointer, but in a obj_owner pointer.</p>
+<h2 id="toc_10">Owner arrays</h2>
 
-<h2 id="toc_8">Owner arrays</h2>
-
-<p>As expected arrays and pointer are related.</p>
+<p>As expected arrays and pointer are related. However, a parameter of owner array type is equivalent of <code>obj_owner</code>.  </p>
 
 <pre><code class="language-c">void array_destroy(int n, struct X a[owner n])
 {
@@ -210,7 +167,7 @@ int main()
 }
 </code></pre>
 
-<p>But the array syntax is similar of owner of the objects not the memory.</p>
+<p>We can pass owner pointer to onwer array parameters, but then we also need to free.</p>
 
 <pre><code class="language-c">void array_destroy(int n, struct X a[owner n])
 {
@@ -224,7 +181,7 @@ int main()
 }
 </code></pre>
 
-<p>or</p>
+<p>We also can use owner pointers</p>
 
 <pre><code class="language-c">void array_delete(int n, struct X * owner p)
 {
@@ -237,20 +194,7 @@ int main()
 }
 </code></pre>
 
-<p>or</p>
-
-<pre><code class="language-c">void array_delete(int n, struct X (* owner) [onwer n])
-{
-}
-
-int main()
-{
-  struct X * owner p = calloc(100, sizeof(struct X));
-  array_delete(100, p);  
-}
-</code></pre>
-
-<h2 id="toc_9">Reality check I</h2>
+<h2 id="toc_11">Reality check I</h2>
 
 <p>Let&#39;s check if these rules can help us with <code>fopen/fclose</code>.</p>
 
@@ -272,9 +216,9 @@ int fclose([[implicit]] FILE* owner f);
 
 <p>To solve this problem we also need null-checks in your static analyzer.  </p>
 
-<p><strong>Rule</strong>:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don&#39;t need to destroy the object.</p>
+<p>The compiler will not emit warning if it can prove that a owner variable is empty or uninitialized at the end of scope. </p>
 
-<h2 id="toc_10">Reality check II</h2>
+<h2 id="toc_12">Reality check II</h2>
 
 <pre><code class="language-c">onwer struct book {
     char * owner title;
@@ -284,24 +228,32 @@ void book_destroy(struct book * obj_owner book) {
   free(book-&gt;title);
 }
 
-void book_delete([[implict]] struct book* owner book) {
+void book_delete([[implicit]] struct book* owner book) {
     if (book) {
        book_destroy(book);
        free(book);
     }
 }
-
 owner struct books {
     struct book * owner * owner data;
     int size;
     int capacity;
 };
 
-void books_destroy([[implict]] struct books * obj_owner books) {
+void books_destroy([[implicit]] struct books * obj_owner books) 
+{
    for (int i = 0; i &lt; books-&gt;size; i++) {
      book_delete(books-&gt;data[i]);
    }
    free(books-&gt;data);
+}
+
+int books_push_back(struct books* p, 
+                    struct book* owner book)
+{
+    //... 
+    p-&gt;data[p-&gt;size] = move book;
+    //...
 }
 
 int main() 
@@ -322,7 +274,7 @@ int main()
 }
 </code></pre>
 
-<h2 id="toc_11">Checking the rules III</h2>
+<h2 id="toc_13">Checking the rules III</h2>
 
 <pre><code class="language-c">int main()
 {
@@ -334,17 +286,4 @@ int main()
 </code></pre>
 
 <p>The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.</p>
-
-<p>One way we could fix this is adding assert(f == NULL) for the else path.</p>
-
-<pre><code class="language-c">int main()
-{
-  FILE * auto f = NULL;
-  if (fopen_s( &amp;f,&quot;f.txt&quot;, &quot;r&quot;) == 0)  {
-    fclose(f);
-  }
-  else
-    assert(f == NULL);
-}
-</code></pre>
 </body></html>

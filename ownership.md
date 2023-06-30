@@ -1,34 +1,33 @@
 
-V0.3 - 30/06/2023
-
+V0.4 - 30/06/2023
+# Ownership checks for C
 ## Abstract
 
-In C, resources such as memory are managed manually. For example, we utilize the `malloc` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by malloc to be able to call `free`.  
+In C, resources such as memory are managed manually. For example, we utilize the `malloc` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by `malloc` to be able to call `free`.  
 
 Therefore, the variable holding the address is considered the owner of the memory, as this address cannot be simply discarded, otherwise we have a memory leak.
 
 Resource leaks pose a significant challenge as they tend to be silent problems that don't immediately impact a program's behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.
 
-I propose we add new type qualifiers `owner`, `view`, `obj_owner`.
+To check the correctness of owner variables this proposal suggests new type qualifiers `owner`, `view` and `obj_owner` and a move assignment.
 
-The owner qualifier will qualify the variable as the `owner` and `view` can be used to override (negate) owner.
+The `owner` qualifier will qualify the variable as the `owner` and `view` can be used to override (negate) `owner`.
 
-Owner variables cannot be discarded, they must be moved or destroyed.
+Owner variables cannot be discarded, they must be _moved_ or _destroyed_.
 
-The `obj_owner` is unfortunately a special case of `owner` and it will be explained later.
+The `obj_owner` is a special case of `owner` pointer and it will be explained later.
 
 
 ## Syntax
   
 The syntax of owner qualifier is similar of const and others. 
 
-```c  
-typedef owner int handle; 
-handle a;
+```c
+owner int handle;
 
-void * owner p = malloc(1);
+void * owner ptr = malloc(1);
 
-int a[owner 10];
+int arr[owner 10];
 ```
 
 structs/unions/enuns can be qualified at declaration.
@@ -37,62 +36,24 @@ structs/unions/enuns can be qualified at declaration.
 owner struct X { ... };
 ```
 
-The compiler will emit a warning in case this variable goes out of scope without being moved or destroyed.
+## Variable checks
+
+When a owner variable leaves scope without begin moved/destroy we have this warning. 
 
 ```c
 int main() {
   void * owner p = malloc(1);
 } //warning variable p not moved/destroyed
-
 ```
 
-`view` qualifier can be used to override the owner qualifier used at the struct declaration.
 
-```
-owner struct X { ... };
-int main()
-{
- struct X x1;
- view struct X x2;
- x2 = x1;
-}
-```
+## Owner pointer checks
 
-## Owner pointer to owner object
-
-When we have owner pointer to a owner object, the compiler will check if both, pointer and pointed object are moved/destroyed.  
+When we have owner pointer to a owner object, the compiler will check if both, pointer and pointed object are moved/destroyed before the end of scope.  
 
 ```c
 owner struct X { ... };
-```
-
-```c
-int main()
-{
- struct X * owner p = calloc(1, sizeof(*p)); 
-} //warning owner variable p not destroyed/moved
-```
-
-```c
-int main()
-{
- struct X * owner p = calloc(1, sizeof(*p));
- free(p);
-} //warning object pointed by p, not moved/destroyed
-```
-
-```c
-int main()
-{
- struct X * owner p = calloc(1, sizeof(*p));
- x_destroy(p);
-} //warning memory pointed by p not destroyed/moved
-```
-
-```c
-owner struct X { ... };
-int main()
-{
+int main() {
  struct X * owner p = calloc(1, sizeof(*p));
  x_destroy(p);
  free(p);
@@ -102,7 +63,11 @@ int main()
 
 ## Move assignment
 
-The move assignment is used to transfer the ownership. After this assignment the source variable became uninitialized. The uninitialized state is not something in runtime, it is just conceptual state. If we try to use p2 after move, we receive a warning "using a uninitialized variable".
+The _move assignment_ also *move initialization* is used to transfer the ownership of some owner variable to another owner variable.
+
+For the variable receiving the value, we have a situation similar of leaving the scope. Compiler must check if the variable is uninitialized or null before receiving the new value.
+
+After the _move assignment_ / *move initialization* the source variable became uninitialized. The uninitialized is just conceptual state, nothing changes at runtime.
 
 ```c
 void * owner p1 = malloc(1);
@@ -110,25 +75,11 @@ void * owner p2 = nullptr;
 p2 = move p1;
 free(p2);
 ```
- 
-Assignment a non owner variable creates a "view". 
 
-```c
-void * owner p1 = malloc(1);
-void * p2 = nullptr;
-p1 = p2;
-free(p1);
-```
+If we try to use p1 after move, we receive a warning "using a uninitialized variable".
 
-We also can use move at initialization
-
-```c
-void * owner p1 = malloc(1);
-void * p2 = move p1;
-free(p2);
-```
-
-Only types qualified with owner can be on the right side of the move assignment. 
+We can assign a owner variable to a non owned variable.
+In this case we have a view only.
 
 ## Moving to function arguments
 
@@ -201,11 +152,9 @@ int main()
 }
 ```
 
-Taking the address of some owner variable does not result in a owner pointer, but in a obj_owner pointer.
-
 
 ## Owner arrays
-As expected arrays and pointer are related.
+As expected arrays and pointer are related. However, a parameter of owner array type is equivalent of `obj_owner`.  
 
 ```c
 void array_destroy(int n, struct X a[owner n])
@@ -219,7 +168,7 @@ int main()
 }
 ```
 
-But the array syntax is similar of owner of the objects not the memory.
+We can pass owner pointer to onwer array parameters, but then we also need to free.
 
 ```c
 void array_destroy(int n, struct X a[owner n])
@@ -234,24 +183,11 @@ int main()
 }
 ```
 
-or
+
+We also can use owner pointers
 
 ```c
 void array_delete(int n, struct X * owner p)
-{
-}
-
-int main()
-{
-  struct X * owner p = calloc(100, sizeof(struct X));
-  array_delete(100, p);  
-}
-```
-
-or
-
-```c
-void array_delete(int n, struct X (* owner) [onwer n])
 {
 }
 
@@ -287,7 +223,7 @@ However, the code is correct because we don't need, and we cannot, call fclose o
 
 To solve this problem we also need null-checks in your static analyzer.  
   
-**Rule**:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don't need to destroy the object.
+The compiler will not emit warning if it can prove that a owner variable is empty or uninitialized at the end of scope. 
 
 ## Reality check II
 
@@ -300,24 +236,32 @@ void book_destroy(struct book * obj_owner book) {
   free(book->title);
 }
 
-void book_delete([[implict]] struct book* owner book) {
+void book_delete([[implicit]] struct book* owner book) {
     if (book) {
        book_destroy(book);
        free(book);
     }
 }
-
 owner struct books {
     struct book * owner * owner data;
     int size;
     int capacity;
 };
 
-void books_destroy([[implict]] struct books * obj_owner books) {
+void books_destroy([[implicit]] struct books * obj_owner books) 
+{
    for (int i = 0; i < books->size; i++) {
      book_delete(books->data[i]);
    }
    free(books->data);
+}
+
+int books_push_back(struct books* p, 
+                    struct book* owner book)
+{
+    //... 
+    p->data[p->size] = move book;
+    //...
 }
 
 int main() 
@@ -339,8 +283,6 @@ int main()
 ```
 
 
-
-
 ## Checking the rules III
 
 ```c
@@ -354,18 +296,4 @@ int main()
 ```
 
 The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.
-
-One way we could fix this is adding assert(f == NULL) for the else path.
-
-```c
-int main()
-{
-  FILE * auto f = NULL;
-  if (fopen_s( &f,"f.txt", "r") == 0)  {
-    fclose(f);
-  }
-  else
-    assert(f == NULL);
-}
-```
 
