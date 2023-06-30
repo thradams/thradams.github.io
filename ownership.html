@@ -21,6 +21,8 @@
 
 <p>Resource leaks pose a significant challenge as they tend to be silent problems that don&#39;t immediately impact a program&#39;s behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.</p>
 
+<p>This checks also prevent double free, or use after free.   Both problems generally fail fast in runtime, but it is also good to have.</p>
+
 <p>To check the correctness of owner variables this proposal suggests new type qualifiers <code>owner</code>, <code>view</code> and <code>obj_owner</code> and a move assignment.</p>
 
 <p>The <code>owner</code> qualifier will qualify the variable as the <code>owner</code> and <code>view</code> can be used to override (negate) <code>owner</code>.</p>
@@ -194,7 +196,18 @@ int main()
 }
 </code></pre>
 
-<h2 id="toc_11">Reality check I</h2>
+<h2 id="toc_11">Checks inside destructors</h2>
+
+<p>When we move a owner variable, we postponed the checks. But the checks must be done somewhere, for instance inside the destructor.</p>
+
+<p>Let&#39;s assume you want just ignore the checks inside the destructor.</p>
+
+<p>For this task we can just use [[ignore]].</p>
+
+<pre><code class="language-c">[[ignore]] variable;
+</code></pre>
+
+<h2 id="toc_12">Reality check I</h2>
 
 <p>Let&#39;s check if these rules can help us with <code>fopen/fclose</code>.</p>
 
@@ -218,7 +231,7 @@ int fclose([[implicit]] FILE* owner f);
 
 <p>The compiler will not emit warning if it can prove that a owner variable is empty or uninitialized at the end of scope. </p>
 
-<h2 id="toc_12">Reality check II</h2>
+<h2 id="toc_13">Reality check II</h2>
 
 <pre><code class="language-c">onwer struct book {
     char * owner title;
@@ -274,7 +287,7 @@ int main()
 }
 </code></pre>
 
-<h2 id="toc_13">Checking the rules III</h2>
+<h2 id="toc_14">Checking the rules III</h2>
 
 <pre><code class="language-c">int main()
 {
@@ -286,4 +299,8 @@ int main()
 </code></pre>
 
 <p>The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.</p>
+
+<h1 id="toc_15">What&#39;s next?</h1>
+
+<p>Implement this in cake!</p>
 </body></html>

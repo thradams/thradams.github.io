@@ -9,6 +9,8 @@ Therefore, the variable holding the address is considered the owner of the memor
 
 Resource leaks pose a significant challenge as they tend to be silent problems that don't immediately impact a program's behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.
 
+This checks also prevent double free, or use after free.   Both problems generally fail fast in runtime, but it is also good to have.
+
 To check the correctness of owner variables this proposal suggests new type qualifiers `owner`, `view` and `obj_owner` and a move assignment.
 
 The `owner` qualifier will qualify the variable as the `owner` and `view` can be used to override (negate) `owner`.
@@ -198,6 +200,16 @@ int main()
 }
 ```
 
+## Checks inside destructors
+When we move a owner variable, we postponed the checks. But the checks must be done somewhere, for instance inside the destructor.
+
+Let's assume you want just ignore the checks inside the destructor.
+
+For this task we can just use [[ignore]].
+
+```c  
+[[ignore]] variable;
+```
 
 ## Reality check I
 
@@ -296,4 +308,8 @@ int main()
 ```
 
 The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.
+
+
+# What's next?
+Implement this in cake!
 
