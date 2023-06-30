@@ -3,19 +3,16 @@ V0.2 - 30/06/2023
 
 ## Abstract
 
-In C, resources such as memory are managed manually. For example, we utilize the ```malloc``` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by malloc to be able to call ```free```.  
+In C, resources such as memory are managed manually. For example, we utilize the ```malloc``` function to allocate memory and store the resulting address in a variable. When the memory is no longer needed, we need the address returned by `malloc` to be able to call ```free```.  
 
 Therefore, the variable holding the address is considered the owner of the memory, as this address cannot be simply discarded, otherwise we have a memory leak.
 
 Resource leaks pose a significant challenge as they tend to be silent problems that don't immediately impact a program's behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.
 
-I propose we add new type qualifiers `owner`, `view`, `obj_owner`.
-
+I propose we add two new type qualifiers `owner` and `view`. 
 The owner qualifier will qualify the variable as the `owner` and `view` can be used to override (negate) owner.
 
 Owner variables cannot be discarded, they must be moved or destroyed.
-
-The `obj_owner` is unfortunately a special case of `owner` and it will be explained later.
 
 These qualifiers will not change the program behavior in any way.
 
@@ -114,7 +111,7 @@ free(p2);
  
 Assignment a non owner variable creates a "view". 
 
-```c
+ ```c
 void * owner p1 = malloc(1);
 void * p2 = nullptr;
 p1 = p2;
@@ -172,28 +169,28 @@ struct list make()
 }
 ```
 
-## obj_owner qualifier
+## implicit attribute
+You can make the usage of move when passing to argument optional using [[implicit]]
 
-We can create destructors like this
+## Destructors
+
+We can create destructors like
 
 ```c
-void x_destroy([[implicit]] struct list list) {
+void x_destroy(struct list list)
+{
 }
 
 int main()
 {
   struct list list = {};
-  x_destroy(list);
+  x_destroy(move list);
 }
 ```
 
-But we may want to create destructor passing pointers.
-The problem is that a owner pointer is owner of both memory and the object but for objects allocated on the stack we want to destroy only the object.
-
-The obj_owner qualifier was created basically to allow destructors to be implemented as:
 
 ```c
-void x_destroy([[implicit]] struct list* obj_owner list) {
+void x_destroy(struct list* obj_owner list) {
 }
 
 int main()
@@ -203,7 +200,6 @@ int main()
 }
 ```
 
-Taking the address of some owner variable does not result in a owner pointer, but in a obj_owner pointer.
 
 
 ## Owner arrays
@@ -291,14 +287,15 @@ To solve this problem we also need null-checks in your static analyzer.
   
 **Rule**:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don't need to destroy the object.
 
-## Reality check II
+## Reality check I
 
 ```c
-onwer struct book {
+struct book {
     char * owner title;
 };
 
-void book_destroy(struct book * obj_owner book) { 
+void book_destroy([[dtor]] struct book * owner book)
+{ 
   free(book->title);
 }
 
@@ -315,7 +312,7 @@ struct books {
     int capacity;
 };
 
-void books_destroy(struct books * obj_owner books) {
+void books_destroy([[dtor]] struct books * owner books) {
    for (int i = 0; i < books->size; i++) {
      book_delete(books->data[i]);
    }

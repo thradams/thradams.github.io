@@ -19,10 +19,13 @@
 
 <p>Resource leaks pose a significant challenge as they tend to be silent problems that don&#39;t immediately impact a program&#39;s behavior or cause immediate issues. Moreover, they can easily go unnoticed during unit tests, creating a false sense of security. Therefore, it is absolutely crucial to address and track these problems early on. By doing so, not only can potential complications be prevented, but it can also save valuable time and resources in the long run.</p>
 
-<p>I propose we add two new type qualifiers <code>owner</code> and <code>view</code>. 
-The owner qualifier will qualify the variable as the <code>owner</code> and <code>view</code> can be used to override (negate) owner.</p>
+<p>I propose we add new type qualifiers <code>owner</code>, <code>view</code>, <code>obj_owner</code>.</p>
+
+<p>The owner qualifier will qualify the variable as the <code>owner</code> and <code>view</code> can be used to override (negate) owner.</p>
 
 <p>Owner variables cannot be discarded, they must be moved or destroyed.</p>
+
+<p>The <code>obj_owner</code> is unfortunately a special case of <code>owner</code> and it will be explained later.</p>
 
 <p>These qualifiers will not change the program behavior in any way.</p>
 
@@ -114,24 +117,22 @@ free(p2);
 void * p2 = nullptr;
 p1 = p2;
 free(p1);
-```
+</code></pre>
 
-We also can use move at initialization
+<p>We also can use move at initialization</p>
 
-```c
-void * owner p1 = malloc(1);
+<pre><code class="language-c">void * owner p1 = malloc(1);
 void * p2 = move p1;
 free(p2);
-```
+</code></pre>
 
-Only types qualified with owner can be on the right side of the move assignment. 
+<p>Only types qualified with owner can be on the right side of the move assignment. </p>
 
-## Moving to function arguments
+<h2 id="toc_4">Moving to function arguments</h2>
 
-Passing a variable to a function is very similar of assignment. The same rules apply.
+<p>Passing a variable to a function is very similar of assignment. The same rules apply.</p>
 
-```c
-owner struct list {...};
+<pre><code class="language-c">owner struct list {...};
 owner struct node {...};
 
 struct list list = {0};
@@ -139,57 +140,53 @@ struct node node = {0}
 ...
 list_add(&amp;list, move node);
 
-```
+</code></pre>
 
-## Implicit move
+<h2 id="toc_5">Implicit move</h2>
 
-Some moves are so obvious that we can make them optional. For instance, free, close, destroy and delete are good candidates.
-For this job we can use the attribute.
+<p>Some moves are so obvious that we can make them optional. For instance, free, close, destroy and delete are good candidates.
+For this job we can use the attribute.</p>
 
-```c
-void list_destroy([[implicit]] struct list l) { }
+<pre><code class="language-c">void list_destroy([[implicit]] struct list l) { }
 
 int main()
 {
   owner struct list {...};
   list_destroy(list);
 }
-```
+</code></pre>
 
-## Returning owner type
-Returning a owner variable is the same of moving it and it is implicit.
+<h2 id="toc_6">Returning owner type</h2>
 
-```c
-struct list make()
+<p>Returning a owner variable is the same of moving it and it is implicit.</p>
+
+<pre><code class="language-c">struct list make()
 {
   struct list {...};
   return list;
 }
-```
+</code></pre>
 
+<h2 id="toc_7">obj_owner qualifier</h2>
 
-## Destructors
+<p>We can create destructors like this</p>
 
-We can create destructors like
-
-```c
-void x_destroy(struct list list)
-{
+<pre><code class="language-c">void x_destroy([[implicit]] struct list list) {
 }
 
 int main()
 {
   struct list list = {};
-  x_destroy(move list);
+  x_destroy(list);
 }
-```
+</code></pre>
 
-But in case we want to use pointer, we need a diferente qualifier becase owner 
-pointer are owners of memory and object, and for destructors used in statck objects
-we want to destroy the object only not the memory.
+<p>But we may want to create destructor passing pointers.
+The problem is that a owner pointer is owner of both memory and the object but for objects allocated on the stack we want to destroy only the object.</p>
 
-```c
-void x_destroy(struct list* obj_owner list) {
+<p>The obj_owner qualifier was created basically to allow destructors to be implemented as:</p>
+
+<pre><code class="language-c">void x_destroy([[implicit]] struct list* obj_owner list) {
 }
 
 int main()
@@ -197,15 +194,15 @@ int main()
   struct list list = {};
   x_destroy(&amp;list);
 }
-```
+</code></pre>
 
+<p>Taking the address of some owner variable does not result in a owner pointer, but in a obj_owner pointer.</p>
 
+<h2 id="toc_8">Owner arrays</h2>
 
-## Owner arrays
-As expected arrays and pointer are related.
+<p>As expected arrays and pointer are related.</p>
 
-```c
-void array_destroy(int n, struct X a[owner n])
+<pre><code class="language-c">void array_destroy(int n, struct X a[owner n])
 {
 }
 
@@ -214,12 +211,11 @@ int main()
   struct X a[owner 100];
   array_destroy(100, a);
 }
-```
+</code></pre>
 
-But the array syntax is similar of owner of the objects not the memory.
+<p>But the array syntax is similar of owner of the objects not the memory.</p>
 
-```c
-void array_destroy(int n, struct X a[owner n])
+<pre><code class="language-c">void array_destroy(int n, struct X a[owner n])
 {
 }
 
@@ -229,12 +225,11 @@ int main()
   array_destroy(100, p);
   free(p);
 }
-```
+</code></pre>
 
-or
+<p>or</p>
 
-```c
-void array_delete(int n, struct X * owner p)
+<pre><code class="language-c">void array_delete(int n, struct X * owner p)
 {
 }
 
@@ -243,12 +238,11 @@ int main()
   struct X * owner p = calloc(100, sizeof(struct X));
   array_delete(100, p);  
 }
-```
+</code></pre>
 
-or
+<p>or</p>
 
-```c
-void array_delete(int n, struct X (* owner) [onwer n])
+<pre><code class="language-c">void array_delete(int n, struct X (* owner) [onwer n])
 {
 }
 
@@ -257,44 +251,39 @@ int main()
   struct X * owner p = calloc(100, sizeof(struct X));
   array_delete(100, p);  
 }
-```
+</code></pre>
 
+<h2 id="toc_9">Reality check I</h2>
 
-## Reality check I
+<p>Let&#39;s check if these rules can help us with <code>fopen/fclose</code>.</p>
 
-Let&#39;s check if these rules can help us with ```fopen/fclose```.
-
-```c 
-FILE* owner fopen(char const* name,char const* mode);
+<pre><code class="language-c">FILE* owner fopen(char const* name,char const* mode);
 int fclose([[implicit]] FILE* owner f);
-```
+</code></pre>
 
-```c
-int main() {
+<pre><code class="language-c">int main() {
   FILE * owner p = fopen(&quot;text.txt&quot;, &quot;r&quot;);
   if (p) {
     fclose(p);
   }
 }
-```
+</code></pre>
 
-We have a problem, because the not all control paths are calling the destructor and the compiler will emit an warning.
+<p>We have a problem, because the not all control paths are calling the destructor and the compiler will emit an warning.</p>
 
-However, the code is correct because we don&#39;t need, and we cannot, call fclose on null pointer.
+<p>However, the code is correct because we don&#39;t need, and we cannot, call fclose on null pointer.</p>
 
-To solve this problem we also need null-checks in your static analyzer.  
-  
-**Rule**:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don&#39;t need to destroy the object.
+<p>To solve this problem we also need null-checks in your static analyzer.  </p>
 
-## Reality check I
+<p><strong>Rule</strong>:  if we can prove that a pointer with destructor is null or uninitialized at the end of scope we don&#39;t need to destroy the object.</p>
 
-```c
-struct book {
+<h2 id="toc_10">Reality check II</h2>
+
+<pre><code class="language-c">onwer struct book {
     char * owner title;
 };
 
-void book_destroy([[dtor]] struct book * owner book)
-{ 
+void book_destroy(struct book * obj_owner book) { 
   free(book-&gt;title);
 }
 
@@ -311,7 +300,7 @@ struct books {
     int capacity;
 };
 
-void books_destroy([[dtor]] struct books * owner books) {
+void books_destroy(struct books * obj_owner books) {
    for (int i = 0; i &lt; books-&gt;size; i++) {
      book_delete(books-&gt;data[i]);
    }
@@ -334,27 +323,24 @@ int main()
   book_delete(book);
   books_destroy(&amp;books);
 }
-```
+</code></pre>
 
+<h2 id="toc_11">Checking the rules III</h2>
 
-
-
-## Checking the rules III
-```c
-int main()
+<pre><code class="language-c">int main()
 {
   FILE * owner f = NULL;
   if (fopen_s( &amp;f,&quot;f.txt&quot;, &quot;r&quot;) == 0)  {
     fclose(f);
   }
 }
-```
-The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.
+</code></pre>
 
-One way we could fix this is adding assert(f == NULL) for the else path.
+<p>The problem here is that in previous fopen we could check for null to decide if we need or not a warning if the destructor is not called.</p>
 
-```c
-int main()
+<p>One way we could fix this is adding assert(f == NULL) for the else path.</p>
+
+<pre><code class="language-c">int main()
 {
   FILE * auto f = NULL;
   if (fopen_s( &amp;f,&quot;f.txt&quot;, &quot;r&quot;) == 0)  {
@@ -363,7 +349,5 @@ int main()
   else
     assert(f == NULL);
 }
-```
-
 </code></pre>
 </body></html>
