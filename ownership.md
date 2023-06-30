@@ -17,7 +17,6 @@ Owner variables cannot be discarded, they must be moved or destroyed.
 
 The `obj_owner` is unfortunately a special case of `owner` and it will be explained later.
 
-These qualifiers will not change the program behavior in any way.
 
 ## Syntax
   
@@ -47,7 +46,7 @@ int main() {
 
 ```
 
-`view` qualifier is the default. It can be used to override the owner qualifier used at the struct declaration.
+`view` qualifier can be used to override the owner qualifier used at the struct declaration.
 
 ```
 owner struct X { ... };
@@ -148,7 +147,7 @@ list_add(&list, move node);
 ## Implicit move
 
 Some moves are so obvious that we can make them optional. For instance, free, close, destroy and delete are good candidates.
-For this job we can use the attribute.
+For this job we can use the attribute [[implicit]].
 
 ```c
 void list_destroy([[implicit]] struct list l) { }
@@ -189,7 +188,7 @@ int main()
 But we may want to create destructor passing pointers.
 The problem is that a owner pointer is owner of both memory and the object but for objects allocated on the stack we want to destroy only the object.
 
-The obj_owner qualifier was created basically to allow destructors to be implemented as:
+The `obj_owner` qualifier was created basically to allow destructors to be implemented as:
 
 ```c
 void x_destroy([[implicit]] struct list* obj_owner list) {
@@ -301,20 +300,20 @@ void book_destroy(struct book * obj_owner book) {
   free(book->title);
 }
 
-void book_delete(struct book* owner book) {
+void book_delete([[implict]] struct book* owner book) {
     if (book) {
        book_destroy(book);
        free(book);
     }
 }
 
-struct books {
+owner struct books {
     struct book * owner * owner data;
     int size;
     int capacity;
 };
 
-void books_destroy(struct books * obj_owner books) {
+void books_destroy([[implict]] struct books * obj_owner books) {
    for (int i = 0; i < books->size; i++) {
      book_delete(books->data[i]);
    }
