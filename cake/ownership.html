@@ -89,6 +89,8 @@
 </ul>
 </li>
 </ul>
+<p>** Under development.**</p>
+
 <h1 id="toc_0">Ownership checks for C</h1>
 
 <p>The static ownership check is an experimental feature for Cake.
@@ -117,7 +119,7 @@ It consists of two separate implementations. </p>
 
 <p>Conversely, the <strong>_Obj_owner</strong> qualifier is exclusively applicable to pointers, signifying that the pointer owns the pointed object but not the memory it occupies.</p>
 
-<p>For aggregate types, if at least one member has the <strong>_Owner</strong> qualifier, the entire aggregate is considered to be an owner qualified type.</p>
+<p>For struct and unions, if at least one member has the <strong>_Owner</strong> qualifier, the entire type is considered to be an owner qualified type.</p>
 
 <p>Sample:</p>
 
@@ -126,12 +128,12 @@ It consists of two separate implementations. </p>
 };
 
 int main(){
-  struct person p1;
+  struct person p1 = {};
   // same as _Owner struct person p1;
 }
 </code></pre>
 
-<p>Applying the <strong>_View</strong> qualifier to an aggregate type designates the entire aggregate as a view, regardless of whether it includes members owner qualified.</p>
+<p>Applying the <strong>_View</strong> qualifier to an struct or union type designates the type as a view, regardless of whether it includes members owner qualified.</p>
 
 <pre><code class="language-c">struct person {
   char * _Owner name;
@@ -144,28 +146,31 @@ int main(){
 }
 </code></pre>
 
-<p>For arrays, if the element of the array is owner qualified the entire array is treated as an owner qualified type.</p>
+<p>Similarly of what happens with structs and unions, if the element of the array is owner qualified the entire array is treated as an owner qualified type.</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-c">int main()
+{
+  struct person a[10] = {};  
+  //a is the owner of 10 struct person
+}
+</code></pre>
 
 <p>When array types are used in parameters the array is not considered owner qualified type. </p>
 
-<pre><code class="language-c">void print_array(int n, _Owner int a[n]);
+<pre><code class="language-c">void print_array(int n, struct person a[10]);
 
 int main()
 {
-  _Owner int a[10];
+  struct person a[10] = {};
   print_array(10, a);
 }
 </code></pre>
 
 <p>To qualify array parameters as owner we do:</p>
 
-<pre><code class="language-c">void destroy_array(int n, _Owner int a[_Owner n]);
-
-int main()
-{
-  _Owner int a[10];
-  destroy_array(10, _Move a);
-}
+<pre><code class="language-c">void destroy_array(int n, struct person a[_Owner 10]);
 </code></pre>
 
 <h2 id="toc_2">Initialization</h2>
@@ -323,10 +328,12 @@ T F() {
   
 </code></pre>
 
-<p>We can use the attribute [[implicit]]  to make the usage of <strong>_Move</strong> optional. This is useful when the semantics of the function is very clear, for instance if the name of the function is &quot;destroy&quot;.</p>
+<p>We can use <em>Implicit  to make the usage of **</em>Move** optional. This is useful when the semantics of the function is very clear, for instance if the name of the function is &quot;destroy&quot;.</p>
 
-<pre><code class="language-c">void x_destroy([[implicit]] struct X * _Obj_owner);
+<pre><code class="language-c">void x_destroy(_Implicit struct X * _Obj_owner);
 </code></pre>
+
+<p>(This can be changed to a attribute in the next version)</p>
 
 <h3 id="toc_16">void F(Owner); F(Non-Owner);</h3>
 
@@ -354,7 +361,7 @@ T F() {
   char * _Owner name;
 };  
 
-void person_delete([[implicit]] struct person * _Owner p) 
+void person_delete(_Implicit struct person * _Owner p) 
 {
   if (p) {
     free(p-&gt;name);
@@ -458,14 +465,14 @@ int main(int argc, char* argv[])
 <h2 id="toc_19">Flow analysis</h2>
 
 <p>When owner objects goes out of scope, the flow analysis
-must check if the object has been moved.</p>
+must check if the object has been moved. </p>
 
 <pre><code>{
   _Owner int a;
 } //warning variable a not moved/destroyed
 </code></pre>
 
-<p>At the final destination, the object will not be moved, then we annotate the function as [[no<em>ownership</em>checks]].</p>
+<p>At the final destination, the object will not be moved anymore, then we annotate the function definition as [[no_ownership_checks]].</p>
 
 <pre><code class="language-c">[[no_ownership_checks]] free(void * _Owner p)
 {
