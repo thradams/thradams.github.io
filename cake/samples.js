@@ -1213,6 +1213,7 @@ sample["Extension - ownership I"] =
     `
 /*
   Requires option: -flow-analysis
+  See also: http://thradams.com/cake/ownership.html
 */
 void * _Owner malloc(int i);
 void free(_Implicit void * _Owner p);
@@ -1225,9 +1226,9 @@ int main() {
 
 sample["Extension - ownership II"] =
     `
-
 /*
   Requires option: -flow-analysis
+  See also: http://thradams.com/cake/ownership.html
 */
 
 void * _Owner malloc(int i);
@@ -1256,8 +1257,8 @@ sample["Extension - ownership III"] =
     `
 /*
   Requires option: -flow-analysis
+  See also: http://thradams.com/cake/ownership.html
 */
-
 char * _Owner strdup(const char *s);
 
 struct X {
@@ -1278,9 +1279,9 @@ int main() {
 
 sample["Extension - ownership IV"] =
     `
-
 /*
   Requires option: -flow-analysis
+  See also: http://thradams.com/cake/ownership.html
 */
 
 void free(_Implicit void* _Owner ptr);
@@ -1304,7 +1305,9 @@ sample["Extension - ownership V"] =
     `
 /*
   Requires option: -flow-analysis
+  See also: http://thradams.com/cake/ownership.html
 */
+
 void * _Owner malloc(int i);
 void free(_Implicit void * _Owner p);
 
