@@ -117,6 +117,14 @@ It consists of two separate implementations. </p>
 
 <p>The <strong>_Owner</strong> qualifier, when used with a pointer, indicates that the pointer assumes ownership of both the pointed object and its associated memory.</p>
 
+<p>When converting a owner pointer to void*, only the ownership of the memory is moved.</p>
+
+<pre><code class="language-c">void * _Owner f1(){
+  struct X * _Owner p = malloc(sizeof (struct X));
+  return p; //error 
+}
+</code></pre>
+
 <p>Conversely, the <strong>_Obj_owner</strong> qualifier is exclusively applicable to pointers, signifying that the pointer owns the pointed object but not the memory it occupies.</p>
 
 <p>For struct and unions, if at least one member has the <strong>_Owner</strong> qualifier, the entire type is considered to be an owner qualified type.</p>
