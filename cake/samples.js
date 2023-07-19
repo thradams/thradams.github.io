@@ -1211,6 +1211,9 @@ static_assert( _is_function(main) && (typeof(main())) == (int) );
 
 sample["Extension - ownership I"] =
 `
+/*
+  Requires option: -flow-analysis
+*/
 void * _Owner malloc(int i);
 void free(_Implicit void * _Owner p);
 
@@ -1222,7 +1225,9 @@ int main() {
 
 sample["Extension - ownership II"] =
 `
-
+/*
+  Requires option: -flow-analysis
+*/
 void * _Owner malloc(int i){}
 void free(_Implicit void * _Owner p) {}
 
@@ -1246,27 +1251,42 @@ int main() {
 
 sample["Extension - ownership III"] =
 `
-struct _Owner X {
-  int i;
+/*
+  Requires option: -flow-analysis
+*/
+
+char * _Owner strdup(const char *s);
+
+struct X {
+  char *_Owner name;
 };
 
-void x_destroy(_Implicit struct X * _Obj_owner p) { }
+void x_destroy(_Implicit struct X * _Obj_owner p) 
+{
+}
 
 int main() {
-   struct X x = {};
-   x_destroy(&x);
+   struct X x = {0};
+   x.name = _Move strdup("a");
+   //x_destroy(&x);
 }
 
 `;
 
 sample["Extension - ownership IV"] =
 `
-void free(_Implicit void* _Owner ptr);
-[[nodiscard]] void* _Owner malloc(int size);
 
-struct _Owner X
+/*
+  Requires option: -flow-analysis
+*/
+
+void free(_Implicit void* _Owner ptr);
+void* _Owner malloc(int size);
+
+struct X
 {
     int i;
+    //char * _Owner name;
 };
 
 int main() 
@@ -1275,7 +1295,35 @@ int main()
     free(p);
 }
 
+
 `;
+sample["Extension - ownership V"] =
+`
+/*
+  Requires option: -flow-analysis
+*/
+void * _Owner malloc(int i);
+void free(_Implicit void * _Owner p);
+
+struct X {
+  char * _Owner text;
+};
+
+void x_delete(_Implicit struct X * _Owner p)
+{
+    free(p->text);
+    free(p);    
+}
+
+
+int main() {
+   struct X * _Owner p = malloc(sizeof(struct X));
+   p->text = _Move malloc(10);
+   x_delete(p);
+}
+
+`;
+
 
 sample["Extension - _has_att, destroy and free iteraction"] =
 `

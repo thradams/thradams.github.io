@@ -480,6 +480,35 @@ must check if the object has been moved. </p>
 }
 </code></pre>
 
+<p>How it works? Simple case I.</p>
+
+<pre><code class="language-c">struct person { char * _Owner name; }  
+void main(){
+  struct person person = {0};
+  //|person
+  //|  name  zero
+  //
+  person.name = _Move strdup(&quot;name&quot;);  
+  //|person
+  //|  name  unkown
+  //
+}
+</code></pre>
+
+<p>The static analyzer will instantiate an object person, with all members equals to zero.<br>
+Then at strdup line, the member &quot;name&quot; will be <em>unknown</em> that means it has a value but we don&#39;t know what is.
+At end of scope the state of .name will be <em>unknown</em> but it must be in uninitialized, zero or <em>moved</em> state, otherwise the compiler will complain. </p>
+
+<p>Adding free, we make the member .name be <em>uninitialized</em>.
+<code>c
+struct person { char * _Owner name; }  
+void main(){
+  struct person person = {0};
+  person.name = _Move strdup(&quot;name&quot;);  
+  free(person.name);
+}
+</code></p>
+
 <h2 id="toc_20">Grammar</h2>
 
 <pre><code class="language-c">New keywords:
