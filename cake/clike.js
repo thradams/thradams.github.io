@@ -262,7 +262,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return words.propertyIsEnumerable(word);
     }
   }
-    var cKeywords = "true false nullptr static_assert typeof_unqual typeof typeid try catch defer throw auto inline if break case register continue return default do sizeof " +
+    var cKeywords = "true false nullptr static_debug  static_assert typeof_unqual typeof typeid try catch defer throw auto inline if break case register continue return default do sizeof " +
     "static else struct switch extern constexpr typedef union repeat for goto while enum const volatile overload destroy new _Static_assert alignof alignas _Alignof _Generic";
   var cTypes = "int long char short double float unsigned signed void size_t ptrdiff_t";
 

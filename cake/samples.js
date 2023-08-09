@@ -752,43 +752,6 @@ int main() {
 `;
 
 
-sample["Extension _Hashof"] =
-`
-struct X {
-    int a[10];
-  
-    /*uncomment the next line*/
-    //char * text;
-};
-
-void x_destroy(struct X* p);
-
-int main()
-{
-    struct X x = {};
-    x_destroy(&x);
-}
-
-void x_destroy(struct X* p)
-{
-    static_assert(_Hashof(struct X) == 283780300);
-}
-
-void x_print(struct X* p)
-{
-    static_assert(_Hashof(struct X) == 283780300);
-}
-
-struct X x_clone(const struct X* p)
-{
-  struct X x = *p;
-  static_assert(_Hashof(struct X) == 283780300);
-  return x;
-}
-
-`
-;
-
    
 sample["Extension try catch throw"] =
 `
