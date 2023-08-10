@@ -1182,8 +1182,16 @@ void free(_Implicit void * _Owner p);
 
 int main() {
    void * _Owner p = malloc(1);
+  
+   
    //free(p);
+ 
+   /*
+      You can use static_debug to print the state flow analysis have
+   */
+   static_debug(p);
 }
+
 `;
 
 sample["Extension - ownership II"] =
@@ -1207,7 +1215,7 @@ struct X {
 
 int main() {
    struct X * _Owner p = f();
-   //free(p);     
+   //free(p);  /*fix me*/   
 }
 
 
@@ -1229,15 +1237,14 @@ struct X {
 
 void x_destroy(_Implicit struct X * _Obj_owner p) 
 {
-  //free(p->name);
+  //free(p->name); /*fix me*/
 }
 
 int main() {
    struct X x = {0};
    x.name = _Move strdup("a");
-   //x_destroy(&x);
+   //x_destroy(&x); /*fix me*/
 }
-
 `;
 
 sample["Extension - ownership IV"] =
@@ -1252,7 +1259,9 @@ void* _Owner malloc(int size);
 struct X
 {
     int i;
-    //char * _Owner name;
+    
+    //char * _Owner name; /*uncomment*/
+
 };
 
 int main() 
@@ -1279,16 +1288,18 @@ struct X {
 void x_delete(_Implicit struct X * _Owner p)
 {
     free(p->text);
-    free(p);    
+    //free(p);  /*fix me*/
 }
-
 
 int main() {
    struct X * _Owner p = malloc(sizeof(struct X));
    p->text = _Move malloc(10);
+
+   //free(p); /* try */
+   //p = 0;   /* try */
+
    x_delete(p);
 }
-
 `;
 
 sample["Extension - ownership VI"] =
@@ -1300,16 +1311,12 @@ sample["Extension - ownership VI"] =
 void free(_Implicit void* _Owner ptr);
 void* _Owner malloc(int size);
 
-struct X
-{    
+struct X {    
     char * _Owner name;
 };
 
 /*
-  To remove this error return 
-    struct X * _Owner 
-  instead   of 
-    void * _Owner.
+  To fix, change 'void * _Owner' to 'struct X * _Owner'
 */
 void * _Owner f1(){
   struct X * _Owner p = malloc(sizeof (struct X));
@@ -1357,7 +1364,6 @@ int main()
 
 sample["Extension - ownership VIII"] =
 `
-
 /*  
   See also: http://thradams.com/cake/ownership.html
 */
@@ -1366,13 +1372,14 @@ char * _Owner strdup(const char *s);
 void free(_Implicit void * _Owner p);
 
 struct X {
-  char * text;
+  char * text; /*add _Owner to fix*/
 };
 
 
 int main() {
    struct X x = {};
-   x.text = strdup("a");
+   x.text = strdup("a"); /*add _Move to fix*/
+   //free(x.text); /*fix me*/
 }
 
 

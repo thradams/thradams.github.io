@@ -345,31 +345,25 @@ T F() {
 <p>We explicitly use <strong>_Move</strong> on the caller.</p>
 
 <pre><code class="language-c">  void F(_Owner T a);
-  
   _Owner T a;
-  
   F(_Move a);      //OK
+</code></pre>
+
+<p>We can use <strong>_Implicit</strong>  to make the usage of <strong>_Move</strong> optional. This is useful when the semantics of the function is very clear, for instance if the name of the function is &quot;destroy&quot; or &quot;free&quot; etc.    </p>
+
+<p>Sample:
+<code>c
+void x_destroy(_Implicit struct X * _Obj_owner);
+</code></p>
+
+<blockquote>
+<p>Not sure if attributes is better for implicit</p>
+</blockquote>
+
+<p>The exception of using <strong>_Move</strong> is when passing the function result directly.</p>
+
+<pre><code class="language-c">  void F(_Owner T a);
   F(make_owner()); //OK
-  
-</code></pre>
-
-<p>We can use <strong>_Implicit</strong>  to make the usage of <strong>_Move</strong> optional.   </p>
-
-<p>This is useful when the semantics of the function is very clear, for instance if the name of the function is &quot;destroy&quot; &quot;free&quot; etc.  </p>
-
-<pre><code class="language-c">void x_destroy(_Implicit struct X * _Obj_owner);
-</code></pre>
-
-<p>(This can be changed to a attribute in the future)</p>
-
-<p><strong>_Move</strong> can be used for instance, when inserting items at some container.</p>
-
-<pre><code class="language-c">list_add(&amp;list, _Move item);
-</code></pre>
-
-<p>Or when the parameter will consume all the input.</p>
-
-<pre><code class="language-c">p_new_items = _Move process(_Move p_old_items);
 </code></pre>
 
 <h4>void F(Owner); F(Non-Owner);</h4>
@@ -391,11 +385,6 @@ The exception is the null pointer constant.</p>
 
 <pre><code class="language-c">  _Owner T a; 
   F(a); //OK (view)
-</code></pre>
-
-<p>I suggest using these new qualifiers is with a header <ownership.h>  </p>
-
-<pre><code class="language-c">
 </code></pre>
 
 <h2 id="toc_6">Part II - Flow analysis</h2>
