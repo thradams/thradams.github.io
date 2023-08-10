@@ -370,7 +370,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     keywords: words(cKeywords),
       types: words(cTypes + "inline throw defer bool _Complex _Bool float_t double_t intptr_t intmax_t " +
                  "int8_t int16_t int32_t int64_t uintptr_t uintmax_t uint8_t uint16_t " +
-                 "uint32_t uint64_t restrict _Implicit _View _Owner _Move _Obj_owner  _Noreturn _Generic"),
+                 "uint32_t uint64_t restrict implicit view owner move obj_owner  _Implicit _View _Owner _Move _Obj_owner  _Noreturn _Generic"),
     blockKeywords: words("try case do else for if switch while struct repeat"),
     defKeywords: words("struct"),
     typeFirstDefinitions: true,
@@ -385,7 +385,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
                     "static_cast typeid catch operator template typename class friend private " +
                     "this using const_cast inline public throw virtual delete mutable protected " +
                     "alignas alignof constexpr decltype nullptr noexcept thread_local final " +
-                    "_Static_assert static_assert override"),
+                    "_Static_assert static_assert static_debug static_state override"),
     types: words(cTypes + " bool wchar_t"),
     blockKeywords: words("catch class do else finally for if struct switch try while"),
     defKeywords: words("class namespace struct enum union"),

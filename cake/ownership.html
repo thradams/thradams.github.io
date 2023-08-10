@@ -418,7 +418,38 @@ This choice is driven by the principle that ownership reasoning should remain cl
 
 <p>Some compilers can be smarter than others when checking ownership. This creates a problem that some code can compile in -save mode [1]  in one compiler but not in another. I don&#39;t have a clear answers for that. I can think in some alternatives like warning only, or describing the algorithm that all compilers must follow.  </p>
 
-<p>[1] &quot;save mode&quot; emits an error when a resource is not released for instance.</p>
+<p>[1] &quot;save mode&quot; emits an error when a resource is not released for instance, instead of just a warning.</p>
+
+<p>The possible states of each expression can be printed and checked in compile time using  <strong>static_assert</strong> and <strong>static_state</strong>. This is the state used by the flow analysis to emit errors.</p>
+
+<pre><code class="language-c">
+/*enum as used internally by the flow analysis*/  
+enum object_state {
+    OBJECT_STATE_STRUCT = 0,
+    OBJECT_STATE_UNINITIALIZED,
+    OBJECT_STATE_ZERO,
+    OBJECT_STATE_UNKNOWN,
+    OBJECT_STATE_NOT_ZERO,
+    OBJECT_STATE_MOVED,
+    OBJECT_STATE_NULL_OR_MOVED,
+};  
+  
+void * _Owner malloc(int i);
+void free(_Implicit void * _Owner p);
+
+struct X {
+  char * _Owner name;    
+};
+int main() {
+   struct X * _Owner p = malloc(sizeof * p);
+   if (p)
+   {
+       free(p);
+   }
+   static_assert(static_state(p) == OBJECT_STATE_NULL_OR_MOVED);
+   static_debug(p);
+} 
+</code></pre>
 
 <h4>Sample:</h4>
 
@@ -742,6 +773,13 @@ parameter-declaration:
   ...
   return;
   return move_opt expression;  
+  
+static_debug-declaration:
+  static_debug(constant-expression) ;
+
+unary-expression:
+  ...  
+  static_state ( constant-expression)   
 
 </code></pre>
 
