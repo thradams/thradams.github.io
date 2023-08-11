@@ -752,6 +752,43 @@ int main() {
 `;
 
 
+sample["Extension _Hashof"] =
+`
+struct X {
+    int a[10];
+  
+    /*uncomment the next line*/
+    //char * text;
+};
+
+void x_destroy(struct X* p);
+
+int main()
+{
+    struct X x = {};
+    x_destroy(&x);
+}
+
+void x_destroy(struct X* p)
+{
+    static_assert(_Hashof(struct X) == 283780300);
+}
+
+void x_print(struct X* p)
+{
+    static_assert(_Hashof(struct X) == 283780300);
+}
+
+struct X x_clone(const struct X* p)
+{
+  struct X x = *p;
+  static_assert(_Hashof(struct X) == 283780300);
+  return x;
+}
+
+`
+;
+
    
 sample["Extension try catch throw"] =
 `
@@ -1182,16 +1219,8 @@ void free(_Implicit void * _Owner p);
 
 int main() {
    void * _Owner p = malloc(1);
-  
-   
    //free(p);
- 
-   /*
-      You can use static_debug to print the state flow analysis have
-   */
-   static_debug(p);
 }
-
 `;
 
 sample["Extension - ownership II"] =
@@ -1215,7 +1244,7 @@ struct X {
 
 int main() {
    struct X * _Owner p = f();
-   //free(p);  /*fix me*/   
+   //free(p);     
 }
 
 
@@ -1237,14 +1266,15 @@ struct X {
 
 void x_destroy(_Implicit struct X * _Obj_owner p) 
 {
-  //free(p->name); /*fix me*/
+  //free(p->name);
 }
 
 int main() {
    struct X x = {0};
    x.name = _Move strdup("a");
-   //x_destroy(&x); /*fix me*/
+   //x_destroy(&x);
 }
+
 `;
 
 sample["Extension - ownership IV"] =
@@ -1259,9 +1289,7 @@ void* _Owner malloc(int size);
 struct X
 {
     int i;
-    
-    //char * _Owner name; /*uncomment*/
-
+    //char * _Owner name;
 };
 
 int main() 
@@ -1288,18 +1316,16 @@ struct X {
 void x_delete(_Implicit struct X * _Owner p)
 {
     free(p->text);
-    //free(p);  /*fix me*/
+    free(p);    
 }
+
 
 int main() {
    struct X * _Owner p = malloc(sizeof(struct X));
    p->text = _Move malloc(10);
-
-   //free(p); /* try */
-   //p = 0;   /* try */
-
    x_delete(p);
 }
+
 `;
 
 sample["Extension - ownership VI"] =
@@ -1311,12 +1337,16 @@ sample["Extension - ownership VI"] =
 void free(_Implicit void* _Owner ptr);
 void* _Owner malloc(int size);
 
-struct X {    
+struct X
+{    
     char * _Owner name;
 };
 
 /*
-  To fix, change 'void * _Owner' to 'struct X * _Owner'
+  To remove this error return 
+    struct X * _Owner 
+  instead   of 
+    void * _Owner.
 */
 void * _Owner f1(){
   struct X * _Owner p = malloc(sizeof (struct X));
@@ -1364,6 +1394,7 @@ int main()
 
 sample["Extension - ownership VIII"] =
 `
+
 /*  
   See also: http://thradams.com/cake/ownership.html
 */
@@ -1372,14 +1403,13 @@ char * _Owner strdup(const char *s);
 void free(_Implicit void * _Owner p);
 
 struct X {
-  char * text; /*add _Owner to fix*/
+  char * text;
 };
 
 
 int main() {
    struct X x = {};
-   x.text = strdup("a"); /*add _Move to fix*/
-   //free(x.text); /*fix me*/
+   x.text = strdup("a");
 }
 
 
