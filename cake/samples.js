@@ -1212,14 +1212,14 @@ struct X {
   char *owner name;
 };
 
-void x_destroy(implicit struct X * obj_owner p) 
+void x_destroy(struct X * obj_owner p) 
 {
   //free(p->name); /*FIX ME*/
 }
 
 int main() {
    struct X x = {0};
-   x.name = move strdup("a");
+   x.name = strdup("a");
    //x_destroy(&x); /*FIX ME*/
 }
 
@@ -1261,7 +1261,7 @@ struct X {
   char * owner text;
 };
 
-void x_delete(implicit struct X * owner p)
+void x_delete(struct X * owner p)
 {
     if (p)
     {
@@ -1273,7 +1273,7 @@ void x_delete(implicit struct X * owner p)
 int main() {   
    struct X * owner p = malloc(sizeof(struct X));
       
-   p->text = move malloc(10);
+   p->text = malloc(10);
 
    x_delete(p);
 }
@@ -1301,7 +1301,7 @@ struct X {
 */
 void * owner f1(){
   struct X * owner p = malloc(sizeof (struct X));
-  p->name = move strdup("hi");
+  p->name = strdup("hi");
   return p;
 }
 
@@ -1317,7 +1317,7 @@ sample["Ownership (experimental)"]["ownership VII"] =
   See also: http://thradams.com/cake/ownership.html
 */
 
-void free(implicit void * owner p);
+void free(void * owner p);
 
 struct person {
   char * owner name;
@@ -1331,7 +1331,7 @@ void person_swap(view struct person * a,
    *b = temp;
 }
 
-void person_destroy(implicit struct person * obj_owner p) {
+void person_destroy(struct person * obj_owner p) {
   free(p->name);
 }
 
@@ -1387,18 +1387,68 @@ struct X {
 int main() {   
    struct X * owner p = malloc(sizeof(struct X));
    if (p) {
-     p->name = move strdup("a");
+     p->name = strdup("a");
 
      /*
         This sample shows that when we cast to void* we lose information
         and we may have a resource leak.
      */
-     f(move p);
+     f(p);
      
      /*
         If the programer knows the code is safe the error can be removed with a cast.        
      */
-     //f(move (void * owner) p); /*TRY*/
+     //f((void * owner) p); /*TRY*/
    }
+}
+`;
+
+sample["Ownership (experimental)"]["linked list"] =
+`
+#define _OWNERSHIP_ 
+#include <stdlib.h>
+#include <assert.h>
+
+struct node {
+ struct node* owner next;
+};
+
+struct list {
+  struct node * owner head;
+  struct node * tail;
+};
+
+void list_append(struct list* list, struct node* owner node)
+{
+  if (list->head == NULL) {
+      list->head = node;
+   }
+   else {
+      assert(list->tail->next == 0);
+      list->tail->next = node; //ZERO OVERHEAD
+   }
+   list->tail = node;
+}
+
+void list_destroy(struct list* obj_owner list)
+{
+  struct node * owner p = list->head;
+  while (p) {
+      struct node *  owner next = p->next;
+      free(p);
+      p = next;
+  }
+}
+
+int main()
+{
+  struct list list = {};
+  struct node  *owner p =  calloc(1, sizeof * p);
+  
+  if (p) {
+    list_append(&list, p);
+  }
+
+  list_destroy(&list);
 }
 `;
