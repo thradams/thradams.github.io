@@ -1156,31 +1156,25 @@ static_assert( _is_function(main) && (typeof(main())) == (int) );
 sample["Ownership (experimental)"]=[];
 sample["Ownership (experimental)"]["ownership I"] =
 `
-/*  
-  See also: http://thradams.com/cake/ownership.html
-*/
-
-#define _OWNERSHIP_ 
-#include <stdlib.h>
+void* owner malloc(unsigned size);
+void free(void* owner ptr);
 
 int main() {
    void * owner p = malloc(1);
    //free(p);  /*FIX ME*/
 }
-
 `;
 
 sample["Ownership (experimental)"]["ownership II"] =
 `
-/* 
-  See also: http://thradams.com/cake/ownership.html
-*/
 
 #define _OWNERSHIP_ 
 #include <stdlib.h>
+#include <string.h>
 
 struct X {
   int i;
+  char * owner name;
 };
 
  struct X * owner f() {
@@ -1190,9 +1184,13 @@ struct X {
 
 int main() {
    struct X * owner p = f();
-   //free(p);  /*FIX ME*/
+   if (p)
+   {
+     assert(p->name == NULL);
+     p->name = strdup("name");
+   }
+   /*FIX ME*/
 }
-
 
 
 `;

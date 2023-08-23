@@ -202,7 +202,9 @@ void f(T * owner a);
 f(a); /*moved*/
 </code></pre>
 
-<p>The object that receives the value must not hold any resource. This is natural in initialization and function arguments. For assignment it needs to be checked with flow analysis (part II).</p>
+<p>The object that receives the value must not hold any resource. This is natural in initialization and function arguments. </p>
+
+<p>For assignment it needs to be checked with flow analysis (part II).</p>
 
 <p>2 - A non owner object cannot be copied to a owner object.   </p>
 
@@ -262,7 +264,9 @@ T F() {
 
 <h2 id="toc_4">Part II - Flow analysis</h2>
 
-<p>The objective of flow analysis is to ensure that <strong>when an owner object goes out of scope and before it&#39;s memory is overrided it does not owns any resources</strong>. </p>
+<p>The objective of flow analysis is to ensure that when an owning object goes out of scope or before its memory is overridden, it has released all of its resources.</p>
+
+<p>Sample:  </p>
 
 <pre><code class="language-c">  FILE * owner f = fopen(&quot;file&quot;, &quot;r&quot;);  
   if (f){  
@@ -270,33 +274,75 @@ T F() {
   }
 </code></pre>
 
+<p>Flow analysis must know that when f goes of of scope it does not owns any resource. </p>
+
 <blockquote>
 <p>Note: In cake, we can print the object state   as seen by flow analysis using <strong>static_debug(expression)</strong>.
 We also can assert some specific state using <strong>static_state(expression, &quot;state&quot;)</strong>.</p>
 </blockquote>
 
-<p>A non initialized object has the &quot;uninitialized&quot; state.</p>
+<p>To track ownership fours states are used &quot;uninitialized&quot;, &quot;moved&quot;, &quot;null&quot; and &quot;not null&quot;.  </p>
 
-<p>Pointer types can have the state &quot;null&quot; or &quot;not-null&quot;.<br>
-The combination of &quot;null or not-null&quot; is also called &quot;maybe-null&quot;. </p>
+<pre><code class="language-c">T * p;  
+/* p is uninitialized*/  
+</code></pre>
+
+<p>Pointers can have the state &quot;null&quot; or &quot;not-null&quot;.  The combination of &quot;null or not-null&quot; is also called &quot;maybe-null&quot;.  </p>
+
+<pre><code class="language-c">T * owner p = 0;  
+/* p is null*/  
+
+T * owner p2 = malloc(sizeof(T));  
+/* p2 is maybe-null*/
+</code></pre>
 
 <p>When one owner object is copied to another the state of the source object is &quot;moved&quot;.  The state of the destination object is the same of the previous state of the source object.</p>
 
-<p>The exception is when we move owner objects into functions, then the state is &quot;uninitialized&quot;. This prevents use after free.</p>
+<pre><code class="language-c">T * owner p = 0;  
+T * owner p2 = malloc(sizeof(T));  
+  
+/*p1 is null*/  
+/*p2 is maybe-null*/
+  
+p = p2;  
+
+/*p2 is moved*/  
+/*p1 is maybe-null*/
+
+</code></pre>
+
+<p>The exception is when we move owner objects into functions, then the state is &quot;uninitialized&quot;. This prevents use after free or concurrency problems.</p>
 
 <pre><code class="language-c">  T * owner p = malloc(sizeof(T));  
   free(p);
   /* p is uninitialized*/
 </code></pre>
 
-<p>The object state is a composition of all possible states of flow analysis. For instance, at the of scope f state is &quot;null or moved&quot;.  </p>
+<p>The object state is a composition (set) of all possible states.  </p>
+
+<p>Sample:  </p>
 
 <pre><code class="language-c">  FILE * owner f = 0;  
   if (condition){    
       f = fopen(&quot;file&quot;, &quot;r&quot;);
       fclose(f);
-  } /*f is null or moved*/
+  } /*f is &quot;null&quot; or &quot;moved&quot; */
 </code></pre>
+
+<p>When an owning pointer goes out of scope and before its memory is overridden it cannot have &quot;not-null&quot; in its set state.   </p>
+
+<p>All others possibilities are permitted. For instance, the state can be &quot;null or uninitialized&quot; or &quot;null or moved&quot;.</p>
+
+<p>When an owning object (non pointer) goes out of scope and before its memory is overridden it must be on &quot;uninitialized&quot; or &quot;moved&quot; or 
+&quot;uninitialized or moved&quot; state otherwise we have a leak.</p>
+
+<pre><code class="language-c">owner int handle = make_resource();
+release_resource(handle);
+</code></pre>
+
+<p>We don&#39;t have semantics information to know for instance if handle 0 is valid or not.</p>
+
+<p>Each member of aggregate objects is checked individually. </p>
 
 <h3 id="toc_5">malloc/calloc</h3>
 
@@ -322,19 +368,61 @@ int main() {
 }
 </code></pre>
 
+<blockquote>
 <p>This is also expected to be used with a macro, so compiler without ownership checks will just ignore.</p>
+</blockquote>
 
-<p>In some case, we need to disable just some parts of the code and not the entire function.</p>
+<p>assert can be used to override the static analysis state.</p>
 
-<pre><code class="language-c">void token_delete(implicit struct token* owner p)
+<pre><code class="language-c">/* linked list sample */
+
+struct node {
+ struct node* owner next;
+};
+
+struct list {
+  struct node * owner head;
+  struct node * tail;
+};
+
+void node_delete(struct node* owner p) {
+  if (p) {  
+     /*  
+       flow analysis will assume   
+       p-&gt;next is null and safe to be   
+       ignored  
+     */
+     assert(p-&gt;next == NULL);
+     free(p);
+  }
+}
+
+void list_destroy(struct list* obj_owner list)
 {
-    if (p) {
-        [[already_released]] p-&gt;next;
-        free(p-&gt;lexeme);
-        free(p); //warning next not deleted
-    }
+  struct node * owner p = list-&gt;head;
+  while (p) {
+      struct node *  owner next = p-&gt;next;
+      p-&gt;next = NULL;
+      node_delete(p);
+      p = next;
+  }
 }
 </code></pre>
+
+<p>list_destroy can be implemented as follow:</p>
+
+<pre><code class="language-c">void list_destroy(struct list* obj_owner list)
+{
+  struct node * owner p = list-&gt;head;
+  while (p) {
+      struct node *  owner next = p-&gt;next;
+      free(p);
+      p = next;
+  }
+}
+</code></pre>
+
+<p>We don&#39;t need assert here because compiler knows &quot;p-&gt;next&quot; has been moved. We don&#39;t have a way do override the static analysis state &quot;moved&quot; or &quot;uninitialized&quot; using assert.</p>
 
 <h2 id="toc_7">Grammar</h2>
 
