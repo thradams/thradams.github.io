@@ -424,6 +424,13 @@ void list_destroy(struct list* obj_owner list)
 
 <p>We don&#39;t need assert here because compiler knows &quot;p-&gt;next&quot; has been moved. We don&#39;t have a way do override the static analysis state &quot;moved&quot; or &quot;uninitialized&quot; using assert.</p>
 
+<p>TODO</p>
+
+<pre><code class="language-c">void f(struct X *p){
+  move(p-&gt;item);
+} //error &#39;p-&gt;item&#39; was left uninitialized  
+</code></pre>
+
 <h2 id="toc_7">Grammar</h2>
 
 <pre><code class="language-c"> 
