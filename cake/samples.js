@@ -1723,3 +1723,27 @@ int main()
    }
 }
 `;
+
+
+sample["Ownership (experimental)"]["checking double free"] =
+`
+void free(void * owner p);
+
+struct X {
+    char * owner naasdasdme;
+    char * owner nasdasame;
+    char * owner naasdme;
+    char * owner namasde;
+    char * owner namasade;
+};
+
+void x_destroy(struct X * obj_owner p)
+{
+    free(p->naasdasdme);
+    free(p->nasdasame);
+    free(p->naasdme);
+    free(p->namasde);
+    free(p->namasade);
+    free(p->namasde);
+}
+`;
