@@ -572,4 +572,23 @@ int main()
 </code></pre>
 
 <p>Listing 32 - Zeroing the state</p>
+
+<p><strong>Rule</strong>: An object that has any parts moved/uninitialized cannot be moved.  Listing 33.</p>
+
+<pre><code class="language-c">struct X { 
+  char *owner part1;
+  char *owner part2;  
+};
+void f(struct X x);
+
+int main() 
+{
+  struct X x = {};
+  /*..*/
+  free(x.part1);
+  f(x); //ERROR x.part1 is uninitialized
+}
+</code></pre>
+
+<p>Listing 33 - Messing with owner objects </p>
 </article></body></html>
