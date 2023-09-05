@@ -24,7 +24,9 @@ body {
 
 
 
-
+code {
+    font-family: Consolas
+}
 
 select {
   color: #333;

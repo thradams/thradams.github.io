@@ -15,46 +15,27 @@
 <h1>Cake - C23 and Beyond</h1>
 <ul>
 <li>
-<a href="#toc_0">Static Ownership Checks in Cake</a>
+<a href="#toc_0">Owner Objects</a>
 <ul>
 <li>
-<a href="#toc_1">Owner Objects</a>
-<ul>
+<a href="#toc_1">Other Types of Owner Objects</a>
+</li>
 <li>
-<a href="#toc_2">Other Types of Owner Objects</a>
+<a href="#toc_2">View Objects</a>
+</li>
+<li>
+<a href="#toc_3">Deleting Owner Pointers</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_3">View Objects</a>
+<a href="#toc_4">Copying a owner pointer to a obj_owner pointer</a>
 </li>
 <li>
-<a href="#toc_4">Deleting Owner Pointers</a>
-</li>
-<li>
-<a href="#toc_5">Copying a owner pointer to a obj_owner pointer</a>
-</li>
-<li>
-<a href="#toc_6">Static analysis</a>
-</li>
-<li>
-<a href="#toc_7">A linked list sample</a>
+<a href="#toc_5">Static analysis</a>
 </li>
 </ul>
-</li>
-</ul>
-<h1 id="toc_0">Static Ownership Checks in Cake</h1>
-
-<p>Cake is a C23 Front End <a href="http://thradams.com/cake/index.html">http://thradams.com/cake/index.html</a> that is implementing static ownership checks. Cake source itself is already using this feature that can be used and disabled with few macros. </p>
-
-<p>This is a tour explaining the usage of this feature.  </p>
-
-<p>Cake compiler can be used online<br>
-<a href="http://thradams.com/cake/playground.html">http://thradams.com/cake/playground.html</a></p>
-
-<p>** This feature still under design and development.**</p>
-
-<h2 id="toc_1">Owner Objects</h2>
+<h2 id="toc_0">Owner Objects</h2>
 
 <p>An <strong>owner object</strong> is an object that holds a reference to another object and controls its lifetime.</p>
 
@@ -77,16 +58,14 @@ if (f2)
 
 <p>Listing 2 - Assignment of Owner Objects is a Move</p>
 
-<p><strong>Rule:</strong> Before the end of its lifetime, owner objects must transfer the ownership of the objects they possess.</p>
-
-<p>Invoking a function is analogous to assignment, resulting in the object’s transfer of ownership. In the previous examples, we were already transferring ownership of the owner pointer to the close function, which is declared as follows:</p>
+<p>Before the end of its lifetime, owner objects must transfer the ownership of the objects they possess. Invoking a function is analogous to assignment, resulting in the object’s transfer of ownership. In the previous examples, we were already transferring ownership of the owner pointer to the close function, which is declared as follows:</p>
 
 <pre><code class="language-c">void close(FILE *owner p);
 </code></pre>
 
 <p>Listing 3 - Declaration of close</p>
 
-<h3 id="toc_2">Other Types of Owner Objects</h3>
+<h3 id="toc_1">Other Types of Owner Objects</h3>
 
 <p>We can have other types of <strong>owner objects</strong>. For instance, Berkeley sockets use an integer to identify the socket, as shown in listing 4:</p>
 
@@ -98,7 +77,7 @@ if (f2)
 
 <p>Listing 4 - Non-Pointer owners objects</p>
 
-<h2 id="toc_3">View Objects</h2>
+<h3 id="toc_2">View Objects</h3>
 
 <p>A <strong>view object</strong> is an object that holds references to other object but does not own those references, which must exist beyond the lifespan of the view object itself. The most common view objects are pointers called <strong>view pointers</strong>. We don’t need to add the view qualifier because it is the default. When a owner object is copied to a view object the ownership is not transfered as showed in listing 5.</p>
 
@@ -134,7 +113,7 @@ int main() {
 
 <p>Listing 6 - A view parameter</p>
 
-<h2 id="toc_4">Deleting Owner Pointers</h2>
+<h3 id="toc_3">Deleting Owner Pointers</h3>
 
 <p><strong>Owner pointers</strong> assume ownership of the pointed object and its memory, treating them as if they were two different objects. A common pattern is to create a delete function as shown in listing 7:</p>
 
@@ -198,7 +177,7 @@ int main() {
 
 <p>Listing 9 - Implementing a destructor using obj_owner</p>
 
-<h2 id="toc_5">Copying a owner pointer to a obj_owner pointer</h2>
+<h2 id="toc_4">Copying a owner pointer to a obj_owner pointer</h2>
 
 <p>We can copy a owner pointer to a obj_owner pointer, in this case, only the ownership of the pointed object is transfered but no the memory ownership. Listing 10 shows how we can use <code>x_destroy</code> at the implementation of <code>x_delete</code>.</p>
 
@@ -228,7 +207,7 @@ int main() {
 
 <p>Listing 10 - Using <code>x_destroy</code> to implement <code>x_delete</code></p>
 
-<h2 id="toc_6">Static analysis</h2>
+<h2 id="toc_5">Static analysis</h2>
 
 <p>All the rules we have presented are checked by the compiler. Let&#39;s return to our first sample</p>
 
@@ -324,7 +303,7 @@ if (f)
 
 <p>Now let&#39;s consider <code>realloc</code> function.</p>
 
-<pre><code class="language-c">void * owner realloc( void *ptr, size_t new_size ); 
+<pre><code class="language-c">  void * owner realloc( void *ptr, size_t new_size );   
 </code></pre>
 
 <p>At the declaration of <code>realloc</code> we are not moving the <code>ptr</code>. The reason for that is because the <code>ptr</code> may or may not be moved. If the function returns NULL <code>ptr</code> was not moved. Listing 16 shows how <strong>static_set</strong> can be used.</p>
@@ -362,237 +341,5 @@ static_debug(f);
 </code></pre>
 
 <p>Listing 17 - Flow analysis</p>
-
-<p>All rules are a consequence of your objective.   </p>
-
-<p><strong>Rule:</strong>: We cannot discard owner objects as showed in listing 18.  </p>
-
-<pre><code class="language-c">void using_file(FILE * f) {
-}
-int main() {  
- fopen(&quot;file.txt&quot;, &quot;r&quot;); //ERROR  
- using_file(fopen(&quot;file.txt&quot;, &quot;r&quot;)); //ERROR
-}
-</code></pre>
-
-<p>Listing 18 - owner objects cannot be discarded.</p>
-
-<p><strong>Rule:</strong>: Before the assignment of owner objects the compiler will check if the owner object not holding any resource, as showed in listing 19:  </p>
-
-<pre><code class="language-c">  FILE * owner file = fopen(&quot;file.txt&quot;, &quot;r&quot;);  
-  file = fopen(&quot;file.txt&quot;, &quot;r&quot;); //ERROR
-</code></pre>
-
-<p>Listing 19 - Check before assignment</p>
-
-<p>Sometimes is not possible to infer the state. Consider this sample.</p>
-
-<pre><code class="language-c">struct X {
-  char *owner text; 
-};
-
-void init(struct  X * x) {
-  x-&gt;text = strdup(&quot;a&quot;);
-}
-void set_text(struct  X * x) {
-  x-&gt;text = strdup(&quot;a&quot;);
-}
-</code></pre>
-
-<p>Listing 20 - Some states cannot be inferred</p>
-
-<p>How to know <code>x-&gt;text</code> was not holding any resource? At  listing 21, we show how <strong>static_set</strong> can be used to say <code>x-&gt;text</code> is not initialized at <code>init</code>, and inside <code>set_text</code> how compile will recognize the runtime assert to ignore the error that <code>x-&gt;text</code> may be not null. </p>
-
-<pre><code class="language-c">void init(struct  X * x) {  
-  static_set(x-&gt;text, &quot;uninitialized&quot;);
-  x-&gt;text = strdup(&quot;a&quot;);
-}  
-void set_text(struct  X * x) {  
-  assert(x-&gt;text == NULL); /*NOT RECOMENDED HERE*/
-  x-&gt;text = strdup(&quot;a&quot;);
-}
-</code></pre>
-
-<p>Listing 21.</p>
-
-<p>At set_text the best option is just release the previous resources as showed at listing 22.</p>
-
-<pre><code class="language-c">void set_text(struct  X * x) {  
-  free(x-&gt;text);
-  x-&gt;text = strdup(&quot;a&quot;); //OK!
-}
-</code></pre>
-
-<p>Obs: Its being considered a attribute [[out]], this attribute can tell the compiler the parameter can be uninitialized. Listing 22 shows a possible declaration. </p>
-
-<pre><code class="language-c">void init([[out]] struct  X * x);
-</code></pre>
-
-<p>Continuing with the rules.</p>
-
-<p><strong>Rule:</strong>: A non-owner object cannot be copied to a owner object as showed in listing 23</p>
-
-<pre><code class="language-c">FILE * f();
-int main() {  
-   FILE * owner file = f(); //ERROR   
-}
-</code></pre>
-
-<p>Listing 23 - non owner cannot be copied to owner</p>
-
-<p>The exception is the null pointer constant.</p>
-
-<p><strong>Rule:</strong>: A view parameter cannot leave the scope with moved objects. Listing 24</p>
-
-<pre><code class="language-c">void f(struct Y * p) {
-    x_destroy(p-&gt;px);
-} //ERROR p-&gt;x is leaving scope MOVED
-  
-int main() {
-   struct Y  y = {};
-   y.x.name = strdup(&quot;a&quot;);
-   f(&amp;y);
-   free(y.x.name);
-}
-</code></pre>
-
-<p>Listing 24 - Messing with view parameters</p>
-
-<p>However, listing 25 is correct.</p>
-
-<pre><code class="language-c">void x_swap(struct X * a, struct X * b) 
-{
-  struct X temp = *a;
-  *a = *b;
-  *b = temp;
-}   
-/*  
- OK because a and b are not leaving scope   
- with moved objects  
-*/
-</code></pre>
-
-<p>Listing 25 - swap function</p>
-
-<p><strong>Rule:</strong>: When objects are moved to functions, they become uninitialized. This prevents bugs like double free. Listing 26.</p>
-
-<pre><code> int main() {
-  void * owner p = malloc(1);
-  free(p);
-  free(p); //ERROR p is uninitialized
-}
-</code></pre>
-
-<p><strong>Rule:</strong>: moved objects cannot be moved. Listing 27.</p>
-
-<pre><code class="language-c">int * owner p1 = ...;
-int * owner p2 = p1;
-int * owner p3 = p1; //ERROR p1 was moved
-</code></pre>
-
-<p>Listing 27 - We cannot move a moved object</p>
-
-<p><strong>Rule:</strong> When coping a owner object to to a view object the compiler must check if the lifetime. Listing 28</p>
-
-<pre><code class="language-c">  T  *p = 0;  
-  {
-    T * owner p2 = make_owner();  
-    p = p2; //error  
-    free(p2);
-  }
-</code></pre>
-
-<p>Listing 28 - Lifetime check</p>
-
-<p><strong>Rule:</strong> const can be discard when moving to <code>void*</code>. Listing 29
-<code>c
-void free(void * owner p);
-int main(){
-  const void * p = malloc(1);
-  free(p); //no discarding const warning here
-}
-</code>
-Listing 29 - Non warning discarding const.</p>
-
-<p><strong>Rule:</strong> To convert a view pointer to obj_owner we need check that the origin (the object it is pointing) is an owner object. Listing 30.</p>
-
-<pre><code class="language-c">struct X {
- struct Y * p;
-};
-void y_destroy(struct Y * obj_owner p);
-void f(struct X * x) {
-  y_destroy(x-&gt;y); //ERROR origin of y cannot be verified
-}
-</code></pre>
-
-<p>Listing 30 -Checking the origin of obj_owner</p>
-
-<h2 id="toc_7">A linked list sample</h2>
-
-<pre><code class="language-c">#define _OWNERSHIP_ 
-
-#include &lt;stdlib.h&gt;
-#include &lt;assert.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;string.h&gt;
-
-struct node {
- char * owner text;
- struct node* owner next;
-};
-
-struct list {
-  struct node * owner head;
-  struct node * tail;
-};
-
-void list_append(struct list* list,
-                 struct node* owner node)
-{
-  if (list-&gt;head == NULL) {
-      list-&gt;head = node;
-   }
-   else {
-      assert(list-&gt;tail-&gt;next == 0);
-      list-&gt;tail-&gt;next = node;
-   }
-   list-&gt;tail = node;
-}
-
-void list_destroy(struct list* obj_owner list)
-{
-  struct node * owner p = list-&gt;head;
-  while (p) {
-      struct node *  owner next = p-&gt;next;
-      free(p-&gt;text); 
-      free(p);
-      p = next;
-  }
-}
-
-void list_print(const struct list* list)
-{
-  const struct node * p = list-&gt;head;
-  while (p) {
-      printf(&quot;%s &quot;, p-&gt;text);
-      p = p-&gt;next;
-  }
-}
-
-int main()
-{
-  struct list list = {};
-  struct node  *owner p =  calloc(1, sizeof * p);
-  
-  if (p) {
-    p-&gt;text = strdup(&quot;item1&quot;);
-    list_append(&amp;list, p);
-  }
-
-  list_print(&amp;list);
-  list_destroy(&amp;list);
-}
-
-</code></pre>
 </body></html>  msvc
    
