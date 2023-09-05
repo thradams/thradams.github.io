@@ -37,9 +37,6 @@
 <li>
 <a href="#toc_6">Static analysis</a>
 </li>
-<li>
-<a href="#toc_7">A linked list sample</a>
-</li>
 </ul>
 </li>
 </ul>
@@ -527,72 +524,42 @@ void f(struct X * x) {
 
 <p>Listing 30 -Checking the origin of obj_owner</p>
 
-<h2 id="toc_7">A linked list sample</h2>
+<p><strong>Rule</strong> When we cast void pointer to objects we assume the object is uninitialized. Listing 31  </p>
 
-<pre><code class="language-c">#define _OWNERSHIP_ 
-
-#include &lt;stdlib.h&gt;
-#include &lt;assert.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;string.h&gt;
-
-struct node {
- char * owner text;
- struct node* owner next;
+<pre><code class="language-c">struct X { 
+  char *owner text; 
 };
+void x_delete(struct X *owner p);  
 
-struct list {
-  struct node * owner head;
-  struct node * tail;
-};
-
-void list_append(struct list* list,
-                 struct node* owner node)
+int main() 
 {
-  if (list-&gt;head == NULL) {
-      list-&gt;head = node;
+   struct X * pX = calloc( 1, sizeof * pX);
+   if (pX) {
+     static_state(pX-&gt;text, &quot;uninitialized&quot;);
+     p-&gt;text = strdup(&quot;hi&quot;); 
+     x_delete( pX); 
    }
-   else {
-      assert(list-&gt;tail-&gt;next == 0);
-      list-&gt;tail-&gt;next = node;
-   }
-   list-&gt;tail = node;
 }
-
-void list_destroy(struct list* obj_owner list)
-{
-  struct node * owner p = list-&gt;head;
-  while (p) {
-      struct node *  owner next = p-&gt;next;
-      free(p-&gt;text); 
-      free(p);
-      p = next;
-  }
-}
-
-void list_print(const struct list* list)
-{
-  const struct node * p = list-&gt;head;
-  while (p) {
-      printf(&quot;%s &quot;, p-&gt;text);
-      p = p-&gt;next;
-  }
-}
-
-int main()
-{
-  struct list list = {};
-  struct node  *owner p =  calloc(1, sizeof * p);
-  
-  if (p) {
-    p-&gt;text = strdup(&quot;item1&quot;);
-    list_append(&amp;list, p);
-  }
-
-  list_print(&amp;list);
-  list_destroy(&amp;list);
-}
-
 </code></pre>
+
+<p>Listing 31 - void pointer objects are uninitialized</p>
+
+<p>When calloc is used, the memory is initialized with zeros.
+if necessary, state_set can be used with &quot;zero&quot; parameter to tell the compiler the state of the pointed object. Listing 32.</p>
+
+<pre><code class="language-c">struct X { 
+  char *owner text; 
+};
+int main() 
+{
+   struct X * pX = calloc( 1, sizeof * pX);
+   if (pX) {  
+     /*the memory of pointed object is all zeroes*/
+     static_state(*p, &quot;zero&quot;);          
+   }
+}
+</code></pre>
+
+<p>Listing 32 - Zeroing the state</p>
 </body></html>  msvc
    
