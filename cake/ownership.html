@@ -341,11 +341,13 @@ if (f)
 
 <p>The state of an object is a combination of all possible states. For instance, let&#39;s print and check the state of <code>f</code> at listing 17.</p>
 
-<pre><code class="language-c">FILE *owner f = fopen(&quot;file.txt&quot;, &quot;r&quot;);
-if (f)
+<pre><code class="language-c">int main() {
+  FILE *owner f = fopen(&quot;file.txt&quot;, &quot;r&quot;);
+  if (f)
     fclose(f);  
-static_state(f, &quot;null or moved&quot;);
-static_debug(f);
+  static_state(f, &quot;null or moved&quot;);
+  static_debug(f);
+}
 </code></pre>
 
 <p>Output:</p>
@@ -360,7 +362,7 @@ static_debug(f);
 
 <p>All rules are a consequence of your objective.   </p>
 
-<p><strong>Rule:</strong>: We cannot discard owner objects as showed in listing 18.  </p>
+<p><strong>Rule:</strong> We cannot discard owner objects as showed in listing 18.  </p>
 
 <pre><code class="language-c">void using_file(FILE * f) {
 }
@@ -425,11 +427,12 @@ void set_text(struct  X * x) {
 
 <p>Continuing with the rules.</p>
 
-<p><strong>Rule:</strong>: A non-owner object cannot be copied to a owner object as showed in listing 23</p>
+<p><strong>Rule:</strong> A non-owner object cannot be copied to a owner object as showed in listing 23</p>
 
 <pre><code class="language-c">FILE * f();
 int main() {  
    FILE * owner file = f(); //ERROR   
+   FILE * owner file2 = 0;  //OK
 }
 </code></pre>
 
@@ -437,7 +440,7 @@ int main() {
 
 <p>The exception is the null pointer constant.</p>
 
-<p><strong>Rule:</strong>: A view parameter cannot leave the scope with moved/uninitialized objects. Listing 24</p>
+<p><strong>Rule:</strong> A view parameter cannot leave the scope with moved/uninitialized objects. Listing 24</p>
 
 <pre><code class="language-c">void f(struct Y * p) {
     x_destroy(p-&gt;px);
@@ -469,7 +472,7 @@ int main() {
 
 <p>Listing 25 - swap function</p>
 
-<p><strong>Rule:</strong>: When objects are moved to functions, they become uninitialized. This prevents bugs like double free. Listing 26.</p>
+<p><strong>Rule:</strong> When objects are moved to functions, they become uninitialized. This prevents bugs like double free. Listing 26. </p>
 
 <pre><code> int main() {
   void * owner p = malloc(1);
@@ -478,7 +481,7 @@ int main() {
 }
 </code></pre>
 
-<p><strong>Rule:</strong>: moved objects cannot be moved. Listing 27.</p>
+<p><strong>Rule:</strong> moved objects cannot be moved. Listing 27.</p>
 
 <pre><code class="language-c">int * owner p1 = ...;
 int * owner p2 = p1;
@@ -489,25 +492,34 @@ int * owner p3 = p1; //ERROR p1 was moved
 
 <p><strong>Rule:</strong> When coping a owner object to to a view object the compiler must check if the lifetime. Listing 28</p>
 
-<pre><code class="language-c">  T  *p = 0;  
+<pre><code class="language-c">struct X { 
+  char *owner text; 
+};  
+  
+struct X * owner make_owner();  
+
+int main() {
+  struct X *p = 0;  
   {
-    T * owner p2 = make_owner();  
-    p = p2; //error  
+    struct X * owner p2 = make_owner();  
+    p = p2; //error p lives longer than p2  
     free(p2);
-  }
+  }  
+}
 </code></pre>
 
 <p>Listing 28 - Lifetime check</p>
 
-<p><strong>Rule:</strong> const can be discard when moving to <code>void*</code>. Listing 29
-<code>c
-void free(void * owner p);
+<p><strong>Rule:</strong> const can be discard when moving to <code>void*</code>. Listing 29</p>
+
+<pre><code class="language-c">void free(void * owner p);
 int main(){
   const void * p = malloc(1);
   free(p); //no discarding const warning here
 }
-</code>
-Listing 29 - Non warning discarding const.</p>
+</code></pre>
+
+<p>Listing 29 - Non warning discarding const.</p>
 
 <p><strong>Rule:</strong> To convert a view pointer to obj_owner we need check that the origin (the object it is pointing) is an owner object. Listing 30.</p>
 
@@ -540,10 +552,10 @@ int main()
 }
 </code></pre>
 
-<p>Listing 31 - void pointer objects are uninitialized</p>
+<p>Listing 31 - void objects are uninitialized</p>
 
 <p>When calloc is used, the memory is initialized with zeros.
-if necessary, state_set can be used with &quot;zero&quot; parameter to tell the compiler the state of the pointed object. Listing 32.</p>
+if necessary, <strong>state_set</strong> can be used with &quot;zero&quot; parameter to tell the compiler the state of the pointed object. Listing 32.</p>
 
 <pre><code class="language-c">struct X { 
   char *owner text; 
