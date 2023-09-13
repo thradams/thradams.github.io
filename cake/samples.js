@@ -485,6 +485,30 @@ int f5(){
 
 `;
 
+sample["C23"]["macro NEW"] =
+`
+#include <stdlib.h>
+#include <string.h>
+
+static inline void* allocate_and_copy(void* s, size_t n) {
+    void* p = malloc(n);
+    if (p) {
+        memcpy(p, s, n);
+    }
+    return p;
+}
+
+#define NEW(...) (typeof(__VA_ARGS__)*) allocate_and_copy(&(__VA_ARGS__), sizeof(__VA_ARGS__))
+#pragma expand NEW
+
+struct X {
+    const int i;
+};
+
+int main() { 
+    auto p = NEW((struct X) {});     
+}
+`;
 
 sample["C23"]["auto"] =
 `
@@ -1177,12 +1201,11 @@ int main() {
    {
      static_state(p, "not-null"); 
      free(p);
-     static_state(p, "moved"); 
+     static_state(p, "uninitialized"); 
    }
-   static_state(p, "null or moved"); 
+   static_state(p, "null or uninitialized"); 
    static_debug(p);
 }
-
 `;
 
 sample["Ownership (experimental)"]["implementing a destructor I"] =
