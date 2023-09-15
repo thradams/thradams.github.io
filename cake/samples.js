@@ -450,7 +450,7 @@ int main()
 
     typeof_unqual(const int) p5;
     typeof_unqual(const int * const) p6;
-    static_assert(_is_same(typeof_unqual(const int * const), const int *));
+    
     
 
     /*let's expand this macro and see inside*/
@@ -478,13 +478,37 @@ int main()
 
 
 int f5(){
-  typeof(int [2]) *p1;
+  typeof(int [2]) *p1 = 0;
   auto p2 = (typeof(int [2]) *) p1 ;
 }
 
 
 `;
 
+sample["C23"]["macro NEW"] =
+`
+#include <stdlib.h>
+#include <string.h>
+
+static inline void* allocate_and_copy(void* s, size_t n) {
+    void* p = malloc(n);
+    if (p) {
+        memcpy(p, s, n);
+    }
+    return p;
+}
+
+#define NEW(...) (typeof(__VA_ARGS__)*) allocate_and_copy(&(__VA_ARGS__), sizeof(__VA_ARGS__))
+#pragma expand NEW
+
+struct X {
+    const int i;
+};
+
+int main() { 
+    auto p = NEW((struct X) {});     
+}
+`;
 
 sample["C23"]["auto"] =
 `
@@ -583,7 +607,7 @@ int main()
   void * p2 = NULL;
 
   auto a = nullptr;
-  static_assert(_is_same(typeof(a), typeof(nullptr)));
+  
 
   printf("%s", _Generic(nullptr, typeof(nullptr) : "nullptr_t"));
 }
@@ -1050,8 +1074,8 @@ sample["Extensions"]["typeof + lambdas"] =
 #pragma expand SWAP
 int main()
 {
-    int a;
-    int b;
+    int a = 1;
+    int b = 2;
     SWAP(a, b);
 }
 `;
@@ -1124,7 +1148,7 @@ int main()
   static_assert(!_is_array(pf));
   static_assert(_is_pointer(pf));
 
-  static_assert(_is_same(int, typeof(i)));
+  
 
 }
 `;
@@ -1157,7 +1181,7 @@ sample["Ownership (experimental)"]=[];
 
 sample["Ownership (experimental)"]["hello"] =
 `
-void* owner malloc(unsigned size);
+void* owner malloc(unsigned long size);
 void free(void* owner ptr);
 
 int main() {
@@ -1168,7 +1192,7 @@ int main() {
 
 sample["Ownership (experimental)"]["static_state/static_debug"] =
 `
-void* owner malloc(unsigned size);
+void* owner malloc(unsigned long size);
 void free(void* owner ptr);
 
 int main() {
@@ -1177,12 +1201,11 @@ int main() {
    {
      static_state(p, "not-null"); 
      free(p);
-     static_state(p, "moved"); 
+     static_state(p, "uninitialized"); 
    }
-   static_state(p, "null or moved"); 
+   static_state(p, "null or uninitialized"); 
    static_debug(p);
 }
-
 `;
 
 sample["Ownership (experimental)"]["implementing a destructor I"] =
@@ -1313,11 +1336,15 @@ int main() {
 
 sample["Ownership (experimental)"]["Linked list"] =
 `
+
 #define _OWNERSHIP_ 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 struct node {
+ char * owner text;
  struct node* owner next;
 };
 
@@ -1343,8 +1370,18 @@ void list_destroy(struct list* obj_owner list)
   struct node * owner p = list->head;
   while (p) {
       struct node *  owner next = p->next;
+      free(p->text); 
       free(p);
       p = next;
+  }
+}
+
+void list_print(const struct list* list)
+{
+  const struct node * p = list->head;
+  while (p) {
+      printf("%s ", p->text);
+      p = p->next;
   }
 }
 
@@ -1354,11 +1391,14 @@ int main()
   struct node  *owner p =  calloc(1, sizeof * p);
   
   if (p) {
+    p->text = strdup("item1");
     list_append(&list, p);
   }
 
+  list_print(&list);
   list_destroy(&list);
 }
+
 `;
 
 
@@ -1366,7 +1406,7 @@ sample["Ownership (experimental)"]["static_set/realloc"] =
 `
 
 void* owner realloc(void* ptr, unsigned size);
-void* owner malloc(unsigned size);
+void* owner malloc(unsigned long size);
 void free(void* owner ptr);
 
 void f()
@@ -1392,7 +1432,7 @@ sample["flow-analysis"] = [];
 sample["flow-analysis"]["if-else 1"] =
 `
 
-void* owner malloc(unsigned size);
+void* owner malloc(unsigned long size);
 void free(void* owner ptr);
 
 void f1()
@@ -1574,6 +1614,7 @@ int main()
   fd = socket();
   if (fd < 0)
   {
+     static_set(fd, "null");
      return 1;
   }
   close(fd);
@@ -1645,9 +1686,9 @@ int main(){
 sample["Ownership (experimental)"]["moving parts of view"] =
 `
 #define _OWNERSHIP_ 
+
 #include <string.h>
 #include <stdlib.h>
-
 
 
 struct X {
@@ -1656,6 +1697,7 @@ struct X {
 
 struct Y {
   struct X x;
+  struct X * px;
 };
 
 
@@ -1667,6 +1709,7 @@ void x_destroy(struct X * obj_owner p)
 void f(struct Y * p)
 {
     x_destroy(&p->x);
+    x_destroy(p->px);
 }
 
 int main() {
@@ -1676,6 +1719,54 @@ int main() {
    free(y.x.name);
 }
 
+
+`;
+
+sample["Ownership (experimental)"]["owner pointer owns two objects"] =
+`
+void * owner calloc(unsigned long i, unsigned long sz);
+char * owner strdup(const char* );
+void free(void * owner p);
+
+struct X {
+  char *owner name;
+};
+
+int main()
+{
+   struct X * owner p = calloc(1, sizeof * p);
+   if (p) {
+
+     p->name = strdup("hi");     
+     struct X x = {0};
+     x = *p;
+     free(x.name);
+     
+     free(p);
+   }
+}
 `;
 
 
+sample["Ownership (experimental)"]["checking double free"] =
+`
+void free(void * owner p);
+
+struct X {
+    char * owner naasdasdme;
+    char * owner nasdasame;
+    char * owner naasdme;
+    char * owner namasde;
+    char * owner namasade;
+};
+
+void x_destroy(struct X * obj_owner p)
+{
+    free(p->naasdasdme);
+    free(p->nasdasame);
+    free(p->naasdme);
+    free(p->namasde);
+    free(p->namasade);
+    free(p->namasde);
+}
+`;
