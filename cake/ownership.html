@@ -21,25 +21,22 @@
 <li>
 <a href="#toc_1">Non-pointer owner objects</a>
 </li>
-</ul>
-</li>
 <li>
 <a href="#toc_2">View Objects</a>
 </li>
 <li>
 <a href="#toc_3">Deleting Owner Pointers</a>
 </li>
-<li>
-<a href="#toc_4">Copying a owner pointer to a obj_owner pointer</a>
+</ul>
 </li>
 <li>
-<a href="#toc_5">Static analysis - Checking the rules at compile time</a>
+<a href="#toc_4">Static analysis - Checking the rules at compile time</a>
 </li>
 <li>
-<a href="#toc_6">Ownership Feature Strategy (Inspired by stdbool.h)</a>
+<a href="#toc_5">Ownership Feature Strategy (Inspired by stdbool.h)</a>
 </li>
 </ul>
-<p>Last Updated 10/12/2023</p>
+<p>Last Updated 23/12/2023</p>
 
 <h2 id="toc_0">Owner Objects</h2>
 
@@ -47,7 +44,7 @@
 
 <p>The most common type of owner objects are pointers, often referred as <strong>owner pointers</strong>. An owner pointer is created with the qualifier owner, as illustrated in Listing 1:</p>
 
-<h5>Listing 1 - Owner Pointer to FILE</h5>
+<p><strong>Listing 1 - Owner Pointer to FILE</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdio.h&gt;
@@ -72,7 +69,7 @@ int main()
 
 <p>For example, in Listing 2, the ownership of the owner pointer <code>f</code> is transferred to <code>f2</code>:</p>
 
-<h5>Listing 2 - Assignment of Owner Objects is a Move</h5>
+<p><strong>Listing 2 - Assignment of Owner Objects is a Move</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdio.h&gt;
@@ -88,7 +85,7 @@ int main()
 
 <p>Invoking a function <code>fclose</code> is analogous to assignment of the argument <code>f2</code>, resulting in the transfer of ownership of <code>f2</code> to the function parameter.  Listing 3, shows the declaration of <code>fclose</code>.</p>
 
-<h5>Listing 3 - Declaration of close</h5>
+<p><strong>Listing 3 - Declaration of close</strong></p>
 
 <pre><code class="language-c">void fclose(FILE *owner p);
 </code></pre>
@@ -97,7 +94,7 @@ int main()
 
 <p>We can have other types of <strong>owner objects</strong>. For instance, Berkeley sockets use an integer to identify the socket, as shown in listing 4:</p>
 
-<h5>Listing 4 - Non-Pointer owners objects</h5>
+<p><strong>Listing 4 - Non-Pointer owners objects</strong></p>
 
 <pre><code class="language-c"> owner int server_socket =
      socket(AF_INET, SOCK_STREAM, 0);
@@ -107,7 +104,7 @@ int main()
 
 <p>The location and usage of qualifier owner is similar of const qualifier. For pointers it goes after <code>*</code>, for this socket sample it can be before int.</p>
 
-<h2 id="toc_2">View Objects</h2>
+<h3 id="toc_2">View Objects</h3>
 
 <p>A <strong>view object</strong> is an object referencing another object without managing its lifetime. </p>
 
@@ -117,7 +114,7 @@ int main()
 
 <p>The view qualifier is not necessary for pointers, since it&#39;s the default behavior. When an owner object is copied to a view object, the ownership is not transferred, as shown in Listing 5:</p>
 
-<h5>Listing 5 - Calling Function with View Parameters</h5>
+<p><strong>Listing 5 - Calling Function with View Parameters</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdio.h&gt;
@@ -137,7 +134,7 @@ int main() {
 
 <p>When a <strong>view</strong> qualifier is used in structs, it makes all members as view objects. Listing 6.</p>
 
-<h5>Listing 6 - A view parameter</h5>
+<p><strong>Listing 6 - A view parameter</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdlib.h&gt;
@@ -155,11 +152,14 @@ int main() {
 }
 </code></pre>
 
-<h2 id="toc_3">Deleting Owner Pointers</h2>
+<p>It is interesting to compare against const qualifier. 
+While const adds a qualifier &quot;const&quot; &quot;view&quot; removes the qualifier &quot;owner&quot;.</p>
+
+<h3 id="toc_3">Deleting Owner Pointers</h3>
 
 <p><strong>Owner pointers</strong> take on the responsibility of owning the pointed object and its associated memory, treating them as distinct entities. A common practice is to implement a delete function to release both resources, as illustrated in Listing 7:</p>
 
-<h5>Listing 7 - Implementing the delete function</h5>
+<p><strong>Listing 7 - Implementing the delete function</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdlib.h&gt;
@@ -189,7 +189,7 @@ int main() {
 
 <p>When the object is created on the stack, we can implement a destructor, as shown in Listing 8:</p>
 
-<h5>Listing 8 - Implementing a destructor</h5>
+<p><strong>Listing 8 - Implementing a destructor</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdlib.h&gt;
@@ -215,7 +215,7 @@ int main() {
 
 <p>Listing 9 illustrates how to implement a destructor using a obj_owner pointer parameter.</p>
 
-<h5>Listing 9 - Implementing a destructor using obj_owner</h5>
+<p><strong>Listing 9 - Implementing a destructor using obj_owner</strong></p>
 
 <pre><code class="language-c">struct X {
 #include &lt;ownership.h&gt;
@@ -239,7 +239,7 @@ int main() {
 
 <p>In order to prevent moving from a non owner object, only <code>address of expressions</code> to <code>obj_owner</code> are allowed. For instance, listing 10 shows we cannot move a view pointer.</p>
 
-<h5>Listing 10 - Non address of expression or owner pointer.</h5>
+<p><strong>Listing 10 - Non address of expression or owner pointer.</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdlib.h&gt;
@@ -257,11 +257,9 @@ void f(struct X * x) {
 }
 </code></pre>
 
-<h2 id="toc_4">Copying a owner pointer to a obj_owner pointer</h2>
-
 <p>We can copy an owner pointer to an <strong>obj_owner</strong> pointer. In this scenario, only the ownership of the pointed object is transferred, not the memory ownership. Listing 11 illustrates how we can use <code>x_destroy</code> in the implementation of <code>x_delete</code>.</p>
 
-<h5>Listing 11 - Using <code>x_destroy</code> to implement <code>x_delete</code></h5>
+<p><strong>Listing 11 - Using <code>x_destroy</code> to implement <code>x_delete</code></strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt;
 #include &lt;stdlib.h&gt;
@@ -290,7 +288,19 @@ int main() {
  } 
 </code></pre>
 
-<h2 id="toc_5">Static analysis - Checking the rules at compile time</h2>
+<p>In C, array types in arguments are pointers. This characteristics is preserved.</p>
+
+<p>To use owner qualifier in array we do. (Just like const)</p>
+
+<pre><code class="language-c">void f(int a[owner])
+{
+  free(a);
+}
+</code></pre>
+
+<p>But I think this is quite uncommon.</p>
+
+<h2 id="toc_4">Static analysis - Checking the rules at compile time</h2>
 
 <p>Let&#39;s revisit our first example:</p>
 
@@ -320,7 +330,7 @@ int main()
 
 <p>We can print these states using the <strong>static_debug</strong> declaration. We can also assert the variable is at a certain state using the <strong>static_state</strong> declaration. Listing 12 shows this usage:</p>
 
-<h5>Listing 12 - Usage of <strong>static_state</strong> and <strong>static_debug</strong></h5>
+<p><strong>Listing 12 - Usage of static_state and static_debug</strong></p>
 
 <pre><code class="language-c">int main() {
  int a;   
@@ -341,7 +351,7 @@ int main()
 
 <p>The <strong>null</strong> state means that owner objects are initialized and not referencing any object. Listing 13 shows a sample using owner pointers:</p>
 
-<h5>Listing 13 - Null state</h5>
+<p><strong>Listing 13 - Null state</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 
@@ -351,9 +361,11 @@ int main() {
 }
 </code></pre>
 
-<p>The <strong>not-null</strong> state indicates that the object is referencing some object, as shown in listing 14.</p>
+<p>The <strong>not-null</strong> state indicates that the object is referencing some object.
+The state can be a combination of possibilities like <strong>null</strong> and <strong>not-null</strong>. We can check possible combination using &quot;or&quot;.
+This particular combination <strong>null or not-null</strong> has a alias <strong>maybe-null</strong> as shown in listing 14.</p>
 
-<h5>Listing 14 - not-null and maybe-null state</h5>
+<p><strong>Listing 14 - not-null and maybe-null state</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
@@ -365,13 +377,14 @@ int main()
      static_state(p, &quot;not-null&quot;);
    }
    static_state(p, &quot;maybe-null&quot;);   
+   static_state(p, &quot;null or not-null&quot;);
    free(p);
 }
 </code></pre>
 
 <p>The <strong>zero</strong> state is used for non-owner objects to complement and support uninitialized checks.</p>
 
-<h5>Listing 15 - The zero state</h5>
+<p><strong>Listing 15 - The zero state</strong></p>
 
 <pre><code class="language-c">int main()
 {
@@ -384,7 +397,7 @@ int main()
 
 <p>The <strong>not-zero</strong> state is used for non-owner objects to indicate the value if not zero.</p>
 
-<h5>Listing 16 - Usage of static_set</h5>
+<p><strong>Listing 16 - Usage of static_set</strong></p>
 
 <pre><code class="language-c">  owner int server_socket =
      socket(AF_INET, SOCK_STREAM, 0);
@@ -403,7 +416,7 @@ int main()
 
 <p>In the declaration of <code>realloc</code>, we are not moving the ptr. The reason for that is because the <code>ptr</code> may or may not be moved. If the function returns NULL, <code>ptr</code> was not moved. Listing 17 shows how <strong>static_set</strong> can be used.</p>
 
-<h5>Listing 17 - Using static_set with realloc</h5>
+<p><strong>Listing 17 - Using static_set with realloc</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
@@ -429,7 +442,7 @@ int main()
 
 <p>The state of an object is a combination of all possible states. For instance, let&#39;s print and check the state of <code>f</code> at listing 17.</p>
 
-<h5>Listing 17 - Flow analysis</h5>
+<p><strong>Listing 17 - Flow analysis</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
@@ -445,7 +458,7 @@ int main() {
 
 <p>When objects are moved to functions, the state is  <code>uninitialized</code>  that is the worst scenario of what can happens inside the function. When objects are moved inside the same source the state is <code>moved</code>.</p>
 
-<pre><code>#include &lt;ownership.h&gt; 
+<pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
 #include &lt;stdio.h&gt;
 
@@ -459,7 +472,7 @@ int main() {
 
 <p><strong>Check:</strong> We cannot discard owner objects as showed in listing 18.  </p>
 
-<h5>Listing 18 - owner objects cannot be discarded.</h5>
+<p><strong>Listing 18 - owner objects cannot be discarded.</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdio.h&gt;
@@ -472,15 +485,23 @@ int main() {
 
 <p><strong>Rule:</strong> Before the assignment of owner objects, the compiler checks if the owner object is not holding any resource, as shown in Listing 19:</p>
 
-<h5>Listing 19 - Check before assignment</h5>
+<p><strong>Listing 19 - Check before assignment</strong></p>
 
-<pre><code class="language-c">  FILE * owner file = fopen(&quot;file.txt&quot;, &quot;r&quot;);  
-  file = fopen(&quot;file.txt&quot;, &quot;r&quot;); //ERROR
+<pre><code class="language-c">#include &lt;ownership.h&gt; 
+#include &lt;stdio.h&gt;
+
+int main() {
+  FILE * owner file = fopen(&quot;file.txt&quot;, &quot;r&quot;);
+  
+  //error: memory pointed by &#39;file&#39; was not 
+  //released before assignment.  
+  file = fopen(&quot;file.txt&quot;, &quot;r&quot;);
+}
 </code></pre>
 
 <p>Sometimes is not possible to infer the state. Consider this sample.</p>
 
-<h5>Listing 20 - Some states cannot be inferred</h5>
+<p><strong>Listing 20 - Some states cannot be inferred</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;string.h&gt;
@@ -499,7 +520,7 @@ void init(struct  X * x) {
 
 <p>How to know <code>x-&gt;text</code> was not holding any resource? At  listing 21, we show how <strong>static_set</strong> can be used to say <code>x-&gt;text</code> is not initialized at <code>init</code>. </p>
 
-<h5>Listing 21 - Using static_set</h5>
+<p><strong>Listing 21 - Using static_set</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;string.h&gt;
@@ -508,7 +529,7 @@ struct X {
   char *owner text; 
 };
 
-void init(struct  X * x) {
+void init(struct X * x) {
   static_set(x-&gt;text, &quot;uninitialized&quot;);
   x-&gt;text = strdup(&quot;a&quot;);
 }
@@ -520,7 +541,7 @@ void init(struct  X * x) {
 
 <p>Consider the following sample where we have a linked list. Each node has owner pointer to next. The next pointer of the tail of the list is always pointing to null, unless we have a bug. But the compiler does not know <code>list-&gt;tail-&gt;next</code> is null. Using assert we give this inform to the compiler and we also have a runtime check for possible logic bugs.</p>
 
-<h5>Listing 22 shows the usage of assert.</h5>
+<p><strong>Listing 22 shows the usage of assert.</strong> </p>
 
 <pre><code class="language-c">
 #include &lt;ownership.h&gt; 
@@ -554,7 +575,7 @@ void list_append(struct list* list, struct node* owner node)
 
 <p>But, the null pointer constant is converted to a null owner pointer. Se listing 23.</p>
 
-<h5>Listing 23 - non owner cannot be copied to owner</h5>
+<p><strong>Listing 23 - non owner cannot be copied to owner</strong></p>
 
 <pre><code class="language-c">FILE * f();
 int main() {  
@@ -565,7 +586,7 @@ int main() {
 
 <p><strong>Rule:</strong> A view pointer parameter cannot leave the scope with moved/uninitialized objects. Listing 24</p>
 
-<h5>Listing 24 - Messing with view parameters</h5>
+<p><strong>Listing 24 - Messing with view parameters</strong></p>
 
 <pre><code class="language-c">
 #include &lt;ownership.h&gt; 
@@ -603,7 +624,7 @@ int main() {
 
 <p>However, listing 25 is correct, because before the end of scope states of the parameters are restored.</p>
 
-<h5>Listing 25 - swap function</h5>
+<p><strong>Listing 25 - swap function</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
@@ -646,7 +667,7 @@ int main() {
 
 <p><strong>Rule:</strong> moved objects cannot be moved. Listing 27.</p>
 
-<h5>Listing 27 - We cannot move a moved or uninitialized object</h5>
+<p><strong>Listing 27 - We cannot move a moved or uninitialized object</strong></p>
 
 <pre><code class="language-c">int * owner p1 = ...;
 int * owner p2 = p1;
@@ -661,7 +682,7 @@ int * owner p3 = p1; //ERROR p1 was moved
 
 <p><strong>Rule:</strong> When coping a owner object to to a view object the compiler must check the lifetime. Listing 28</p>
 
-<h5>Listing 28 - Lifetime check</h5>
+<p><strong>Listing 28 - Lifetime check</strong></p>
 
 <pre><code class="language-c">void using_file(FILE * f);
 
@@ -685,7 +706,7 @@ int main() {
 
 <p><strong>Rule:</strong> Returned objects must be valid.</p>
 
-<h5>Listing 34 - Assuming returned objects are valid</h5>
+<p><strong>Listing 34 - Assuming returned objects are valid</strong></p>
 
 <pre><code class="language-c">void* owner malloc(unsigned long size);
 void free(void* owner ptr);
@@ -707,7 +728,7 @@ int main()
 
 <p><strong>Rule:</strong> Arguments must be valid.</p>
 
-<h5>Listing 35 - Function Arguments cannot be in a moved or uninitialized state</h5>
+<p><strong>Listing 35 - Function Arguments cannot be in a moved or uninitialized state</strong></p>
 
 <pre><code class="language-c">#include &lt;ownership.h&gt; 
 #include &lt;stdlib.h&gt;
@@ -772,13 +793,13 @@ int main() {
 }
 </code></pre>
 
-<h2 id="toc_6">Ownership Feature Strategy (Inspired by stdbool.h)</h2>
+<h2 id="toc_5">Ownership Feature Strategy (Inspired by stdbool.h)</h2>
 
-<p>If the compiler supports ownership checks and qualifiers such as _Owner, _View, _Obj_view, etc., it defines <code>__STDC_OWNERSHIP__</code>. </p>
+<p>If the compiler supports ownership checks and qualifiers such as _Owner, _View, _Obj_view, etc., it must define  <code>__STDC_OWNERSHIP__</code>. </p>
 
-<p>However, even if the compiler implements ownership, it is not active by default.</p>
+<p>However, even if the compiler implements ownership, it is not active by default. The objective is to have a smooth transition allowing some files without checks. For instance, a thirty part code inside your project.</p>
 
-<p>Therefore, when compiling this file, we don&#39;t have errors or warnings because ownership checks are not enabled.</p>
+<p>For instance, when compiling this file, even if the compiler supports ownership we don&#39;t have errors or warnings because the checks are not enabled by default.</p>
 
 <pre><code class="language-c">#include &lt;stdlib.h&gt;
 
@@ -787,71 +808,20 @@ int main() {
 }
 </code></pre>
 
-<p>A second define <code>__OWNERSHIP_H__</code> is used to enable ownership, for instance, changing the definition of malloc.<br>
-Including <code>#include &lt;ownership.h&gt;</code> at beginning, will define 
-<code>__OWNERSHIP_H__</code> enabling ownership declaration on stdlib.h.
-<code>ownership.h</code> also adds lowercase macros for _Owner etc.</p>
+<p>A second define <code>__OWNERSHIP_H__</code>, is used to enable ownership.
+This define is set when we include <code>&lt;ownership.h&gt;</code> at beginning. </p>
 
-<p>Inside stdlib.h we will have something like: </p>
+<pre><code class="language-c">#include &lt;ownership.h&gt;
+#include &lt;stdlib.h&gt;
 
-<pre><code class="language-c">#if defined(__STDC_OWNERSHIP__) &amp;&amp; defined(__OWNERSHIP_H__)
-void * _Owner malloc(size_t size);  
-#else
-void * malloc(size_t size);
-#endif
+int main() {
+  void * p = malloc(1); //error: missing owner qualifier
+}
 </code></pre>
+
+<p>The other advantage of having a <code>&lt;ownership.h&gt;</code> is because owner is a macro that can be defined as empty in case the compiler does not support ownership, allowing the same code to be compiled in compilers without ownership support. </p>
 
 <blockquote>
 <p>Currently cake is using the same headers of VS and GCC that are not aware of ownership. For this reason, <code>ownership.h</code> itself is declaring malloc etc and the second declaration of malloc inside stdlib.h will not complain with the discrepancy of ownership qualifiers between declarations.</p>
 </blockquote>
-
-<p>So now, this sample:</p>
-
-<pre><code class="language-c">#include &lt;ownership.h&gt;
-#include &lt;stdio.h&gt;
-
-int main() {
-  void * owner p = malloc(1);
-}
-</code></pre>
-
-<p>Will have the ownership enabled if the compiler supports ownership, otherwise owner macro will be defined as empty.</p>
-
-<blockquote>
-<p>This approach allows the same code to be compiled in compilers with or without ownership. </p>
-</blockquote>
-
-<p>The compiler will now complain about the memory leak.</p>
-
-<p>This solution is not perfect. If we mix old and new includes the old headers may be affect.</p>
-
-<p>For instance:</p>
-
-<pre><code class="language-c">#include &lt;ownership.h&gt;
-#include &lt;stdio.h&gt;
-#include &quot;oldheader.h&quot; //affected 
-
-int main() {
-  void * owner p = malloc(1);
-}
-</code></pre>
-
-<p>The old header may be affect in some ways, for instance a inline function may be using malloc and the compiler will complain the lack of ownership qualifiers.  </p>
-
-<p>The old header maybe is using owner as a variable name. </p>
-
-<p>The solution for this problem may be changing the order of includes. We also may silence errors for the lack of ownership qualifiers. </p>
-
-<p>In brief:</p>
-
-<ul>
-<li>Old code can be compiled in new compilers because they don&#39;t include <code>&lt;ownership.h&gt;</code>.</li>
-<li>New code using <code>&lt;ownership.h&gt;</code> can be compiled in old compilers because qualifiers are defined as empty macros</li>
-</ul>
-
-<p>I have considered something like <code>#pragma OWNERSHIP ON/OFF</code> but this is also similar controlling warning with pragma. The objective is also avoid reading <code>#pragma OWNERSHIP ON</code> everywhere.  </p>
-
-<p>I also have considered attributes, but is not so clear the attributes for types. But also the usage of attributes would be together with macros because we can compile new code in old compilers.  </p>
-
-<p>Although, here I am talking about a specific feature ownership, with the evolution of C this kind of situation will be very common. Maybe the natural evolution will be attributes, but attributes also feels temporary/experimental solution especially if they mean something on the type system.</p>
 </article></body></html>
