@@ -28,7 +28,7 @@
 <a href="#toc_3">OPTIONS</a>
 </li>
 <li>
-<a href="#toc_4">-analyze</a>
+<a href="#toc_4">-fanalyzer</a>
 </li>
 </ul>
 </li>
@@ -263,7 +263,7 @@
 <a href="#toc_78">Extension typename on _Generic</a>
 </li>
 <li>
-<a href="#toc_79">Extension assert declaration</a>
+<a href="#toc_79">Extension assert statement</a>
 </li>
 </ul>
 </li>
@@ -283,28 +283,47 @@
 
 <p>To discover what directories are included, you can run the command &#39;echo %INCLUDE%&#39; at Visual Studio command prompt.</p>
 
-<pre><code>echo %INCLUDE%
-</code></pre>
-
-<p>Copy this output to <code>cakeconfig.h</code>.<br>
-For instance:</p>
-
-<pre><code> 
-#pragma dir &quot;C:/Program Files/Microsoft Visual Studio/2022/Preview/VC/Tools/MSVC/14.37.32820/include&quot;
-#pragma dir &quot;C:/Program Files/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/VS/include&quot;
-#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/ucrt&quot;
-#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10//include/10.0.22000.0/um&quot;
-#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10//include/10.0.22000.0/shared&quot;
-#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10//include/10.0.22000.0/winrt&quot;
-#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10//include/10.0.22000.0/cppwinrt&quot;
-
-</code></pre>
-
 <p>When cake runs it first tries to load cakeconfig.h, that must exist at same dir of cake.exe.  </p>
 
 <p>On Linux, the same file <code>cakeconfig.h</code> is used. To find out what are the directories used by GCC type</p>
 
 <pre><code>echo | gcc -E -Wp,-v -
+</code></pre>
+
+<p>Sample of cakeconfig.h</p>
+
+<pre><code>
+#ifdef __linux__
+/*
+   To find the include directories used my GCC type:   
+   echo | gcc -E -Wp,-v -
+*/
+#pragma dir &quot;/usr/lib/gcc/x86_64-linux-gnu/11/include&quot;
+#pragma dir &quot;/usr/local/include&quot;
+#pragma dir &quot;/usr/include/x86_64-linux-gnu&quot;
+#pragma dir &quot;/usr/include&quot;
+
+#endif
+
+#ifdef _WIN32
+/*
+   To find the include directories used my  MSVC,
+   open Visual Studio Developer Commmand prompt and type:
+   echo %INCLUDE%.
+   Running Cake inside mscv command prompt uses %INCLUDE% automatically.
+*/
+#pragma dir &quot;C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.38.33130/include&quot;
+#pragma dir &quot;C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.38.33130/ATLMFC/include&quot;
+#pragma dir &quot;C:/Program Files/Microsoft Visual Studio/2022/Professional/VC/Auxiliary/VS/include&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/ucrt&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/um&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/shared&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/winrt&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10/include/10.0.22000.0/cppwinrt&quot;
+#pragma dir &quot;C:/Program Files (x86)/Windows Kits/NETFXSDK/4.8/include/um&quot;
+
+#endif
+
 </code></pre>
 
 <p>Cake also includes standard header files. The objective is to allow usage even without installing GCC or MSVC. You can set this path on <code>cakeconfig.h</code> but mixing cake headers with other headers is not recommended.</p>
@@ -364,6 +383,10 @@ cake file.c -direct-compilation -o file.cc &amp;&amp; cl file.cc
 <p>Output target C standard (c89, c99, c11, c2x, cxx)
 C99 is the default and C89 (ANSI C) is the minimum target</p>
 
+<h4>-dump-tokens</h4>
+
+<p>Output tokens before preprocessor</p>
+
 <h4>-fi</h4>
 
 <p>Format input (format before language conversion)</p>
@@ -376,6 +399,10 @@ C99 is the default and C89 (ANSI C) is the minimum target</p>
 
 <p>Enables or disable warnings.
 See <a href="warnings.html">warnings</a></p>
+
+<h4>-disable-assert</h4>
+
+<p>disable cake extension where assert is an statement. See extensions</p>
 
 <h4>-showIncludes</h4>
 
@@ -393,9 +420,10 @@ See <a href="warnings.html">warnings</a></p>
 
 <p>Output is compatible with visual studio IDE. We can click on the error message and IDE selects the line. </p>
 
-<h3 id="toc_4">-analyze</h3>
+<h3 id="toc_4">-fanalyzer</h3>
 
-<p>Runs flow analysis and ownership checks</p>
+<p>This option enables an static analysis of program flow. This is required for some
+ownership checks</p>
 
 <h2 id="toc_5">Output</h2>
 
@@ -1844,25 +1872,16 @@ int main()
 <p>and the lvalue conversion will not happen, allowing 
 more precise (with qualifiers) type match.</p>
 
-<h3 id="toc_79">Extension assert declaration</h3>
+<h3 id="toc_79">Extension assert statement</h3>
 
-<p>Standard says &quot;If NDEBUG is defined as a macro name at the point in the source file 
-where <assert.h> is included, the assert macro is defined simply as</p>
+<p>In cake assert is an statement. The reason is because it works as tips for flow analysis 
+and these checks are checked in runtime in debug bugs.
+The different is that assert is also evaluated in release.
+That means the expression must be valid.
+To disable this extension use -disable-assert options. </p>
 
-<pre><code class="language-c">#define assert(...) ((void)0)  
-</code></pre>
-
-<p>Cake keeps that. </p>
-
-<p>If NDEBUG is NOT defined cake defines assert as</p>
-
-<pre><code class="language-c">#define assert(...) assert(__VA_ARGS__) 
-</code></pre>
-
-<p>Because Cake can be used as a static analyzer, reading existing headers not previously known by Cake,
-it overrides the assert macro to retain information for its use in compiler phases.</p>
-
-<p>Then assert is also a keyword for a built-in expression.</p>
+<p>When cake reads GCC MSVC headers it overrides the macro assert to match the cake
+assert statement.</p>
 
 <h2 id="toc_80">Versions</h2>
 </article></body></html>
