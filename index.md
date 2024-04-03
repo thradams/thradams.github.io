@@ -18,6 +18,10 @@ If you want to know about me click [here](about.htm).
 
 ## Chronological view
 
+## 2024
+
+[finding possible states](algo.html) Jun 2023
+
 ## 2023
 
 [lifetime checks for C](ownership.html) Jun 2023
