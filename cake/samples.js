@@ -2134,7 +2134,6 @@ void f(int condition)
 }
 `;
 
-<<<<<<< HEAD
 sample["find the bug"]["Bug #5"] =
 `
 #pragma ownership enable
@@ -2170,5 +2169,3 @@ int main()
 }
 
 `;
-=======
->>>>>>> 1a71794d141f67d27b2cd0579df86f9718a4fc50
