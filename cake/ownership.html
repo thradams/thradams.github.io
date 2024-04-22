@@ -101,12 +101,11 @@ For this task, a new qualifier _Opt has been created.
 A pointer qualified with _Opt is called nullable pointer. 
 Pointers without _Opt qualifier are not nullable. 
 Existing code uses pointers as both as nullable or non-nullable. 
-To facilitate code migration a pragma #pragma nullable enabled\disable has been created.</p>
+To facilitate code migration, a <code>#pragma nullable enabled/disable</code> has been created.</p>
 
 <h4>pragma nullable enabled</h4>
 
-<p>All pointers are non-nullable, unless qualified with _Opt. 
-These warnings are enabled -Wnullable-to-non-nullable, -Wanalyzer-null-dereference.</p>
+<p>All pointers are non-nullable, unless qualified with _Opt. </p>
 
 <pre><code class="language-c">#pragma nullable enable
 
@@ -127,8 +126,7 @@ int main()
 
 <h4>pragma nullable disabled</h4>
 
-<p>All pointers are nullable. 
-These warnings are disabled -Wnullable-to-non-nullable, -Wanalyzer-null-dereference</p>
+<p>All pointers are nullable. </p>
 
 <pre><code class="language-c">#pragma nullable disable
 
@@ -188,6 +186,52 @@ int main()
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
+
+<p>When _Opt qualifier is aplied to structs it makes all member _Opt.
+For instance:</p>
+
+<pre><code class="language-c">#pragma nullable enable
+
+void free(void * _Opt p);
+char * _Opt strdup();
+
+void print_name(const char* name);
+
+struct X {
+  char * name;
+};
+
+void use_x(struct X * p)
+{
+   //p-&gt;name is non-nullable here
+   print_name(p-&gt;name);
+}
+
+void x_destroy(_Opt struct X * p)
+{
+   //p-&gt;name is nullable here
+   free(p); //free accepts null
+}
+
+int main()
+{
+  _Opt struct X x = {0};
+  char * _Opt temp = strdup();
+  if (temp)
+  {
+    x.name = temp;
+    use_x(&amp;x);
+  }
+  x_destroy(&amp;x);
+}
+
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<p>This can be used to implement destructors where the object can be partially 
+constructed in case of some error. 
+For other functions, like use_x, the object must be completely constructed, and in this case, name must not be null.</p>
 
 <h3 id="toc_3">Owner References</h3>
 
@@ -381,7 +425,7 @@ int main() {
 #include &lt;stdlib.h&gt;
 
 struct X {   
-  char * _Owner text;   
+  char * _Owner _Opt text;   
 };  
 
 void f(_View struct X x) { /*...*/ }  
@@ -538,10 +582,11 @@ struct X {
 struct X * _Owner make();
 
 int main(){
-   void * _Owner p = nullptr;
-   _Owner auto pX = make();
+   void * _Owner _Opt p = nullptr;
+   struct X * _Owner pX = make();
    p = pX; //warning
 }
+
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
@@ -556,7 +601,7 @@ int main(){
 #include &lt;stdlib.h&gt;
 
 struct X {
-    char * _Owner text;
+    char * _Owner _Opt text;
 };  
 
 void x_destroy(struct X x) {
@@ -572,9 +617,9 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>However in C, structs are typically passed by pointer rather than by value. To transfer the ownership of an owner object to a pointer, Cake introduces a new qualifier, <strong><em>Obj</em>wner</strong>. </p>
+<p>However in C, structs are typically passed by pointer rather than by value. To transfer the ownership of an owner object to a pointer, Cake introduces a new qualifier, <strong>_Obj_owner</strong>. </p>
 
-<p>A pointer qualified with <strong><em>Obj</em>wner</strong> is the owner of the pointed object but not responsible for managing its memory.</p>
+<p>A pointer qualified with <strong>_Obj_owner</strong> is the owner of the pointed object but not responsible for managing its memory.</p>
 
 <p>The next sample illustrates how to implement a destructor using a <em>Obj</em>owner pointer parameter.</p>
 
@@ -586,10 +631,10 @@ int main() {
 #include &lt;stdlib.h&gt;
 
 struct X {
-    char * _Owner text;
+    char * _Owner _Opt text;
 };
 
-void x_destroy(struct X * _Obj_owner x) {
+void x_destroy(_Opt _struct X * _Obj_owner x) {
     free(x-&gt;text);
     /*x is not the owner of the memory*/
 }
@@ -603,7 +648,7 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>In order to prevent moving from a non owner object, only <em>address of expressions</em> to <strong><em>Obj</em>wner</strong> are allowed. </p>
+<p>In order to prevent moving from a non owner object, only <em>address of expressions</em> to <strong>_Obj_owner</strong> are allowed. </p>
 
 <p><strong>Sample - Non address of expression or owner pointer.</strong></p>
 
@@ -627,7 +672,7 @@ void f(struct X * x) {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>We can copy an <strong>owner</strong> pointer to an <strong><em>Obj</em>wner</strong> pointer. In this scenario, only the ownership of the pointed object is transferred, not the memory ownership.   </p>
+<p>We can copy an <strong>owner</strong> pointer to an <strong>_Obj_owner</strong> pointer. In this scenario, only the ownership of the pointed object is transferred, not the memory ownership.   </p>
 
 <p><strong>Sample - Using <code>x_destroy</code> to implement <code>x_delete</code></strong></p>
 
@@ -640,11 +685,11 @@ struct X {
   char * _Owner text; 
 };
 
-void x_destroy(struct X * _Obj_owner x) {
+void x_destroy(_Opt struct X * _Obj_owner x) { 
   free(x-&gt;text); 
 }
 
-void x_delete(struct X * _Owner _Opt p) { 
+void x_delete(_Opt struct X * _Owner _Opt p) { 
   if (p) {
     x_destroy(p); /* *p is moved*/
     free(p);
@@ -652,12 +697,13 @@ void x_delete(struct X * _Owner _Opt p) {
 }
 
 int main() {
-   struct X * owner pX = calloc(1, sizeof * pX);
+   struct X * _Owner pX = calloc(1, sizeof * pX);
    if (pX) {
      /*...*/;
      x_delete( pX); 
    }
  } 
+
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
