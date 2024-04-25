@@ -57,7 +57,7 @@
 <a href="#toc_8">Deleting Owner Pointers</a>
 </li>
 <li>
-<a href="#toc_9">Conversion from owner pointer to void * owner</a>
+<a href="#toc_9">Conversion from <code>T * _Owner</code> to <code>void * _Owner</code></a>
 </li>
 </ul>
 </li>
@@ -325,7 +325,7 @@ int main()
 
 <p>Sample - Declaration of fopen and fclose</p>
 
-<pre><code class="language-c">FILE * _Owner _fopen( const char *filename, const char *mode );
+<pre><code class="language-c">FILE * _Owner _Opt fopen( const char *filename, const char *mode );
 void fclose(FILE * _Owner p);
 </code></pre>
 
@@ -389,6 +389,28 @@ int main() {
 <p>A <strong>view reference</strong> is an object referencing another object without managing its lifetime. </p>
 
 <p><strong>Rule:</strong> The lifetime of the referenced object must be longer than the lifetime of the view reference.</p>
+
+<p>Sample</p>
+
+<pre><code class="language-c">#pragma nullable enable
+#pragma ownership enable
+
+struct X
+{
+    int i;
+}
+int main(){
+
+  struct X * _Opt p = nullptr;
+  {
+    struct X x = {};
+    p = &amp;x;
+  }
+  p-&gt;i = 1; //warning
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>The most common view references are pointers called <strong>view pointers</strong>. </p>
 
@@ -541,42 +563,44 @@ struct Y {
 
 #include &lt;stdlib.h&gt;
 
-struct X { 
-  char * _Owner _Opt text; 
+struct X {
+  char * _Owner text; 
 };
 
-void x_delete(struct X * _Owner _Opt p) {
+void x_destroy(_Opt struct X * _Obj_owner x) { 
+  free(x-&gt;text); 
+}
+
+void x_delete(_Opt struct X * _Owner _Opt p) { 
   if (p) {
-    /*releasing the object*/ 
-    free(p-&gt;text);
-    
-    /*releasing the memory*/ 
-    free(p); 
+    x_destroy(p); /* *p is moved*/
+    free(p);
   }
 }
 
 int main() {
-  struct X * _Owner pX = calloc(1, sizeof * pX);
-  if (pX) {
-    /*...*/;
-    x_delete( pX); 
-  }
-}
+   _Opt struct X * _Owner _Opt pX = calloc(1, sizeof * pX);
+   if (pX) {
+     /*...*/;
+     x_delete( pX); 
+   }
+ } 
+
 
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_9">Conversion from owner pointer to void * owner</h3>
+<h3 id="toc_9">Conversion from <code>T * _Owner</code> to <code>void * _Owner</code></h3>
 
-<p><strong>Rule:</strong> Assignment or cast of a owner pointer to void * owner requires the pointed object to be empty.</p>
+<p><strong>Rule:</strong> Assignment or cast from <code>T * _Owner</code> to <code>void * _Owner</code> requires the pointed object T to be empty.</p>
 
 <pre><code class="language-c">
 #pragma nullable enable
 #pragma ownership enable
 
 struct X {
-    char _Owner text;
+    char * _Owner text;
 };
 
 struct X * _Owner make();
@@ -623,7 +647,7 @@ int main() {
 
 <p>The next sample illustrates how to implement a destructor using a <em>Obj</em>owner pointer parameter.</p>
 
-<p><strong>Sample - Implementing a destructor using <em>Obj</em>owner</strong></p>
+<p><strong>Sample - Implementing a destructor using _Obj_owner</strong></p>
 
 <pre><code class="language-c">#pragma nullable enable
 #pragma ownership enable

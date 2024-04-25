@@ -1237,33 +1237,26 @@ int main()
 
 `;
 
-sample["safe-mode"]=[];
+sample["Ownership (experimental)"]=[];
 
-sample["safe-mode"]["malloc/free"] =
+sample["Ownership (experimental)"]["hello"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
-void* _Owner _Opt malloc(unsigned long size);
-void free(void* _Owner _Opt ptr);
-
-int main() {
-   void * _Owner _Opt p = malloc(1);
-   free(p);
-}
-
-`;
-
-sample["safe-mode"]["static_state/static_debug"] =
-`
-#pragma ownership enable
-#pragma nullable enable
-
-void* _Owner _Opt malloc(unsigned long size);
+void* _Owner malloc(unsigned long size);
 void free(void* _Owner ptr);
 
 int main() {
-   void * _Owner  _Opt p = malloc(1);
+   void * _Owner p = malloc(1);
+   free(p);
+}
+`;
+
+sample["Ownership (experimental)"]["static_state/static_debug"] =
+`
+void* _Owner malloc(unsigned long size);
+void free(void* _Owner ptr);
+
+int main() {
+   void * _Owner p = malloc(1);
    if (p)
    {
      static_state(p, "not-null"); 
@@ -1273,19 +1266,23 @@ int main() {
    static_state(p, "null or uninitialized"); 
    static_debug(p);
 }
-
 `;
 
-sample["safe-mode"]["implementing a destructor I"] =
+sample["Ownership (experimental)"]["implementing a destructor I"] =
 `
-#pragma ownership enable
-#pragma nullable enable
 
+/*
+  Header ownership.h defines macros owner, view etc.
+  It also "activate" ownership checks.
+  If the compiler does not suports ownership it defines as empty macros
+*/
+
+#include <ownership.h> 
 #include <stdlib.h>
 #include <string.h>
 
 struct X {
-  char *_Owner _Opt name;
+  char *owner name;
 };
 
 void x_destroy(struct X x) 
@@ -1299,25 +1296,23 @@ int main() {
    x_destroy(x);
 }
 
-
 `;
 
 
-sample["safe-mode"]["implementing a destructor II"] =
+sample["Ownership (experimental)"]["implementing a destructor II"] =
 `
-#pragma ownership enable
-#pragma nullable enable
 
+#include <ownership.h> 
 #include <stdlib.h>
 #include <string.h>
 
 struct X {
-  char *_Owner _Opt name;
+  char * owner name;
 };
 
-void x_destroy(struct X * _Obj_owner x) 
+void x_destroy(struct X * obj_owner p) 
 {
-  free(x->name);
+  free(p->name);
 }
 
 int main() {
@@ -1328,23 +1323,20 @@ int main() {
 
 `;
 
-sample["safe-mode"]["_View qualifier"] =
+sample["Ownership (experimental)"]["view qualifier"] =
 `
-#pragma ownership enable 
-#pragma nullable enable
-
+#include <ownership.h> 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 struct X {
-  char *_Owner _Opt name;
+  char *owner name;
 };
 
-void f(_View struct X x) 
+void f(view struct X x) 
 {
-    if (x.name)
-      printf(x.name);
+  printf(x.name);
 }
 
 int main() {
@@ -1354,26 +1346,20 @@ int main() {
    free(x.name);
 }
 
-
-
 `;
 
 
 
-sample["safe-mode"]["implementing delete"] =
+sample["Ownership (experimental)"]["implementing delete"] =
 `
-
-#pragma ownership enable 
-#pragma nullable enable
-
+#include <ownership.h> 
 #include <stdlib.h>
-#include <string.h>
 
 struct X {
-  char * _Owner _Opt text;
+  char * owner text;
 };
 
-void x_delete(struct X * _Owner _Opt p)
+void x_delete(struct X * owner p)
 {
     if (p)
     {
@@ -1383,25 +1369,20 @@ void x_delete(struct X * _Owner _Opt p)
 }
 
 int main() {   
-   struct X * _Owner _Opt p = calloc(1, sizeof * p);
-   if (p){   
-     p->text = strdup("a");     
-   }
+   struct X * owner p = malloc(sizeof(struct X));
+      
+   p->text = malloc(10);
+
    x_delete(p);
- 
 }
-
-
 
 `;
 
 
-sample["safe-mode"]["fix-me 1"] =
+sample["Ownership (experimental)"]["fix-me 1"] =
 `
 
-//#pragma ownership enable 
-//#pragma nullable enable
-
+//#include <ownership.h> 
 #include <stdlib.h>
 #include <string.h>
 
@@ -1418,26 +1399,26 @@ int main() {
 
 `;
 
-sample["safe-mode"]["Linked list"] =
+sample["Ownership (experimental)"]["Linked list"] =
 `
-#pragma ownership enable
-#pragma nullable enable
+
+#include <ownership.h>
 
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
 
 struct book {
-     char* _Owner title;
-     struct book* _Owner next;
+     char* owner title;
+     struct book* owner next;
 };
 
 
 struct books {
-    struct book* _Owner head, *tail;
+    struct book* owner head, *tail;
 };
 
-void books_insert_after(struct books* books, struct book* book, struct book* _Owner new_book)
+void books_insert_after(struct books* books, struct book* book, struct book* owner new_book)
 {
     assert(books != NULL);
     assert(book != NULL);
@@ -1457,7 +1438,7 @@ void books_insert_after(struct books* books, struct book* book, struct book* _Ow
 
 
 
-void books_push_back(struct books* books, struct book* _Owner new_book)
+void books_push_back(struct books* books, struct book* owner new_book)
 {
    assert(books != NULL);
    assert(new_book != NULL);
@@ -1472,7 +1453,7 @@ void books_push_back(struct books* books, struct book* _Owner new_book)
    books->tail = new_book;
 }
 
-void books_push_front(struct books* books, struct book* _Owner new_book)
+void books_push_front(struct books* books, struct book* owner new_book)
 {
     assert(books != NULL);
     assert(new_book != NULL);
@@ -1487,14 +1468,14 @@ void books_push_front(struct books* books, struct book* _Owner new_book)
     books->head = new_book;
 }
 
-void books_destroy(struct books* _Obj_owner books)
+void books_destroy(struct books* obj_owner books)
 {
     //pre condition
     assert(books != NULL);
 
-    struct book* _Owner it = books->head;
+    struct book* owner it = books->head;
     while (it != NULL) {
-        struct book* _Owner next = it->next;
+        struct book* owner next = it->next;
         free(it->title);
         free(it);
         it = next;
@@ -1504,7 +1485,7 @@ void books_destroy(struct books* _Obj_owner books)
 int main(int argc, char* argv[])
 {
     struct books list = { 0 };
-    struct book* _Owner b1 = calloc(1, sizeof(struct book));
+    struct book* owner b1 = calloc(1, sizeof(struct book));
     if (b1)
     {
         books_push_front(&list, b1);
@@ -1514,11 +1495,9 @@ int main(int argc, char* argv[])
 
 `;
 
-sample["safe-mode"]["dynamic array"] =
+sample["Ownership (experimental)"]["dynamic array"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
@@ -1527,7 +1506,7 @@ sample["safe-mode"]["dynamic array"] =
 #include <string.h>
 
 struct int_array {
-    int* _Owner data;
+    int* owner data;
     int size;
     int capacity;
 };
@@ -1538,7 +1517,7 @@ int int_array_reserve(struct int_array* p, int n)
             return EOVERFLOW;
         }
 
-        void* _Owner pnew = realloc(p->data, n * sizeof(p->data[0]));
+        void* owner pnew = realloc(p->data, n * sizeof(p->data[0]));
         if (pnew == NULL) return ENOMEM;
         static_set(p->data, "moved");
         p->data = pnew;
@@ -1581,7 +1560,7 @@ int int_array_push_back(struct int_array* p, int value)
     return 0;
 }
 
-void int_array_destroy(struct int_array* _Obj_owner p)
+void int_array_destroy(struct int_array* obj_owner p)
 {
 
     free(p->data);
@@ -1596,11 +1575,9 @@ int main()
 }
 `;
 
-sample["safe-mode"]["using moved object"] =
+sample["Ownership (experimental)"]["using moved object"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -1622,7 +1599,7 @@ int main()
 }
 `;
 
-sample["safe-mode"]["static_set/realloc"] =
+sample["Ownership (experimental)"]["static_set/realloc"] =
 `
 
 void* _Owner realloc(void* ptr, unsigned size);
@@ -1789,7 +1766,7 @@ void f2(int condition)
 `;
 
 
-sample["safe-mode"]["mtx_t"] =
+sample["Ownership (experimental)"]["mtx_t"] =
 `
 enum {
     mtx_plain ,
@@ -1822,7 +1799,7 @@ int main()
 }
 `;
 
-sample["safe-mode"]["socket"] =
+sample["Ownership (experimental)"]["socket"] =
 `
 _Owner int socket();
 void close(_Owner int fd);
@@ -1843,18 +1820,16 @@ int main()
 `;
 
 
-sample["safe-mode"]["assignment"] =
+sample["Ownership (experimental)"]["assignment"] =
 `
-#pragma ownership enable 
-#pragma nullable enable
-
+#include <ownership.h> 
 #include <string.h>
 #include <stdlib.h>
 
 int main()
 {  
-  const char * _Owner s1 = strdup("hi");
-  const char * _Owner s2 = NULL;
+  const char * owner s1 = strdup("hi");
+  const char * owner s2 = NULL;
 
   s2 = s1;
 
@@ -1864,16 +1839,14 @@ int main()
 
 
 
-sample["safe-mode"]["takes_ownership"] =
+sample["Ownership (experimental)"]["takes_ownership"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-void takes_ownership(char * _Owner some_string)
+void takes_ownership(char * owner some_string)
 {
     printf("%s", some_string);  
     free(some_string);
@@ -1881,42 +1854,38 @@ void takes_ownership(char * _Owner some_string)
 
 int main()
 {
-    _Owner auto s = strdup("hello");
+    owner auto s = strdup("hello");
     takes_ownership(s);
 }
 `;
 
 
-sample["safe-mode"]["gives ownership"] =
+sample["Ownership (experimental)"]["gives ownership"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <string.h>
 #include <stdlib.h>
 
-const char * _Owner gives_ownership() {  
-    _Owner auto some_string = strdup("yours");
+const char * owner gives_ownership() {  
+    owner auto some_string = strdup("yours");
     return some_string;
 }
 
 int main(){
-  _Owner auto s = gives_ownership();
+  owner auto s = gives_ownership();
   free(s);
 }
 `;
 
-sample["safe-mode"]["moving parts of _View"] =
+sample["Ownership (experimental)"]["moving parts of view"] =
 `
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <string.h>
 #include <stdlib.h>
 
 
 struct X {
-  char * _Owner name;
+  char * owner name;
 };
 
 struct Y {
@@ -1925,7 +1894,7 @@ struct Y {
 };
 
 
-void x_destroy(struct X * _Obj_owner p) 
+void x_destroy(struct X * obj_owner p) 
 {
   free(p->name);
 }
@@ -1945,7 +1914,7 @@ int main() {
 
 `;
 
-sample["safe-mode"]["_Owner pointer owns two objects"] =
+sample["Ownership (experimental)"]["owner pointer owns two objects"] =
 `
 void * _Owner calloc(unsigned long i, unsigned long sz);
 char * _Owner strdup(const char* );
@@ -1971,7 +1940,7 @@ int main()
 `;
 
 
-sample["safe-mode"]["checking double free"] =
+sample["Ownership (experimental)"]["checking double free"] =
 `
 void free(void * _Owner p);
 
@@ -1998,14 +1967,12 @@ sample["find the bug"] = [];
 sample["find the bug"]["Bug #1"] =
 `
 
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct X {
-  char *_Owner name;
+  char *owner name;
 };
 
 struct X f(int condition)
@@ -2027,17 +1994,15 @@ int main()
 sample["find the bug"]["Bug #2"] =
 `
 
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct X {
-  char *_Owner name;
+  char *owner name;
 };
 
-void delete(struct X * _Owner p)
+void delete(struct X * owner p)
 {
     if (p)
      free(p);
@@ -2045,7 +2010,7 @@ void delete(struct X * _Owner p)
 
 int main()
 {
-    struct X * _Owner p = calloc(1, sizeof * p);
+    struct X * owner p = calloc(1, sizeof * p);
     if (p)
     {
         p->name = strdup("a");
@@ -2059,18 +2024,16 @@ int main()
 sample["find the bug"]["Bug #3"] =
     `
 
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct X {
-  char *_Owner name;
-  char *_Owner surname;
+  char *owner name;
+  char *owner surname;
 };
 
-void delete(struct X * _Owner p)
+void delete(struct X * owner p)
 {
     if (p)
     {
@@ -2081,7 +2044,7 @@ void delete(struct X * _Owner p)
 
 int main()
 {
-    struct X * _Owner p = malloc(sizeof * p);
+    struct X * owner p = malloc(sizeof * p);
     if (p)
     {
         p->name = strdup("a");
@@ -2095,16 +2058,14 @@ int main()
 sample["find the bug"]["Bug #4"] =
 `
 
-#pragma ownership enable
-#pragma nullable enable
-
+#include <ownership.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 struct X {
-  char *_Owner name;
-  char *_Owner surname;
+  char *owner name;
+  char *owner surname;
 };
 
 void change(struct X * p)
@@ -2143,38 +2104,3 @@ void f(int condition)
 }
 `;
 
-sample["find the bug"]["Bug #5"] =
-`
-#pragma ownership enable
-#pragma nullable enable
-
-void* _Owner _Opt calloc(unsigned int n, unsigned long size);
-void free(void* _Owner _Opt ptr);
-
-struct Y {
-    int i; 
-};
-
-struct X {
-    int i; 
-    struct Y* _Opt pY;
-};
-
-int main() 
-{
-    struct X* _Owner _Opt pX = calloc(1, sizeof *pX);
-    if (pX) 
-    {
-        struct Y* _Owner _Opt pY = calloc(1, sizeof *pY);
-        if (pY) 
-        {
-            pX->pY = pY;
-            struct X* _Opt p = pX;
-            free(pY);            
-            p->pY->i = 1;  // no warning            
-        }
-        free(pX);
-    }
-}
-
-`;
