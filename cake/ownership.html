@@ -103,7 +103,7 @@ Pointers without _Opt qualifier are not nullable.
 Existing code uses pointers as both as nullable or non-nullable. 
 To facilitate code migration, a <code>#pragma nullable enabled/disable</code> has been created.</p>
 
-<h4>pragma nullable enabled</h4>
+<h4>#pragma nullable enabled</h4>
 
 <p>All pointers are non-nullable, unless qualified with _Opt. </p>
 
@@ -124,7 +124,7 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h4>pragma nullable disabled</h4>
+<h4>#pragma nullable disabled</h4>
 
 <p>All pointers are nullable. </p>
 
@@ -747,6 +747,7 @@ The compiler flag <code>-fanalyzer</code> activates the flow analysis that works
 <p>To check the nullable and ownership rules, the compiler use these states:</p>
 
 <ul>
+<li>nothing</li>
 <li>uninitialized</li>
 <li>moved</li>
 <li>null</li>
@@ -756,7 +757,8 @@ The compiler flag <code>-fanalyzer</code> activates the flow analysis that works
 <li>lifetime-ended</li>
 </ul>
 
-<p>We can print these states using the <strong>static_debug</strong> declaration. We can also assert the variable is at a certain state using the <strong>static_state</strong> declaration. </p>
+<p>We can print these states using the <strong>static_debug</strong> declaration.
+We can also assert the variable is at a certain state using the <strong>static_state</strong> declaration. </p>
 
 <p><strong>Sample - Usage of static_state and static_debug</strong></p>
 
@@ -770,8 +772,6 @@ int main() {
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
-
-<p>Obj: The web version has the flow analysis active because if uses <code>-fanalyzer</code> by default.</p>
 
 <h4>Uninitialized state</h4>
 
@@ -815,8 +815,7 @@ int main() {
 
 <p>The <strong>moved</strong> state is similar to the uninitialized state.
 The difference is that the moved state is used when moving local variables.<br>
-For pointers, the moved state implies that the pointer was not-null. 
-Moving a null object it is not a move.</p>
+For pointers, the moved state implies that the pointer was not-null. </p>
 
 <p><strong>Sample - local scope moves</strong></p>
 
@@ -844,7 +843,7 @@ int main() {
 
 <p>A common scenario where uninitialized objects are utilized is when a pointer to an uninitialized object is passed to an &quot;init&quot; function.</p>
 
-<p>This situation is addressed by the qualifier <strong>_Out/out</strong>.</p>
+<p>This situation is addressed by the qualifier <strong>_Out</strong>.</p>
 
 <pre><code class="language-c">#pragma safety enable
 
@@ -870,9 +869,10 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>With the out qualifier, caller is informed that the argument must be uninitialized.</p>
+<p>With the _Out qualifier, caller is informed that the argument must be uninitialized.</p>
 
-<p>The implementation is aware that it can safely override the contents of the object <code>p-&gt;text</code> without causing a memory leak.</p>
+<p>The implementation is aware that it can safely override the contents of the object <code>p-&gt;text</code> 
+without causing a memory leak.</p>
 
 <blockquote>
 <p>Note: There is no explicit &quot;initialized&quot; state. When referring to initialized objects, it means the state is neither &quot;moved&quot; nor &quot;uninitialized.&quot;.</p>
@@ -991,7 +991,7 @@ int main() {
 
 <h4>Null and Not-Null state</h4>
 
-<p>The <strong>null</strong> state means that pointers/objects are initialized and not referencing any object. </p>
+<p>The <strong>null</strong> state means that pointers/objects are empty, In other words, not referencing any object. </p>
 
 <p><strong>Sample - Null state</strong></p>
 
@@ -1005,7 +1005,8 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p><strong>Rule:</strong> Before assignment, owner objects, must not be holding objects. The state must be null or uninitialized/moved.</p>
+<p><strong>Rule:</strong> Before assignment, owner objects, must be empty or uninitialized.
+The state must be null or uninitialized/moved.</p>
 
 <p>Sample</p>
 
@@ -1020,7 +1021,7 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>The <strong>not-null</strong> state indicates that the object is initialized and not referencing any object.</p>
+<p>The <strong>not-null</strong> state indicates that the object is initialized and referencing an object.</p>
 
 <p>The final state is combination of possibilities like <strong>null</strong> and <strong>not-null</strong>. 
 We can check possible combinations using &quot;|&quot; at <code>static_state</code>.  </p>
@@ -1061,11 +1062,17 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p><strong>Zero</strong> and <strong>null</strong> are different states. This difference is necessary because, for non-pointers like the socket sample, 0 does not necessarily means null. The compiler does not know the semantics for types that are not pointers.</p>
+<p><strong>Zero</strong> and <strong>null</strong> are different states.
+This difference is necessary because, for non-pointers like the socket sample, 
+0 does not necessarily means null. 
+The compiler does not know the semantics for types that are not pointers.</p>
 
 <h4>static_set</h4>
 
-<p>We can use <strong>static_set</strong> to override states. In the next sample, we annotate that server_socket is null, which doesn&#39;t mean it is zero but indicates that it is not holding any resources and is safe to return without calling close.</p>
+<p>We can use <strong>static_set</strong> to override states.
+In the next sample, we annotate that server_socket is null, which doesn&#39;t mean it 
+is zero but indicates that it is not holding any resources and 
+is safe to return without calling close.</p>
 
 <p><strong>Sample - Usage of static_set</strong></p>
 
