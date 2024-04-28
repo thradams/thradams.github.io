@@ -1391,49 +1391,50 @@ int main() {
 
 sample["safe-mode"]["fix-me 1"] =
 `
-//#pragma safety enable 
+#pragma safety disable
 
 #include <stdlib.h>
 #include <string.h>
-
 
 struct X {
   char * text;
 };
 
-
 int main() {
    struct X x = {};
    x.text = strdup("a");
 }
-
 `;
 
 sample["safe-mode"]["Linked list"] =
 `
+
 #pragma safety enable
 
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 struct book {
      char* _Owner title;
-     struct book* _Owner next;
+     struct book* _Owner _Opt  next;
 };
 
 
 struct books {
-    struct book* _Owner head, *tail;
+    struct book* _Owner _Opt head;
+    struct book* _Opt tail;
 };
 
-void books_insert_after(struct books* books, struct book* book, struct book* _Owner new_book)
+void books_insert_after(struct books* books,
+                        struct book* book,
+                        struct book* _Owner new_book)
 {
     assert(books != NULL);
     assert(book != NULL);
     assert(new_book != NULL);
     assert(new_book->next == NULL);
-
 
     if (book->next == NULL) {
         books->tail = new_book;
@@ -1445,9 +1446,8 @@ void books_insert_after(struct books* books, struct book* book, struct book* _Ow
     book->next = new_book;
 }
 
-
-
-void books_push_back(struct books* books, struct book* _Owner new_book)
+void books_push_back(struct books* books,
+                     struct book* _Owner new_book)
 {
    assert(books != NULL);
    assert(new_book != NULL);
@@ -1457,12 +1457,15 @@ void books_push_back(struct books* books, struct book* _Owner new_book)
       books->head = new_book;
    }
    else {
+      assert(books->tail);
+      assert(books->tail->next == nullptr);
       books->tail->next = new_book;
    }
    books->tail = new_book;
 }
 
-void books_push_front(struct books* books, struct book* _Owner new_book)
+void books_push_front(struct books* books,
+                      struct book* _Owner new_book)
 {
     assert(books != NULL);
     assert(new_book != NULL);
@@ -1479,12 +1482,9 @@ void books_push_front(struct books* books, struct book* _Owner new_book)
 
 void books_destroy(struct books* _Obj_owner books)
 {
-    //pre condition
-    assert(books != NULL);
-
-    struct book* _Owner it = books->head;
+    struct book* _Owner _Opt it = books->head;
     while (it != NULL) {
-        struct book* _Owner next = it->next;
+        struct book* _Owner _Opt next = it->next;
         free(it->title);
         free(it);
         it = next;
@@ -1494,10 +1494,19 @@ void books_destroy(struct books* _Obj_owner books)
 int main(int argc, char* argv[])
 {
     struct books list = { 0 };
-    struct book* _Owner b1 = calloc(1, sizeof(struct book));
+    struct book* _Owner _Opt b1 = calloc(1, sizeof(struct book));
     if (b1)
     {
-        books_push_front(&list, b1);
+        char * _Owner _Opt title = strdup("title");
+        if (title)
+        {
+           b1->title = title;
+           books_push_front(&list, b1);
+        }
+        else
+        {
+            free(b1);
+        }
     }
     books_destroy(&list);
 }
