@@ -1768,6 +1768,8 @@ void f2(int condition)
 
 sample["safe-mode"]["mtx_t"] =
 `
+#pragma safety enable
+
 enum {
     mtx_plain ,
     mtx_timed,
@@ -1791,12 +1793,14 @@ void mtx_destroy( mtx_t * _Obj_owner mutex );
 int main()
 {
    mtx_t mtx;
-   if (mtx_init(&mtx, mtx_plain) == thrd_success)
+   if (mtx_init(&mtx, mtx_plain) != thrd_success)
    {
-      static_set(mtx, "not-null");
-      mtx_destroy(&mtx);
+      static_set(mtx, "uninitialized");
+      return;
    }
+   mtx_destroy(&mtx);   
 }
+
 `;
 
 sample["safe-mode"]["socket"] =
