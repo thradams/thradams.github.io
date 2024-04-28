@@ -1776,6 +1776,7 @@ enum {
     mtx_plain,
     mtx_timed,
 };
+};
 
 enum {
 
@@ -1957,6 +1958,8 @@ int main()
 
 sample["safe-mode"]["checking double free"] =
 `
+#pragma safety enable
+
 void free(void * _Owner p);
 
 struct X {
