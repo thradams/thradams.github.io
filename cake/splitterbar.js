@@ -4,10 +4,6 @@ const SplitterBar = function (container, leftContent, rightContent, is_vertical)
     const rightSide = document.createElement('div');
     const splitter = document.createElement('div');
 
-    leftSide.classList.add('leftSide');
-    rightSide.classList.add('rightSide');
-    splitter.classList.add('splitter');
-
     if (leftContent !== null) {
         leftSide.appendChild(leftContent);
     }
@@ -20,6 +16,10 @@ const SplitterBar = function (container, leftContent, rightContent, is_vertical)
 
     if (is_vertical) {
     
+        leftSide.classList.add('leftSide');
+        rightSide.classList.add('rightSide');
+        splitter.classList.add('splitter');
+
         splitter.style.position = 'absolute';
         splitter.style.height = '100%';
         //splitter.style.overflow = 'hidden';
@@ -48,10 +48,14 @@ const SplitterBar = function (container, leftContent, rightContent, is_vertical)
     }
     else {
 
-        splitter.style.height = '5px';
-        splitter.style.top = '50%';
-        splitter.style.transform = 'translateY(-50%)';
+        leftSide.classList.add('topSide');
+        rightSide.classList.add('bottomSide');
+        splitter.classList.add('splitter');
 
+        splitter.style.height = '5px';
+        splitter.style.top = '80%';
+        splitter.style.transform = 'translateY(-50%)';
+        splitter.style.zIndex  = 1;
         splitter.style.background = 'RGB(244,244,244)';
         splitter.style.border = "1px solid #d2d3d4";
         splitter.style.cursor = 'row-resize';
