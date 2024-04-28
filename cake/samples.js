@@ -1513,6 +1513,7 @@ struct int_array {
     int size;
     int capacity;
 };
+
 int int_array_reserve(struct int_array* p, int n)
 {
     if (n > p->capacity) {
@@ -1555,9 +1556,7 @@ int int_array_push_back(struct int_array* p, int value)
         }
      }
 
-     p->data[p->size] = value;
-
-
+    p->data[p->size] = value;
     p->size++;
 
     return 0;
@@ -1565,7 +1564,6 @@ int int_array_push_back(struct int_array* p, int value)
 
 void int_array_destroy(struct int_array* _Obj_owner p)
 {
-
     free(p->data);
 }
 
@@ -1595,7 +1593,7 @@ void set_id(struct user* p, int id){}
 
 int main()
 {
-  struct user user = {};
+  _Opt struct user user = {};
   user.name = strdup("a");
   char* _Owner name = user.name;
   free(name);
@@ -1605,15 +1603,16 @@ int main()
 
 sample["safe-mode"]["static_set/realloc"] =
 `
+#pragma safety enable
 
-void* _Owner realloc(void* ptr, unsigned size);
+void* _Owner realloc(void* _Opt ptr, unsigned size);
 void* _Owner malloc(unsigned long size);
-void free(void* _Owner ptr);
+void free(void* _Owner _Opt ptr);
 
 void f()
 {
-    void * _Owner p = malloc(1);
-    void * _Owner p2 = realloc(p, 2);
+    void * _Owner _Opt p = malloc(1);
+    void * _Owner _Opt p2 = realloc(p, 2);
     if (p2 != 0)
     {
        /*
@@ -1624,10 +1623,7 @@ void f()
     }    
     free(p);
 }
-
-
 `;
-
 
 sample["flow-analysis"] = [];
 sample["flow-analysis"]["if-else 1"] =
@@ -1767,7 +1763,6 @@ void f2(int condition)
     }
     static_state(p, "null");
 }
-
 `;
 
 
@@ -1821,7 +1816,6 @@ int main()
   }
   close(fd);
 }
-
 `;
 
 
