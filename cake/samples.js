@@ -1407,84 +1407,69 @@ int main() {
 `;
 
 sample["safe-mode"]["Linked list"] =
-`
-
-#pragma safety enable
+`#pragma safety enable
 
 #include <stdlib.h>
 #include <assert.h>
-#include <errno.h>
 #include <string.h>
 
-struct book {
+struct item {
      char* _Owner title;
-     struct book* _Owner _Opt  next;
+     struct item* _Owner _Opt  next;
 };
 
-
-struct books {
-    struct book* _Owner _Opt head;
-    struct book* _Opt tail;
+struct list {
+    struct item* _Owner _Opt head;
+    struct item* _Opt tail;
 };
 
-void books_insert_after(struct books* books,
-                        struct book* book,
-                        struct book* _Owner new_book)
+void list_insert_after(struct list* list,
+                       struct item* item,
+                       struct item* _Owner p_new_item)
 {
-    assert(books != NULL);
-    assert(book != NULL);
-    assert(new_book != NULL);
-    assert(new_book->next == NULL);
-
-    if (book->next == NULL) {
-        books->tail = new_book;
+    if (item->next == NULL) {
+        list->tail = p_new_item;
     }
     else {
-        new_book->next = book->next;
+        assert(p_new_item->next == NULL);
+        p_new_item->next = item->next;
     }
 
-    book->next = new_book;
+    item->next = p_new_item;
 }
 
-void books_push_back(struct books* books,
-                     struct book* _Owner new_book)
+void list_push_back(struct list* list,
+                    struct item* _Owner p_item)
 {
-   assert(books != NULL);
-   assert(new_book != NULL);
-   assert(new_book->next == NULL);
-
-   if (books->head == NULL) {
-      books->head = new_book;
+   if (list->head == NULL) {
+      list->head = p_item;
    }
    else {
-      assert(books->tail);
-      assert(books->tail->next == nullptr);
-      books->tail->next = new_book;
+      assert(list->tail);
+      assert(list->tail->next == nullptr);
+      list->tail->next = p_item;
    }
-   books->tail = new_book;
+   list->tail = p_item;
 }
 
-void books_push_front(struct books* books,
-                      struct book* _Owner new_book)
+void list_push_front(struct list* list,
+                    struct item* _Owner p_item)
 {
-    assert(books != NULL);
-    assert(new_book != NULL);
-    assert(new_book->next == NULL);
-
-    if (books->head == NULL) {
-        books->tail = new_book;
+    if (list->head == NULL) {
+        list->tail = p_item;
     }
     else {
-        new_book->next = books->head;        
+        assert(p_item->next == NULL);
+        p_item->next = list->head;        
     }
-    books->head = new_book;
+    list->head = p_item;
 }
 
-void books_destroy(struct books* _Obj_owner books)
+void list_destroy(struct list* _Obj_owner list)
 {
-    struct book* _Owner _Opt it = books->head;
+    struct item* _Owner _Opt it = list->head;
     while (it != NULL) {
-        struct book* _Owner _Opt next = it->next;
+        struct item* _Owner _Opt next = it->next;
         free(it->title);
         free(it);
         it = next;
@@ -1493,24 +1478,23 @@ void books_destroy(struct books* _Obj_owner books)
 
 int main(int argc, char* argv[])
 {
-    struct books list = { 0 };
-    struct book* _Owner _Opt b1 = calloc(1, sizeof(struct book));
-    if (b1)
+    struct list list = { 0 };
+    struct item* _Owner _Opt p_item = calloc(1, sizeof(struct item));
+    if (p_item)
     {
         char * _Owner _Opt title = strdup("title");
         if (title)
         {
-           b1->title = title;
-           books_push_front(&list, b1);
+           p_item->title = title;
+           list_push_front(&list, p_item);
         }
         else
         {
-            free(b1);
+            free(p_item);
         }
     }
-    books_destroy(&list);
+    list_destroy(&list);
 }
-
 `;
 
 sample["safe-mode"]["dynamic array"] =
