@@ -20,17 +20,18 @@ If you want to know about me click [here](about.htm).
 
 ## 2024
 
-[finding possible states](algo.html) Jun 2023
+
+[stdckdint emulation in MSVC](stdckdint.html) Aug 2024
+
+----
 
 ## 2023
 
-[lifetime checks for C](ownership.html) Jun 2023
 
 ----
 ## 2022
 
 [What if structs were passed by pointer](ptrstruct.html) Dez 2022
-
 
 [pointer + size in C](ptrsize.html) Dez 2022
 
