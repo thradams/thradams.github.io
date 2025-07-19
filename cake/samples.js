@@ -1377,6 +1377,36 @@ int main()
 
 `;
 
+sample["Extensions"]["Local functions I"] =
+`
+int main()
+{
+	int dup(int a) { return a * 2; }
+    return dup(1);
+}
+`;
+
+sample["Extensions"]["Local functions II"] =
+    `
+#include <stdlib.h>
+
+void async(void (* callback)(int result, void * data), void * data);
+
+int main()
+{
+	struct {int value; }* capture = calloc(1, sizeof * capture);
+    void callback(int result, void * data)
+    {
+		typeof(capture) p = data;
+        free(p);
+    }
+
+    async(callback, capture);
+}
+`;
+
+
+
 sample["Extensions"]["Literal function async I"] =
 `
 #include <stdlib.h>
