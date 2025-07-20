@@ -1080,7 +1080,7 @@ int main()
 
 
 sample["C2Y"]["case range ..."] =
-`
+    `
   //Case range expressions
   //https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3370.htm
 
@@ -1124,7 +1124,7 @@ foo(2)
 `;
 
 sample["C2Y"]["#def II"] =
-`
+    `
   // Add directives #def and #enddef
   // https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3524.txt
 
@@ -1378,7 +1378,7 @@ int main()
 `;
 
 sample["Extensions"]["Local functions I"] =
-`
+    `
 int main()
 {
 	int dup(int a) { return a * 2; }
@@ -1408,7 +1408,7 @@ int main()
 
 
 sample["Extensions"]["Literal function async I"] =
-`
+    `
 #include <stdlib.h>
 
 void async(void (* callback)(int result, void * data), void * data);
@@ -1427,7 +1427,7 @@ int main()
 
 
 sample["Extensions"]["Literal function async II"] =
- `
+    `
 #include <stdlib.h>
 
 void async1(void (* callback)(int result, void * data), void * data);
@@ -1491,7 +1491,7 @@ int main()
 `;
 
 sample["Extensions"]["generic functions"] =
-`
+    `
 
 #define SWAP(a, b)\\
   (void (typeof(a)* arg1, typeof(b)* arg2)) { \\
