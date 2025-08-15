@@ -25,6 +25,9 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                 "_Bool",
                 "typeof_unqual", "typeof",
                 "_Alignof", "alignof",
+                "_Alignas", "alignas",
+                "_Noreturn",
+                
                 //
                 "extern",
                 "auto", "bool", "break", "case", "catch", "char", "const",
