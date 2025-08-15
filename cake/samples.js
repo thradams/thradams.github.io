@@ -436,6 +436,17 @@ int main(void)
 
 `;
 
+sample["C11"]["_Thread_local / thread_local (in C23)"] =
+`
+thread_local int a;
+
+int main(void)
+{    
+}
+
+`;
+//
+
 sample["C23"] = []
 sample["C23"]["Digit Separator"] =
     `
