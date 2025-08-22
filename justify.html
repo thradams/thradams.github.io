@@ -102,8 +102,10 @@
 
     function justify() {
       const text = document.getElementById("inputText").value;
-      const width = parseInt(document.getElementById("width").value, 10);
+      
       const margin = parseInt(document.getElementById("margin").value, 10);
+      const width = parseInt(document.getElementById("width").value, 10) - margin;
+
       const output = justifyText(text, width, margin);
       document.getElementById("output").textContent = output;
     }
