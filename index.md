@@ -18,6 +18,10 @@ If you want to know about me click [here](about.htm).
 
 ## Chronological view
 
+## 2025
+
+[justify](justify.html) (Tool, Made with AI)
+
 ## 2024
 
 
