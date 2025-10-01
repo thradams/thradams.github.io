@@ -121,7 +121,7 @@
     // Justify only the selected text
     justifyBtn.addEventListener('click', () => {
       const width = parseInt(lineWidth.value, 10);
-      const margin = getSelectedMargin();
+      const margin = getSelectedMargin() * 3;
 
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
