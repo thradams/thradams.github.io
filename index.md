@@ -15,10 +15,15 @@ If you want to know about me click [here](about.htm).
 
 [makeunittest](makeunittest.html) 
 
+[make string](https://github.com/thradams/createstring) 
+
 
 ## Chronological view
 
 ## 2025
+
+
+[console markdown](consolemd.html) (Made with AI)
 
 [justify](justify.html) (Tool, Made with AI)
 
