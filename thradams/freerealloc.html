@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Performance test realloc X free+malloc</p>
+
+<pre><code class="language-cpp">
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &lt;string.h&gt;
+
+
+#define USE_REALLOC 0
+
+#define STRING_COUNT 100000
+#define CHANGES_COUNT 60
+#define STRSIZE 5000
+
+#define FREE_MALLOC_EXTRA_COPY 0
+
+int main()
+{
+  srand(123456);
+
+  printf(&quot;initializing %d strings size between 1 and %d ...\n&quot;, STRING_COUNT, STRSIZE + 1);
+  char** strarray = malloc(sizeof(char*) * STRING_COUNT);
+  int* strsize = malloc(sizeof(int) * STRING_COUNT);
+
+
+  int newalloc = 0;
+  int samealloc = 0;
+  for (int i = 0; i &lt; STRING_COUNT; i++)
+  {
+    size_t len = 1 + rand() % STRSIZE;
+    strsize[i] = len;
+    strarray[i] = malloc(sizeof(char) * len + 1);
+    memset(strarray[i], &#39;X&#39;, len);
+    strarray[i][len] = 0;
+
+    //printf(&quot;%s\n&quot;, strarray[i]);
+  }
+
+  
+
+  time_t start = clock();
+  printf(&quot;changing %d strings %d times each ... \n&quot;, STRING_COUNT, CHANGES_COUNT);
+
+  for (int k = 0; k &lt; CHANGES_COUNT; k++)
+  {
+    for (int i = STRING_COUNT - 1; i &gt;= 0; i--)
+    {
+      //printf(&quot;before %s\n&quot;, strarray[i]);
+
+      size_t len = k + rand() % 50;
+      char* p = 0;
+#if USE_REALLOC
+      p = realloc(strarray[i], sizeof(char) * len + 1);
+#else
+      p = malloc(sizeof(char) * len + 1);
+#if FREE_MALLOC_EXTRA_COPY
+      strncpy(p, strarray[i], len &lt; strsize[i] ? len : strsize[i]);
+      free(strarray[i]);
+#endif
+#endif
+
+      if (p != strarray[i])
+        newalloc++;
+      else
+        samealloc++;
+
+      strsize[i] = len;
+      strarray[i] = p;
+      strarray[i][len] = 0;
+      memset(strarray[i], &#39;Y&#39;, len);
+
+      //printf(&quot;after %s\n&quot;, strarray[i]);
+    }
+  }
+
+  const char* method = USE_REALLOC ? &quot;realloc&quot; : FREE_MALLOC_EXTRA_COPY ? &quot;free+malloc+copy&quot; : &quot;free+malloc&quot;;
+
+  printf(&quot;using %s took %d\n&quot;,   method, (int)(clock() - start));
+  printf(&quot;new %d; same %d\n&quot;, newalloc, samealloc);
+
+}
+</code></pre>
+
+<pre><code class="language-cpp">initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using free+malloc took 551
+new 6000000; same 0
+
+initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using free+malloc+copy took 773
+new 6000000; same 0
+
+initializing 100000 strings size between 1 and 5001 ...
+changing 100000 strings 60 times each ...
+using realloc took 1007
+new 5374303; same 625697
+
+
+</code></pre>
+</body></html>

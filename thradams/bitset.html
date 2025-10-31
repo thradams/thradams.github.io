@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h1 id="toc_0">Dynamic bitset</h1>
+
+<p><a href="makecontainer.md">Make container</a></p>
+
+<pre><code class="language-cpp">
+
+#include &lt;stdbool.h&gt;
+#include &lt;limits.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+
+
+struct bitset
+{
+  unsigned long* bits;
+  int size;  
+};
+
+#define BITSET_NUM_BITS_PER_WORD (CHAR_BIT * sizeof(unsigned long))
+
+int bitset_resize(struct bitset* p, int newSize)
+{
+  if (newSize &gt; p-&gt;size)
+  {
+    int oldsize = p-&gt;size;
+    unsigned long* pnew = realloc(p-&gt;bits, newSize * sizeof(p-&gt;bits[0]));
+    if (pnew)
+    {
+      memset(pnew + oldsize, 0, sizeof(p-&gt;bits[0]) * (newSize - oldsize));
+      p-&gt;bits = pnew;
+      p-&gt;size = newSize;
+    }
+    else
+    {
+      return 0; /*out of mem*/
+    }
+  }
+
+  return p-&gt;size;
+}
+
+
+inline bool bitset_clear(struct bitset* bitset)
+{
+  memset(bitset-&gt;bits, 0, bitset-&gt;size * sizeof(bitset-&gt;bits[0]));
+}
+
+inline bool bitset_getbit(struct bitset* bitset, int index)
+{
+  assert(index / BITSET_NUM_BITS_PER_WORD &lt; bitset-&gt;size);
+  return (bitset-&gt;bits[index / BITSET_NUM_BITS_PER_WORD] &amp; (1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD)) != 0;
+}
+
+inline void bitset_setbit(struct bitset* bitset, int index, bool b)
+{
+  int wordindex = index / BITSET_NUM_BITS_PER_WORD;
+
+  if ((wordindex + 1) &gt; bitset-&gt;size)
+  {
+    if (bitset_resize(bitset, wordindex + 1) == 0)
+    {
+      return;
+    }
+  }
+ 
+  unsigned long bit = 1ul &lt;&lt; index % BITSET_NUM_BITS_PER_WORD;
+  if (b)
+  {
+    bitset-&gt;bits[wordindex] |= bit;
+  }
+  else
+  {
+    bitset-&gt;bits[wordindex] &amp;= ~bit;
+  }
+}
+
+
+void bitset_destroy(struct bitset* p)
+{
+  free(p-&gt;bits);
+}
+
+void bitset_print(struct bitset* bitset)
+{
+  for (int i = 0; i &lt; bitset-&gt;size * BITSET_NUM_BITS_PER_WORD; i++)
+  {
+    if (i != 0 &amp;&amp; i % 8 == 0)
+      printf(&quot; &quot;);
+    if (i != 0 &amp;&amp; i % 32 == 0)
+      printf(&quot;\n&quot;);
+
+    printf(&quot;%d&quot;, bitset_getbit(bitset, i));
+  }
+  printf(&quot;\n&quot;);
+}
+
+
+int main()
+{
+  struct bitset a = {0};
+
+  bitset_setbit(&amp;a, 7, true);
+  bitset_print(&amp;a);
+  printf(&quot;-----\n&quot;);
+  bitset_setbit(&amp;a, 32, true);
+  bitset_print(&amp;a);
+
+  bitset_destroy(&amp;a);
+}
+    
+</code></pre>
+</body></html>

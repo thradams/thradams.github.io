@@ -1,0 +1,658 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+<h1> Stream</h1>
+
+<p>UTF8 Stream object. It uses memory to keep the text.</p>
+
+<p>Can load files or use strings.</p>
+
+<p>Can track the position in memory. (line col bytepos)</p>
+
+<p>Sample</p>
+<pre>
+<span class="keyword">#include</span>  <span class="string">&quot;Stream.h&quot;</span>
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;fcntl.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+<span class="keyword">#include</span> &lt;stddef.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+<span class="keyword">#include</span> &lt;io.h&gt;
+<span class="keyword">#include</span> &lt;windows.h&gt;
+<span class="keyword">#endif</span>
+
+<span class="keyword">void</span> PrintLine(<span class="keyword">const</span> <span class="keyword">char</span>* source, <span class="keyword">int</span> pos, <span class="keyword">int</span> col)
+{
+	<span class="keyword">const</span> <span class="keyword">char</span>* pHead = source + pos;
+	<span class="keyword">while</span> (pHead &gt; source)
+	{
+		<span class="keyword">if</span> (*pHead == <span class="string">'\n'</span>)
+		{
+			pHead++;
+			<span class="keyword">break</span>;
+		}
+		pHead--;
+	}
+
+	<span class="keyword">const</span> <span class="keyword">char</span>* pTail = source + pos;
+	<span class="keyword">while</span> (*pTail)
+	{
+		<span class="keyword">if</span> (*pTail == <span class="string">'\n'</span>)
+			<span class="keyword">break</span>;
+		pTail++;
+	}
+
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+	   UINT oldcp = GetConsoleOutputCP();
+	    SetConsoleOutputCP(CP_UTF8);
+<span class="keyword">#endif</span>
+		printf(<span class="string">&quot;%.*s\n&quot;</span>, (<span class="keyword">int</span>) (pTail - pHead), pHead);
+		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; pTail - pHead; i++)
+		{
+			<span class="keyword">if</span> (i &lt; col)
+				printf(<span class="string">&quot; &quot;</span>);			
+			<span class="keyword">else</span>
+			{
+				printf(<span class="string">&quot;^&quot;</span>);
+				<span class="keyword">break</span>;
+			}
+		}
+		
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+		SetConsoleOutputCP(oldcp);
+<span class="keyword">#endif</span>
+	<span class="comment">//}
+</span>}
+
+
+<span class="keyword">void</span> Test3()
+{
+    <span class="keyword">struct</span> Stream stream = STREAM_INIT;
+
+    assert(stream.CurrentCol == <span class="number">0</span>);
+    assert(stream.CurrentLine == <span class="number">0</span>);
+    assert(stream.CurrentChar == <span class="number">0</span>);
+    assert(stream.NextBytePos == <span class="number">0</span>);
+    assert(stream.data == NULL);
+
+    <span class="comment">//Stream_Set(&amp;stream, u8&quot;maçã&quot;);
+</span>    <span class="keyword">if</span> (Stream_Set(&amp;stream, u8<span class="string">&quot;ábç\n dêf\n&quot;</span>))
+    {
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">0</span>);
+        assert(stream.CurrentChar == <span class="number">0</span>);
+        assert(stream.NextBytePos == <span class="number">0</span>);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == <span class="number">1</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'á'</span>);
+        assert(stream.NextBytePos == <span class="number">2</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">2</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'b'</span>);
+        assert(stream.NextBytePos == <span class="number">3</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">3</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'ç'</span>);
+        assert(stream.NextBytePos == <span class="number">5</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">2</span>);
+        assert(stream.CurrentChar == L<span class="string">'\n'</span>);
+        assert(stream.NextBytePos == <span class="number">6</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">1</span>);
+        assert(stream.CurrentLine == <span class="number">2</span>);
+        assert(stream.CurrentChar == L<span class="string">' '</span>);
+        assert(stream.NextBytePos == <span class="number">7</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">2</span>);
+        assert(stream.CurrentLine == <span class="number">2</span>);
+        assert(stream.CurrentChar == L<span class="string">'d'</span>);
+        assert(stream.NextBytePos == <span class="number">8</span>);
+
+		PrintLine(stream.data, stream.CurrentBytePos, stream.CurrentCol);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">3</span>);
+        assert(stream.CurrentLine == <span class="number">2</span>);
+        assert(stream.CurrentChar == L<span class="string">'ê'</span>);
+        assert(stream.NextBytePos == <span class="number">10</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">4</span>);
+        assert(stream.CurrentLine == <span class="number">2</span>);
+        assert(stream.CurrentChar == L<span class="string">'f'</span>);
+        assert(stream.NextBytePos == <span class="number">11</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">3</span>);
+        assert(stream.CurrentChar == L<span class="string">'\n'</span>);
+        assert(stream.NextBytePos == <span class="number">12</span>);
+
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+
+
+<span class="keyword">void</span> Test1()
+{
+    <span class="keyword">struct</span> Stream stream = STREAM_INIT;
+
+    <span class="comment">//Stream_Set(&amp;stream, u8&quot;maçã&quot;);
+</span>    <span class="keyword">if</span> (Stream_Open(&amp;stream, <span class="string">&quot;utf8maca.txt&quot;</span>))
+    {
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">0</span>);
+        assert(stream.CurrentChar == <span class="number">0</span>);
+        assert(stream.NextBytePos == <span class="number">0</span>);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == <span class="number">1</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == <span class="string">'m'</span>);
+        assert(stream.CurrentBytePos == <span class="number">0</span>);
+        assert(stream.NextBytePos == <span class="number">1</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">2</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == <span class="string">'a'</span>);        
+        assert(stream.CurrentBytePos == <span class="number">1</span>);
+        assert(stream.NextBytePos == <span class="number">2</span>);
+
+        assert(Stream_LookAhead(&amp;stream) == L<span class="string">'ç'</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">3</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'ç'</span>);
+        assert(stream.CurrentBytePos == <span class="number">2</span>);
+        assert(stream.NextBytePos == <span class="number">4</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">4</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'ã'</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">4</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == (<span class="keyword">wchar_t</span>)EOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">4</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == (<span class="keyword">wchar_t</span>)EOF);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+
+<span class="keyword">void</span> Test1L()
+{
+    <span class="keyword">struct</span> Stream stream = STREAM_INIT;
+
+
+    <span class="keyword">if</span> (Stream_Set(&amp;stream, u8<span class="string">&quot;maçã&quot;</span>))
+    {
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">0</span>);
+        assert(stream.CurrentChar == <span class="number">0</span>);
+        assert(stream.NextBytePos == <span class="number">0</span>);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == <span class="number">1</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == <span class="string">'m'</span>);
+        assert(stream.CurrentBytePos == <span class="number">0</span>);
+		assert(stream.NextBytePos == <span class="number">1</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">2</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == <span class="string">'a'</span>);
+		assert(stream.CurrentBytePos == <span class="number">1</span>);
+		assert(stream.NextBytePos == <span class="number">2</span>);
+
+        assert(Stream_LookAhead(&amp;stream) == L<span class="string">'ç'</span>);
+
+
+		<span class="keyword">wchar_t</span> ch2;
+		<span class="keyword">wchar_t</span> ch1=  Stream_LookAhead2(&amp;stream, &amp;ch2);
+		assert(ch1 == L<span class="string">'ç'</span> &amp;&amp; ch2 == L<span class="string">'ã'</span>);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">3</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'ç'</span>);
+
+	
+		ch1 = Stream_LookAhead2(&amp;stream, &amp;ch2);
+		assert(ch1 == L<span class="string">'ã'</span> &amp;&amp; ch2 == WEOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">4</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == L<span class="string">'ã'</span>);
+		assert(stream.CurrentBytePos== <span class="number">4</span>);
+		assert(stream.NextBytePos == <span class="number">6</span>);
+
+
+		ch1 = Stream_LookAhead2(&amp;stream, &amp;ch2);
+		assert(ch1 == WEOF &amp;&amp; ch2 == WEOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == <span class="number">5</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == (<span class="keyword">wchar_t</span>)EOF);
+		assert(stream.CurrentBytePos == <span class="number">6</span>);
+		assert(stream.NextBytePos == <span class="number">6</span>);
+
+
+		Stream_Match(&amp;stream);
+		assert(stream.CurrentCol == <span class="number">5</span>);
+		assert(stream.CurrentLine == <span class="number">1</span>);
+		assert(stream.CurrentChar == (<span class="keyword">wchar_t</span>)EOF);
+		assert(stream.CurrentBytePos == <span class="number">6</span>);
+		assert(stream.NextBytePos == <span class="number">6</span>);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+<span class="keyword">void</span> Test2()
+{
+    <span class="keyword">struct</span> Stream stream = STREAM_INIT;
+    
+    <span class="keyword">if</span> (Stream_Open(&amp;stream, <span class="string">&quot;utf8maca.txt&quot;</span>))
+    {
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">0</span>);
+        assert(stream.CurrentChar == <span class="number">0</span>);
+        assert(stream.NextBytePos== <span class="number">0</span>);
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == <span class="number">0</span>);
+        assert(stream.CurrentLine == <span class="number">1</span>);
+        assert(stream.CurrentChar == EOF);
+        assert(stream.NextBytePos == <span class="number">0</span>);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+<span class="keyword">void</span> EmptyTest()
+{
+    <span class="keyword">struct</span> Stream stream = STREAM_INIT;
+
+    assert(stream.CurrentCol == <span class="number">0</span>);
+    assert(stream.CurrentLine == <span class="number">0</span>);
+    assert(stream.CurrentChar == <span class="number">0</span>);
+	assert(stream.CurrentBytePos== <span class="number">0</span>);
+	assert(stream.NextBytePos == <span class="number">0</span>);
+	assert(stream.data == <span class="number">0</span>);
+
+    Stream_Match(&amp;stream);
+
+	assert(stream.CurrentCol == <span class="number">0</span>);
+	assert(stream.CurrentLine == <span class="number">0</span>);
+	assert(stream.CurrentChar == <span class="number">0</span>);
+	assert(stream.CurrentBytePos == <span class="number">0</span>);
+	assert(stream.NextBytePos == <span class="number">0</span>);
+	assert(stream.data == <span class="number">0</span>);
+
+
+	
+	assert(Stream_LookAhead(&amp;stream) == (<span class="keyword">wchar_t</span>)EOF);
+
+    Stream_Close(&amp;stream);
+
+	assert(stream.CurrentCol == <span class="number">0</span>);
+	assert(stream.CurrentLine == <span class="number">0</span>);
+	assert(stream.CurrentChar == <span class="number">0</span>);
+	assert(stream.CurrentBytePos == <span class="number">0</span>);
+	assert(stream.NextBytePos == <span class="number">0</span>);
+	assert(stream.data == <span class="number">0</span>);
+}
+
+
+
+<span class="keyword">int</span> main()
+{
+    <span class="comment">//_setmode(_fileno(stdout), _O_U16TEXT);
+</span>    
+    EmptyTest();
+    Test1();
+    Test1L();
+    Test2();
+    Test3();
+
+
+   <span class="comment">//wprintf(L&quot;maçã&quot;);
+</span>}
+</pre>
+
+
+<pre>
+<span class="keyword">#include</span> &lt;stdbool.h&gt;
+<span class="keyword">#include</span> &lt;stddef.h&gt;
+
+<span class="keyword">struct</span> Stream
+{
+    <span class="keyword">const</span> <span class="keyword">char</span>* data; <span class="comment">//utf8 encoded
+</span>
+    <span class="keyword">wchar_t</span> CurrentChar;
+    <span class="keyword">int</span> CurrentLine;
+    <span class="keyword">int</span> CurrentCol;
+    <span class="keyword">int</span> CurrentBytePos;
+    <span class="keyword">int</span> NextBytePos;
+};
+
+
+<span class="keyword">#define</span> STREAM_INIT {<span class="number">0</span>}
+
+<span class="comment">/*
+Description:
+    The Stream_Match function updates the values of CurrentLine
+	CurrentCol, CurrentBytePos and NextBytePos to represent the 
+	next character.
+	For convenience the updated CurrentChar is returned.
+*/</span>
+<span class="keyword">wchar_t</span> Stream_Match(<span class="keyword">struct</span> Stream* stream);
+
+<span class="comment">/*
+Description:
+	The Stream_Close reset the  Stream object for this initial state.
+*/</span>
+<span class="keyword">void</span> Stream_Close(<span class="keyword">struct</span> Stream* stream);
+
+<span class="keyword">void</span> Stream_Attach(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> Stream_Set(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text);
+<span class="keyword">bool</span> Stream_Open(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path);
+<span class="keyword">wchar_t</span> Stream_LookAhead(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream);
+<span class="keyword">wchar_t</span> Stream_LookAhead2(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream, <span class="keyword">wchar_t</span>* ch2);
+
+</pre>
+
+
+<pre>
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;sys/types.h&gt;
+<span class="keyword">#include</span> &lt;sys/stat.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;<span class="keyword2">string</span>.h&gt;
+<span class="keyword">#include</span> &lt;assert.h&gt;
+<span class="keyword">#include</span> &lt;ctype.h&gt;
+
+<span class="keyword">#include</span> <span class="string">&quot;Stream.h&quot;</span>
+
+
+<span class="keyword">#if</span> defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+<span class="keyword">#define</span> stat _stat
+<span class="keyword">#define</span> strdup _strdup
+<span class="keyword">#endif</span>
+
+
+<span class="keyword">void</span> Stream_Attach(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    Stream_Close(stream);
+    stream-&gt;data = text;        
+}
+
+<span class="keyword">bool</span> Stream_Set(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* text)
+{
+    <span class="keyword">char</span>* data = strdup(text);
+    <span class="keyword">if</span> (data)
+    {
+        Stream_Attach(stream, data);
+    }
+    <span class="keyword">return</span> data != NULL;
+}
+
+<span class="keyword">bool</span> Stream_Open(<span class="keyword">struct</span> Stream* stream, <span class="keyword">const</span> <span class="keyword">char</span>* path)
+{
+    <span class="keyword">bool</span> result = <span class="keyword">false</span>;
+    <span class="keyword">struct</span> stat info;
+    <span class="keyword">int</span> r = stat(
+        path,
+        &amp;info);
+    <span class="keyword">if</span> (r == <span class="number">0</span>)
+    {
+        <span class="keyword">char</span>* data = (<span class="keyword">char</span>*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">char</span>) * info.st_size + <span class="number">1</span>);
+        <span class="keyword">if</span> (data != NULL)
+        {
+            FILE* file = fopen(path, <span class="string">&quot;r&quot;</span>);
+            <span class="keyword">if</span> (file != NULL)
+            {
+                <span class="comment">//SKIP BOM
+</span>                <span class="keyword">if</span> (info.st_size &gt;= <span class="number">3</span>)
+                {
+                    fread(data, <span class="number">1</span>, <span class="number">3</span>, file);
+                    <span class="keyword">if</span> (data[<span class="number">0</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xEF &amp;&amp;
+                        data[<span class="number">1</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBB &amp;&amp;
+                        data[<span class="number">2</span>] == (<span class="keyword">char</span>)<span class="number">0</span>xBF)
+                    {
+                        size_t n = fread(data, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[n] = <span class="number">0</span>;
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        size_t n = fread(data + <span class="number">3</span>, <span class="number">1</span>, info.st_size - <span class="number">3</span>, file);
+                        data[<span class="number">3</span> + n] = <span class="number">0</span>;
+                    }
+                }
+                <span class="keyword">else</span>
+                {
+                    size_t n = fread(data, <span class="number">1</span>, info.st_size, file);
+                    data[n] = <span class="number">0</span>;
+                }
+
+                fclose(file);
+                result = <span class="keyword">true</span>;
+                Stream_Attach(stream, data);
+            }
+        }
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">static</span> <span class="keyword">wchar_t</span> ReadNextChar(<span class="keyword">const</span> <span class="keyword">char</span>* data, <span class="keyword">int</span> currentPos, <span class="keyword">int</span>* bytes)
+{
+    <span class="comment">//https://www.ietf.org/rfc/rfc3629.txt
+</span>    <span class="comment">//https://www.fileformat.info/info/unicode/utf8.htm
+</span>
+	<span class="keyword">int</span> pos = currentPos;
+
+    <span class="keyword">unsigned</span> u = EOF;
+    
+    <span class="keyword">if</span> (data != NULL)
+    {
+        <span class="keyword">int</span> c = data[pos];
+
+        <span class="keyword">if</span> (c == <span class="string">'\0'</span> <span class="comment">/*EOF*/</span>)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>x80) == <span class="number">0</span>)
+        {
+            pos++;
+            u = c;
+        }
+        <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+        {
+            u = EOF;
+        }
+        <span class="keyword">else</span>
+        {
+            pos++;
+            u = (c &amp; <span class="number">0</span>xE0) == <span class="number">0</span>xC0 ? (c &amp; <span class="number">0</span>x1F)
+                : (c &amp; <span class="number">0</span>xF0) == <span class="number">0</span>xE0 ? (c &amp; <span class="number">0</span>x0F)
+                : (c &amp; <span class="number">0</span>xF8) == <span class="number">0</span>xF0 ? (c &amp; <span class="number">0</span>x07)
+                : <span class="number">0</span>;
+
+            <span class="keyword">if</span> (u == <span class="number">0</span>)
+            {
+                u = EOF;
+            }
+            <span class="keyword">else</span>
+            {
+                <span class="keyword">for</span> (;;)
+                {
+                    c = data[pos];
+                    pos++;
+
+                    <span class="keyword">if</span> (c == EOF)
+                    {
+                        <span class="keyword">break</span>;
+                    }
+                    <span class="keyword">else</span> <span class="keyword">if</span> ((c &amp; <span class="number">0</span>xC0) == <span class="number">0</span>x80)
+                    {
+                        u = (u &lt;&lt; <span class="number">6</span>) | (c &amp; <span class="number">0</span>x3F);
+                    }
+                    <span class="keyword">else</span>
+                    {
+                        pos--;
+                        <span class="keyword">break</span>;
+                    }
+                }
+            }
+        }
+    }
+
+    *bytes = pos - currentPos;
+    <span class="keyword">return</span> u;
+}
+
+<span class="keyword">wchar_t</span> Stream_LookAhead(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream)
+{
+	<span class="keyword">int</span> bytes = <span class="number">0</span>;
+	<span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+	<span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> Stream_LookAhead2(<span class="keyword">const</span> <span class="keyword">struct</span> Stream* stream, <span class="keyword">wchar_t</span>* ch2)
+{
+	*ch2 = WEOF;
+
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+    <span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+	<span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+	{
+		*ch2 = ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos + bytes, &amp;bytes);
+	}
+
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">wchar_t</span> Stream_Match(<span class="keyword">struct</span> Stream* stream)
+{
+    <span class="comment">//if (stream-&gt;CurrentChar)
+</span>
+    <span class="keyword">int</span> bytes = <span class="number">0</span>;
+	<span class="keyword">wchar_t</span> ch =
+		ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+
+    <span class="keyword">if</span> (bytes &gt; <span class="number">0</span>)
+    {
+		<span class="keyword">if</span> (stream-&gt;CurrentLine == <span class="number">0</span>)
+		{
+			stream-&gt;CurrentLine = <span class="number">1</span>;
+		}
+
+        stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+        stream-&gt;NextBytePos += bytes;
+        stream-&gt;CurrentCol++;
+        
+        <span class="keyword">if</span> (ch == <span class="string">'\n'</span>) <span class="comment">//fopen on windows automatically removes \r
+</span>        {
+            stream-&gt;CurrentLine++;
+            stream-&gt;CurrentCol = <span class="number">0</span>;
+        }
+		stream-&gt;CurrentChar = ch;
+	}
+	<span class="keyword">else</span> <span class="keyword">if</span> (ch == (<span class="keyword">wchar_t</span>)EOF)
+	{
+		<span class="keyword">if</span> (stream-&gt;CurrentBytePos != stream-&gt;NextBytePos)
+		{
+			stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+			stream-&gt;CurrentCol++;
+			stream-&gt;CurrentChar = ch;
+		}
+	}
+    
+    <span class="keyword">return</span> ch;
+}
+
+<span class="keyword">void</span> Stream_Close(<span class="keyword">struct</span> Stream* stream)
+{
+    free((<span class="keyword">void</span>*)stream-&gt;data);
+    stream-&gt;CurrentCol = <span class="number">0</span>;
+    stream-&gt;CurrentLine = <span class="number">0</span>;
+    stream-&gt;NextBytePos = <span class="number">0</span>;
+    stream-&gt;CurrentBytePos = <span class="number">0</span>;
+	stream-&gt;CurrentChar = <span class="number">0</span>;
+}
+
+
+</pre>
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

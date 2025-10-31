@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>What is C++ special member function?</p>
+
+<p>[[<a href="http://en.wikipedia.org/wiki/Special_member_functions%7Chttp://en.wikipedia.org/wiki/Special_member_functions%5D">http://en.wikipedia.org/wiki/Special_member_functions|http://en.wikipedia.org/wiki/Special_member_functions]</a>]</p>
+
+<p>What I did is a javascript generator for creating the C special functions.</p>
+
+<p>This is a working i progress. Today the configuration is json, but the ideia is the implement a small struct parser.</p>
+
+<p>Here is the javascript generator. Today it works only for int and const char*.
+[[<a href="http://www.thradams.com/codeblog/chelper.html%7Chttp://www.thradams.com/codeblog/chelper.html%5D">http://www.thradams.com/codeblog/chelper.html|http://www.thradams.com/codeblog/chelper.html]</a>]</p>
+
+<p>For this struct...</p>
+
+<pre><code class="language-cpp">  struct obj
+  { 
+      int n;
+      const char* text;
+      const char* text2;
+  };
+</code></pre>
+
+<p>The generated especial functions would be</p>
+
+<p>Header</p>
+
+<pre><code class="language-cpp">/*forward declarations*/
+
+#define OBJ_INIT {0, 0, 0}
+
+int obj_init(struct obj* obj, 
+             int n, 
+             const char* text, 
+             const char* text2);
+
+void obj_swap(struct obj* obj, struct obj* other);
+
+void obj_destroy(struct obj* obj);
+
+
+struct obj* obj_create(int n,
+                       const char* text,
+                       const char* text2);
+
+void obj_delete(struct obj* obj);
+</code></pre>
+
+<p>Source</p>
+
+<pre><code class="language-cpp">/*implementation*/
+
+inline char* str_create(const char* text)
+{
+   size_t n = strlen(text);
+   char *p = (char*) malloc (sizeof(char) * (n + 1));
+   if (p)
+   {
+      strncpy(p, text, n);
+   }
+   return p;
+}
+
+int obj_init(struct obj* obj, 
+             int n, 
+             const char* text, 
+             const char* text2)
+{
+   obj-&gt;n = n;
+   obj-&gt;text = str_create(text);
+   if (obj-&gt;text)
+   {
+       obj-&gt;text2 = str_create(text2);
+       if (obj-&gt;text2)
+       {
+           return 1;
+       }
+       free(obj-&gt;text);
+       obj-&gt;text = 0;
+   }
+   obj-&gt;n = 0;
+   return 0;
+}
+
+void obj_swap(struct obj* obj, struct obj* other)
+{
+  int_swap(&amp;obj-&gt;n, &amp;other-&gt;n);
+  ptr_swap(&amp;obj-&gt;text, &amp;other-&gt;text);
+  ptr_swap(&amp;obj-&gt;text2, &amp;other-&gt;text2);
+}
+
+void obj_destroy(struct obj* obj)
+{
+   obj-&gt;n = 0;
+   free(obj-&gt;text);
+   obj-&gt;text = 0;
+   free(obj-&gt;text2);
+   obj-&gt;text2 = 0;
+}
+
+
+struct obj* obj_create(int n,
+                       const char* text,
+                       const char* text2)
+{
+  obj* p = (obj*) malloc(sizeof(struct obj));
+  if (p)
+  {
+    if (obj_init(p, n, text, text2) == 0)
+    {
+      free(p);
+      p = 0;
+    }
+  }
+  return p;
+}
+
+void obj_delete(struct obj* obj)
+{
+  if (obj == 0)
+  {
+    assert(false);
+    return;
+  }
+  obj_destroy(obj);
+  free(obj);
+}
+</code></pre>
+
+<pre><code class="language-cpp">enum
+{
+  r_succeedeed,
+  r_outofmemory,
+  r_succeeded,
+  r_failed
+};
+
+void int_swap(int* a, int* b)
+{
+  int t = *a;
+  *a = *b; 
+  *b = t;
+}
+
+void ptr_swap(void** a, void** b)
+{
+  void* t = a;
+  *a = *b;
+  *b = t;
+}
+</code></pre>
+</body></html>

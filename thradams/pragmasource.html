@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h1 id="toc_0">Pragma Source</h1>
+
+<p>Description for c compiler implementation.</p>
+
+<p>Besides c compiler implementation, externals tools could be created to generate make files, visual studio solution, xcode solutions etc.. or existing tools could use the same representation as well as part of their configuration.</p>
+
+<h2 id="toc_1">What is a Pragma Source?</h2>
+
+<p>Pragma source is a way to make source files discoverable respecting platform configuration. </p>
+
+<p>Let&#39;s say I want to create a library for console functions. 
+Other projects can use this library.</p>
+
+<p>I have these files:</p>
+
+<pre><code>Console
+  Src
+     ConsoleWin.c
+     ConsoleLinux.c
+     UnitTest.c
+  Include
+     Console.h     
+</code></pre>
+
+<p>We want to especify that compiling for windows we need Console.h and ConsoleWin.c, for linux we need Console.h and ConsoleLinux.c  and UnitTest is not necessary.</p>
+
+<p>At Console.h we add <strong>#pragma source</strong></p>
+
+<pre><code class="language-c">
+/*
+   Console.h
+*/
+
+#ifdef WIN32
+#pragma source &quot;..\Scr\ConsoleWin.c&quot;
+#elif LINUX
+#pragma source &quot;..\Scr\ConsoleLinux.c&quot;
+#endif
+
+...
+
+</code></pre>
+
+<p>To use this library <strong>all we need to do is to include the Console.h</strong></p>
+
+<pre><code class="language-c">/*
+  MyProgram.c
+*/
+
+#include &quot;Console.h&quot;
+
+int main()
+{
+}
+</code></pre>
+
+<p>To compile:</p>
+
+<pre><code>ccompiler -DLINUX MyProgram.c
+</code></pre>
+
+<h2 id="toc_2">Non intrusive</h2>
+
+<p>Let&#39;s say the library for console was created before the pragma source concept.</p>
+
+<pre><code>Console
+  Src
+     ConsoleWin.c
+     ConsoleLinux.c
+     UnitTest.c
+  Include
+     Console.h     
+</code></pre>
+
+<p>Now we can create a new file separately from the orignal distribuition:</p>
+
+<p>ConsoleLib.h</p>
+
+<pre><code class="language-c">/*
+   ConsoleLib.h
+*/
+
+#include &quot;Console.h&quot;
+
+#ifdef WIN32
+#pragma source &quot;.\Console\Scr\ConsoleWin.c&quot;
+#elif LINUX
+#pragma source &quot;.\Console\Scr\ConsoleLinux.c&quot;
+#endif
+</code></pre>
+
+<p>I can now use this library in MyProgram:</p>
+
+<pre><code class="language-c">/*
+  MyProgram.c
+*/
+
+#include &quot;ConsoleLib.h&quot;  
+int main()
+{
+}
+</code></pre>
+
+<pre><code>ccompiler --DWIN32 MyProgram.c
+</code></pre>
+
+<p>Imagine library non intrusive descriptions for all existing libraries: openssl, libtiff, zlib, libjpeg..
+Then if you want to use some of these libraries in your project you can just copy a folder and include some file.</p>
+
+<p>We also can make the entire MyProgram a module in a way that the original source files don´t need the pragma source.</p>
+
+<p>MyProgram.c
+```c</p>
+
+<h1 id="toc_3">include &quot;Console.h&quot;</h1>
+
+<p>int main()
+{
+}
+```</p>
+
+<p>MyProgramModule.c
+```c</p>
+
+<p>/*
+  MyProgramModule.c
+*/</p>
+
+<h1 id="toc_4">include &quot;ConsoleLib.h&quot;</h1>
+
+<h1 id="toc_5">pragma source &quot;MyProgram.c&quot;</h1>
+
+<pre><code>
+</code></pre>
+
+<p>ccompiler --DWIN32 MyProgramModule.c
+```</p>
+
+<h2 id="toc_6">Implementation</h2>
+
+<p>Basically at preprocessor phase we collect and merge the pragma sources considering their full paths. 
+Then this map is compiled in any order and some flags can mark the file as alredy compiled.</p>
+
+<h2 id="toc_7">Automatic file deduction?</h2>
+
+<p>If some c file has the same name of header at the same position should we consider that this file is the pragma source?</p>
+
+<pre><code>   File1.h
+   File.c
+</code></pre>
+
+<p>Then File1.h dont need to say pragma source &quot;File1.c&quot;
+Whould we search in other directories?</p>
+
+<h2 id="toc_8">Typing less</h2>
+
+<p>Empty pragma source could say &quot;the other file is the same name just the extension is .c &quot;</p>
+
+<h1 id="toc_9">pragma source</h1>
+
+<pre><code class="language-c">
+/*
+file1.h
+*/
+
+#pragma source
+//means that file1.c is the pair 
+</code></pre>
+
+<h2 id="toc_10">Other pragmas</h2>
+
+<p>The idea is give information about libraries and include dir.</p>
+
+<pre><code class="language-c">#pragma includedir &quot;&quot;
+
+#pragma library &quot;&quot;
+//see #pragma comment(lib, &quot;lib.lib&quot;) from Microsoft compiler
+
+</code></pre>
+
+<h2 id="toc_11">pragma once span</h2>
+
+<p>This pragma tell the compiler that this header will be expanded just once
+and the parsed result can be used in the other source files.</p>
+
+<h2 id="toc_12">References</h2>
+
+<p>comp lang c</p>
+
+<p>Universal compiler options 
+<a href="https://groups.google.com/d/msg/comp.lang.c/s7HDYJBHAeQ/S7TjEpL3CgAJ">https://groups.google.com/d/msg/comp.lang.c/s7HDYJBHAeQ/S7TjEpL3CgAJ</a> </p>
+
+<p>A modular build system for C 
+<a href="https://groups.google.com/d/msg/comp.lang.c/xCE7YeVNJso/CsfwiMs0AgAJ">https://groups.google.com/d/msg/comp.lang.c/xCE7YeVNJso/CsfwiMs0AgAJ</a> </p>
+
+<h2 id="toc_13">Emulating pragma source</h2>
+
+<p>file1.h
+```c</p>
+
+<h1 id="toc_14">pragma once</h1>
+
+<p>void F1(); </p>
+
+<h1 id="toc_15">ifdef EMULATE_SOURCE</h1>
+
+<h1 id="toc_16">include &quot;file1.c&quot;</h1>
+
+<h1 id="toc_17">endif</h1>
+
+<pre><code>
+file1.c 
+```c
+#include &quot;file1.h&quot; 
+#include &quot;file2.h&quot; 
+
+void F1() { 
+  F2(); 
+} 
+
+</code></pre>
+
+<p>file2.h </p>
+
+<pre><code class="language-c">#pragma once 
+
+void F2(); 
+
+#ifdef EMULATE_SOURCE 
+#include &quot;file2.c&quot; 
+#endif 
+</code></pre>
+
+<p>main.c</p>
+
+<pre><code class="language-c">#include &quot;file1.h&quot; 
+int main() { 
+  F1(); 
+} 
+</code></pre>
+
+<h3>Limitations</h3>
+
+<p>Static functions that that were working previously without conflict
+now can be duplicated generating an error. </p>
+
+<p>The good point about these limitations is that we can generate 
+amalgamations using simple tools that just merge files but 
+they have the same restrictions about static functions. </p>
+</body></html>

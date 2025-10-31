@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p><a href="algorithms.md">Algorithms</a></p>
+
+<hr>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template&lt;class It&gt;
+std::string to_string(It first, It last)
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">
+int main()
+{
+    using namespace std;
+    int u[] = {9, 8, 4, 0};
+    std::cout &lt;&lt; std::setw(20) &lt;&lt; to_string(begin(u), end(u)) &lt;&lt; std::endl;
+    std::cout &lt;&lt; std::setw(20 + 2) &lt;&lt; 10 &lt;&lt; std::endl;
+}
+
+Output:
+           {0 4 8 9}
+                    10
+
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">template&lt;class It&gt;
+std::string to_string(It first, It last)
+{
+    std::string result;
+    result += &quot;{&quot;;
+
+    size_t digits = last -  first ;
+    for (int i = digits - 1; i &gt;= 0; i--)
+    {
+        if (i != digits - 1)
+        {
+            result += &quot; &quot;;
+        }
+
+        result += std::to_string((unsigned long long)first[i]);
+    }
+
+    result += &quot;}&quot;;
+    return result;
+}
+</code></pre>
+</body></html>

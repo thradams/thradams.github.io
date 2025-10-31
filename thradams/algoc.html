@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<pre><code class="language-cpp">
+void quick_sort_string(const char* *unsorted_array,
+  int first_index,
+  int last_index)
+{
+  int pivot, j, i;
+  const char * temp;
+
+  if (first_index &lt; last_index)
+  {
+    pivot = first_index;
+    i = first_index;
+    j = last_index;
+
+    while (i &lt; j)
+    {
+      while (strcmp(unsorted_array[i], unsorted_array[pivot]) &lt;= 0 &amp;&amp; 
+            i &lt; last_index)
+      {
+        i++;
+      }
+
+      while (strcmp(unsorted_array[j], unsorted_array[pivot]) &gt; 0)
+      {
+        j--;
+      }
+
+      if (i &lt; j)
+      {
+        /*swap*/
+        temp = unsorted_array[i];
+        unsorted_array[i] = unsorted_array[j];
+        unsorted_array[j] = temp;
+      }
+    }
+
+    /*swap*/
+    temp = unsorted_array[pivot];
+    unsorted_array[pivot] = unsorted_array[j];
+    unsorted_array[j] = temp;
+
+    quick_sort_string(unsorted_array, first_index, j - 1);
+    quick_sort_string(unsorted_array, j + 1, last_index);
+  }
+}
+
+</code></pre>
+
+<pre><code class="language-cpp">
+void quick_sort_int(int *unsorted_array,
+  int first_index,
+  int last_index)
+{
+  int pivot, j, i;
+  int temp;
+
+  if (first_index &lt; last_index)
+  {
+    pivot = first_index;
+    i = first_index;
+    j = last_index;
+
+    while (i &lt; j)
+    {
+      while (/*compare int*/(unsorted_array[i] - unsorted_array[pivot]) &lt;= 0 &amp;&amp; i &lt; last_index)
+      {
+        i++;
+      }
+
+      while (/*compare int*/(unsorted_array[j] - unsorted_array[pivot])&gt; 0)
+      {
+        j--;
+      }
+
+      if (i &lt; j)
+      {
+        /*swap*/
+        temp = unsorted_array[i];
+        unsorted_array[i] = unsorted_array[j];
+        unsorted_array[j] = temp;          
+      }
+    }
+
+    /*swap*/
+    temp = unsorted_array[pivot];
+    unsorted_array[pivot] = unsorted_array[j];
+    unsorted_array[j] = temp;
+
+    quick_sort_int(unsorted_array, first_index, j - 1);
+    quick_sort_int(unsorted_array, j + 1, last_index);
+  }
+}
+</code></pre>
+
+<pre><code class="language-cpp">
+int binary_search_int(int* sorted_array,
+  int n_elements,
+  int searchItem)
+{
+  int mid;
+  int c = 0;
+  int l = 0;
+  int u = n_elements - 1;
+
+  while (l &lt;= u)
+  {
+    mid = (l + u) / 2;
+
+    int cmp = searchItem - sorted_array[mid];
+
+    if (cmp == 0)
+    {
+      c = 1;
+      break;
+    }
+    else if (cmp &lt; 0)
+    {
+      u = mid - 1;
+    }
+    else
+    {
+      l = mid + 1;
+    }
+  }
+
+  return c == 0 ? -1 : mid;
+}
+</code></pre>
+
+<pre><code class="language-cpp">int binary_search_str(const char** sorted_array,
+  int n_elements,
+  const char* searchItem)
+{
+  int mid;
+  int c = 0;
+  int l = 0;
+  int u = n_elements - 1;
+
+  while (l &lt;= u)
+  {
+    mid = (l + u) / 2;
+
+    int cmp = strcmp(searchItem, sorted_array[mid]);
+
+    if (cmp == 0)
+    {
+      c = 1;
+      break;
+    }
+    else if (cmp &lt; 0)
+    {
+      u = mid - 1;
+    }
+    else
+    {
+      l = mid + 1;
+    }
+  }
+
+  return c == 0 ? -1 : mid;
+}
+</code></pre>
+
+<pre><code class="language-cpp">
+struct str_array
+{
+  size_t    size;
+  size_t    capacity;
+  char**   data;
+};
+
+#define STR_ARRAY_INIT {0,0,0}
+
+void str_array_destroy(struct str_array* p);
+void str_array_push(struct str_array* p, const char*);
+
+
+static size_t str_array_reserve(struct str_array* p, size_t nelements)
+{
+  void *pnew = 0;
+  if (nelements &gt; p-&gt;capacity)
+  {
+    pnew = realloc((void*)p-&gt;data, nelements * sizeof(p-&gt;data[0]));
+    if (pnew)
+    {
+      p-&gt;data = (const char**)pnew;
+      p-&gt;capacity = nelements;
+    }
+  }
+
+  return (pnew != 0) ? nelements : 0;
+}
+
+size_t str_array_grow(struct str_array* p, size_t nelements)
+{
+  if (nelements &gt; p-&gt;capacity)
+  {
+    size_t newCap = p-&gt;capacity == 0 ? 4 : p-&gt;capacity;
+    while (newCap &lt; nelements)
+    {
+      newCap *= 2;
+      if (newCap &lt; nelements ||
+        newCap &gt;(size_t)(UINT_MAX / sizeof(p-&gt;data[0])))
+      {
+        newCap = (size_t)(UINT_MAX / sizeof(p-&gt;data[0]));
+      }
+    }
+    return str_array_reserve(p, newCap);
+  }
+  return p-&gt;capacity;
+}
+
+void str_array_destroy(struct str_array* p)
+{
+  for (size_t i = 0; i &lt; p-&gt;size; i++)
+  {
+    free(p-&gt;data[i]);
+  }
+}
+
+void str_array_push(struct str_array* p, const char* psz)
+{
+  size_t result = type_ptr_array_grow(p, p-&gt;size + 1);
+
+  if (result == 0)
+  {
+    free(psz);
+    return;
+  }
+  
+  int l = strlen(psz);
+  const char * ptemp = malloc(sizeof(p-&gt;data[0]) * (l + 1));
+  strcpy(ptemp, psz);
+
+  if (ptemp == 0)
+  {
+    return;
+  }
+  
+  p-&gt;data[p-&gt;size] = ptemp;
+  p-&gt;size += 1;
+}
+</code></pre>
+
+<pre><code class="language-cpp">int main(int argc, char* argv[])
+{
+  int a[] = { 5, 1, 2, 3, 4 };
+  quick_sort_int(a, 0, 4);
+  for (int i = 0; i &lt; 5; i++)
+  {
+    printf(&quot;%d\n&quot;, binary_search_int(a, 5, a[i]));
+  }
+  printf(&quot;%d\n&quot;, binary_search_int(a, 5, 9));
+
+  char * s[] = { &quot;a&quot;, &quot;ds&quot;, &quot;db&quot;, &quot;c&quot; , &quot;e&quot;};
+  quick_sort_string(s, 0, 4);
+  
+  for (int i = 0; i &lt; 5; i++)
+  {
+    printf(&quot;%d\n&quot;, binary_search_str(s, 5, s[i]));
+  }
+  printf(&quot;%d\n&quot;, binary_search_int(s, 5, &quot;outro&quot;));
+
+  struct str_array sa = STR_ARRAY_INIT;
+  str_array_push(&amp;sa, &quot;asd&quot;);
+  str_array_push(&amp;sa, &quot;afgfsd&quot;);
+  str_array_push(&amp;sa, &quot;asfdgdfd&quot;);
+
+  quick_sort_string(sa.data, 0, sa.size - 1);
+
+  for (int i = 0; i &lt; sa.size; i++)
+  {
+    printf(&quot;%s\n&quot;, sa.data[i]);
+  }
+
+  for (int i = 0; i &lt; sa.size; i++)
+  {
+    printf(&quot;%d\n&quot;, binary_search_str(sa.data, sa.size, sa.data[i]));
+  }
+  binary_search_str(sa.data, sa.size, &quot;outro&quot;);
+
+  str_array_destroy(&amp;sa);
+
+  return 0;
+}
+
+</code></pre>
+</body></html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>{{{cpp</p>
+
+<h1 id="toc_0">include &quot;stdafx.h&quot;</h1>
+
+<h1 id="toc_1">include <stdlib.h></h1>
+
+<h1 id="toc_2">include <string.h></h1>
+
+<h1 id="toc_3">include <time.h></h1>
+
+<h1 id="toc_4">include <string.h></h1>
+
+<h1 id="toc_5">include <vector></h1>
+
+<h1 id="toc_6">include <functional></h1>
+
+<h1 id="toc_7">include <string></h1>
+
+<p>typedef void(<em>clsr<em>void</em>call_t)(void</em>);
+typedef void(<em>clsr<em>void</em>destroy_t)(void</em>);</p>
+
+<p>typedef struct clsr<em>void</em>t
+{
+    clsr<em>void</em>call<em>t call;
+    void* finalCall;
+    clsr</em>void<em>destroy</em>t destroy;
+    void * data[3];
+} clsr_void;</p>
+
+<h1 id="toc_8">define CLSR<em>VOID</em>INIT(f) { f , 0 }</h1>
+
+<p>inline void clsr<em>void</em>destroy(clsr_void* p)
+{
+    if (p-&gt;destroy)
+        p-&gt;destroy(p);
+}</p>
+
+<p>inline void clsr<em>void</em>delete(clsr<em>void* p)
+{
+    if (p)
+    {
+        clsr</em>void_destroy(p);
+        free(p);
+    }
+}</p>
+
+<p>inline void clsr<em>void</em>init(clsr<em>void* closure,
+    clsr</em>void<em>call</em>t call,
+    clsr<em>void</em>destroy_t destroy)
+{
+    closure-&gt;call = call;
+    closure-&gt;destroy = destroy;
+    //closure-&gt;data[0] = data;
+}</p>
+
+<p>inline void clsr<em>void</em>call(clsr_void* p)
+{
+    p-&gt;call(p);
+}</p>
+
+<p>typedef clsr<em>void clsr</em>void<em>stack</em>item<em>type;
+typedef struct clsr</em>void<em>stack</em>t
+{
+    size<em>t      size;
+    size</em>t      capacity;
+    clsr<em>void</em>stack<em>item</em>type* data;
+} clsr<em>void</em>stack;</p>
+
+<h1 id="toc_9">define CLSR<em>VOID</em>STACK_INIT { 0, 0, 0 }</h1>
+
+<p>inline clsr<em>void* clsr</em>void<em>stack</em>top(clsr<em>void</em>stack* p)
+{
+    return &amp;p-&gt;data[p-&gt;size - 1];
+}</p>
+
+<p>inline void clsr<em>void</em>stack<em>pop(clsr</em>void<em>stack* p)
+{
+    clsr</em>void_destroy(&amp;p-&gt;data[p-&gt;size - 1]);
+    p-&gt;size -= 1;
+}</p>
+
+<p>inline void clsr<em>void</em>stack<em>destroy(clsr</em>void<em>stack* p)
+{
+    for (size</em>t i = 0; i &lt; p-&gt;size; i++)
+    {
+        clsr<em>void</em>destroy(&amp;p-&gt;data[i]);
+    }
+    free(p-&gt;data);
+    p-&gt;size = 0;
+    p-&gt;data = 0;
+    p-&gt;capacity = 0;
+}</p>
+
+<p>size<em>t clsr</em>void<em>stack</em>reserve(clsr<em>void</em>stack* p, size<em>t nelements)
+{
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size</em>t nelem = nelements;</p>
+
+<pre><code>    if (p-&gt;data == NULL)
+    {
+        p-&gt;data = (clsr_void_stack_item_type*)malloc(nelem * sizeof(clsr_void_stack_item_type));
+    }
+    else
+    {
+        p-&gt;data = (clsr_void_stack_item_type*)realloc((void*)p-&gt;data, nelem * sizeof(clsr_void_stack_item_type));
+    }
+    p-&gt;capacity = nelements;
+}
+
+return (p-&gt;data != 0) ? nelements : 0;
+</code></pre>
+
+<p>}</p>
+
+<p>static size<em>t clsr</em>void<em>stack</em>grow(clsr<em>void</em>stack* p, size<em>t nelements)
+{
+    const size</em>t INITIAL<em>CAPACITY = 4;
+    const size</em>t MAX<em>CAPACITY = (size</em>t)(UINT<em>MAX / sizeof(clsr</em>void<em>stack</em>item<em>type));
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size</em>t newCap = p-&gt;capacity == 0 ? INITIAL_CAPACITY : p-&gt;capacity;
+        while (newCap &lt; nelements)
+        {
+            newCap *= 2;</p>
+
+<pre><code>        if (newCap &lt; nelements ||
+            newCap &gt; MAX_CAPACITY)
+        {
+            /*overflow check*/
+            newCap = MAX_CAPACITY;
+        }
+    }
+    return clsr_void_stack_reserve(p, newCap);
+}
+return p-&gt;capacity;
+</code></pre>
+
+<p>}</p>
+
+<p>inline clsr<em>void</em>stack<em>item</em>type* clsr<em>void</em>stack<em>virtual</em>top(clsr<em>void</em>stack* p)
+{
+    size<em>t result = clsr</em>void<em>stack</em>grow(p, p-&gt;size + 1);</p>
+
+<pre><code>if (result == 0)
+{
+    return 0;
+}
+
+return &amp;p-&gt;data[p-&gt;size];
+</code></pre>
+
+<p>}</p>
+
+<p>inline int clsr<em>void</em>stack<em>push</em>clsr<em>void</em>init(clsr<em>void</em>stack* p,
+    clsr<em>void</em>call<em>t call)
+{
+    clsr</em>void<em>stack</em>item<em>type * pNew = clsr</em>void<em>stack</em>virtual<em>top(p);
+    clsr</em>void_init(pNew, call, 0);
+    p-&gt;size += 1;
+    return 1;
+}</p>
+
+<p>static void freetext(void* pv)
+{
+    clsr<em>void * p = (clsr</em>void <em>)pv;
+    free((void</em>)p-&gt;data[0]);
+}</p>
+
+<p>typedef void(<em>callstr)(char</em>);</p>
+
+<p>static void textf(void* pv)
+{
+    clsr<em>void * p = (clsr</em>void *)pv;
+    callstr  pf = (callstr)p-&gt;finalCall;
+    char <em>ps = (char</em>)p-&gt;data[0];
+    pf(ps);
+}</p>
+
+<p>clsr<em>void</em>stack<em>item</em>type clsr<em>void</em>str<em>create(void(<em>call)(char</em>),
+                                 const char* text)
+{
+    clsr</em>void<em>stack</em>item<em>type pNew;
+    clsr</em>void_init(&amp;pNew, &amp;textf, &amp;freetext);
+    pNew.finalCall = (void*)call;
+    char * p2 = (char*)malloc(sizeof(char) * (strlen(text) + 1));
+    strcpy(p2, text);
+    pNew.data[0] = p2;
+    return pNew;
+}</p>
+
+<p>int clsr<em>void</em>stack<em>push</em>clsr<em>void</em>str<em>init(clsr</em>void<em>stack* p,
+    void(<em>call)(char</em>),
+    const char* text)
+{
+    clsr</em>void<em>stack</em>item<em>type * pNew = clsr</em>void<em>stack</em>virtual_top(p);</p>
+
+<pre><code>clsr_void_init(pNew, &amp;textf, &amp;freetext);
+pNew-&gt;finalCall = (void*)call;
+char * p2 = (char*)malloc(sizeof(char) * (strlen(text) + 1));
+strcpy(p2, text);
+pNew-&gt;data[0] = p2;
+
+
+p-&gt;size += 1;
+return 1;
+</code></pre>
+
+<p>}</p>
+
+<p>inline int clsr<em>void</em>stack<em>push(clsr</em>void<em>stack* p,
+    clsr</em>void<em>stack</em>item<em>type* pSource)
+{
+    clsr</em>void<em>stack</em>item<em>type * pNew = clsr</em>void<em>stack</em>virtual_top(p);
+    *pNew = *pSource;</p>
+
+<pre><code>p-&gt;size += 1;
+return 1;
+</code></pre>
+
+<p>}</p>
+
+<p>inline void clsr<em>void</em>stack<em>call</em>pop(clsr<em>void</em>stack* stack)
+{
+    clsr<em>void</em>call(&amp;stack-&gt;data[stack-&gt;size - 1]);
+    clsr<em>void</em>stack_pop(stack);
+}</p>
+
+<p>void clsr<em>void</em>stack<em>clear(clsr</em>void<em>stack* p)
+{
+    for (size</em>t i = 0; i &lt; p-&gt;size; i++)
+    {
+        clsr<em>void</em>destroy(&amp;p-&gt;data[i]);
+    }
+    p-&gt;size = 0;
+}</p>
+
+<h1 id="toc_10">define MAX_COUNT 10000000</h1>
+
+<p>static int counter = 0;</p>
+
+<p>static void f(void*)
+{
+    counter++;
+}</p>
+
+<p>static void f2(char* text)
+{
+    counter +=  strlen(text);
+}</p>
+
+<p>void Test1()
+{</p>
+
+<pre><code>for (int i = 0; i &lt; MAX_COUNT; i++)
+{
+    clsr_void_stack stack = CLSR_VOID_STACK_INIT;
+
+    clsr_void_stack_push_clsr_void_init(&amp;stack, &amp;f);
+    clsr_void_stack_push(&amp;stack, &amp;clsr_void_str_create(&amp;f2, &quot;thiago&quot;));
+
+    while (stack.size)
+    {
+        clsr_void_stack_call_pop(&amp;stack);
+    }
+
+    clsr_void_stack_destroy(&amp;stack);
+}
+</code></pre>
+
+<p>}</p>
+
+<h1 id="toc_11">define HAS<em>MOVE</em>CAPTURE</h1>
+
+<p>void Test2()
+{</p>
+
+<pre><code>for (int i = 0; i &lt; MAX_COUNT; i++)
+{
+    std::vector&lt;std::function&lt;void(void)&gt;&gt; st;
+    st.reserve(4);
+
+
+    st.emplace_back([]()
+    {
+        counter++;
+    });
+
+    std::string s2 = &quot;thiago&quot;;
+</code></pre>
+
+<h1 id="toc_12">ifdef HAS<em>MOVE</em>CAPTURE</h1>
+
+<pre><code>    st.emplace_back([s2 = std::move(s2)]()
+</code></pre>
+
+<h1 id="toc_13">else</h1>
+
+<pre><code>    st.emplace_back([s2]()
+</code></pre>
+
+<h1 id="toc_14">endif</h1>
+
+<pre><code>    {
+        counter += s2.size();
+    });
+
+    while (st.size())
+    {
+        st.back()();
+        st.pop_back();
+    }
+}
+</code></pre>
+
+<p>}</p>
+
+<p>void RunTest(const char* message, void(*test)(void))
+{
+    counter = 0;
+    time_t start = clock();
+    test();
+    printf(&quot;%s %d %d\n&quot;, message, int(clock() - start), counter);
+}</p>
+
+<p>int main(int argc, char* argv[])
+{
+    RunTest(&quot;C++&quot;, &amp;Test2);
+    RunTest(&quot;C  &quot;, &amp;Test1);
+    return 0;
+}
+}}}</p>
+
+<p>{{{
+C++ 1901 70000000
+C   1810 70000000
+}}}</p>
+</body></html>

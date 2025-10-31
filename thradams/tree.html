@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>{{{cpp</p>
+
+<h1 id="toc_0">define nullptr 0</h1>
+
+<p>template<class E>
+class Node
+{
+  Node* m_pParentNode;</p>
+
+<p>Node* m<em>pNext;
+  Node* m</em>pPrev;</p>
+
+<p>Node* m<em>pHead;
+  Node* m</em>pTail;</p>
+
+<p>E m_element;</p>
+
+<p>public:</p>
+
+<p>Node(const E&amp; v) :
+  m<em>element(v),
+  m</em>pParentNode(nullptr),
+  m<em>pNext(nullptr),
+  m</em>pPrev(nullptr),<br>
+  m<em>pHead(nullptr),
+  m</em>pTail(nullptr)
+  {
+  }</p>
+
+<p>Node(const E&amp; v,
+       Node* pParentNode,
+       Node* pPrev,
+       Node* pNext) :
+  m<em>element(v),
+  m</em>pParentNode(pParentNode),
+  m<em>pNext(pNext),
+  m</em>pPrev(pPrev),<br>
+  m<em>pHead(nullptr),
+  m</em>pTail(nullptr)
+  {
+  }</p>
+
+<p>~Node()
+  {
+    RemoveAll();
+  }</p>
+
+<p>Node* ParentNode() 
+  {
+    return m_pParentNode;
+  }</p>
+
+<p>Node* AddChild(Node* pNode)
+  {
+    //assert
+    pNode-&gt;m<em>pParentNode = this;
+    pNode-&gt;m</em>pPrev = m<em>pTail;
+    pNode-&gt;m</em>pNext = nullptr;</p>
+
+<pre><code>if( m_pTail != NULL )
+{
+  m_pTail-&gt;m_pNext = pNode;
+}
+else
+{
+  m_pHead = pNode;
+}
+m_pTail = pNode;
+
+return pNode;
+</code></pre>
+
+<p>}</p>
+
+<p>Node* AddChild(const E&amp; value)
+  {<br>
+    Node* pNode = new Node(value, this, m_pTail, nullptr);
+    return AddChild(pNode);<br>
+  }</p>
+
+<p>void RemoveAt( Node* pOldNode )
+  {<br>
+    Node* pParent = pOldNode-&gt;m_pParentNode;
+    if (pParent != this)
+      return;</p>
+
+<pre><code>if( pOldNode == pParent-&gt;m_pHead )
+{
+  pParent-&gt;m_pHead = pOldNode-&gt;m_pNext;
+}
+else
+{
+  pOldNode-&gt;m_pPrev-&gt;m_pNext = pOldNode-&gt;m_pNext;
+}
+if( pOldNode == pParent-&gt;m_pTail )
+{
+  pParent-&gt;m_pTail = pOldNode-&gt;m_pPrev;
+}
+else
+{
+   pOldNode-&gt;m_pNext-&gt;m_pPrev = pOldNode-&gt;m_pPrev;
+}
+
+delete pOldNode;
+</code></pre>
+
+<p>}</p>
+
+<p>void RemoveAll() 
+  {
+    while(m<em>pHead != nullptr)
+    {
+      Node* pKill = m</em>pHead;
+      m<em>pHead = m</em>pHead-&gt;m_pNext;
+      delete pKill;
+    }</p>
+
+<pre><code>m_pHead = nullptr;
+m_pTail = nullptr;
+</code></pre>
+
+<p>}</p>
+
+<p>Node* GetHeadNode() const
+  {
+    return m_pHead;
+  }</p>
+
+<p>Node* GetNext()
+  {
+    return m_pNext;
+  }</p>
+
+<p>const E&amp; Data() const
+  {
+    return m_element;
+  } </p>
+
+<p>void SetData(const E&amp; value)
+  {
+    m_element = value;
+  }<br>
+};</p>
+
+<p>template<class T>
+void PrintImp(Node<T>&amp; node, int &amp;i)
+{
+  for (int k = 0; k &lt; i; k++)
+      cout &lt;&lt; &quot;  &quot;;
+  cout &lt;&lt; node.Data() &lt;&lt; endl;</p>
+
+<p>Node<T>* pNode = node.GetHeadNode();
+  for ( ; pNode != nullptr; pNode = pNode-&gt;GetNext())
+  {
+    i++;
+    PrintImp(*pNode, i);
+    i--;
+  }
+}</p>
+
+<p>template<class T>
+void Print(Node<T>&amp; node)
+{ 
+  console::clrscr();
+  int i = 0;
+  PrintImp(node, i);
+  console::getch();
+}</p>
+
+<p>}}}</p>
+</body></html>

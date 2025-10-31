@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Given a unsigned number, the template return the minimum unsigned type that can be used to store the value informed.</p>
+
+<pre><code class="language-cpp">#include &lt;climits&gt;
+#include &lt;iostream&gt;
+
+template&lt;bool cond, typename T1, typename T2&gt;
+struct static_if {
+    typedef T1 type;
+};
+
+template&lt;typename T1, typename T2&gt;
+struct static_if&lt;false, T1, T2&gt; {
+    typedef T2 type;
+}; 
+
+template&lt;unsigned long long umax&gt;
+struct make_unsigned_min
+{
+    typedef typename static_if&lt;umax &lt;= UCHAR_MAX, unsigned char, 
+        typename static_if&lt;umax &lt;= USHRT_MAX, unsigned short,
+        typename static_if&lt;umax &lt;= UINT_MAX, unsigned int, 
+        unsigned long long&gt;::type &gt;::type&gt;::type type;
+
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+    std::cout &lt;&lt; typeid(make_unsigned_min&lt;10&gt;::type).name() &lt;&lt; std::endl;
+    std::cout &lt;&lt; typeid(make_unsigned_min&lt;255&gt;::type).name()&lt;&lt; std::endl;
+    std::cout &lt;&lt; typeid(make_unsigned_min&lt;256&gt;::type).name()&lt;&lt; std::endl;
+    std::cout &lt;&lt; typeid(make_unsigned_min&lt;4294967295&gt;::type).name()&lt;&lt; std::endl;
+    std::cout &lt;&lt; typeid(make_unsigned_min&lt;4294967296&gt;::type).name()&lt;&lt; std::endl;
+
+    return 0;
+}
+
+</code></pre>
+
+<p>Output:</p>
+
+<pre><code>unsigned char
+unsigned char
+unsigned short
+unsigned int
+unsigned __int64
+</code></pre>
+</body></html>

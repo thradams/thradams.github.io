@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Estava pensando: Por que tenho que expressar as interfaces \de um objeto na sua declaração?</p>
+
+<p>Eu não tenho que expressar no tipo do objeto, por exemplo, se ele vai ser instanciado na pilha ou no heap. Isso permite que use o mesmo objeto nos dois modos.</p>
+
+<p>A mesma idéia poderia ser aplicada no polimorfismo.\
+Eu poderia ter uma definição de classe e escolher se eu quero que seja polimórfica ou não. Mais ainda, eu poderia escolher como eu vou ver aquele objeto e ele não precisa saber como será.</p>
+
+<p>Uma razão para fazer isso, é porque a herança complica o design e dificulta mudanças.</p>
+
+<p>O polimorfismo estático e os algorítmos genéricos, resolvem este problema em alguns casos, mas eles não resolvem o problema quando o polirmorfismo dinâmico é necessário.</p>
+
+<p>Digamos que eu tenha uma lista de Cars e Dogs.\
+Ambos têm a propriedade Cor. Para aplicar um algorítmo que usa a propriedade Cor nesta lista eu precisarei implementar uma interface comum em Car e Dog.
+Tenho que artificialmente criar esta interface comum apenas para acessar a Cor. Se a classe base de Dog é Animal e já tem a propriedade Cor isto não vai ajudar, pois carro não é derivado de Animal. Se Car for derivado de Vehicle e Vehicle tiver a propriedade cor isso também não ajuda.</p>
+
+<p>Agora digamos que eu tenha essa interface em comum mas em outro programa eu vou usar apenas a classe Car. Para este programa a interface Vehicle é suficiente, porque vou ter uma lista somente de Vehicle. Não vou precisar de Aninal neste caso.</p>
+
+<p>Este exemplo mostra que o mesmo objeto Car pode ser visto diferentemente em dois lugares. O objeto carro é exatamente o mesmo ele tem a propriedade cor. &quot;A beleza está nos olhos de quem vê&quot;</p>
+
+<p>Tentando lidar com esta questão, eu fiz um experimento com a &quot;interface_cast&quot;.</p>
+
+<p>Exemplo:</p>
+
+<p>{{{cpp
+struct Car {
+  int Color() {return 1;}
+};</p>
+
+<p>struct Dog {
+  int Color() {return 2;}
+};
+}}}</p>
+
+<p>Eu preciso em algum software / algoritimo ver a Cor de uma maneira polimórfica.
+Para isso eu vou usar uma &quot;visão&quot; ou interface.</p>
+
+<p>{{{cpp
+struct IColor { virtual int Color() = 0; };
+}}}
+O uso de &quot;interface_cast&quot; &quot; é algo como: (O resultado final)
+{{{cpp
+Car car;
+Dog dog;</p>
+
+<p>IColor&amp; rCar = interface<em>cast<IColor>(car);
+cout  &lt;&lt; rCar.Color();
+IColor&amp; rDog = interface</em>cast<IColor>(dog);<br>
+cout  &lt;&lt; rDog.Color();
+}}}</p>
+
+<p>A função interface_cast retorna um objeto derivado de da interface (IColor) que faz a conversão de chamada.</p>
+
+<p>{{{cpp</p>
+
+<p>template<class TObject, class TInterface> 
+struct InterfaceAdapter; // Not Implemented</p>
+
+<p>template<class TInterface, class TObject>
+InterfaceAdapter<TObject, TInterface> interface_cast(TObject&amp; r)
+{
+    return InterfaceAdapter<TObject, TInterface>(r);
+}
+}}}</p>
+
+<p>O objeto retornado &quot;InterfaceAdapter&quot; precisa ser criado manualmente.</p>
+
+<p>Para este caso:
+{{{cpp
+template<class T>
+struct InterfaceAdapter<T, IColor> : public IColor
+{
+    T&amp; m<em>r;
+    InterfaceAdapter(T&amp; r) : m</em>r(r) {}</p>
+
+<pre><code>virtual int Color()
+{
+    return m_r.Color(); //call
+}
+</code></pre>
+
+<p>};
+}}}</p>
+
+<p>A propriedade cor poderia ter um sintaxe diferente, por exemplo MyColor. Neste caso, uma versão mais especializada de InterfaceAdapter tem que ser criada.
+{{{cpp
+template&lt;&gt;
+struct InterfaceAdapter<Car, IColor> : public IColor
+{
+    Car&amp; m<em>r;
+    InterfaceAdapter(Car&amp; r) : m</em>r(r) {}</p>
+
+<pre><code>virtual int Color()
+{
+    return m_r.MyColor(); //call
+}
+</code></pre>
+
+<p>};
+}}}</p>
+
+<p>Para manter o objeto de uma maneira polimórfica em um container nós poderíamos ter algo como:</p>
+
+<p>{{{cpp
+template<class TObject, class TInterface> 
+struct InterfaceAdapterInstance : public InterfaceAdapter<TObject, TInterface>
+{
+  TObject m<em>obj;
+  InterfaceAdapterInstance() : InterfaceAdapter<TObject, TInterface>(m</em>obj){}
+};</p>
+
+<p>template<class TObject, class TInterface>
+InterfaceAdapterInstance<TObject, TInterface>* New()
+{
+    return new InterfaceAdapterInstance<TObject, TInterface>;<br>
+}</p>
+
+<p>std::vector<IColor*> v;<br>
+v.push<em>back(New<Car, IColor>());
+v.push</em>back(New<Dog, IColor>());
+}}}</p>
+
+<p>Eu penso que existe uma relação com a idéia dos concepts. mas neste caso com um comportamento polimórfico e dinâmico.</p>
+
+<p>Eu iria aprecisar seu comentário sobre isto.</p>
+</body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Sample of use of codecvt_utf8. </p>
+
+<p>This class is part of C++0x.
+&quot;Standard code conversion facets&quot;</p>
+
+<pre><code class="language-cpp">
+#include &lt;fstream&gt;
+#include &lt;codecvt&gt;
+#include &lt;string&gt;
+using namespace std;
+
+int main()
+{
+
+        // writing
+    {
+        std::locale ulocale(locale(), new codecvt_utf8&lt;wchar_t&gt;) ;
+        std::wofstream ofs(&quot;test.txt&quot;);
+        ofs.imbue(ulocale);
+        ofs &lt;&lt; L&quot;maçã&quot;; //apple in portuguese
+        
+        }
+
+        // reading
+    {
+        std::locale ulocale(locale(), new codecvt_utf8&lt;wchar_t&gt;) ;
+        std::wifstream ifs(&quot;test.txt&quot;);
+        ifs.imbue(ulocale);
+        std::wstring ws;
+        std::getline(ifs, ws);      
+    }
+}
+</code></pre>
+
+<p>(compiled using VC++ 2010 express)</p>
+</body></html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Performance test</p>
+
+<pre><code class="language-cpp">#include &quot;stdafx.h&quot;
+#include &lt;typeinfo&gt;
+#include &lt;cassert&gt;
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;iostream&gt;
+#include &quot;Stopwatch.h&quot;
+
+int boxCount = 0;
+int circleCount = 0;
+int ellipseCount = 0;
+
+void ClearCount()
+{
+  boxCount = 0;
+  circleCount = 0;
+  ellipseCount = 0;
+}
+
+void PrintCount()
+{
+  std::cout &lt;&lt; &quot;box count = &quot; &lt;&lt; boxCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;circle count = &quot; &lt;&lt; circleCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;ellipse count = &quot; &lt;&lt; ellipseCount &lt;&lt; std::endl;
+  std::cout &lt;&lt; &quot;------------------------------------&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt; std::endl;
+}
+
+struct TBox;
+struct TCircle;
+struct TEllipse;
+
+struct ShapeVisitor
+{
+  virtual void Visit(TBox&amp;) = 0;
+  virtual void Visit(TCircle&amp;) = 0;
+  virtual void Visit(TEllipse&amp;) = 0;
+};
+
+
+struct Shape
+{
+  virtual ~Shape() {};
+  virtual void Accept(ShapeVisitor&amp;) = 0;
+  virtual void VirtualDraw() = 0;
+};
+
+struct TBox : public Shape
+{
+  int m_boxint;
+  TBox()
+  {
+    m_boxint = 1;
+  }
+
+  virtual  void Accept(ShapeVisitor&amp; shapeVisitor) override
+  {
+    shapeVisitor.Visit(*this);
+  }
+  virtual void VirtualDraw() override
+  {
+    boxCount++;
+  }
+};
+
+struct TCircle : public Shape
+{
+  int m_circleint;
+  TCircle()
+  {
+    m_circleint = 1;
+  }
+
+  virtual  void Accept(ShapeVisitor&amp; shapeVisitor) override
+  {
+    shapeVisitor.Visit(*this);
+  }
+  virtual void VirtualDraw() override
+  {
+    circleCount++;
+  }
+};
+
+struct TEllipse : public Shape
+{
+  int m_ellipseint;
+  TEllipse()
+  {
+    m_ellipseint = 1;
+  }
+
+  virtual void Accept(ShapeVisitor&amp; shapeVisitor) override
+  {
+    shapeVisitor.Visit(*this);
+  }
+
+  virtual void VirtualDraw() override
+  {
+    ellipseCount++;
+  }
+};
+
+
+void Draw(TBox&amp; box)
+{
+  boxCount += box.m_boxint;
+}
+
+void Draw(TCircle&amp; circle)
+{
+  circleCount += circle.m_circleint;
+}
+
+void Draw(TEllipse&amp; ellipse)
+{
+  ellipseCount += ellipse.m_ellipseint;
+}
+
+struct DrawVisitor : public ShapeVisitor
+{
+  virtual void Visit(TBox&amp; obj) override
+  {
+    Draw(obj);
+  }
+  virtual void Visit(TCircle&amp; obj) override
+  {
+    Draw(obj);
+  }
+  virtual void Visit(TEllipse&amp; obj) override
+  {
+    Draw(obj);
+  }
+};
+
+void DrawTypeId(Shape&amp; shape)
+{
+  if (typeid(shape) == typeid(TBox))
+  {
+    Draw(dynamic_cast&lt;TBox&amp;&gt;(shape));
+  }
+  else if (typeid(shape) == typeid(TCircle))
+  {
+    Draw(dynamic_cast&lt;TCircle&amp;&gt;(shape));
+  }
+  else if (typeid(shape) == typeid(TEllipse))
+  {
+    Draw(dynamic_cast&lt;TEllipse&amp;&gt;(shape));
+  }
+  else
+  {
+    assert(false);
+  }
+}
+
+void DrawDynamicCast(Shape&amp; shape)
+{
+  if (auto p = dynamic_cast&lt;TBox*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  else if (auto p = dynamic_cast&lt;TCircle*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  else if (auto p = dynamic_cast&lt;TEllipse*&gt;(&amp;shape))
+  {
+    Draw(*p);
+  }
+  else
+  {
+    assert(false);
+  }
+}
+
+void CreateShapes(std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt;&amp; shapes)
+{
+  for (int i = 0; i &lt; 1000; i++)
+  {
+    if (i % 2 == 0)
+    {
+      shapes.emplace_back(std::unique_ptr&lt;TBox&gt;(new TBox));
+    }
+    else if (i % 3 == 0)
+    {
+      shapes.emplace_back(std::unique_ptr&lt;TCircle&gt;(new TCircle));
+    }
+    else if (i % 5 == 0)
+    {
+      shapes.emplace_back(std::unique_ptr&lt;TEllipse&gt;(new TEllipse));
+    }
+  }
+
+}
+
+int main()
+{
+  std::vector&lt;std::unique_ptr&lt;Shape&gt;&gt; shapes;
+
+  CreateShapes(shapes);
+  ClearCount();
+
+  Stopwatch sw(true);
+
+  for (size_t i = 0; i &lt; shapes.size(); i++)
+  {
+    DrawTypeId(*shapes[i].get());
+  }
+
+
+
+
+  sw.Stop();
+  std::cout &lt;&lt; &quot;Using typeid + dynamic_cast&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+
+  /////////////////
+  ClearCount();
+  sw.Start();
+
+  for (size_t i = 0; i &lt; shapes.size(); i++)
+  {
+    shapes[i]-&gt;VirtualDraw();
+  }
+
+  sw.Stop();
+  std::cout &lt;&lt; &quot;Using virtual function&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+  //////////////////////
+
+  /////////////////
+  ClearCount();
+  sw.Start();
+
+  for (size_t i = 0; i &lt; shapes.size(); i++)
+  {
+    DrawDynamicCast(*shapes[i].get());
+  }
+
+  sw.Stop();
+  std::cout &lt;&lt; &quot;Using dynamic_cast&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+  PrintCount();
+  //////////////////////
+  ClearCount();
+
+  DrawVisitor drawVisitor;
+  sw.Start();
+
+  for (size_t i = 0; i &lt; shapes.size(); i++)
+  {
+    shapes[i]-&gt;Accept(drawVisitor);
+  }
+
+  sw.Stop();
+
+  std::cout &lt;&lt; &quot;Using visitor pattern&quot; &lt;&lt; std::endl;
+  std::cout &lt;&lt;  sw &lt;&lt; std::endl;
+
+  PrintCount();
+
+  return 0;
+}
+
+
+</code></pre>
+
+<p>Results - Visual  C++ 2012</p>
+
+<pre><code>Using typeid + dynamic_cast
+397 ticks, 0 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using virtual function
+90555 ticks, 35 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using dynamic_cast
+217489 ticks, 85 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+
+Using visitor pattern
+329539 ticks, 129 ms
+box count = 500
+circle count = 167
+ellipse count = 67
+------------------------------------
+</code></pre>
+</body></html>

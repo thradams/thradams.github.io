@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+<h1> Creating va_list on the heap</h1>
+
+<p>(Visual Studio)</p>
+
+
+<pre>
+
+
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdarg.h&gt;
+
+
+<span class="keyword">void</span> F2(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, va_list vl)
+{
+  <span class="keyword">int</span> i = va_arg(vl, <span class="keyword">int</span>);
+  <span class="keyword">double</span> d = va_arg(vl, <span class="keyword">double</span>);
+  printf(<span class="string">&quot;i = %d, d = %lf\n&quot;</span>, i, d);
+}
+
+<span class="keyword">void</span> F(<span class="keyword">const</span> <span class="keyword">char</span>* fmt, ...)
+{
+  va_list vl;
+  va_start(vl, fmt);
+  F2(fmt, vl);
+  va_end(vl);
+}
+
+<span class="keyword">void</span> va_list_free(va_list args)
+{
+  free(args);
+}
+
+
+va_list va_list_create(<span class="keyword">void</span>* pmem, <span class="keyword">int</span> i, <span class="keyword">double</span> d)
+{
+  va_list p = (va_list)pmem;
+  va_arg(p, <span class="keyword">int</span>) = i;
+  va_arg(p, <span class="keyword">double</span>) = d;
+  <span class="keyword">return</span> (va_list)pmem;
+}
+
+va_list va_list_malloc(<span class="keyword">int</span> i, <span class="keyword">double</span> d)
+{
+  <span class="keyword">void</span>* pv = malloc(<span class="keyword">sizeof</span>(<span class="keyword">int</span>) + <span class="keyword">sizeof</span>(<span class="keyword">double</span>));
+  <span class="keyword">return</span> va_list_create(pv, i, d);  
+}
+
+<span class="keyword">int</span> main()
+{
+  F(<span class="string">&quot;&quot;</span>, <span class="number">1</span>, <span class="number">2.0</span>);
+  va_list args = va_list_malloc(<span class="number">1</span>, <span class="number">2.0</span>);
+  F2(<span class="string">&quot;&quot;</span>, args);
+  va_list_free(args);
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+
+</pre>
+
+<pre>
+
+#include &quot;stdafx.h&quot;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+
+typedef struct X {
+	char a1;
+	char a2;
+	double a3;
+	void* a4;
+	char a5;
+} X;
+#define X_INIT {'a', 'b', 1.2, (void*)3 , 'c'}
+
+#define _SLOTSIZEOF2(t)  ((sizeof(t) + sizeof(t) - 1) &amp; ~(sizeof(t) - 1))
+#define _APALIGN2(t,ap)  (((va_list)0 - (ap)) &amp; (sizeof(t) - 1))
+#define arg(ap, t) (*(t*)((ap += _SLOTSIZEOF2(t) + _APALIGN2(t,ap)) - _SLOTSIZEOF2(t)))
+
+void Use(void* pv)
+{
+	char* args = pv;
+	char a1 = arg(args, char);
+	char a2 = arg(args, char);
+	double a3 = arg(args, double);
+	void* a4 = arg(args, void*);
+	char a5  = arg(args, char);
+}
+
+int main()
+{
+	printf(&quot;%d %d %d %d %d\n&quot;,
+		  (int)offsetof(X, a1),
+		  (int)offsetof(X, a2),
+	      (int)offsetof(X, a3),
+	      (int)offsetof(X, a4),
+		  (int)offsetof(X, a5));
+
+	X x = X_INIT;
+	Use(&amp;x);
+
+    return 0;
+}
+
+
+</pre>
+
+
+<pre>
+
+
+#define UnCapture5(data, t1,  a1,  t2, a2, t3, a3, t4 ,a4, t5, a5)\
+struct X {\
+    t1  a1; \
+    t2 a2; \
+    t3 a3; \
+    t4 a4; \
+    t5 a5; \
+} *p = (struct X*) (data);\
+t1 a1 = p-&gt;a1;\
+t2 a2 = p-&gt;a2;\
+t3 a3 = p-&gt;a3;\
+t4 a4 = p-&gt;a4;\
+t5 a5= p-&gt;a5
+
+#define Capture5(name, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5)\
+struct {\
+  t1  a1;\
+  t2 a2;\
+  t3 a3;\
+  t4 a4;\
+  t5 a5;\
+} name;\
+name.a1 = a1;\
+name.a2 = a2;\
+name.a3 = a3;\
+name.a4 = a4;\
+name.a5 = a5
+
+
+void F2(void* pv, size_t s)
+{  
+  UnCapture5(pv, char, a1,
+                 char, a2,
+                 double, a3,
+                 void*, a4,
+                 char , a5);
+
+  
+  printf(&quot;%c %c %lf %p %c\n&quot;, a1, a2, a3, a4, a5);
+}
+
+void F1()
+{
+  char a1 = 'a';
+  char a2 = 'b';
+  double a3 = 2.2;
+  void* a4 = 0;
+  char a5 = 'c';
+  Capture5(capture, char, a1,
+                    char, a2,
+                    double, a3,
+                    void*, a4,
+                    char, a5);
+  F2(&amp;capture, sizeof(capture));
+}
+
+int main()
+{
+  F1();
+}
+
+
+</pre>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

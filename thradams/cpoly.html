@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Polymorphism in C style</h2>
+
+<pre><code class="language-cpp">#include &lt;stdlib.h&gt;
+
+//Public handles
+typedef struct THShape {} * HShape;
+typedef struct THBox {} * HBox;
+typedef struct THCircle {} * HCircle;
+
+//--------------------------------------------------
+// Implementation
+
+//Private vtable for TShape
+struct TShapeVTable
+{
+  void (*Print)(void*);
+  void (*Delete)(void*);  
+};
+
+//Has the vtable pointer
+struct TShape
+{
+  TShapeVTable *pvtable;
+};
+
+//Private
+struct TBox
+{
+  TShape base;
+  /////////
+  int i;
+};
+
+//Private
+struct TCircle
+{
+  TShape base;
+  /////////
+  double d;
+};
+
+//Private: Print implementation of Box
+void Print_Box(void* p)
+{
+    TBox *pthis = (TBox*)p;
+    printf(&quot;Box %d\n&quot;, pthis-&gt;i);
+}
+
+//Private: Delete implementation of Box
+void Delete_Box(void* p)
+{
+}
+
+//Only one
+TShapeVTable s_TShapeBox = { &amp;Print_Box , &amp;Delete_Box};
+
+
+//Public
+HBox CreateBox()
+{
+  TBox* pBox = (TBox*) malloc(sizeof(TBox));
+  pBox-&gt;i = 1;
+  pBox-&gt;base.pvtable = &amp;s_TShapeBox;
+  return (HBox)pBox;
+}
+
+//Private
+void Print_Circle(void* p)
+{
+    TCircle *pthis = (TCircle*)p;
+    printf(&quot;Circle %g\n&quot;, pthis-&gt;d);
+}
+
+//Private
+void Delete_Circle(void* p)
+{
+}
+
+//Only one
+TShapeVTable s_TShapeCircle = { &amp;Print_Circle ,  &amp;Delete_Circle};
+
+//Public
+void Delete(HShape h)
+{    
+    if (h)
+    {
+        //h points to TBox or TCircle
+        //TBox and TCircle can be used as TShape
+        TShape *pShape = (TShape*)h;
+        (pShape-&gt;pvtable-&gt;Delete)(h);    
+
+        free((TShape*)h);
+    }
+}
+//Public
+HCircle CreateCircle()
+{
+  TCircle* pCircle = (TCircle*) malloc(sizeof(TCircle));
+  pCircle-&gt;d = 2.1;
+  pCircle-&gt;base.pvtable = &amp;s_TShapeCircle;
+  return (HCircle)pCircle;
+}
+
+//Public
+void Print(HShape h)
+{
+    //h points to TBox or TCircle
+    //TBox and TCircle can be used as TShape
+    TShape *pShape = (TShape*)h;
+    (pShape-&gt;pvtable-&gt;Print)(h);    
+}
+
+//Test
+int main()
+{
+    HShape h = (HShape)CreateBox();
+    Print(h);
+    Delete(h);
+
+    h = (HShape)CreateCircle();
+    Print(h);
+    Delete(h);
+}
+</code></pre>
+
+<p>Using C++ to compile, a &quot;hidrid&quot; style could be:</p>
+
+<pre><code class="language-cpp">typedef struct THShape {} * HShape;
+typedef struct THBox : public THShape {} * HBox;
+typedef struct THCircle : public THShape {} * HCircle;
+</code></pre>
+</body></html>

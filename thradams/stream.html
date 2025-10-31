@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h1 id="toc_0">Stream</h1>
+
+<p>UTF8 Stream object. It uses memory to keep the text.</p>
+
+<p>Can load files or use strings.</p>
+
+<p>Can track the position in memory. (line col bytepos)</p>
+
+<p>Sample</p>
+
+<pre><code class="language-cpp">#include  &quot;Stream.h&quot;
+#include &lt;assert.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;ctype.h&gt;
+#include &lt;stddef.h&gt;
+#include &lt;stdio.h&gt;
+
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+#include &lt;io.h&gt;
+#include &lt;windows.h&gt;
+#endif
+
+void PrintLine(const char* source, int pos, int col)
+{
+    const char* pHead = source + pos;
+    while (pHead &gt; source)
+    {
+        if (*pHead == &#39;\n&#39;)
+        {
+            pHead++;
+            break;
+        }
+        pHead--;
+    }
+
+    const char* pTail = source + pos;
+    while (*pTail)
+    {
+        if (*pTail == &#39;\n&#39;)
+            break;
+        pTail++;
+    }
+
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+       UINT oldcp = GetConsoleOutputCP();
+        SetConsoleOutputCP(CP_UTF8);
+#endif
+        printf(&quot;%.*s\n&quot;, (int) (pTail - pHead), pHead);
+        for (int i = 1; i &lt; pTail - pHead; i++)
+        {
+            if (i &lt; col)
+                printf(&quot; &quot;);            
+            else
+            {
+                printf(&quot;^&quot;);
+                break;
+            }
+        }
+        
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+        SetConsoleOutputCP(oldcp);
+#endif
+    //}
+}
+
+
+void Test3()
+{
+    struct Stream stream = STREAM_INIT;
+
+    assert(stream.CurrentCol == 0);
+    assert(stream.CurrentLine == 0);
+    assert(stream.CurrentChar == 0);
+    assert(stream.NextBytePos == 0);
+    assert(stream.data == NULL);
+
+    //Stream_Set(&amp;stream, u8&quot;maçã&quot;);
+    if (Stream_Set(&amp;stream, u8&quot;ábç\n dêf\n&quot;))
+    {
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 0);
+        assert(stream.CurrentChar == 0);
+        assert(stream.NextBytePos == 0);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == 1);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;á&#39;);
+        assert(stream.NextBytePos == 2);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 2);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;b&#39;);
+        assert(stream.NextBytePos == 3);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 3);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;ç&#39;);
+        assert(stream.NextBytePos == 5);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 2);
+        assert(stream.CurrentChar == L&#39;\n&#39;);
+        assert(stream.NextBytePos == 6);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 1);
+        assert(stream.CurrentLine == 2);
+        assert(stream.CurrentChar == L&#39; &#39;);
+        assert(stream.NextBytePos == 7);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 2);
+        assert(stream.CurrentLine == 2);
+        assert(stream.CurrentChar == L&#39;d&#39;);
+        assert(stream.NextBytePos == 8);
+
+        PrintLine(stream.data, stream.CurrentBytePos, stream.CurrentCol);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 3);
+        assert(stream.CurrentLine == 2);
+        assert(stream.CurrentChar == L&#39;ê&#39;);
+        assert(stream.NextBytePos == 10);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 4);
+        assert(stream.CurrentLine == 2);
+        assert(stream.CurrentChar == L&#39;f&#39;);
+        assert(stream.NextBytePos == 11);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 3);
+        assert(stream.CurrentChar == L&#39;\n&#39;);
+        assert(stream.NextBytePos == 12);
+
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+
+
+void Test1()
+{
+    struct Stream stream = STREAM_INIT;
+
+    //Stream_Set(&amp;stream, u8&quot;maçã&quot;);
+    if (Stream_Open(&amp;stream, &quot;utf8maca.txt&quot;))
+    {
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 0);
+        assert(stream.CurrentChar == 0);
+        assert(stream.NextBytePos == 0);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == 1);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == &#39;m&#39;);
+        assert(stream.CurrentBytePos == 0);
+        assert(stream.NextBytePos == 1);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 2);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == &#39;a&#39;);        
+        assert(stream.CurrentBytePos == 1);
+        assert(stream.NextBytePos == 2);
+
+        assert(Stream_LookAhead(&amp;stream) == L&#39;ç&#39;);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 3);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;ç&#39;);
+        assert(stream.CurrentBytePos == 2);
+        assert(stream.NextBytePos == 4);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 4);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;ã&#39;);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 4);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == (wchar_t)EOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 4);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == (wchar_t)EOF);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+
+void Test1L()
+{
+    struct Stream stream = STREAM_INIT;
+
+
+    if (Stream_Set(&amp;stream, u8&quot;maçã&quot;))
+    {
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 0);
+        assert(stream.CurrentChar == 0);
+        assert(stream.NextBytePos == 0);
+        assert(stream.data != NULL);
+
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == 1);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == &#39;m&#39;);
+        assert(stream.CurrentBytePos == 0);
+        assert(stream.NextBytePos == 1);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 2);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == &#39;a&#39;);
+        assert(stream.CurrentBytePos == 1);
+        assert(stream.NextBytePos == 2);
+
+        assert(Stream_LookAhead(&amp;stream) == L&#39;ç&#39;);
+
+
+        wchar_t ch2;
+        wchar_t ch1=  Stream_LookAhead2(&amp;stream, &amp;ch2);
+        assert(ch1 == L&#39;ç&#39; &amp;&amp; ch2 == L&#39;ã&#39;);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 3);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;ç&#39;);
+
+    
+        ch1 = Stream_LookAhead2(&amp;stream, &amp;ch2);
+        assert(ch1 == L&#39;ã&#39; &amp;&amp; ch2 == WEOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 4);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == L&#39;ã&#39;);
+        assert(stream.CurrentBytePos== 4);
+        assert(stream.NextBytePos == 6);
+
+
+        ch1 = Stream_LookAhead2(&amp;stream, &amp;ch2);
+        assert(ch1 == WEOF &amp;&amp; ch2 == WEOF);
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 5);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == (wchar_t)EOF);
+        assert(stream.CurrentBytePos == 6);
+        assert(stream.NextBytePos == 6);
+
+
+        Stream_Match(&amp;stream);
+        assert(stream.CurrentCol == 5);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == (wchar_t)EOF);
+        assert(stream.CurrentBytePos == 6);
+        assert(stream.NextBytePos == 6);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+void Test2()
+{
+    struct Stream stream = STREAM_INIT;
+    
+    if (Stream_Open(&amp;stream, &quot;utf8maca.txt&quot;))
+    {
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 0);
+        assert(stream.CurrentChar == 0);
+        assert(stream.NextBytePos== 0);
+
+        Stream_Match(&amp;stream);
+
+        assert(stream.CurrentCol == 0);
+        assert(stream.CurrentLine == 1);
+        assert(stream.CurrentChar == EOF);
+        assert(stream.NextBytePos == 0);
+    }
+
+    Stream_Close(&amp;stream);
+}
+
+void EmptyTest()
+{
+    struct Stream stream = STREAM_INIT;
+
+    assert(stream.CurrentCol == 0);
+    assert(stream.CurrentLine == 0);
+    assert(stream.CurrentChar == 0);
+    assert(stream.CurrentBytePos== 0);
+    assert(stream.NextBytePos == 0);
+    assert(stream.data == 0);
+
+    Stream_Match(&amp;stream);
+
+    assert(stream.CurrentCol == 0);
+    assert(stream.CurrentLine == 0);
+    assert(stream.CurrentChar == 0);
+    assert(stream.CurrentBytePos == 0);
+    assert(stream.NextBytePos == 0);
+    assert(stream.data == 0);
+
+
+    
+    assert(Stream_LookAhead(&amp;stream) == (wchar_t)EOF);
+
+    Stream_Close(&amp;stream);
+
+    assert(stream.CurrentCol == 0);
+    assert(stream.CurrentLine == 0);
+    assert(stream.CurrentChar == 0);
+    assert(stream.CurrentBytePos == 0);
+    assert(stream.NextBytePos == 0);
+    assert(stream.data == 0);
+}
+
+
+
+int main()
+{
+    //_setmode(_fileno(stdout), _O_U16TEXT);
+    
+    EmptyTest();
+    Test1();
+    Test1L();
+    Test2();
+    Test3();
+
+
+   //wprintf(L&quot;maçã&quot;);
+}
+</code></pre>
+
+<pre><code class="language-cpp">#include &lt;stdbool.h&gt;
+#include &lt;stddef.h&gt;
+
+struct Stream
+{
+    const char* data; //utf8 encoded
+
+    wchar_t CurrentChar;
+    int CurrentLine;
+    int CurrentCol;
+    int CurrentBytePos;
+    int NextBytePos;
+};
+
+
+#define STREAM_INIT {0}
+
+/*
+Description:
+    The Stream_Match function updates the values of CurrentLine
+    CurrentCol, CurrentBytePos and NextBytePos to represent the 
+    next character.
+    For convenience the updated CurrentChar is returned.
+*/
+wchar_t Stream_Match(struct Stream* stream);
+
+/*
+Description:
+    The Stream_Close reset the  Stream object for this initial state.
+*/
+void Stream_Close(struct Stream* stream);
+
+void Stream_Attach(struct Stream* stream, const char* text);
+bool Stream_Set(struct Stream* stream, const char* text);
+bool Stream_Open(struct Stream* stream, const char* path);
+wchar_t Stream_LookAhead(const struct Stream* stream);
+wchar_t Stream_LookAhead2(const struct Stream* stream, wchar_t* ch2);
+
+</code></pre>
+
+<pre><code class="language-cpp">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;ctype.h&gt;
+
+#include &quot;Stream.h&quot;
+
+
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+#define stat _stat
+#define strdup _strdup
+#endif
+
+
+void Stream_Attach(struct Stream* stream, const char* text)
+{
+    Stream_Close(stream);
+    stream-&gt;data = text;        
+}
+
+bool Stream_Set(struct Stream* stream, const char* text)
+{
+    char* data = strdup(text);
+    if (data)
+    {
+        Stream_Attach(stream, data);
+    }
+    return data != NULL;
+}
+
+bool Stream_Open(struct Stream* stream, const char* path)
+{
+    bool result = false;
+    struct stat info;
+    int r = stat(
+        path,
+        &amp;info);
+    if (r == 0)
+    {
+        char* data = (char*)malloc(sizeof(char) * info.st_size + 1);
+        if (data != NULL)
+        {
+            FILE* file = fopen(path, &quot;r&quot;);
+            if (file != NULL)
+            {
+                //SKIP BOM
+                if (info.st_size &gt;= 3)
+                {
+                    fread(data, 1, 3, file);
+                    if (data[0] == (char)0xEF &amp;&amp;
+                        data[1] == (char)0xBB &amp;&amp;
+                        data[2] == (char)0xBF)
+                    {
+                        size_t n = fread(data, 1, info.st_size - 3, file);
+                        data[n] = 0;
+                    }
+                    else
+                    {
+                        size_t n = fread(data + 3, 1, info.st_size - 3, file);
+                        data[3 + n] = 0;
+                    }
+                }
+                else
+                {
+                    size_t n = fread(data, 1, info.st_size, file);
+                    data[n] = 0;
+                }
+
+                fclose(file);
+                result = true;
+                Stream_Attach(stream, data);
+            }
+        }
+    }
+    return result;
+}
+
+static wchar_t ReadNextChar(const char* data, int currentPos, int* bytes)
+{
+    //https://www.ietf.org/rfc/rfc3629.txt
+    //https://www.fileformat.info/info/unicode/utf8.htm
+
+    int pos = currentPos;
+
+    unsigned u = EOF;
+    
+    if (data != NULL)
+    {
+        int c = data[pos];
+
+        if (c == &#39;\0&#39; /*EOF*/)
+        {
+            u = EOF;
+        }
+        else if ((c &amp; 0x80) == 0)
+        {
+            pos++;
+            u = c;
+        }
+        else if ((c &amp; 0xC0) == 0x80)
+        {
+            u = EOF;
+        }
+        else
+        {
+            pos++;
+            u = (c &amp; 0xE0) == 0xC0 ? (c &amp; 0x1F)
+                : (c &amp; 0xF0) == 0xE0 ? (c &amp; 0x0F)
+                : (c &amp; 0xF8) == 0xF0 ? (c &amp; 0x07)
+                : 0;
+
+            if (u == 0)
+            {
+                u = EOF;
+            }
+            else
+            {
+                for (;;)
+                {
+                    c = data[pos];
+                    pos++;
+
+                    if (c == EOF)
+                    {
+                        break;
+                    }
+                    else if ((c &amp; 0xC0) == 0x80)
+                    {
+                        u = (u &lt;&lt; 6) | (c &amp; 0x3F);
+                    }
+                    else
+                    {
+                        pos--;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    *bytes = pos - currentPos;
+    return u;
+}
+
+wchar_t Stream_LookAhead(const struct Stream* stream)
+{
+    int bytes = 0;
+    wchar_t ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+    return ch;
+}
+
+wchar_t Stream_LookAhead2(const struct Stream* stream, wchar_t* ch2)
+{
+    *ch2 = WEOF;
+
+    int bytes = 0;
+    wchar_t ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+    if (bytes &gt; 0)
+    {
+        *ch2 = ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos + bytes, &amp;bytes);
+    }
+
+    return ch;
+}
+
+wchar_t Stream_Match(struct Stream* stream)
+{
+    //if (stream-&gt;CurrentChar)
+
+    int bytes = 0;
+    wchar_t ch =
+        ReadNextChar(stream-&gt;data, stream-&gt;NextBytePos, &amp;bytes);
+
+
+    if (bytes &gt; 0)
+    {
+        if (stream-&gt;CurrentLine == 0)
+        {
+            stream-&gt;CurrentLine = 1;
+        }
+
+        stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+        stream-&gt;NextBytePos += bytes;
+        stream-&gt;CurrentCol++;
+        
+        if (ch == &#39;\n&#39;) //fopen on windows automatically removes \r
+        {
+            stream-&gt;CurrentLine++;
+            stream-&gt;CurrentCol = 0;
+        }
+        stream-&gt;CurrentChar = ch;
+    }
+    else if (ch == (wchar_t)EOF)
+    {
+        if (stream-&gt;CurrentBytePos != stream-&gt;NextBytePos)
+        {
+            stream-&gt;CurrentBytePos = stream-&gt;NextBytePos;
+            stream-&gt;CurrentCol++;
+            stream-&gt;CurrentChar = ch;
+        }
+    }
+    
+    return ch;
+}
+
+void Stream_Close(struct Stream* stream)
+{
+    free((void*)stream-&gt;data);
+    stream-&gt;CurrentCol = 0;
+    stream-&gt;CurrentLine = 0;
+    stream-&gt;NextBytePos = 0;
+    stream-&gt;CurrentBytePos = 0;
+    stream-&gt;CurrentChar = 0;
+}
+
+
+</code></pre>
+</body></html>

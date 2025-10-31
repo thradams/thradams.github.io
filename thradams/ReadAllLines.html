@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Reading all lines from an utf8 file and return a vector of wstring.</p>
+
+<p>Fast version</p>
+
+<pre><code class="language-cpp">
+void ReadAllLines(const wchar_t* filename,
+               wchar_t* buffer,
+               size_t bufferSize,
+               std::vector&lt;std::wstring&gt;&amp; v)
+{
+  FILE* hfile;
+  errno_t err = _wfopen_s(&amp;hfile, filename, L&quot;r,ccs=UTF-8&quot;);
+
+  if (err != 0)
+    return;
+
+  std::wstring lastString;
+
+  size_t r = 1;
+
+  while (r != 0)
+  {
+    r = fread(buffer, sizeof(wchar_t), bufferSize - 1, hfile);
+
+    if (r &gt;= 0)
+    {
+      buffer[r] = 0;
+    }
+
+    wchar_t* p = buffer;
+    wchar_t* pFirst = p;
+
+    while (*p)
+    {
+      if (*p == &#39;\n&#39;)
+      {
+        if (!lastString.empty())
+        {
+          lastString.append(pFirst, p - pFirst);
+          v.emplace_back(std::move(lastString));
+        }
+        else
+        {
+          v.emplace_back(std::wstring(pFirst, p - pFirst));
+        }
+
+        pFirst = p + 1;
+      }
+
+      p++;
+    }
+
+    lastString.append(pFirst, p - pFirst);
+  }
+
+  if (!lastString.empty())
+  {
+    v.emplace_back(std::move(lastString));
+  }
+}
+
+std::vector&lt;std::wstring&gt; ReadAllLines(const wchar_t* filename)
+{
+  std::vector&lt;std::wstring&gt; v;
+  wchar_t buffer[10000];
+  ReadAllLines(filename, buffer, sizeof(buffer) / sizeof(buffer[0]), v);
+  return v;
+}
+</code></pre>
+
+<p>Easy version
+```cpp
+std::vector<a href="std::wstring">std::wstring</a> ReadAllLines2(const wchar<em>t* filename)
+{
+  std::vector<a href="std::wstring">std::wstring</a> result;
+  std::locale ulocale(std::locale(), new std::codecvt</em>utf8<wchar_t>);
+  std::wifstream ifs(filename);
+  ifs.imbue(ulocale);</p>
+
+<p>if (ifs.is_open())
+  {
+    std::wstring ws;
+    bool newline = false;</p>
+
+<pre><code>while (std::getline(ifs, ws))
+{
+  result.emplace_back(ws);
+}
+</code></pre>
+
+<p>}</p>
+
+<p>return result;
+}
+```</p>
+
+<p>Sample
+<code>cpp
+int _tmain(int argc, _TCHAR* argv[])
+{
+  auto v1 = ReadAllLines(argv[1]);
+}
+</code></p>
+</body></html>

@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+
+
+<h2> Math library</h2>
+
+<h3> Introduction</h3>
+
+<p>What does this library?</p>
+
+<p>At start, the library will focus in the oldest and most elementary branch of mathematics - arithmetic.</p>
+
+<p>Basic operations are implemented to operate on integers and natural numbers.</p>
+
+<p>Integers: </p>
+<pre>
+Z = {.. , -2, -1, 0, 1, 2, ...}
+</pre>
+<p>Natural numbers</p>
+<pre>
+N = {0, 1, 2, ...}
+</pre>
+<h3> How the library sees the numbers?</h3>
+
+<p>The library uses the <a href="http://en.wikipedia.org/wiki/Positional_notation">positional notation</a></p>
+<pre>
+{ d[n], ... d[1], d[0] }       (d[0] is less significative)
+                        base
+</pre>
+
+<p>base is the number of unique digits including zero.</p>
+
+<p>e.g. The number 15 in decimal notation (base 10) is represented as:</p>
+<pre>
+                    1         0
+{ 1, 5 }    = 1 * 10  + 5 * 10      
+        10
+</pre>
+
+<h3> What is the number interface?</h3>
+<p>Algorithms have access to the number representation using iterators.</p>
+
+<pre>
+  { !?!?  , d[n], ... d[1], d[0]  } 
+     ^                       ^
+    end                     begin        (iterators, pointers)
+
+</pre>
+
+<p>Basic math lib algorithms will use this abstraction. </p>
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<h3> References</h3>
+
+<ul>
+<li> <a href="http://en.cppreference.com/w/cpp/iterator">http://en.cppreference.com/w/cpp/iterator</a></li>
+<li> <a href="http://en.wikipedia.org/wiki/Integer">http://en.wikipedia.org/wiki/Integer</a></li>
+<li> <a href="http://en.wikipedia.org/wiki/Positional_notation">http://en.wikipedia.org/wiki/Positional_notation</a></li>
+<li> <a href="http://en.wikipedia.org/wiki/Arithmetic">http://en.wikipedia.org/wiki/Arithmetic</a></li>
+<li> <a href="http://en.wikipedia.org/wiki/Natural_numbers">http://en.wikipedia.org/wiki/Natural_numbers</a></li>
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

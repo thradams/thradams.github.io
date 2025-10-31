@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h1 id="toc_0">Tips for Safe C programming</h1>
+
+<p>Check this code in your compiler with maximum warning level.</p>
+
+<pre><code class="language-cpp">#include &lt;string.h&gt;
+int main()
+{
+    //A
+    char buffer[3] = &quot;abc&quot;;
+    
+    //B
+    strcpy(buffer, &quot;abc&quot;);
+
+    //C
+    char buffer4[4] ={0};
+    strcpy(buffer, buffer4);
+
+}
+</code></pre>
+
+<p>Visual C++ 2019 gave me just warning at B</p>
+
+<pre><code> warning C6386: Buffer overrun while writing to &#39;buffer&#39;:  the writable size is &#39;3&#39; bytes, but &#39;4&#39; bytes might be written.
+</code></pre>
+
+<pre><code class="language-cpp">#include &lt;string.h&gt;
+int main()
+{
+    //A
+    char buffer[] = &quot;abc&quot;;
+    
+    //B
+    strcpy(buffer, &quot;abc&quot;);
+
+    //C
+    char buffer4[4] ={0};
+    strcpy(buffer, buffer4);
+
+}
+</code></pre>
+</body></html>

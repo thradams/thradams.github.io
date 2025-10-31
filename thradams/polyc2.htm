@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+
+<p>Non intrusive, non &quot;vtable&quot; polimorphism in C.</p>
+
+<p>button.h</p>
+<pre>
+
+<span class="keyword">#ifndef</span> BUTTON_H
+<span class="keyword">#define</span> BUTTON_H
+
+<span class="keyword">struct</span> button
+{
+  <span class="keyword">int</span> y;
+};
+
+<span class="keyword">struct</span> button* button_create();
+<span class="keyword">void</span> button_destroy(<span class="keyword">struct</span> button*);
+<span class="keyword">void</span> button_draw(<span class="keyword">struct</span> button*);
+
+
+<span class="keyword">#endif</span> <span class="comment">/*BUTTON_H*/</span>
+
+</pre>
+
+
+<p>button.c</p>
+<pre>
+<span class="keyword">#include</span> <span class="string">&quot;button.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">struct</span> button* button_create()
+{
+  <span class="keyword">struct</span> button* p = (<span class="keyword">struct</span> button*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> button));
+  <span class="keyword">return</span> p;
+}
+
+<span class="keyword">void</span> button_draw(<span class="keyword">struct</span> button* btn)
+{
+  printf(<span class="string">&quot;button_draw\n&quot;</span>);
+}
+
+<span class="keyword">void</span> button_destroy(<span class="keyword">struct</span> button* btn)
+{
+  printf(<span class="string">&quot;button_destroy\n&quot;</span>);
+}
+
+</pre>
+
+
+
+<p>edit.h</p>
+<pre>
+
+<span class="keyword">#ifndef</span> EDIT_H
+<span class="keyword">#define</span> EDIT_H
+
+<span class="keyword">struct</span> edit
+{
+  <span class="keyword">int</span> y;
+};
+
+<span class="keyword">struct</span> edit* edit_create();
+<span class="keyword">void</span> edit_draw(<span class="keyword">struct</span> edit*);
+<span class="keyword">void</span> edit_destroy(<span class="keyword">struct</span> edit*);
+
+
+<span class="keyword">#endif</span> <span class="comment">/*EDIT_H*/</span>
+
+</pre>
+
+
+<p>edit.c</p>
+<pre>
+
+<span class="keyword">#include</span> <span class="string">&quot;edit.h&quot;</span>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+
+
+<span class="keyword">struct</span> edit* edit_create()
+{
+  <span class="keyword">return</span> (<span class="keyword">struct</span> edit*)malloc(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> edit));
+}
+
+<span class="keyword">void</span> edit_destroy(<span class="keyword">struct</span> edit* edt)
+{
+  printf(<span class="string">&quot;edit_destroy\n&quot;</span>);
+}
+
+<span class="keyword">void</span> edit_draw(<span class="keyword">struct</span> edit* edt)
+{
+  printf(<span class="string">&quot;edit_draw\n&quot;</span>);
+}
+
+</pre>
+
+
+
+<p>This file defines what is &quot;control&quot;. In this case, the control set is { button , edit } </p>
+
+
+<p>controls.h</p>
+<pre>
+
+<span class="keyword">#ifndef</span> CONTROLS_H
+<span class="keyword">#define</span> CONTROLS_H
+
+<span class="comment">/*Include your headers here*/</span>
+<span class="keyword">#include</span> <span class="string">&quot;button.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;edit.h&quot;</span>
+
+<span class="comment">/*include your types here*/</span>
+<span class="keyword">#define</span> TYPES(p, f, ...) \
+  X(button, p, f, __VA_ARGS__)\
+  X(edit, p, f, __VA_ARGS__)
+
+
+<span class="keyword">#define</span> X(a, obj, f, ...) a##_id,
+<span class="keyword">enum</span>
+{
+  TYPES(p, f)
+};
+<span class="keyword">#undef</span> X
+
+<span class="keyword">#define</span> X(T, obj, func, ...) \
+  <span class="keyword">case</span> T##_id: T##_##func((<span class="keyword">struct</span> T*)((obj).pointer), __VA_ARGS__);  <span class="keyword">break</span>;
+
+<span class="keyword">#define</span> dynamic_call(obj, func, ...)\
+    <span class="keyword">switch</span> ((obj).type)\
+    {\
+     TYPES(obj, func, __VA_ARGS__)\
+    }
+
+
+<span class="keyword">#endif</span> <span class="comment">/*CONTROLS_H*/</span>
+
+
+
+</pre>
+
+
+<p>sample.c</p>
+<pre>
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;controls.h&quot;</span>
+<span class="keyword">#include</span> <span class="string">&quot;type_ptr_array.h&quot;</span>
+
+<span class="keyword">void</span> controls_destroy(<span class="keyword">struct</span> type_ptr* p)
+{
+  dynamic_call(*p, destroy);
+}
+
+<span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])
+{
+  <span class="keyword">struct</span> type_ptr_array controls = TYPE_PTR_INIT;
+
+  type_ptr_array_push(&amp;controls, button_id, button_create());
+  type_ptr_array_push(&amp;controls, edit_id, edit_create());
+
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; controls.size; i++)
+  {
+    dynamic_call(controls.data[i], draw);
+  }
+
+  type_ptr_array_destroy(&amp;controls, &amp;controls_destroy);
+
+  <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</pre>
+
+
+<p>type</p>
+<pre>
+<span class="keyword">#ifndef</span> TYPE_PTR_ARRAY_H
+<span class="keyword">#define</span> TYPE_PTR_ARRAY_H
+
+<span class="keyword">struct</span> type_ptr
+{
+  <span class="keyword">int</span> type;
+  <span class="keyword">void</span>* pointer;
+};
+
+<span class="keyword">struct</span> type_ptr_array
+{
+  size_t    size;
+  size_t    capacity;
+  <span class="keyword">struct</span> type_ptr* data;
+};
+
+<span class="keyword">#define</span> TYPE_PTR_INIT {<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>}
+
+<span class="keyword">void</span> type_ptr_array_destroy(<span class="keyword">struct</span> type_ptr_array* p,
+                           <span class="keyword">void</span>(*destroy)(<span class="keyword">struct</span> type_ptr*));
+
+<span class="keyword">void</span> type_ptr_array_push(<span class="keyword">struct</span> type_ptr_array* p, <span class="keyword">int</span> type, <span class="keyword">void</span>* item);
+
+
+<span class="keyword">#endif</span> <span class="comment">/*TYPE_PTR_ARRAY_H*/</span>
+
+</pre>
+
+
+<p>type</p>
+<pre>
+
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+<span class="keyword">#include</span> <span class="string">&quot;type_ptr_array.h&quot;</span>
+
+<span class="keyword">static</span> size_t type_ptr_array_reserve(<span class="keyword">struct</span> type_ptr_array* p, size_t nelements)
+{
+  <span class="keyword">void</span> *pnew = <span class="number">0</span>;
+  <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+  {
+    pnew = realloc((<span class="keyword">void</span>*)p-&gt;data, nelements * <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]));
+    <span class="keyword">if</span> (pnew)
+    {
+      p-&gt;data = (<span class="keyword">struct</span> type_ptr*)pnew;
+      p-&gt;capacity = nelements;
+    }
+  }
+
+  <span class="keyword">return</span> (pnew != <span class="number">0</span>) ? nelements : <span class="number">0</span>;
+}
+
+size_t type_ptr_array_grow(<span class="keyword">struct</span> type_ptr_array* p, size_t nelements)
+{
+  <span class="keyword">if</span> (nelements &gt; p-&gt;capacity)
+  {
+    size_t newCap = p-&gt;capacity == <span class="number">0</span> ? <span class="number">4</span> : p-&gt;capacity;
+    <span class="keyword">while</span> (newCap &lt; nelements)
+    {
+      newCap *= <span class="number">2</span>;
+      <span class="keyword">if</span> (newCap &lt; nelements ||
+        newCap &gt;(size_t)(UINT_MAX / <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>])))
+      {
+        newCap = (size_t)(UINT_MAX / <span class="keyword">sizeof</span>(p-&gt;data[<span class="number">0</span>]));
+      }
+    }
+    <span class="keyword">return</span> type_ptr_array_reserve(p, newCap);
+  }
+  <span class="keyword">return</span> p-&gt;capacity;
+}
+
+<span class="keyword">void</span> type_ptr_array_destroy(<span class="keyword">struct</span> type_ptr_array* p,
+                            <span class="keyword">void</span> (*destroy)(<span class="keyword">struct</span> type_ptr*))
+{
+  <span class="keyword">for</span> (size_t i = <span class="number">0</span>; i &lt; p-&gt;size; i++)
+  {
+    destroy(&amp;p-&gt;data[i]);
+  }
+}
+
+<span class="keyword">void</span> type_ptr_array_push(<span class="keyword">struct</span> type_ptr_array* p,
+                         <span class="keyword">int</span> type,
+                         <span class="keyword">void</span>* item)
+{
+  size_t result = type_ptr_array_grow(p, p-&gt;size + <span class="number">1</span>);
+
+  <span class="keyword">if</span> (result == <span class="number">0</span>)
+  {
+    exit(<span class="number">1</span>);
+    <span class="keyword">return</span>;
+  }
+  p-&gt;data[p-&gt;size].type = type;
+  p-&gt;data[p-&gt;size].pointer = item;
+  p-&gt;size += <span class="number">1</span>;
+}
+
+</pre>
+
+
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

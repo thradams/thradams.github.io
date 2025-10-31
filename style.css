@@ -1,73 +1,34 @@
-A:link {
-    text-decoration: none;
-}
-
-A:visited {
-    text-decoration: none;
-}
-
-A:hover {
-    color: rgb(255,0,0);
-}
-
-th {
-    font-family: arial;
-}
-
-body {
-    font: 112.5%/1.5 Georgia, serif;
-}
-
 pre {
-    background-color: #f7f7f7;
-    padding: 4px;
+    
+    vertical-align: text-top;    
+    margin-top: 2px;
 }
+
+
 
 body {
-    padding-left: 1.5em;
-    padding-right: 1.5em;
-    background-color: #F9F9F9;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";    
 }
 
-.number {
-    color: #0086b3;
+ h1 {
+        margin: .67em 0;
+        font-weight: 600;
+        padding-bottom: .3em;
+        font-size: 2em;
+        border-bottom: 1px solid hsla(210,18%,87%,1);
+    }
+
+p {
+    text-align: justify;
 }
 
-
-.comment {
-    color: #969896;
+code {
+    background-color: #f3f3f3;
+    font-family: Consolas
 }
 
-.keyword {
-    color: #a71d5d;
-}
-
-.keyword2 {
-    color: #0086b3;
-}
-
-.string {
-    color: #183691;
-}
-
-body {
-    background-color: rgb(255,255,255);
-    padding: 40px;
-    margin: 0 auto;
-    max-width: 800px;
-    min-height: 372px;
-    border: 1px solid #ddd;
-}
-
-.pageheader {
-    padding-right: 80px;
-    margin: 0 auto;
-    max-width: 800px;
-}
-
-.linkbox {
-    font-family: 'Open Sans', sans-serif;
-    
-    padding: 10px;
-    
+select {
+  color: #333;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
 }

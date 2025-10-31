@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>StringStream.h</p>
+
+<p>{{{cpp</p>
+
+<h1 id="toc_0">pragma once</h1>
+
+<h1 id="toc_1">include <cassert></h1>
+
+<p>struct StringStream
+{
+  const wchar<em>t* m</em>pCharacteres;
+  const wchar<em>t* m</em>pCurrentChar;
+  size<em>t         m</em>CurrentLine;
+  size<em>t         m</em>CurrentCol;
+  bool           m<em>HasPutBack;
+  wchar</em>t        m<em>PutBackCharacter;
+  bool           m</em>EofSent;</p>
+
+<p>bool GetCharCore(wchar<em>t&amp; ch)
+  {
+    if (m</em>HasPutBack)
+    {
+      ch = m<em>PutBackCharacter;
+      m</em>HasPutBack = false;
+      m_PutBackCharacter = 0;
+      return true;
+    }</p>
+
+<pre><code>if (m_EofSent)
+  return false;
+
+ch = *m_pCurrentChar++;
+
+if (ch == L&#39;\0&#39;)
+{
+  ch = &#39;\0&#39;;
+  m_EofSent = true;
+}
+
+return true;
+</code></pre>
+
+<p>}</p>
+
+<p>public:</p>
+
+<p>StringStream(const wchar<em>t* psz)
+    : m</em>pCharacteres(psz)
+    , m<em>CurrentLine(1)
+    , m</em>CurrentCol(1)
+    , m<em>HasPutBack(false)
+    , m</em>PutBackCharacter(L&#39;\0&#39;)
+    , m<em>EofSent(false)
+  {
+    m</em>pCurrentChar = m_pCharacteres;
+  }</p>
+
+<p>friend void PutBack(StringStream&amp; stream,  wchar<em>t ch)
+  {
+    assert(stream.m</em>HasPutBack == false);</p>
+
+<pre><code>if (ch == L&#39;\n&#39;)
+{
+  if (stream.m_CurrentLine &gt; 1)
+  {
+    stream.m_CurrentLine--;
+  }
+}
+else
+{
+  if (stream.m_CurrentCol &gt; 1)
+  {
+    stream.m_CurrentCol--;
+  }
+}
+
+stream.m_PutBackCharacter = ch;
+stream.m_HasPutBack = true;
+</code></pre>
+
+<p>}</p>
+
+<p>friend bool GetChar(StringStream&amp; stream, wchar_t&amp; ch)
+  {
+    bool b = stream.GetCharCore(ch);</p>
+
+<pre><code>if (b &amp;&amp; ch == L&#39;\n&#39;)
+{
+  stream.m_CurrentLine++;
+  stream.m_CurrentCol = 1;
+}
+else
+{
+  stream.m_CurrentCol++;
+}
+
+return b;
+</code></pre>
+
+<p>}</p>
+
+<p>size<em>t GetLine(const StringStream&amp; stream)
+  {
+    return stream.m</em>CurrentLine;
+  }</p>
+
+<p>size<em>t GetCol(const StringStream&amp; stream) 
+  {
+    return stream.m</em>CurrentCol;
+  }
+};</p>
+
+<p>}}}</p>
+
+<p>Sample:</p>
+
+<p>{{{cpp</p>
+
+<h1 id="toc_2">include &quot;stdafx.h&quot;</h1>
+
+<h1 id="toc_3">include <iostream></h1>
+
+<h1 id="toc_4">include &quot;StringStream.h&quot;</h1>
+
+<p>const wchar<em>t*  IntToLiteral(wchar</em>t i)
+{
+  switch (i)
+  {
+    case L&#39;\0&#39;: return L&quot;\0&quot;;
+    case L&#39;\r&#39;:return L&quot;\r&quot;;
+    case L&#39;\n&#39;: return L&quot;\n&quot;;
+    case L&#39;\t&#39;: return L&quot;\t&quot;;
+    case L&#39;\&#39;&#39;:return L&quot;\&#39;&quot;;
+    case L&#39;&quot;&#39;:return L&quot;\&quot;&quot;;
+    case L&#39;\?&#39;:return L&quot;\?&quot;;
+    case L&#39;\&#39;:return L&quot;\\&quot;;
+    case L&#39;\a&#39;:return L&quot;\a&quot;;
+    case L&#39;\b&#39;:return L&quot;\b&quot;;
+    case L&#39;\f&#39;:return L&quot;\f&quot;;
+    case L&#39;\v&#39;:return L&quot;\v&quot;;
+  }</p>
+
+<p>static wchar<em>t ch[2] = {0, 0};
+  ch[0] = wchar</em>t(i);
+  return ch;
+}</p>
+
+<p>template<class T>
+void PrintAll(T&amp; filestream)
+{
+  wchar_t ch;</p>
+
+<p>while (GetChar(filestream, ch))
+  {
+    std::wcout &lt;&lt; IntToLiteral(ch) &lt;&lt; std::endl;
+  }
+}</p>
+
+<p>int _tmain(int argc, _TCHAR* argv[])
+{
+  StringStream filestream(L&quot;test\n&quot;);
+  PrintAll(filestream);
+  PutBack(filestream, &#39;\0&#39;);
+  PrintAll(filestream);
+  return 0;
+}
+}}}</p>
+</body></html>

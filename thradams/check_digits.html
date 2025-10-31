@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p><a href="algorithms.md">Algorithms</a></p>
+
+<h2 id="toc_0">check_digits</h2>
+
+<p>Returns true if all digits are compatible with de base.</p>
+
+<p>0 &lt;= digit &lt;= base - 1</p>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+bool check_digits(It first, It last)
+{
+    static_assert(base &gt; 1, &quot;base must be &gt; 1&quot;);
+    for (; first != last; first++)
+    {
+        if (*first &lt; 0 || *first &gt;= base)
+          return false;
+    }
+    return true;
+}
+
+</code></pre>
+
+<p>(Used in debug)</p>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">
+void check_digits_test()
+{
+  using namespace std;
+  int a[] = {0, 1, 0, 0};  
+  assert(check_digits&lt;10&gt;(begin(a), end(a)) == true);
+  assert(check_digits&lt;256&gt;(begin(a), end(a)) == true);
+  
+  int b[] = {0, 1, 0, 255};  
+  assert(check_digits&lt;10&gt;(begin(b), end(b)) == false);
+  assert(check_digits&lt;256&gt;(begin(b), end(b)) == true);
+}
+
+</code></pre>
+</body></html>

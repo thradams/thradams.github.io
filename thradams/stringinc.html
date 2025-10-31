@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<pre><code>
+#ifndef  _WSTR_H_
+#define _WSTR_H_
+
+struct wstr
+{
+  wchar_t* psz;
+  size_t size;
+  size_t capacity;
+};
+
+#define WSTR_INIT { 0, 0, 0 }
+
+void wstr_init(struct wstr* wstr);
+
+int wstr_reserve(struct wstr* p, size_t nelements);
+
+void wstr_destroy(struct wstr* wstr);
+
+void wstr_clear(struct wstr* wstr);
+
+int wstr_set_n(struct wstr* p,
+               const wchar_t * source,
+               size_t nelements);
+
+int wstr_set(struct wstr* p,
+             const wchar_t * source);
+
+int wstr_append_n(struct wstr* p,
+                  const wchar_t * source,
+                  size_t nelements);
+
+int wstr_append(struct wstr* p,
+                const wchar_t * source);
+
+#endif  /*_WSTR_H_*/
+
+
+</code></pre>
+
+<pre><code class="language-cpp">
+#include &quot;stdafx.h&quot;
+
+#include &quot;wstr.h&quot;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;string.h&gt;
+
+void wstr_init(struct wstr* wstr)
+{
+  wstr-&gt;psz = NULL;
+  wstr-&gt;size = 0;
+  wstr-&gt;capacity = 0;
+}
+
+void wstr_destroy(struct wstr* wstr)
+{
+  if (wstr)
+  {
+    free(wstr-&gt;psz);
+    wstr-&gt;size = 0;
+    wstr-&gt;capacity = 0;
+  }
+}
+
+static int reserve(struct wstr* p, size_t nelements)
+{
+  int r = 0;
+  if (nelements &gt; p-&gt;capacity)
+  {
+    wchar_t* pnew = (wchar_t*)realloc(p-&gt;psz, nelements * sizeof(p-&gt;psz[0]));
+    if (pnew)
+    {
+      p-&gt;psz = pnew;
+      p-&gt;capacity = nelements;
+    }
+    else
+    {
+      r = 1;
+    }
+  }
+  return r;
+}
+
+int wstr_reserve(struct wstr* p, size_t nelements)
+{
+  return reserve(p, nelements + 1);
+}
+
+static int wstr_grow(struct wstr* p, size_t nelements)
+{
+  int r = 0;
+  if (nelements &gt; p-&gt;capacity)
+  {
+    size_t new_nelements = p-&gt;capacity + p-&gt;capacity / 2;
+    if (new_nelements &lt; nelements)
+    {
+      new_nelements = nelements;
+    }
+    r = reserve(p, new_nelements);
+  }
+  return r;
+}
+
+int wstr_set_n(struct wstr* p,
+               const wchar_t * source,
+               size_t nelements)
+{
+  int r = wstr_grow(p, nelements + 1);
+  if (r == 0)
+  {
+    wcsncpy(p-&gt;psz, source, nelements);
+    p-&gt;psz[nelements] = 0;
+    p-&gt;size = nelements;
+  }
+  return r;
+}
+
+int wstr_set(struct wstr* p,
+               const wchar_t * source)
+{
+  return wstr_set_n(p, source, wcslen(source));
+}
+
+int wstr_append_n(struct wstr* p, 
+                  const wchar_t * source,
+                  size_t nelements)
+{
+  int r = wstr_grow(p, p-&gt;size + nelements + 1);
+  if (r == 0)
+  {    
+    wcsncpy(p-&gt;psz + p-&gt;size, source, nelements);
+    p-&gt;psz[p-&gt;size + nelements] = 0;
+    p-&gt;size += nelements;
+  }
+  return r;
+}
+
+int wstr_append(struct wstr* p,
+                const wchar_t * source)
+{
+  return wstr_append_n(p, source, wcslen(source));
+}
+
+
+void wstr_clear(struct wstr* wstr)
+{
+  if (wstr-&gt;psz)
+  {
+    wstr-&gt;psz[0] = 0;
+    wstr-&gt;size = 0;
+  }
+}
+
+
+</code></pre>
+</body></html>

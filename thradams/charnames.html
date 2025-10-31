@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Character names</h2>
+
+<p>Do you need name for characteres?</p>
+
+<pre><code class="language-cpp">
+Character names 0-127 
+Reference:
+http://unicode.org/Public/UNIDATA/UnicodeData.txt
+
+const wchar_t* GetCharName(wchar_t ch)
+{
+  switch(ch)
+  {
+  case 0x0000: return L&quot;NULL&quot;; 
+  case 0x0001: return L&quot;START_OF_HEADING&quot;; 
+  case 0x0002: return L&quot;START_OF_TEXT&quot;; 
+  case 0x0003: return L&quot;END_OF_TEXT&quot;; 
+  case 0x0004: return L&quot;END_OF_TRANSMISSION&quot;; 
+  case 0x0005: return L&quot;ENQUIRY&quot;; 
+  case 0x0006: return L&quot;ACKNOWLEDGE&quot;; 
+  case 0x0007: return L&quot;BELL&quot;; 
+  case 0x0008: return L&quot;BACKSPACE&quot;; 
+  case 0x0009: return L&quot;CHARACTER_TABULATION&quot;; 
+  case 0x000A: return L&quot;LINE_FEED&quot;; 
+  case 0x000B: return L&quot;LINE_TABULATION&quot;; 
+  case 0x000C: return L&quot;FORM_FEED&quot;; 
+  case 0x000D: return L&quot;CARRIAGE_RETURN&quot;; 
+  case 0x000E: return L&quot;SHIFT_OUT&quot;; 
+  case 0x000F: return L&quot;SHIFT_IN&quot;; 
+  case 0x0010: return L&quot;DATA_LINK_ESCAPE&quot;; 
+  case 0x0011: return L&quot;DEVICE_CONTROL_ONE&quot;; 
+  case 0x0012: return L&quot;DEVICE_CONTROL_TWO&quot;; 
+  case 0x0013: return L&quot;DEVICE_CONTROL_THREE&quot;; 
+  case 0x0014: return L&quot;DEVICE_CONTROL_FOUR&quot;; 
+  case 0x0015: return L&quot;NEGATIVE_ACKNOWLEDGE&quot;; 
+  case 0x0016: return L&quot;SYNCHRONOUS_IDLE&quot;; 
+  case 0x0017: return L&quot;END_OF_TRANSMISSION_BLOCK&quot;; 
+  case 0x0018: return L&quot;CANCEL&quot;; 
+  case 0x0019: return L&quot;END_OF_MEDIUM&quot;; 
+  case 0x001A: return L&quot;SUBSTITUTE&quot;; 
+  case 0x001B: return L&quot;ESCAPE&quot;; 
+  case 0x001C: return L&quot;INFORMATION_SEPARATOR_FOUR&quot;; 
+  case 0x001D: return L&quot;INFORMATION_SEPARATOR_THREE&quot;; 
+  case 0x001E: return L&quot;INFORMATION_SEPARATOR_TWO&quot;; 
+  case 0x001F: return L&quot;INFORMATION_SEPARATOR_ONE&quot;; 
+  case 0x0020: return L&quot;SPACE&quot;; 
+  case 0x0021: return L&quot;EXCLAMATION_MARK&quot;; //!
+  case 0x0022: return L&quot;QUOTATION_MARK&quot;; //&quot;
+  case 0x0023: return L&quot;NUMBER_SIGN&quot;; //#
+  case 0x0024: return L&quot;DOLLAR_SIGN&quot;; //$
+  case 0x0025: return L&quot;PERCENT_SIGN&quot;; //%
+  case 0x0026: return L&quot;AMPERSAND&quot;; //&amp;
+  case 0x0027: return L&quot;APOSTROPHE&quot;; //&#39;
+  case 0x0028: return L&quot;LEFT_PARENTHESIS&quot;; //(
+  case 0x0029: return L&quot;RIGHT_PARENTHESIS&quot;; //)
+  case 0x002A: return L&quot;ASTERISK&quot;; //*
+  case 0x002B: return L&quot;PLUS_SIGN&quot;; //+
+  case 0x002C: return L&quot;COMMA&quot;; //,
+  case 0x002D: return L&quot;HYPHEN_MINUS&quot;; //-
+  case 0x002E: return L&quot;FULL_STOP&quot;; //.
+  case 0x002F: return L&quot;SOLIDUS&quot;; ///
+  case 0x0030: return L&quot;DIGIT_ZERO&quot;; //0
+  case 0x0031: return L&quot;DIGIT_ONE&quot;; //1
+  case 0x0032: return L&quot;DIGIT_TWO&quot;; //2
+  case 0x0033: return L&quot;DIGIT_THREE&quot;; //3
+  case 0x0034: return L&quot;DIGIT_FOUR&quot;; //4
+  case 0x0035: return L&quot;DIGIT_FIVE&quot;; //5
+  case 0x0036: return L&quot;DIGIT_SIX&quot;; //6
+  case 0x0037: return L&quot;DIGIT_SEVEN&quot;; //7
+  case 0x0038: return L&quot;DIGIT_EIGHT&quot;; //8
+  case 0x0039: return L&quot;DIGIT_NINE&quot;; //9
+  case 0x003A: return L&quot;COLON&quot;; //:
+  case 0x003B: return L&quot;SEMICOLON&quot;; //;
+  case 0x003C: return L&quot;LESS_THAN_SIGN&quot;; //&lt;
+  case 0x003D: return L&quot;EQUALS_SIGN&quot;; //=
+  case 0x003E: return L&quot;GREATER_THAN_SIGN&quot;; //&gt;
+  case 0x003F: return L&quot;QUESTION_MARK&quot;; //?
+  case 0x0040: return L&quot;COMMERCIAL_AT&quot;; //@
+  case 0x0041: return L&quot;LATIN_CAPITAL_LETTER_A&quot;; //A
+  case 0x0042: return L&quot;LATIN_CAPITAL_LETTER_B&quot;; //B
+  case 0x0043: return L&quot;LATIN_CAPITAL_LETTER_C&quot;; //C
+  case 0x0044: return L&quot;LATIN_CAPITAL_LETTER_D&quot;; //D
+  case 0x0045: return L&quot;LATIN_CAPITAL_LETTER_E&quot;; //E
+  case 0x0046: return L&quot;LATIN_CAPITAL_LETTER_F&quot;; //F
+  case 0x0047: return L&quot;LATIN_CAPITAL_LETTER_G&quot;; //G
+  case 0x0048: return L&quot;LATIN_CAPITAL_LETTER_H&quot;; //H
+  case 0x0049: return L&quot;LATIN_CAPITAL_LETTER_I&quot;; //I
+  case 0x004A: return L&quot;LATIN_CAPITAL_LETTER_J&quot;; //J
+  case 0x004B: return L&quot;LATIN_CAPITAL_LETTER_K&quot;; //K
+  case 0x004C: return L&quot;LATIN_CAPITAL_LETTER_L&quot;; //L
+  case 0x004D: return L&quot;LATIN_CAPITAL_LETTER_M&quot;; //M
+  case 0x004E: return L&quot;LATIN_CAPITAL_LETTER_N&quot;; //N
+  case 0x004F: return L&quot;LATIN_CAPITAL_LETTER_O&quot;; //O
+  case 0x0050: return L&quot;LATIN_CAPITAL_LETTER_P&quot;; //P
+  case 0x0051: return L&quot;LATIN_CAPITAL_LETTER_Q&quot;; //Q
+  case 0x0052: return L&quot;LATIN_CAPITAL_LETTER_R&quot;; //R
+  case 0x0053: return L&quot;LATIN_CAPITAL_LETTER_S&quot;; //S
+  case 0x0054: return L&quot;LATIN_CAPITAL_LETTER_T&quot;; //T
+  case 0x0055: return L&quot;LATIN_CAPITAL_LETTER_U&quot;; //U
+  case 0x0056: return L&quot;LATIN_CAPITAL_LETTER_V&quot;; //V
+  case 0x0057: return L&quot;LATIN_CAPITAL_LETTER_W&quot;; //W
+  case 0x0058: return L&quot;LATIN_CAPITAL_LETTER_X&quot;; //X
+  case 0x0059: return L&quot;LATIN_CAPITAL_LETTER_Y&quot;; //Y
+  case 0x005A: return L&quot;LATIN_CAPITAL_LETTER_Z&quot;; //Z
+  case 0x005B: return L&quot;LEFT_SQUARE_BRACKET&quot;; //[
+  case 0x005C: return L&quot;REVERSE_SOLIDUS&quot;; 
+  case 0x005D: return L&quot;RIGHT_SQUARE_BRACKET&quot;; //]
+  case 0x005E: return L&quot;CIRCUMFLEX_ACCENT&quot;; //^
+  case 0x005F: return L&quot;LOW_LINE&quot;; //_
+  case 0x0060: return L&quot;GRAVE_ACCENT&quot;; //`
+  case 0x0061: return L&quot;LATIN_SMALL_LETTER_A&quot;; //a
+  case 0x0062: return L&quot;LATIN_SMALL_LETTER_B&quot;; //b
+  case 0x0063: return L&quot;LATIN_SMALL_LETTER_C&quot;; //c
+  case 0x0064: return L&quot;LATIN_SMALL_LETTER_D&quot;; //d
+  case 0x0065: return L&quot;LATIN_SMALL_LETTER_E&quot;; //e
+  case 0x0066: return L&quot;LATIN_SMALL_LETTER_F&quot;; //f
+  case 0x0067: return L&quot;LATIN_SMALL_LETTER_G&quot;; //g
+  case 0x0068: return L&quot;LATIN_SMALL_LETTER_H&quot;; //h
+  case 0x0069: return L&quot;LATIN_SMALL_LETTER_I&quot;; //i
+  case 0x006A: return L&quot;LATIN_SMALL_LETTER_J&quot;; //j
+  case 0x006B: return L&quot;LATIN_SMALL_LETTER_K&quot;; //k
+  case 0x006C: return L&quot;LATIN_SMALL_LETTER_L&quot;; //l
+  case 0x006D: return L&quot;LATIN_SMALL_LETTER_M&quot;; //m
+  case 0x006E: return L&quot;LATIN_SMALL_LETTER_N&quot;; //n
+  case 0x006F: return L&quot;LATIN_SMALL_LETTER_O&quot;; //o
+  case 0x0070: return L&quot;LATIN_SMALL_LETTER_P&quot;; //p
+  case 0x0071: return L&quot;LATIN_SMALL_LETTER_Q&quot;; //q
+  case 0x0072: return L&quot;LATIN_SMALL_LETTER_R&quot;; //r
+  case 0x0073: return L&quot;LATIN_SMALL_LETTER_S&quot;; //s
+  case 0x0074: return L&quot;LATIN_SMALL_LETTER_T&quot;; //t
+  case 0x0075: return L&quot;LATIN_SMALL_LETTER_U&quot;; //u
+  case 0x0076: return L&quot;LATIN_SMALL_LETTER_V&quot;; //v
+  case 0x0077: return L&quot;LATIN_SMALL_LETTER_W&quot;; //w
+  case 0x0078: return L&quot;LATIN_SMALL_LETTER_X&quot;; //x
+  case 0x0079: return L&quot;LATIN_SMALL_LETTER_Y&quot;; //y
+  case 0x007A: return L&quot;LATIN_SMALL_LETTER_Z&quot;; //z
+  case 0x007B: return L&quot;LEFT_CURLY_BRACKET&quot;; //{
+  case 0x007C: return L&quot;VERTICAL_LINE&quot;; //|
+  case 0x007D: return L&quot;RIGHT_CURLY_BRACKET&quot;; //}
+  case 0x007E: return L&quot;TILDE&quot;; //~
+  }
+}
+
+</code></pre>
+
+<pre><code class="language-cpp">
+const wchar_t*  IntToLiteral(int i)
+{
+    switch (i)
+    {
+    case &#39;\0&#39;: return L&quot;\\0&quot;;
+    case &#39;\r&#39;: return L&quot;\\r&quot;;
+    case &#39;\n&#39;: return L&quot;\\n&quot;;
+    case &#39;\t&#39;: return L&quot;\\t&quot;;
+    case &#39;\&#39;&#39;: return L&quot;\\&#39;&quot;;
+    case &#39;\&quot;&#39;: return L&quot;\\\&quot;&quot;;
+    case &#39;\?&#39;: return L&quot;\\?&quot;;
+    case &#39;\\&#39;: return L&quot;\\\\&quot;;
+    case &#39;\a&#39;: return L&quot;\\a&quot;;
+    case &#39;\b&#39;: return L&quot;\\b&quot;;
+    case &#39;\f&#39;: return L&quot;\\f&quot;;
+    case &#39;\v&#39;: return L&quot;\\v&quot;;
+    }
+
+    static wchar_t ch[2] = {0,0};
+    ch[0] = wchar_t(i);
+    return ch;
+}
+
+</code></pre>
+
+<p>Useful to TklGen:</p>
+
+<pre><code class="language-cpp">    token EndMark = &#39;\0&#39;;
+    token CHARACTER_TABULATION = &#39;\t&#39;;
+    token LINE_FEED = &#39;\n&#39;;
+    token LINE_TABULATION = &#39;\v&#39;;
+    token FORM_FEED = &#39;\f&#39;;
+    token CARRIAGE_RETURN = &#39;\r&#39;;
+    token SPACE = &#39; &#39;;
+    token EXCLAMATION_MARK = &#39;!&#39;;
+    token QUOTATION_MARK = &#39;\&quot;&#39;;
+    token NUMBER_SIGN = &#39;#&#39;;
+    token DOLLAR_SIGN = &#39;$&#39;;
+    token PERCENT_SIGN = &#39;%&#39;;
+    token AMPERSAND = &#39;&amp;&#39;;
+    token APOSTROPHE = &#39;\&#39;&#39;;
+    token LEFT_PARENTHESIS = &#39;(&#39;;
+    token RIGHT_PARENTHESIS = &#39;)&#39;;
+    token ASTERISK = &#39;*&#39;;
+    token PLUS_SIGN = &#39;+&#39;;
+    token COMMA = &#39;,&#39;;
+    token HYPHEN_MINUS = &#39;-&#39;;
+    token FULL_STOP = &#39;.&#39;;
+    token SOLIDUS = &#39;/&#39;;
+    token COLON = &#39;:&#39;;
+    token SEMICOLON = &#39;;&#39;;
+    token LESS_THAN_SIGN = &#39;&lt;&#39;;
+    token EQUALS_SIGN = &#39;=&#39;;
+    token GREATER_THAN_SIGN = &#39;&gt;&#39;;
+    token QUESTION_MARK = &#39;\?&#39;;
+    token COMMERCIAL_AT = &#39;@&#39;;
+    token LEFT_SQUARE_BRACKET = &#39;[&#39;;
+    token REVERSE_SOLIDUS = &#39;\\&#39;;
+    token RIGHT_SQUARE_BRACKET = &#39;]&#39;;
+    token CIRCUMFLEX_ACCENT = &#39;^&#39;;
+    token LOW_LINE = &#39;_&#39;;
+    token GRAVE_ACCENT = &#39;`&#39;;
+    token LEFT_CURLY_BRACKET = &#39;{&#39;;
+    token VERTICAL_LINE = &#39;|&#39;;
+    token RIGHT_CURLY_BRACKET = &#39;}&#39;;
+
+</code></pre>
+</body></html>

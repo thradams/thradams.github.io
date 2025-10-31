@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>==Almost immutable string==</p>
+
+<p>(scratch)</p>
+
+<p>{{{cpp</p>
+
+<p>class string
+{
+  const char* m_psz;</p>
+
+<p>string &amp; operator = (const string&amp;);
+  string &amp; operator = (string&amp;&amp; s);</p>
+
+<p>public:</p>
+
+<p>typedef const char* const_iterator;</p>
+
+<p>string();    </p>
+
+<p>//copy from
+  string(const string&amp; s);<br>
+  explicit string(const char* psz);</p>
+
+<p>//To move from
+  explicit string(char<em>&amp;&amp;);
+  explicit string(const char</em>&amp;&amp;);
+  string(string&amp;&amp;);</p>
+
+<p>~string();</p>
+
+<p>const<em>iterator cbegin() const;
+  const</em>iterator cend() const;
+  size_t lenght() const;</p>
+
+<p>const char at(size_t) const;
+  bool empty() const;
+  operator const char*() const;
+};</p>
+
+<p>inline char* duplicate(const char* source)
+{
+  if (source == nullptr)
+    return nullptr;</p>
+
+<p>char* temp = (char*)malloc(strlen(source) + 1);</p>
+
+<p>if (temp == nullptr)
+    throw std::bad_alloc();</p>
+
+<p>strcpy(temp, source);
+  return temp;
+}</p>
+
+<p>string::string() : m_psz(nullptr) 
+{
+}</p>
+
+<p>string::string(const string&amp; s) : m<em>psz(nullptr)
+{
+  m</em>psz = duplicate(s.m_psz);
+}</p>
+
+<p>string::string(char* &amp;&amp;psz) : m_psz(psz)
+{<br>
+  psz = nullptr;
+}</p>
+
+<p>string::string(const char* &amp;&amp;psz) : m_psz(psz)
+{<br>
+  psz = nullptr;
+}</p>
+
+<p>string::string(const char* psz) : m<em>psz(nullptr)
+{
+  if (psz != nullptr)
+    m</em>psz = _strdup(psz);
+}</p>
+
+<p>string::string(string&amp;&amp; s) : m<em>psz(s.m</em>psz)
+{
+  s.m_psz = nullptr;
+}</p>
+
+<p>string::~string()
+{
+  if (m<em>psz != nullptr)
+    free((void*)m</em>psz);
+}</p>
+
+<p>string::const<em>iterator string::cbegin() const
+{
+  return m</em>psz;
+}</p>
+
+<p>string::const<em>iterator string::cend() const
+{
+  return m</em>psz + lenght() + 1;
+}</p>
+
+<p>size<em>t string::lenght() const
+{
+  return (m</em>psz == nullptr) ? 0 : strlen(m_psz);
+}</p>
+
+<p>bool string::empty() const 
+{
+  return lenght() == 0;
+}</p>
+
+<p>string::operator const char*() const
+{
+  return m_psz;
+}</p>
+
+<p>const char string::at(size<em>t index) const
+{
+   return m</em>psz[index];
+}</p>
+
+<p>inline int Diference(const string&amp; s1, const string&amp; s2)
+{
+  // -1 s1 &lt; s2
+  //  0 s1 == s2
+  //  1 s1 &gt; s2</p>
+
+<p>if (s1 != nullptr &amp;&amp; s2 != nullptr)
+    return strcmp(s1, s2);</p>
+
+<p>if  (s1 == nullptr &amp;&amp; s2 != nullptr) 
+    return -1;</p>
+
+<p>if  (s1 != nullptr &amp;&amp; s2 == nullptr) 
+    return 1;</p>
+
+<p>return 0;
+}</p>
+
+<p>inline bool operator &lt; (const string&amp; s1, const string&amp; s2)
+{
+    return Diference(s1, s2) == -1;
+}</p>
+
+<p>inline bool operator &gt; (const string&amp; s1, const string&amp; s2)
+{
+    return Diference(s1, s2) == 1;
+}</p>
+
+<p>inline bool operator == (const string&amp; s1, const string&amp; s2)
+{
+    return Diference(s1, s2) == 0;
+}</p>
+
+<p>inline bool operator != (const string&amp; s1, const string&amp; s2)
+{
+    return Diference(s1, s2) != 0;
+}</p>
+
+<p>}}}</p>
+</body></html>

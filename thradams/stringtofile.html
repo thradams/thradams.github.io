@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Function to save a string into a file.</p>
+
+<pre><code class="language-cpp">
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+#include &lt;codecvt&gt;
+
+void StringToFile(const wchar_t* psz,
+                  const wchar_t* fileName)
+{
+  std::locale ulocale(std::locale(), new std::codecvt_utf8&lt;wchar_t&gt;) ;
+  std::wofstream ofs(fileName);
+
+  if (ofs.is_open())
+  {
+    ofs.imbue(ulocale);
+    ofs &lt;&lt; psz;
+  }
+}
+
+</code></pre>
+
+<p>Reads a file and returns a string
+(not tested)
+```cpp</p>
+
+<h1 id="toc_0">include <string></h1>
+
+<h1 id="toc_1">include <fstream></h1>
+
+<h1 id="toc_2">include <codecvt></h1>
+
+<p>std::wstring FileToString(const wchar<em>t* fileName)
+{
+  std::wstring result;
+  std::locale ulocale(std::locale(), new std::codecvt</em>utf8<wchar_t>) ;
+  std::wifstream ifs(fileName);</p>
+
+<p>if (ifs.is_open())
+  {
+    std::wstring ws;
+    bool newline = false;
+    while (std::getline(ifs, ws))
+    {
+      if (newline)
+      {
+        result += L&quot;\n&quot;;
+        newline = false;
+      }
+      result += ws;
+      newline = true;<br>
+    }
+  }</p>
+
+<p>return result;
+}</p>
+
+<pre><code>
+</code></pre>
+</body></html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>This is a kind of concept check.</p>
+
+<p>We have a type predicate for the type T that says
+if the type T is a concept X.</p>
+
+<p>It will be, if the type T is derived from X, or if 
+we explicitly say that.</p>
+
+<pre><code class="language-cpp">
+#include &lt;type_traits&gt;
+#include &lt;iostream&gt;
+
+
+struct shape_concept {};
+struct circle_concept : public shape_concept {};
+struct square_concept : public shape_concept {};
+
+
+
+//By default check if Concept is base of T
+template&lt;class T, class Concept&gt;
+struct is_concept_model : public std::is_base_of&lt;Concept, T&gt; {};
+
+
+//Formula for circle_concept
+template&lt;class T&gt;
+typename std::enable_if&lt;is_concept_model&lt;T, circle_concept&gt;::value, double&gt;::type
+Area(const T&amp; o)
+{
+    const double pi = 3.14;
+    return pi * o.radius() * o.radius();
+}
+
+//Formula for square_concept
+template&lt;class T&gt;
+typename std::enable_if&lt;is_concept_model&lt;T, square_concept&gt;::value, double&gt;::type
+Area(const T&amp; o)
+{
+    return o.side() * o.side();
+}
+
+//Error if T is not a shape_concept model
+template&lt;class T&gt;
+typename std::enable_if&lt;!is_concept_model&lt;T, shape_concept&gt;::value, double&gt;::type
+Area(const T&amp; o)
+{
+    static_assert(false, &quot;type T must map shape_concept&quot;);
+    return 0;
+}
+
+struct MyCircle1 : public circle_concept
+{
+    double radius() const
+    {
+        return 1.5;
+    }
+};
+
+struct MyCircle2
+{
+    double radius() const
+    {
+        return 2.0;
+    }
+};
+
+//We explicitly will say that MyCircle2 is a model of circle_concept 
+//and that MyCircle2 is a model of shape_concept should be automatic!
+template&lt;&gt; struct is_concept_model&lt;MyCircle2, circle_concept&gt; : public std::true_type {};
+template&lt;&gt; struct is_concept_model&lt;MyCircle2, shape_concept&gt; : public std::true_type{};
+
+struct MySquare1 : public square_concept
+{
+    double side() const
+    {
+        return 2.0;
+    }
+};
+
+struct MySquare2
+{    
+};
+
+int main()
+{
+    MySquare1 s1;
+    MySquare2 s2;
+    MyCircle1 c1;
+    MyCircle2 c2;
+    std::cout &lt;&lt; Area(s1) &lt;&lt; std::endl;
+    std::cout &lt;&lt; Area(c1) &lt;&lt; std::endl;
+    std::cout &lt;&lt; Area(c2) &lt;&lt; std::endl;
+    // std::cout &lt;&lt; Area(s2) &lt;&lt; std::endl;
+}
+
+
+
+</code></pre>
+</body></html>

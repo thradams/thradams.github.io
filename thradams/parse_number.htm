@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+   <title>Thiago's website</title>
+   <link href="trastyle.css" type="text/css" rel="stylesheet" />
+   <link rel="alternate" type="application/rss+xml" title="RSS" href="http://wwww.thradams/codeblog/rss.xml" />
+</head>
+
+<body>
+   <div class="pageheader">
+
+      <h2>Thiago R. Adams website</h2>
+      <p>
+         <a class="linkbox" href="index.htm">HOME</a>
+         <a class="linkbox" href="codeblog.htm">CODE-BLOG</a>
+         <a class="linkbox" href="about.htm">ABOUT</a>
+         <br />
+      </p>
+   </div>
+
+   <article>
+  
+      <!-- Page content begin -->
+
+<p><a href="algorithms.htm">Algorithms</a></p>
+
+<hr>
+<h3>Declaration</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+<span class="keyword">bool</span> parse_number(<span class="keyword">const</span> <span class="keyword">char</span>* psz, It first, It last);
+</pre>
+
+<hr>
+<h3>Sample</h3>
+<pre>
+Input:
+
+         <span class="string">&quot;489&quot;</span>
+         {<span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span>}    (must be zero, in/out)
+                    <span class="number">10</span>
+
+Ouput:
+         <span class="string">&quot;489&quot;</span>
+         {<span class="number">0</span> <span class="number">0</span> <span class="number">4</span> <span class="number">8</span> <span class="number">9</span>}
+                    <span class="number">10</span>
+         
+Input:
+    <span class="string">&quot;489&quot;</span>
+    {<span class="number">000</span> <span class="number">000</span> <span class="number">000</span> <span class="number">000</span> <span class="number">000</span>}
+                         <span class="number">256</span>
+
+
+Ouput:
+    <span class="string">&quot;489&quot;</span>
+    {<span class="number">000</span> <span class="number">000</span> <span class="number">000</span> <span class="number">001</span> <span class="number">233</span>}
+                         <span class="number">256</span>
+</pre>
+
+
+<hr>
+<h3>Sample</h3>
+<pre>
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+<span class="keyword">int</span> a[] = { <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> };
+parse_number&lt;<span class="number">10</span>&gt;(<span class="string">&quot;98&quot;</span>, begin(a), end(a));
+assert(a[<span class="number">1</span>] == <span class="number">9</span> &amp;&amp; a[<span class="number">0</span>] == <span class="number">8</span>);
+</pre>
+
+<hr>
+<h3>Implementation</h3>
+<pre>
+<span class="keyword">template</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> base, <span class="keyword">class</span> It&gt;
+<span class="keyword">bool</span> parse_number(<span class="keyword">const</span> <span class="keyword">char</span>* psz, It first, It last)
+{
+    assert(is_zero(first, last));
+
+    <span class="keyword">while</span> ((*psz &gt;= <span class="string">'0'</span>) &amp;&amp; (*psz &lt;= <span class="string">'9'</span>))
+    {
+        <span class="keyword">if</span> (*(last - <span class="number">1</span>)  != <span class="number">0</span>)
+        {
+            <span class="keyword">return</span> <span class="keyword">false</span>; <span class="comment">//need more digits
+</span>        }
+
+        multiply_in_place&lt;base&gt;(first, last, <span class="number">10</span>);
+        <span class="keyword">int</span> d  = *psz - <span class="string">'0'</span>;
+        add&lt;base&gt;(first, sig_digit_end(first, last), &amp;d, &amp;d + <span class="number">1</span>, first, last);
+        psz++;
+    }
+
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+}
+</pre>
+
+
+<!-- Page content end --> 
+</article> 
+ 
+</body> 
+</html>  

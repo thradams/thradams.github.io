@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Sample:</p>
+
+<pre><code class="language-cpp">
+#include &quot;UnitTest.h&quot;
+
+void Test1()
+{
+  Assert(1 &gt; 2);
+}
+
+int main()
+{
+  using namespace UnitTest;
+  ConsoleReport consoleReport;
+  RunTest(&amp;Test1, consoleReport, L&quot;Test1&quot;);
+}
+</code></pre>
+
+<p>Source Code: UnitTest.h</p>
+
+<pre><code class="language-cpp">#pragma once
+#include &lt;string&gt;
+#include &lt;chrono&gt;
+#include &lt;iostream&gt;
+
+
+namespace UnitTest
+{
+  enum class TestResult
+  {
+    Passed,
+    Failed,
+    Canceled,
+  };
+
+  inline const wchar_t* GetTestResultMsg(TestResult r)
+  {
+    switch (r)
+    {
+      case TestResult::Passed:
+        return L&quot;Passed&quot;;
+
+      case TestResult::Failed:
+        return L&quot;Failed&quot;;
+
+      case TestResult::Canceled:
+        return L&quot;Canceled&quot;;
+
+      default:
+        break;
+    }
+
+    return 0;
+  }
+
+  class TestResultException
+  {
+  public:
+    int m_SourceLine;
+    std::wstring m_FileName;
+    std::wstring m_Message;
+    TestResult m_TestResult;
+    TestResultException(TestResult r,
+                        const wchar_t* message,
+                        const wchar_t* f,
+                        int l)
+    {
+      m_Message = message;
+      m_FileName = f;
+      m_SourceLine = l;
+      m_TestResult = r;
+    }
+  };
+
+  //
+  //Assertions to be used inside the test functions
+  //
+
+  inline void Cancel(const wchar_t* message = L&quot;&quot;,
+                     const wchar_t* file = L&quot;&quot;,
+                     int line = 0)
+  {
+    throw TestResultException(TestResult::Canceled, message, file, line);
+  }
+
+  inline void Assert(bool condition,
+                     const wchar_t* message = L&quot;assertion failed&quot;,
+                     const wchar_t* file = L&quot;&quot;,
+                     int line = 0)
+  {
+    if (!condition)
+      throw TestResultException(TestResult::Failed, message, file, line);
+  }
+
+  inline void IsTrue(bool condition,
+                     const wchar_t* message = L&quot;assertion IsTrue failed&quot;,
+                     const wchar_t* file = L&quot;&quot;,
+                     int line = 0)
+  {
+    Assert(condition, message, file, line);
+  }
+
+  inline void Fail(const wchar_t* message = L&quot;Test failed&quot;,
+                   const wchar_t* file = L&quot;&quot;,
+                   int line = 0)
+  {
+    Assert(false, message, file, line);
+  }
+
+  inline void IsFalse(bool condition,
+                      const wchar_t* message = L&quot;assertion IsFalse failed&quot;,
+                      const wchar_t* file = L&quot;&quot;,
+                      int line = 0)
+  {
+    Assert(!condition, message, file, line);
+  }
+
+  template&lt;class T1, class T2&gt;
+  inline void AreEqual(const T1&amp; v1,
+                       const T2&amp; v2,
+                       const wchar_t* message = L&quot;assertion AreEqual failed&quot;,
+                       const wchar_t* file = L&quot;&quot;,
+                       int line = 0)
+  {
+    Assert(v1 == v2, message, file, line);
+  }
+
+  template&lt;class T1, class T2&gt;
+  inline void AreNotEqual(const T1&amp; v1,
+                          const T2&amp; v2,
+                          const wchar_t* message = L&quot;assertion AreNotEqual failed&quot;,
+                          const wchar_t* file = L&quot;&quot;,
+                          int line = 0)
+  {
+    Assert(v1 != v2, message, file, line);
+  }
+
+
+
+  struct Report
+  {
+    // I will count this for you
+    int m_PassedCount;
+    int m_FailedCount;
+    int m_CanceledCount;
+
+    Report()
+    {
+      m_PassedCount = 0;
+      m_FailedCount = 0;
+      m_CanceledCount = 0;
+    }
+
+    virtual void ReportResultCore(const wchar_t* testName,
+                                  std::chrono::high_resolution_clock::duration&amp;,
+                                  UnitTest::TestResult result,
+                                  const wchar_t* pszMessage) = 0;
+
+    void ReportResult(const wchar_t* testName,
+                      std::chrono::high_resolution_clock::duration&amp; duration,
+                      UnitTest::TestResult result,
+                      const wchar_t* pszMessage)
+    {
+      switch (result)
+      {
+        case TestResult::Passed:
+          m_PassedCount++;
+          break;
+
+        case TestResult::Failed:
+          m_FailedCount++;
+          break;
+
+        case TestResult::Canceled:
+          m_CanceledCount++;
+          break;
+      }
+
+      ReportResultCore(testName,
+                       duration,
+                       result,
+                       pszMessage);
+    }
+  };
+
+
+  struct ConsoleReport : public Report
+  {
+    virtual void ReportResultCore(const wchar_t* testName,
+                                  std::chrono::high_resolution_clock::duration&amp; duration,
+                                  TestResult result,
+                                  const wchar_t* pszMessage) override
+    {
+      std::wcout &lt;&lt; testName &lt;&lt; L&quot; &quot;;
+      std::wcout &lt;&lt; pszMessage;
+
+      typedef std::chrono::duration&lt;int, std::ratio&lt;1, 1000&gt;&gt; MS;
+      int ms = std::chrono::duration_cast&lt;MS&gt;(duration).count();
+      std::wcout &lt;&lt; ms &lt;&lt; L&quot; ms&quot;;
+    }
+  };
+
+  void RunTest(void (*PF)(void), Report&amp; report, const wchar_t* psz)
+  {
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    try
+    {
+      (*PF)();
+      auto duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Passed, L&quot;succeeded&quot;);
+    }
+    catch (const std::exception&amp;)
+    {
+      auto duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, L&quot;failed&quot;);
+    }
+    catch (const TestResultException&amp; e)
+    {
+      auto duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, e.m_Message.c_str());
+    }
+    catch (...)
+    {
+      auto duration = std::chrono::high_resolution_clock::now() - startTime;
+      report.ReportResult(psz, duration, TestResult::Failed, L&quot;failed&quot;);
+    }
+  }
+} //namespace UnitTest
+
+#define WIDEN2(x) L ## x
+#define WIDEN(x) WIDEN2(x)
+#define __WFILE__ WIDEN(__FILE__)
+
+// Auto generate comments, file and line numbers
+#define Assert(x) UnitTest::Assert((x), L#x, __WFILE__, __LINE__)
+#define IsTrue(x) UnitTest::IsTrue((x), L#x, __WFILE__, __LINE__)
+#define IsFalse(x) UnitTest::IsFalse((x), L#x, __WFILE__, __LINE__)
+#define AreEqual(x, y) UnitTest::AreEqual((x), (y), L&quot;AreEqual &quot; L#x L&quot;, &quot; L#y, __WFILE__, __LINE__)
+#define AreNotEqual(x, y) UnitTest::AreNotEqual((x), (y), L&quot;AreNotEqual &quot; L#x L&quot;, &quot; L#y, __WFILE__, __LINE__)
+#define Fail() UnitTest::Fail(L&quot;Test Failed&quot;, __WFILE__, __LINE__)
+
+
+
+
+</code></pre>
+</body></html>

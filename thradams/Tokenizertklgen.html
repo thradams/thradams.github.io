@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Header:</p>
+
+<p><strong>Tokenizer.h</strong></p>
+
+<p>{{{cpp</p>
+
+<p>//////////////////////////////////////////////////////////////////////////////
+// TKLGEN - VersionMar  8 2013
+// Copyright (C) 2013, Thiago Adams (<a href="mailto:thiago.adams@gmail.com">thiago.adams@gmail.com</a>)
+// <a href="http://www.thradams.com">www.thradams.com</a>
+//
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+//
+//////////////////////////////////////////////////////////////////////////////</p>
+
+<h1 id="toc_0">pragma once</h1>
+
+<p>template &lt; class TDFA,
+         class TInputStream &gt;
+struct Tokenizer
+{
+public:
+    typedef TInputStream             InputStream;
+    typedef typename TDFA::TokenType TokenType;</p>
+
+<p>private:</p>
+
+<pre><code>Tokenizer&amp; operator=(const Tokenizer&amp;); //= deleted
+
+template&lt;class T&gt;
+bool NextTokenNoInterleave(T&amp; lexeme, TokenType&amp; tk)
+{
+    lexeme.clear();
+    int lastGoodState = -1;
+    int currentState = 0;
+    wchar_t ch;
+
+    while (m_InputStream.NextChar(ch))
+    {
+        currentState = TDFA::GetNext(currentState, ch);
+
+        if (currentState == -1)
+        {
+            m_InputStream.PutBack(ch);
+            break;
+        }
+
+        TokenType tk2;
+
+        if (TDFA::GetTokenFromState(currentState, tk2))
+        {
+            tk = tk2;
+            lastGoodState = currentState;
+        }
+
+        lexeme.append(1, ch);
+    }
+
+    return (lastGoodState != -1);
+}
+</code></pre>
+
+<p>public:</p>
+
+<pre><code>InputStream&amp; m_InputStream;
+
+Tokenizer(InputStream&amp; stream)
+    : m_InputStream(stream)
+{
+}
+
+template&lt;class T&gt;
+bool NextToken(T&amp; lexeme, TokenType&amp; tk)
+{
+    for (;;)
+    {
+        if (!NextTokenNoInterleave(lexeme, tk))
+        {
+            return false;
+        }
+
+        if (!TDFA::IsInterleave(tk))
+        {
+            return true;
+        }
+    }
+}
+</code></pre>
+
+<p>};</p>
+
+<p>}}}</p>
+
+<p>Testing the tokenizer:</p>
+
+<p>The generated DFA is necessary:</p>
+
+<p>{{{cpp
+const wchar_t* IntToLiteral(int i)
+{
+  switch (i)
+  {
+    case &#39;\0&#39;: return L&quot;\0&quot;;
+    case &#39;\r&#39;: return L&quot;\r&quot;;
+    case &#39;\n&#39;:return L&quot;\n&quot;;
+    case &#39;\t&#39;:return L&quot;\t&quot;;
+    case &#39;\&#39;&#39;:return L&quot;\&#39;&quot;;
+    case &#39;&quot;&#39;:return L&quot;\&quot;&quot;;
+    case &#39;\?&#39;:return L&quot;\?&quot;;
+    case &#39;\&#39;:return L&quot;\\&quot;;
+    case &#39;\a&#39;:return L&quot;\a&quot;;
+    case &#39;\b&#39;:return L&quot;\b&quot;;
+    case &#39;\f&#39;:return L&quot;\f&quot;;
+    case &#39;\v&#39;:return L&quot;\v&quot;;
+  }</p>
+
+<p>static wchar<em>t ch[2] = {0, 0};
+  ch[0] = wchar</em>t(i);
+  return ch;
+}</p>
+
+<p>void PrintLiteral(const std::wstring&amp; ws)
+{
+  if (ws.empty())
+  {
+    std::wcout &lt;&lt; &quot;&#39;\0&#39;&quot;;<br>
+  }
+  else
+  {
+    std::wcout &lt;&lt; &quot;&quot;&quot;;
+    for (size_t i = 0 ; i &lt; ws.size() ; i++)
+    {
+      std::wcout &lt;&lt; IntToLiteral(ws[i]);
+    }
+    std::wcout  &lt;&lt; &quot;&quot;&quot;;
+  }
+}</p>
+
+<p>template<class Scanner>
+void PrintTokens(Scanner&amp; scanner)
+{</p>
+
+<pre><code>std::wstring lexeme;
+Scanner::TokenType token;
+
+while (scanner.NextToken(lexeme, token))    
+{ 
+  std::wcout.width(15);
+  std::wcout &lt;&lt;  TokensToString(token);
+  std::wcout &lt;&lt; L&quot; : &quot;;
+  PrintLiteral(lexeme.c_str());
+  std::wcout &lt;&lt; std::endl;
+}
+</code></pre>
+
+<p>}</p>
+
+<p>int main()
+{
+    StringStream ss(L&quot;blabla&quot;);</p>
+
+<pre><code>typedef Tokenizer&lt;Sample2::DFA, StringStream&gt; StringStreamScanner;   
+
+StringStreamScanner scanner(ss);
+
+PrintTokens(scanner);
+</code></pre>
+
+<p>}</p>
+
+<p>}}}</p>
+
+<p>{{{cpp</p>
+
+<p>template <class TDFA,
+          class T,
+          class TInputStream>
+bool NextTokenNoInterleave(TInputStream&amp; stream,
+                           T&amp; lexeme,
+                           typename TDFA::TokenType&amp; tk)
+{
+  lexeme.clear();
+  int lastGoodState = -1;
+  int currentState = 0;
+  wchar_t ch;</p>
+
+<p>while (stream.NextChar(ch))
+  {
+    currentState = TDFA::GetNext(currentState, ch);</p>
+
+<pre><code>if (currentState == -1)
+{
+  stream.PutBack(ch);
+  break;
+}
+
+typename TDFA::TokenType tk2;
+
+if (TDFA::GetTokenFromState(currentState, tk2))
+{
+  tk = tk2;
+  lastGoodState = currentState;
+}
+
+lexeme.append(1, ch);
+</code></pre>
+
+<p>}</p>
+
+<p>return (lastGoodState != -1);
+}</p>
+
+<p>}}}</p>
+</body></html>

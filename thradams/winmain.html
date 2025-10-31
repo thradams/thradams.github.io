@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Converting from WinMain to standard main</h2>
+
+<pre><code class="language-cpp">int main(int argc, TCHAR* argv[]);
+
+int APIENTRY _tWinMain(HINSTANCE hInstance,
+                       HINSTANCE hPrevInstance,
+                       LPTSTR    lpCmdLine,
+                       int       nCmdShow)
+{   
+   int nArgs;
+   LPWSTR *szArglist = CommandLineToArgvW(GetCommandLineW(), &amp;nArgs);
+
+   if (szArglist == NULL)
+       return 1; //error
+   
+   const int r = main(nArgs, szArglist);
+   LocalFree(szArglist);
+   return r;   
+}
+</code></pre>
+</body></html>

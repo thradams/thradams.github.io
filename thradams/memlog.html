@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Two implementations for memory log.</p>
+
+<p>First is a circular buffer of char.</p>
+
+<p>Second is a circular buffer of blocks of chars.</p>
+
+<p>Second is fast to print from new to old but some memory
+is wasted.</p>
+
+<pre><code class="language-cpp">#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+
+
+#define MAX_SIZE 10
+
+struct circular_buffer
+{
+    char text[MAX_SIZE];
+    int head;
+    int isFull;
+};
+
+void push(struct circular_buffer* cb, const char* text)
+{
+    const char* p = text;
+    for (;;)
+    {
+        cb-&gt;text[cb-&gt;head] = *p;
+        cb-&gt;head++;
+        if (cb-&gt;head &gt;= MAX_SIZE)
+        {
+            cb-&gt;isFull = 1;
+            cb-&gt;head = 0;
+        }
+        if (*p == 0)
+            break;
+        p++;
+    }
+}
+
+char get(struct circular_buffer* c, int index)
+{
+    if (c-&gt;isFull)
+    {
+        if (c-&gt;head + index &lt; MAX_SIZE)
+        {
+            index = c-&gt;head + index;
+        }
+        else
+        {
+            index = index - (MAX_SIZE - c-&gt;head);
+        }
+    }
+    assert(index &gt;= 0 &amp;&amp; index &lt; MAX_SIZE);
+    return c-&gt;text[index];
+}
+
+void print_old_to_new(struct circular_buffer* cb)
+{
+    if (cb-&gt;isFull)
+    {
+        for (int i = cb-&gt;head; i &lt; MAX_SIZE; i++)
+        {
+            if (cb-&gt;text[i] == 0)
+            {
+                printf(&quot; &quot;);
+            }
+            else
+                printf(&quot;%c&quot;, cb-&gt;text[i]);
+        }
+    }
+
+    for (int i = 0; i &lt; cb-&gt;head; i++)
+    {
+        if (cb-&gt;text[i] == 0)
+        {
+            printf(&quot; &quot;);
+        }
+        else
+            printf(&quot;%c&quot;, cb-&gt;text[i]);
+    }
+    printf(&quot;\n&quot;);
+}
+
+
+void print_new_to_old(struct circular_buffer* cb)
+{
+    int len = cb-&gt;isFull ? MAX_SIZE : cb-&gt;head;
+    
+    for (int i = len - 1; i &gt;= 0; i--)
+    {
+        char ch;
+        if (i &gt;0 )
+          ch = get(cb, i-1);
+
+        if (i == 0 || ch == &#39;\0&#39;)
+        {
+            for (int k = i; ;k++)
+            {
+                ch = get(cb, k);
+                if (ch == 0)
+                {
+                    printf(&quot; &quot;);
+                    break;
+                }
+                else
+                    printf(&quot;%c&quot;, ch);
+            }
+        }
+    }
+
+ 
+    printf(&quot;\n&quot;);
+}
+
+int main()
+{
+    struct circular_buffer cb = { 0 };
+    push(&amp;cb, &quot;123456&quot;);
+    push(&amp;cb, &quot;abcde&quot;);
+    print_old_to_new(&amp;cb);
+    print_new_to_old(&amp;cb);
+}
+
+
+
+</code></pre>
+
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+
+#define LINE_LEN 4
+#define MAX_LINES 3
+
+struct circular_buffer
+{
+    char lines[MAX_LINES][LINE_LEN]; //ten lines of 4 chars
+    int head;
+    int isFull;
+};
+
+void push(struct circular_buffer* cb, const char* text)
+{
+    int count = 0;
+    const char* p = text;
+    for (;;)
+    {
+        if (count == LINE_LEN)
+        {
+            /*new*/
+            cb-&gt;head++;            
+            if (cb-&gt;head == MAX_LINES)
+            {
+                cb-&gt;isFull = 1;
+                cb-&gt;head = 0;
+            }
+            count = 0;
+        }
+        cb-&gt;lines[cb-&gt;head][count] = *p;
+
+        if (*p == 0)
+        {
+            cb-&gt;lines[cb-&gt;head][LINE_LEN - 1] = &#39;\0&#39;;
+            break;
+        }
+        p++;
+        count++;
+    }
+
+
+    cb-&gt;head++;
+    if (cb-&gt;head &gt;= MAX_LINES)
+        cb-&gt;head = 0;
+}
+
+void print_raw(struct circular_buffer* cb)
+{
+    for (int i = 0; i &lt; MAX_LINES; i++)
+    {
+        for (int k = 0; k &lt; LINE_LEN; k++)
+        {
+            if (cb-&gt;lines[i][k] == 0)
+            {
+                for (; k &lt; LINE_LEN; k++)
+                {
+                    if (cb-&gt;lines[i][k] == 0)
+                        printf(&quot;.&quot;);
+                    else
+                        printf(&quot;%c&quot;, cb-&gt;lines[i][k]);
+                }
+                break;
+            }
+            printf(&quot;%c&quot;, cb-&gt;lines[i][k]);
+        }
+        printf(&quot; &quot;);
+    }
+    printf(&quot;(%d)&quot;, cb-&gt;head);
+    printf(&quot;\n&quot;);
+}
+
+void print_old_to_new(struct circular_buffer* cb)
+{
+    if (cb-&gt;isFull)
+    {
+        for (int i = cb-&gt;head; i &lt; MAX_LINES; i++)
+        {
+            for (int k = 0; k &lt; LINE_LEN; k++)
+            {
+                if (cb-&gt;lines[i][k] == 0)
+                {
+                    break;
+                }
+                printf(&quot;%c&quot;, cb-&gt;lines[i][k]);
+            }
+        }
+    }
+
+    for (int i = 0; i &lt; cb-&gt;head; i++)
+    {
+        for (int k = 0; k &lt; LINE_LEN; k++)
+        {
+            if (cb-&gt;lines[i][k] == 0)
+            {
+                break;
+            }
+            printf(&quot;%c&quot;, cb-&gt;lines[i][k]);
+        }
+    }
+    printf(&quot;\n&quot;);
+}
+
+char* get(struct circular_buffer* c, int index)
+{
+    if (c-&gt;isFull)
+    {
+        if (c-&gt;head + index &lt; MAX_LINES)
+        {
+            index = c-&gt;head + index;
+        }
+        else
+        {
+            index = index - (MAX_LINES - c-&gt;head);
+        }
+    }
+    assert(index &gt;= 0 &amp;&amp; index &lt; MAX_LINES);
+    return c-&gt;lines[index];    
+}
+
+void print_new_to_old(struct circular_buffer* cb)
+{
+    int len = cb-&gt;isFull ? MAX_LINES : cb-&gt;head;
+    //andar para tras
+    for (int i = len - 1; i &gt;= 0; i--)
+    {
+        char* p;
+        if (i &gt; 0)
+           p = get(cb, i - 1);
+        else
+           p = get(cb, 0);
+
+        if (i == 0 || p[LINE_LEN - 1] == 0)
+        {
+            int j = i;
+            for (;;)
+            {
+                char* p2 = get(cb, j);
+                int k = 0;
+                for (; k &lt; LINE_LEN; k++)
+                {
+                    if (p2[k] == &#39;\0&#39;)
+                        break;
+                    printf(&quot;%c&quot;, p2[k]);
+                }
+                if (p2[k] == &#39;\0&#39;)
+                {
+                    printf(&quot; &quot;);
+                    break;
+                }
+                j++;
+            }
+        }
+    }
+    printf(&quot;\n&quot;);
+}
+
+char* getline(void) {
+    char* line = malloc(100), * linep = line;
+    size_t lenmax = 100, len = lenmax;
+    int c;
+
+    if (line == NULL)
+        return NULL;
+
+    for (;;) {
+        c = fgetc(stdin);
+        if (c == EOF)
+            break;
+
+        if (--len == 0) {
+            len = lenmax;
+            char* linen = realloc(linep, lenmax *= 2);
+
+            if (linen == NULL) {
+                free(linep);
+                return NULL;
+            }
+            line = linen + (line - linep);
+            linep = linen;
+        }
+
+        if ((*line++ = c) == &#39;\n&#39;)
+            break;
+    }
+    *(line -1)= &#39;\0&#39;;
+    *line = &#39;\0&#39;;
+    return linep;
+}
+
+int main()
+{
+    struct circular_buffer cb = { 0 };
+    push(&amp;cb, &quot;123456&quot;);
+    print_raw(&amp;cb);
+    push(&amp;cb, &quot;abcde&quot;);
+    print_raw(&amp;cb);
+    print_old_to_new(&amp;cb);
+    print_new_to_old(&amp;cb);
+    push(&amp;cb, &quot;novo&quot;);
+    print_raw(&amp;cb);
+    print_new_to_old(&amp;cb);
+    push(&amp;cb, &quot;casa&quot;);
+    print_raw(&amp;cb);
+    print_new_to_old(&amp;cb);
+
+    for (;;)
+    {
+        char* line = getline();
+        
+        push(&amp;cb, line);
+        
+        free(line);
+        print_raw(&amp;cb);
+        print_new_to_old(&amp;cb);
+    }
+}
+
+
+</code></pre>
+
+<p>two buffers one for chars and other for indexes</p>
+
+<pre><code class="language-cpp">
+#include &lt;stdio.h&gt;
+
+#define MAX_SIZE 6
+
+
+struct ring_int {
+    int size;
+    int tail; /*mais antigo*/
+    int head; /*prix*/
+    int buffer[MAX_SIZE];
+};
+
+struct ring_chars {
+    int size;
+    int tail; /*mais antigo*/
+    int head; /*prix*/
+    char buffer[MAX_SIZE];
+};
+
+
+void ring_chars_push(struct ring_chars* ring, char item)
+{
+    if (item == &#39;\0&#39;)
+        item = &#39;*&#39;;
+
+    if (ring-&gt;head == ring-&gt;tail &amp;&amp;
+        ring-&gt;size == MAX_SIZE)
+    {
+        ring-&gt;tail++;
+        if (ring-&gt;tail == MAX_SIZE)
+            ring-&gt;tail = 0;
+    }
+
+    ring-&gt;buffer[ring-&gt;head] = item;
+    ring-&gt;head++;
+    if (ring-&gt;head == MAX_SIZE)
+        ring-&gt;head = 0;
+
+    if (ring-&gt;size &lt; MAX_SIZE) {
+        ring-&gt;size++;
+    }
+}
+
+
+void ring_int_push(struct ring_int* ring, int item)
+{
+    if (ring-&gt;head == ring-&gt;tail &amp;&amp;
+        ring-&gt;size == MAX_SIZE)
+    {
+        ring-&gt;tail++;
+        if (ring-&gt;tail == MAX_SIZE)
+            ring-&gt;tail = 0;
+    }
+
+    ring-&gt;buffer[ring-&gt;head] = item;
+    ring-&gt;head++;
+    if (ring-&gt;head == MAX_SIZE)
+        ring-&gt;head = 0;
+
+    if (ring-&gt;size &lt; MAX_SIZE) {
+        ring-&gt;size++;
+    }
+}
+
+int ring_int_pop(struct ring_int* ring)
+{
+    if (ring-&gt;size &lt; 1) return -1;
+
+    int item = ring-&gt;buffer[ring-&gt;tail];
+    ring-&gt;buffer[ring-&gt;tail] = -1;
+    ring-&gt;size--;
+
+    ring-&gt;tail++;
+    if (ring-&gt;tail == MAX_SIZE)
+        ring-&gt;tail = 0;
+    return item;
+}
+
+void ring_text(struct ring_int* ring_int, struct ring_chars* ring, const char* text)
+{
+    const char* p = text;
+    int start = ring-&gt;head;
+
+    for (;;)
+    {
+        
+
+        if (ring_int-&gt;size &gt; 0 &amp;&amp; ring-&gt;size == MAX_SIZE)
+        {
+            if (ring-&gt;head &gt;= ring_int-&gt;buffer[ring_int-&gt;tail])
+            {
+                ring_int_pop(ring_int);
+            }
+        }
+
+        ring_chars_push(ring, *p);
+
+        if (*p == 0)
+            break;
+        p++;
+    }
+
+    ring_int_push(ring_int, start);
+}
+
+int get_index(struct ring_int* ring_int, int index)
+{
+    index = (ring_int-&gt;tail + index) % MAX_SIZE;
+    return ring_int-&gt;buffer[index];
+}
+
+void print_new_to_old(struct ring_int* ring_int, struct ring_chars* ring)
+{
+    for (int i = ring_int-&gt;size - 1; i &gt;= 0; i--)
+    {
+        int j = get_index(ring_int, i);
+        while (ring-&gt;buffer[j] != &#39;*&#39;)
+        {
+            printf(&quot;%c&quot;, ring-&gt;buffer[j]);
+            j++;
+            if (j == MAX_SIZE)
+                j = 0;
+        }
+        printf(&quot;\n&quot;);
+    }
+}
+
+void print_old_to_new(struct ring_int* ring_int, struct ring_chars* ring)
+{
+    //printf(&quot;%d %d\n&quot;, ring-&gt;size, ring-&gt;head);
+    for (int i = 0; i &lt; MAX_SIZE; i++)
+    {
+        if (i &lt; ring-&gt;size)
+            printf(&quot;%c&quot;, ring-&gt;buffer[i]);
+        else
+            printf(&quot;.&quot;);
+    }
+    printf(&quot;\n&quot;);
+    
+    for (int i = 0; i &lt; MAX_SIZE; i++)
+    {
+        if (i == ring-&gt;head)
+            printf(&quot;^&quot;);
+        else if (i == ring-&gt;tail)
+            printf(&quot;~&quot;);
+        else
+            printf(&quot; &quot;);
+    }
+    printf(&quot;\n&quot;);
+
+    printf(&quot;[&quot;);
+    for (int i = 0; i &lt; ring_int-&gt;size; i++)
+    {
+        int j = get_index(ring_int, i);
+        printf(&quot;%d &quot;, j);
+    }
+    printf(&quot;]\n&quot;);
+
+    for (int i = 0; i &lt; ring_int-&gt;size; i++)
+    {
+        int j = get_index(ring_int, i);
+        while (ring-&gt;buffer[j] != &#39;*&#39;)
+        {
+            printf(&quot;%c&quot;, ring-&gt;buffer[j]);
+            j++;
+            if (j == MAX_SIZE)
+                j = 0;
+        }
+        printf(&quot;\n&quot;);
+
+    }
+}
+
+int main()
+{
+    struct ring_int ring_int = { 0 };
+    struct ring_chars ring_chars = { 0 };
+     //ring_text(&amp;ring_int, &amp;ring_chars, &quot;a&quot;);
+     //ring_text(&amp;ring_int, &amp;ring_chars, &quot;123&quot;);
+     //ring_text(&amp;ring_int, &amp;ring_chars, &quot;AB&quot;);
+     //ring_text(&amp;ring_int, &amp;ring_chars, &quot;Z&quot;);
+     //print_old_to_new(&amp;ring_int, &amp;ring_chars);
+     //ring_text(&amp;ring_int, &amp;ring_chars, &quot;45&quot;);
+     //print_old_to_new(&amp;ring_int, &amp;ring_chars);
+     
+     
+
+    for (;;)
+    {
+        char string[256] = { 0 };
+        printf(&quot;--------------------------------\n&quot;);
+        printf(&quot;&gt;&quot;);
+        scanf(&quot;%s&quot;, string);
+        ring_text(&amp;ring_int, &amp;ring_chars, string);
+        print_old_to_new(&amp;ring_int, &amp;ring_chars);
+    }
+    //ring_chars_push(&amp;c, &#39;a&#39;);
+    //ring_chars_push(&amp;c, &#39;b&#39;);
+    //ring_chars_push(&amp;c, &#39;c&#39;);
+    //ring_chars_push(&amp;c, &#39;d&#39;);
+    //ring_chars_push(&amp;c, &#39;e&#39;);
+}
+
+
+</code></pre>
+</body></html>

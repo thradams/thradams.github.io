@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p><a href="algorithms.md">Algorithms</a></p>
+
+<hr>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+std::string to_dec_string(It first, It last);
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">
+int main()
+{
+    using namespace std;
+    int u[] = {9, 8, 4, 0};
+    std::cout &lt;&lt; to_dec_string&lt;10&gt;(begin(u), end(u));
+}
+
+Output:
+ 489
+
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+std::string to_dec_string(It first, It last)
+{
+    std::string result;
+
+    while (!is_zero(first, last))
+    {
+        result += char(mod&lt;base&gt;(first, last, 10) + &#39;0&#39;);
+        divide_in_place&lt;base&gt;(first, last, 10);
+    }
+
+    std::reverse(result.begin(), result.end());
+    return result;
+}
+</code></pre>
+</body></html>

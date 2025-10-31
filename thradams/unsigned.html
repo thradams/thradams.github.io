@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Useful functions to avoid underflow/overflow and using the remaining value.</p>
+
+<pre><code class="language-cpp">
+unsigned int UnsignedSubtraction(unsigned int a, unsigned int b,
+unsigned int* r)
+{
+   const unsigned int minval = 1;
+   const unsigned int avaiable =  a - minval;
+   if (b &gt; avaiable)
+   {
+      *r = b - avaiable;
+      return minval;
+   }
+
+   *r = 0;
+   return a - b;
+}
+
+
+unsigned int UnsignedAddition(unsigned int a, unsigned int b, unsigned int* r)
+{
+   const unsigned int maxval = 255;
+   const unsigned int avaiable = maxval - a;
+   if (b &gt; avaiable)
+   {
+       *r = b - avaiable;
+       return maxval;
+   }
+
+   *r = 0;
+   return a + b;
+}
+
+</code></pre>
+</body></html>

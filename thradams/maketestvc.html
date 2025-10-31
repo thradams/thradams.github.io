@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Make Tests</h2>
+
+<p>This program scans the  source files that are inside a Visual Studio project searching for tests 
+functions inside #ifdef TEST.</p>
+
+<p>Then an output file is generated with forward declarations and calling each
+test.</p>
+
+<p>Usage: Inside Visual Studio External Tools</p>
+
+<pre><code>Command: your exe path
+Arguments: $(ProjectFileName) unit_test.c
+Initial Directory: $(ProjectDir)
+[x] Use output window
+</code></pre>
+
+<p>Source:</p>
+
+<pre><code class="language-cpp">#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;sys/stat.h&gt;
+
+struct Test
+{
+    char name[100];
+    struct Test* pNext;
+    int bFileName;
+};
+
+struct TestList
+{
+    struct Test* pHead;
+    struct Test* pTail;
+};
+
+static void Destroy(struct TestList* list)
+{
+    struct Test* pCurrent = list-&gt;pHead;
+    while (pCurrent)
+    {
+        struct Test* pNext = pCurrent-&gt;pNext;
+        free(pCurrent);
+        pCurrent = pNext;
+    }
+}
+
+static void Append(struct TestList* list, struct Test* p)
+{
+    if (list-&gt;pTail == NULL)
+    {
+        list-&gt;pHead = p;
+        list-&gt;pTail = p;
+    }
+    else {
+        list-&gt;pTail-&gt;pNext = p;
+        list-&gt;pTail = p;
+    }
+}
+enum Token
+{
+    IDENTIFER,
+    OTHER,
+    PRE,
+    COMMENT,
+    STRING,
+    SPACES,
+    NUMBER,
+};
+
+static const char* GetTokenName(enum Token e)
+{
+    switch (e)
+    {
+        case IDENTIFER: return &quot;IDENTIFER&quot;;
+        case OTHER:     return &quot;    OTHER&quot;;
+        case PRE:       return &quot;      PRE&quot;;
+        case COMMENT:   return &quot;  COMMENT&quot;;
+        case STRING:    return &quot;   STRING&quot;;
+        case SPACES:    return &quot;   SPACES&quot;;
+        case NUMBER:    return &quot;   NUMBER&quot;;
+    }
+    return &quot;??&quot;;
+}
+static enum Token Match(FILE* f, char* dest, int destsize)
+{
+    dest[0] = 0;
+
+    if (ferror(f) || feof(f))
+        return OTHER;
+
+
+
+REPEAT:;
+
+    enum Token tk = OTHER;
+    int count = 0;
+    char ch = fgetc(f);
+
+    if ((ch &gt;= &#39;a&#39; &amp;&amp; ch &lt;= &#39;z&#39;) ||
+        (ch &gt;= &#39;A&#39; &amp;&amp; ch &lt;= &#39;Z&#39;) ||
+        ch == &#39;_&#39;)
+    {
+        tk = IDENTIFER;
+
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+
+        while (
+            ((ch = fgetc(f)) != EOF) &amp;&amp;
+            (ch &gt;= &#39;a&#39; &amp;&amp; ch &lt;= &#39;z&#39;) ||
+            (ch &gt;= &#39;A&#39; &amp;&amp; ch &lt;= &#39;Z&#39;) ||
+            (ch &gt;= &#39;0&#39; &amp;&amp; ch &lt;= &#39;9&#39;) ||
+            ch == &#39;_&#39;)
+        {
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+        }
+        ungetc(ch, f);
+    }
+    else if (ch &gt;= &#39;0&#39; &amp;&amp; ch &lt;= &#39;9&#39;)
+    {
+        tk = NUMBER;
+        dest[count] = ch;
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+
+        while (((ch = fgetc(f)) != EOF) &amp;&amp;
+               (ch &gt;= &#39;0&#39; &amp;&amp; ch &lt;= &#39;9&#39;))
+        {
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+        }
+        ungetc(ch, f);
+    }
+    else if (ch == &#39;\&#39;&#39; || ch == &#39;&quot;&#39;)
+    {
+        char type = ch;
+
+        tk = STRING;
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+
+        while (((ch = fgetc(f)) != EOF))
+        {
+            if (ch == &#39;\\&#39;)
+            {
+                if (count &lt; destsize - 1)
+                {
+                    dest[count] = ch;
+                    count++;
+                }
+                ch = fgetc(f);
+                if (count &lt; destsize - 1)
+                {
+                    dest[count] = ch;
+                    count++;
+                }
+            }
+            else if (ch == type)
+            {
+                if (count &lt; destsize - 1)
+                {
+                    dest[count] = ch;
+                    count++;
+                }
+                break;
+            }
+            else
+            {
+                if (count &lt; destsize - 1)
+                {
+                    dest[count] = ch;
+                    count++;
+                }
+            }
+        }
+    }
+    else if (ch == &#39; &#39; || ch == &#39;\n&#39; || ch == &#39;\r&#39;)
+    {
+        tk = SPACES;
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+
+        while ((ch = getc(f)) != EOF)
+        {
+            if (!(ch == &#39; &#39; || ch == &#39;\n&#39; || ch == &#39;\r&#39;))
+            {
+                ungetc(ch, f);
+                break;
+            }
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+        }
+        goto REPEAT;
+    }
+    else if (ch == &#39;/&#39;)
+    {
+        tk = OTHER;
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+        ch = fgetc(f);
+
+        if (ch == &#39;/&#39;)
+        {
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+
+            tk = COMMENT;
+
+            while (
+                ((ch = fgetc(f)) != EOF) &amp;&amp;
+                ch != &#39;\r&#39; &amp;&amp;
+                ch != &#39;\n&#39; &amp;&amp;
+                ch != &#39;\0&#39;)
+            {
+                if (count &lt; destsize - 1)
+                {
+                    dest[count] = ch;
+                    count++;
+                }
+            }
+        }
+        else if (ch == &#39;*&#39;)
+        {
+            tk = COMMENT;
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+
+            ch = fgetc(f);
+
+            while (!feof(f))
+            {
+                if (ch == &#39;*&#39;)
+                {
+                    if (count &lt; destsize - 1)
+                    {
+                        dest[count] = ch;
+                        count++;
+                    }
+
+                    ch = fgetc(f);
+                    if (ch == &#39;/&#39;)
+                    {
+                        if (count &lt; destsize - 1)
+                        {
+                            dest[count] = ch;
+                            count++;
+                        }
+                        break;
+                    }
+                }
+                else
+                {
+                    if (count &lt; destsize - 1)
+                    {
+                        dest[count] = ch;
+                        count++;
+                    }
+                }
+                ch = fgetc(f);
+            }
+            goto REPEAT;
+        }
+        else
+        {
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+            ungetc(ch, f);
+        }
+    }
+    else if (ch == &#39;#&#39;)
+    {
+        tk = PRE;
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+        while (((ch = fgetc(f)) != EOF) &amp;&amp; ch != &#39;\r&#39; &amp;&amp; ch != &#39;\n&#39;)
+        {
+            if (count &lt; destsize - 1)
+            {
+                dest[count] = ch;
+                count++;
+            }
+        }
+
+        if (ch == &#39;\r&#39;)
+        {
+            ch = fgetc(f); // \n
+        }
+
+    }
+    else
+    {
+        if (count &lt; destsize - 1)
+        {
+            dest[count] = ch;
+            count++;
+        }
+    }
+
+    dest[count] = &#39;\0&#39;;
+    return tk;
+}
+
+
+static void CollectTests(FILE* f, struct TestList* list)
+{
+    int ifdefcount = 0;
+    int ActiveSession = 0;
+
+    while (!feof(f))
+    {
+        char lexeme[100];
+        enum Token tk = Match(f, lexeme, sizeof lexeme);
+
+        if (tk == PRE)
+        {
+            if (strcmp(lexeme, &quot;#ifdef TEST&quot;) == 0)
+            {
+                ifdefcount = 1;
+                ActiveSession = 1;
+            }
+            else if (strncmp(lexeme, &quot;#ifdef&quot;, sizeof(&quot;#ifdef&quot;) - 1) == 0 ||
+                     strncmp(lexeme, &quot;#if&quot;, sizeof(&quot;#if&quot;) - 1) == 0 ||
+                     strncmp(lexeme, &quot;#ifndef&quot;, sizeof(&quot;#ifndef&quot;) - 1) == 0)
+            {
+                ifdefcount++;
+            }
+            else if (strcmp(lexeme, &quot;#endif&quot;) == 0)
+            {
+                ifdefcount--;
+                if (ifdefcount == 0)
+                {
+                    /*we are leaving the #ifdef TEST*/
+                    ActiveSession = 0;
+                }
+            }
+        }
+        else if (tk == IDENTIFER &amp;&amp; ActiveSession == 1)
+        {
+            //template
+            // void name ( optional void ) {
+            do
+            {
+                if (strcmp(lexeme, &quot;void&quot;) != 0) break;
+                tk = Match(f, lexeme, sizeof lexeme);
+                if (tk != IDENTIFER) break;
+                char name[200] = { 0 };
+                strncpy(name, lexeme, sizeof name);
+                tk = Match(f, lexeme, sizeof lexeme);
+                if (strcmp(lexeme, &quot;(&quot;) != 0) break;
+                tk = Match(f, lexeme, sizeof lexeme);
+
+                if (strcmp(lexeme, &quot;void&quot;) == 0)
+                {
+                    /*optional*/
+                    tk = Match(f, lexeme, sizeof lexeme);
+                }
+                if (strcmp(lexeme, &quot;)&quot;) != 0) break;
+
+                tk = Match(f, lexeme, sizeof lexeme);
+                if (strcmp(lexeme, &quot;{&quot;) != 0) break;
+
+                //Pattern match! void name ( void ) {
+                struct Test* p = calloc(1, sizeof * p);
+                if (p)
+                {
+                    p-&gt;bFileName = 0;
+                    strcpy(p-&gt;name, name);
+                    printf(&quot;  %s\n&quot;, p-&gt;name);
+                    Append(list, p);
+                }
+            }
+            while (0);
+        }
+    }
+}
+
+void CollectTestsFile(const char* file, struct TestList* list)
+{
+    FILE* f = fopen(file, &quot;r&quot;);
+    if (f)
+    {
+        /*while (!feof(f))
+        {
+            char lexeme[100];
+            enum Token tk = Match(f, lexeme, sizeof lexeme);
+            printf(&quot;%s &#39;%s&#39;\n&quot;, GetTokenName(tk), lexeme);
+        }*/
+
+
+        struct Test* p = calloc(1, sizeof * p);
+        if (p)
+        {
+            p-&gt;bFileName = 1;
+            strcpy(p-&gt;name, file);
+            Append(list, p);
+        }
+
+        printf(&quot;%s\n&quot;, file);
+        CollectTests(f, list);
+        fclose(f);
+    }
+}
+
+void Generate(const char* output, struct TestList* list)
+{
+    FILE* fout = fopen(output, &quot;w&quot;);
+    if (fout)
+    {
+
+        fprintf(fout, &quot;#ifdef TEST\n\n&quot;);
+        fprintf(fout, &quot;//forward declarations\n\n&quot;);
+
+        struct Test* pCurrent = list-&gt;pHead;
+        while (pCurrent)
+        {
+            if (pCurrent-&gt;bFileName)
+            {
+                if (pCurrent-&gt;pNext != NULL &amp;&amp; pCurrent-&gt;pNext-&gt;bFileName == 0)
+                    fprintf(fout, &quot;//%s\n&quot;, pCurrent-&gt;name);
+            }
+            else
+                fprintf(fout, &quot;void %s(void);\n&quot;, pCurrent-&gt;name);
+            pCurrent = pCurrent-&gt;pNext;
+        }
+
+        fprintf(fout, &quot;\n&quot;);
+        fprintf(fout, &quot;void DoUnitTests(void)\n{\n&quot;);
+        pCurrent = list-&gt;pHead;
+        while (pCurrent)
+        {
+            if (pCurrent-&gt;bFileName)
+            {
+                if (pCurrent-&gt;pNext != NULL &amp;&amp; pCurrent-&gt;pNext-&gt;bFileName == 0)
+                {
+                    fprintf(fout, &quot;\n&quot;);
+                    fprintf(fout, &quot;    //%s\n&quot;, pCurrent-&gt;name);
+                }
+            }
+            else
+                fprintf(fout, &quot;    %s();\n&quot;, pCurrent-&gt;name);
+            pCurrent = pCurrent-&gt;pNext;
+        }
+        fprintf(fout, &quot;}\n&quot;);
+
+        fprintf(fout, &quot;#else\n&quot;);
+        fprintf(fout, &quot;; //removes warning C4206: nonstandard extension used: translation unit is empty\n&quot;);
+        fprintf(fout, &quot;#endif\n&quot;);
+        fclose(fout);
+
+        printf(&quot;file &#39;%s&#39; was updated\n&quot;, output);
+    }
+    else
+    {
+        printf(&quot;cannot open the ouput &#39;%s&#39; file\n&quot;, output);
+    }
+}
+
+
+struct stream {
+
+    /*cursor*/
+    const char* p;
+
+    /*
+     name of the current node
+    */
+    const char* node;
+
+    struct TestList* list;
+
+    const char* out;
+};
+
+#define current(stream) (stream)-&gt;p[0]
+#define next(stream) (stream)-&gt;p[1]
+#define match(stream) stream-&gt;p++
+#define is_space(stream) (current(stream) == &#39; &#39; || current(stream) == &#39;\r&#39; || current(stream) == &#39;\n&#39;)
+#define skip_spaces(p)  while (is_space(p)) { match(p); }
+
+
+const char* parse_id(struct stream* p)
+{
+    const char* start = p-&gt;p;
+    while (current(p) &gt;= &#39;a&#39; &amp;&amp; current(p) &lt;= &#39;z&#39; ||
+           current(p) &gt;= &#39;A&#39; &amp;&amp; current(p) &lt;= &#39;Z&#39; ||
+           current(p) &gt;= &#39;0&#39; &amp;&amp; current(p) &lt;= &#39;9&#39; ||
+           current(p) &gt;= &#39;_&#39;)
+    {
+        match(p);
+    }
+    return start;
+}
+
+void parse_attribute(struct stream* p)
+{
+    /*
+     attribute ::= &lt;id&gt; &#39;=&#39; &#39;&quot;&#39; &lt;string&gt; &#39;&quot;&#39;
+    */
+    if (current(p) &gt;= &#39;a&#39; &amp;&amp; current(p) &lt;= &#39;z&#39; ||
+        current(p) &gt;= &#39;A&#39; &amp;&amp; current(p) &lt;= &#39;Z&#39; ||
+        current(p) &gt;= &#39;_&#39;) /*first of &lt;id&gt;*/
+    {
+        const char* start = parse_id(p);
+        //printf(&quot;attribute &#39;%.*s&#39;&quot;, (int)(p-&gt;p - start), start);
+
+        skip_spaces(p);
+        match(p); // &#39;=&#39;
+        skip_spaces(p);
+        match(p); // &#39;&quot;&#39;
+
+        start = p-&gt;p;
+        while (current(p) != &#39;\&quot;&#39;) match(p);
+        //printf(&quot; = value &#39;%.*s&#39;\n&quot;, (int)(p-&gt;p - start), start);
+
+        if (strcmp(p-&gt;node, &quot;ClCompile&quot;) == 0)
+        {
+            char fileName[200] = { 0 };
+            strncpy(fileName, start, (int)(p-&gt;p - start));
+
+            //we dont collect tests from the ouput itself
+            if (strcmp(fileName, p-&gt;out) != 0)
+            {
+                CollectTestsFile(fileName, p-&gt;list);
+            }
+            //printf(&quot;%.*s\n&quot;, (int)(p-&gt;p - start), start);
+        }
+        match(p); // &#39;&quot;&#39;
+    }
+}
+
+void parse_attribute_list(struct stream* p)
+{
+    /*
+     attribute_list ::= &lt;attribute&gt; &lt;attribute_list&gt; | (empty)
+    */
+    skip_spaces(p);
+    while (current(p) &gt;= &#39;a&#39; &amp;&amp; current(p) &lt;= &#39;z&#39; ||
+           current(p) &gt;= &#39;A&#39; &amp;&amp; current(p) &lt;= &#39;Z&#39; ||
+           current(p) &gt;= &#39;_&#39;)
+    {
+        parse_attribute(p);
+        skip_spaces(p);
+    }
+}
+
+void parse_node(struct stream* p);
+
+void parse_node_list(struct stream* p)
+{
+    /*
+      node_list ::= &lt;node&gt; &lt;node_list&gt; | (empty)
+    */
+
+    while (current(p) == &#39;&lt;&#39; &amp;&amp; next(p) != &#39;/&#39;)
+    {
+        parse_node(p);
+        skip_spaces(p);
+    }
+}
+
+const char* parse_string(struct stream* p)
+{
+    const char* start = p-&gt;p;
+    if (start != 0)
+    {
+        while (current(p) != &#39;&lt;&#39; &amp;&amp; current(p) != &#39;&gt;&#39;) match(p);
+        //printf(&quot;string = &#39;%.*s&#39;\n&quot;, (int)(p-&gt;p - start), start);
+    }
+    return start;
+}
+
+void parse_element(struct stream* p)
+{
+    /*
+    element ::= &lt;node_list&gt; | &lt;string&gt;
+    */
+    skip_spaces(p);
+    if (current(p) == &#39;&lt;&#39; &amp;&amp; next(p) != &#39;/&#39;) /*first of node*/
+        parse_node_list(p);
+    else
+        parse_string(p);
+}
+
+void parse_node_end(struct stream* p, const char* nodeid, int nodeid_size)
+{
+    /*
+    * node_end ::= &#39;/&gt;&#39; | &#39;&gt;&#39; &lt;element&gt; &#39;&lt;/&#39; &lt;id&gt; &#39;&gt;&#39;
+    */
+    skip_spaces(p);
+    if (current(p) == &#39;/&#39; &amp;&amp; next(p) == &#39;&gt;&#39;)
+    {
+        match(p); // &#39;/&#39;
+        match(p); // &#39;&#39;&gt;&#39;
+    }
+    else if (current(p) == &#39;&gt;&#39;)
+    {
+        match(p); // &#39;&gt;&#39;
+        parse_element(p);
+        match(p); // &#39;&lt;&#39;
+        match(p); // &#39;/&#39;
+        const char* start = parse_id(p);
+        match(p); // &#39;&gt;&#39;
+        //printf(&quot;end_node &lt;/&#39;%.*s&#39;&gt;\n&quot;, nodeid_size, nodeid);
+    }
+}
+
+
+void parse_node(struct stream* p)
+{
+    /*
+      node ::= &#39;&lt;&#39; &lt;id&gt; &lt;attribute_list&gt; &lt;node_end&gt; | (empty)
+    */
+
+    skip_spaces(p);
+    if (current(p) == &#39;&lt;&#39;)
+    {
+        match(p);
+        skip_spaces(p);
+
+
+        const char* start = parse_id(p);
+        const char* nodeid = start;
+        int nodeid_size = (int)(p-&gt;p - start);
+
+        char node[100] = { 0 };
+        strncpy(node, nodeid, nodeid_size);
+        const char* oldnode = p-&gt;node;
+        p-&gt;node = node;
+
+        //printf(&quot;    node &lt;&#39;%.*s&#39;&gt;\n&quot;, nodeid_size, nodeid);
+
+        skip_spaces(p);
+        parse_attribute_list(p);
+        parse_node_end(p, nodeid, nodeid_size);
+
+        p-&gt;node = oldnode;
+    }
+}
+
+bool fread2(void* buffer, size_t size, size_t count, FILE* stream, size_t* sz)
+{
+    *sz = 0;//out
+
+    bool result = false;
+    size_t n = fread(buffer, size, count, stream);
+    if (n == count) {
+        *sz = n;
+        result = true;
+    }
+    else if (n &lt; count) {
+        if (feof(stream))
+        {
+            *sz = n;
+            result = true;
+        }
+    }
+    return result;
+}
+
+char* readfile(const char* path)
+{
+    char* result = NULL;
+
+    struct stat info;
+    if (stat(path, &amp;info) == 0)
+    {
+        char* data = (char*)malloc(sizeof(char) * info.st_size + 1);
+        if (data != NULL)
+        {
+            FILE* file = fopen(path, &quot;r&quot;);
+            if (file != NULL)
+            {
+                if (info.st_size &gt;= 3)
+                {
+                    size_t n = 0;
+                    if (fread2(data, 1, 3, file, &amp;n))
+                    {
+                        if (n == 3)
+                        {
+                            if (data[0] == (char)0xEF &amp;&amp;
+                                data[1] == (char)0xBB &amp;&amp;
+                                data[2] == (char)0xBF)
+                            {
+                                if (fread2(data, 1, info.st_size - 3, file, &amp;n))
+                                {
+                                    //ok
+                                    data[n] = 0;
+                                    result = data; data = 0;
+                                }
+                            }
+                            else if (fread2(data + 3, 1, info.st_size - 3, file, &amp;n))
+                            {
+                                data[3 + n] = 0;
+                                result = data; data = 0;
+                            }
+                        }
+                        else
+                        {
+                            data[n] = 0;
+                            result = data; data = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    size_t n = 0;
+                    if (fread2(data, 1, info.st_size, file, &amp;n))
+                    {
+                        data[n] = 0;
+                        result = data; data = 0;
+                    }
+                }
+                fclose(file);
+            }
+            free(data);
+        }
+    }
+    return result;
+}
+
+
+int main(int argc, char** argv) {
+
+    if (argc &lt; 3)
+    {
+        printf(&quot;usage: projec.vcxproj output.c\n&quot;);
+        return EXIT_FAILURE;
+    }
+
+
+    printf(&quot;Searching for tests in &#39;%s&#39;\n&quot;, argv[1]);
+    const char* p = readfile(argv[1]);
+
+    while (*p != &#39;\n&#39;)
+    {
+        p++;
+    }
+
+    struct TestList list = { 0 };
+
+    struct stream s = { .p = p , .list = &amp;list, .out = argv[2] };
+    parse_node(&amp;s);
+
+    Generate(argv[2], &amp;list);
+ 
+}
+</code></pre>
+</body></html>

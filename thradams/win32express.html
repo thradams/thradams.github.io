@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Micro framework to generate win32 applications.</p>
+
+<p>Sample:</p>
+
+<pre><code class="language-cpp">
+// Windows Header Files:
+#include &lt;windows.h&gt;
+
+// C RunTime Header Files
+#include &lt;stdlib.h&gt;
+#include &lt;malloc.h&gt;
+#include &lt;memory.h&gt;
+#include &lt;tchar.h&gt;
+
+#include &quot;win32express.h&quot;
+#include &quot;resource.h&quot;
+
+
+class AboutDlg : public Dialog&lt;AboutDlg, IDD_ABOUT&gt;
+{
+  void About()
+  {  
+  }
+
+  void OnClose()
+  {
+    EndDialog(IDCANCEL);
+  }
+
+  void OnOk()
+  {
+    EndDialog(IDCANCEL);
+    PostQuitMessage(1);
+  }  
+
+public:
+
+  BEGIN_MSG_MAP(AboutDlg)
+  S_COMMAND_ID_HANDLER(IDCANCEL, OnClose)  
+  S_COMMAND_ID_HANDLER(IDOK, OnOk)  
+  S_COMMAND_ID_HANDLER(IDM_ABOUT1, About)
+  END_MSG_MAP()
+
+  AboutDlg(HWND hParent = NULL) : Dialog&lt;AboutDlg, IDD_ABOUT&gt;(hParent) 
+  {
+  }
+  
+    void OnPaint(HDC hdc)
+    {
+        ::TextOut(hdc, 10,10,L&quot;hello&quot;, 6);
+    }
+};
+
+
+class Doc : public Window&lt;Doc, IDI_ICON1, IDR_MENU1&gt;
+{
+  void Exit()
+  {
+    DestroyWindow(m_hWnd);
+    PostQuitMessage(0);
+  }
+
+  void About()
+  {
+    AboutDlg dlg(m_hWnd);
+    dlg.ShowDialog();
+  }
+
+public:
+
+  BEGIN_MSG_MAP(AboutDlg)
+  S_COMMAND_ID_HANDLER(IDM_ABOUT1, About)
+  S_COMMAND_ID_HANDLER(IDM_EXIT1, Exit)
+  END_MSG_MAP()
+
+  void OnPaint(HDC hdc)
+    {
+        ::TextOut(hdc, 10,10,L&quot;hello&quot;, 6);
+    }
+};
+
+int APIENTRY _tWinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPTSTR    lpCmdLine,
+                     int       nCmdShow)
+ {
+
+   Doc doc;
+   doc.Create();
+   
+    return RunMessageLoop();
+ }
+
+Header file
+
+
+// Copyright (C) 2010, Thiago Adams (thiago.adams@gmail.com)
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided &quot;as is&quot; without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+
+//This is a experimental code.
+
+
+#pragma once
+
+#include &lt;windows.h&gt;
+#include &lt;commctrl.h&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#ifndef ASSERT
+#include &lt;cassert&gt;
+#define ASSERT assert
+#endif
+#include &lt;string.h&gt;
+
+template&lt;class T&gt;
+T* GetWindowDocument(HWND hWnd)
+{
+  T *pDoc = reinterpret_cast&lt;T *&gt;(static_cast&lt;LONG_PTR&gt;(
+    ::GetWindowLongPtrW(hWnd, GWLP_USERDATA)));
+  return pDoc;
+}
+
+template&lt;class T&gt;
+T* SetWindowDocument(HWND hWnd, T* pReceiver)
+{
+  LONG_PTR lptr = ::SetWindowLongPtrW(
+    hWnd,
+    GWLP_USERDATA,
+    PtrToUlong(pReceiver));
+  T *pOldDoc = (T*)(LONG_PTR)(lptr);
+  return pOldDoc;
+}
+
+template&lt;class T&gt;
+LRESULT CALLBACK WindowsProcEx(HWND hWnd,
+  UINT message,
+  WPARAM wParam,
+  LPARAM lParam)
+{
+  T* pDoc = GetWindowDocument&lt;T&gt;(hWnd);
+  BOOL bHandled = false;
+  LRESULT r = Details::SendMessageTo(pDoc, hWnd , message, wParam, lParam, bHandled);
+  if (bHandled)
+  {
+    return r;
+  }
+  return DefWindowProc(hWnd, message, wParam, lParam);  
+}
+
+
+inline bool IsControlKeyPressed()
+{
+  return (GetKeyState(VK_CONTROL) &amp; 0xf000) == 0xf000;
+}
+
+inline bool IsShiftKeyPressed()
+{
+  return (GetKeyState(VK_SHIFT) &amp; 0xf000) == 0xf000;
+}
+
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lParam)    ((int)(short)LOWORD(lParam))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lParam)    ((int)(short)HIWORD(lParam))
+#endif
+
+namespace Details
+{
+  class MemoryDC
+  {
+  public:
+    HDC m_hDC;
+    HDC m_hDCOriginal;
+    RECT m_rcPaint;
+    HBITMAP m_hBitmap;
+    HBITMAP m_hBmpOld;
+
+    MemoryDC(HDC hDC, RECT&amp; rcPaint) : m_hDCOriginal(hDC), m_hBmpOld(NULL)
+    {
+      m_rcPaint = rcPaint;
+      m_hDC = ::CreateCompatibleDC(m_hDCOriginal);
+      ASSERT(m_hDC != NULL);
+      m_hBitmap = ::CreateCompatibleBitmap(m_hDCOriginal,
+        m_rcPaint.right - m_rcPaint.left, m_rcPaint.bottom - m_rcPaint.top);
+      ASSERT(m_hBitmap != NULL);
+      m_hBmpOld = (HBITMAP)::SelectObject(m_hDC, m_hBitmap);
+      ::SetViewportOrgEx(m_hDC, -m_rcPaint.left, -m_rcPaint.top, 0);
+    }
+
+    ~MemoryDC()
+    {
+      ::BitBlt(m_hDCOriginal, m_rcPaint.left, m_rcPaint.top,
+        m_rcPaint.right - m_rcPaint.left, m_rcPaint.bottom - m_rcPaint.top,
+        m_hDC, m_rcPaint.left, m_rcPaint.top, SRCCOPY);
+      (HBITMAP)::SelectObject(m_hDC, m_hBmpOld);
+      ::DeleteObject(m_hBitmap);
+      ::DeleteObject(m_hDC);
+    }
+  };
+
+
+  template&lt;class TEventReceiver&gt;
+  LRESULT SendMessageTo(TEventReceiver* pEventReceiver,
+    HWND hWnd,
+    UINT uMsg,
+    WPARAM wparam,
+    LPARAM lparam,
+    BOOL&amp; bHandled)
+  {
+    bHandled = FALSE;
+    if (pEventReceiver == NULL)
+    {
+      return FALSE;
+    }
+    bHandled = TRUE;
+    switch (uMsg)
+    {
+
+      //notifications
+    case WM_COMMAND:
+    case WM_NOTIFY:
+      {
+        LRESULT lresult;
+        pEventReceiver-&gt;ProcessWindowMessage(hWnd, uMsg, wparam, lparam, lresult);
+      }
+      break;
+
+      __if_exists(TEventReceiver::OnDeactivate)
+      {
+    case WM_ACTIVATE:
+      {
+        if (LOWORD(wparam) == WA_INACTIVE)
+        {
+          pEventReceiver-&gt;OnDeactivate();
+        }
+        break;
+      }
+      } //OnDeactivate
+
+#ifndef _WIN32_WCE
+      __if_exists(TEventReceiver::OnMouseWheel)
+      {
+    case WM_MOUSEWHEEL:
+      {
+        int fwKeys = GET_KEYSTATE_WPARAM(wparam );
+        short zDelta = GET_WHEEL_DELTA_WPARAM(wparam );                
+        pEventReceiver-&gt;OnMouseWheel(fwKeys, zDelta);
+      }
+      break;
+      }//OnMouseWheel
+#endif
+      __if_exists(TEventReceiver::OnSetFocus)
+      {
+    case WM_SETFOCUS:
+      {
+        pEventReceiver-&gt;OnSetFocus();
+      }            
+      break;
+      }
+
+      __if_exists(TEventReceiver::OnSetCursor)
+      {
+    case WM_SETCURSOR:
+      {
+        if (!pEventReceiver-&gt;OnSetCursor())
+        {
+          bHandled = FALSE;
+        }
+      }            
+      break;
+      }
+
+      __if_exists (TEventReceiver::OnKillFocus)
+      {
+    case WM_KILLFOCUS:
+      {
+        pEventReceiver-&gt;OnKillFocus();
+      }            
+      break;
+      }//OnKillFocus
+
+      __if_exists (TEventReceiver::OnPaint)
+      {
+    case WM_PAINT:
+      {
+        PAINTSTRUCT ps;
+        HDC hDC = BeginPaint(hWnd, &amp;ps);
+        pEventReceiver-&gt;OnPaint(hDC);
+        EndPaint(hWnd, &amp;ps);
+      }
+      break;
+      }
+
+    default:
+      bHandled = FALSE;
+      return FALSE;
+    }
+    return TRUE;
+  }
+} //namespace details
+
+int RunMessageLoop()
+{
+  MSG msg;
+  while (GetMessage(&amp;msg, NULL, 0, 0))
+  {
+    DispatchMessage(&amp;msg);
+  }
+  return (int) msg.wParam;
+}
+
+DWORD GetStyle(HWND m_hWnd)
+{
+  ASSERT(::IsWindow(m_hWnd));
+  return (DWORD)::GetWindowLong(m_hWnd, GWL_STYLE);
+}
+
+BOOL CenterWindow(HWND m_hWnd, HWND hWndCenter = NULL)
+{
+  ASSERT(::IsWindow(m_hWnd));
+
+  // determine owner window to center against
+  DWORD dwStyle = GetStyle(m_hWnd);
+  if(hWndCenter == NULL)
+  {
+    if(dwStyle &amp; WS_CHILD)
+      hWndCenter = ::GetParent(m_hWnd);
+    else
+      hWndCenter = ::GetWindow(m_hWnd, GW_OWNER);
+  }
+
+  // get coordinates of the window relative to its parent
+  RECT rcDlg;
+  ::GetWindowRect(m_hWnd, &amp;rcDlg);
+  RECT rcArea;
+  RECT rcCenter;
+  HWND hWndParent;
+  if(!(dwStyle &amp; WS_CHILD))
+  {
+    // don&#39;t center against invisible or minimized windows
+    if(hWndCenter != NULL)
+    {
+      DWORD dwStyleCenter = ::GetWindowLong(hWndCenter, GWL_STYLE);
+      if(!(dwStyleCenter &amp; WS_VISIBLE) || (dwStyleCenter &amp; WS_MINIMIZE))
+        hWndCenter = NULL;
+    }
+
+    // center within screen coordinates
+#if WINVER &lt; 0x0500
+    ::SystemParametersInfo(SPI_GETWORKAREA, NULL, &amp;rcArea, NULL);
+#else
+    HMONITOR hMonitor = NULL;
+    if(hWndCenter != NULL)
+    {
+      hMonitor = ::MonitorFromWindow(hWndCenter,
+        MONITOR_DEFAULTTONEAREST);
+    }
+    else
+    {
+      hMonitor = ::MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+    }
+
+    //ATLENSURE_RETURN_VAL(hMonitor != NULL, FALSE);
+
+    MONITORINFO minfo;
+    minfo.cbSize = sizeof(MONITORINFO);
+    BOOL bResult = ::GetMonitorInfo(hMonitor, &amp;minfo);
+    //ATLENSURE_RETURN_VAL(bResult, FALSE);
+
+    rcArea = minfo.rcWork;
+#endif
+    if(hWndCenter == NULL)
+      rcCenter = rcArea;
+    else
+      ::GetWindowRect(hWndCenter, &amp;rcCenter);
+  }
+  else
+  {
+    // center within parent client coordinates
+    hWndParent = ::GetParent(m_hWnd);
+    ASSERT(::IsWindow(hWndParent));
+
+    ::GetClientRect(hWndParent, &amp;rcArea);
+    ASSERT(::IsWindow(hWndCenter));
+    ::GetClientRect(hWndCenter, &amp;rcCenter);
+    ::MapWindowPoints(hWndCenter, hWndParent, (POINT*)&amp;rcCenter, 2);
+  }
+
+  int DlgWidth = rcDlg.right - rcDlg.left;
+  int DlgHeight = rcDlg.bottom - rcDlg.top;
+
+  // find dialog&#39;s upper left based on rcCenter
+  int xLeft = (rcCenter.left + rcCenter.right) / 2 - DlgWidth / 2;
+  int yTop = (rcCenter.top + rcCenter.bottom) / 2 - DlgHeight / 2;
+
+  // if the dialog is outside the screen, move it inside
+  if(xLeft + DlgWidth &gt; rcArea.right)
+    xLeft = rcArea.right - DlgWidth;
+  if(xLeft &lt; rcArea.left)
+    xLeft = rcArea.left;
+
+  if(yTop + DlgHeight &gt; rcArea.bottom)
+    yTop = rcArea.bottom - DlgHeight;
+  if(yTop &lt; rcArea.top)
+    yTop = rcArea.top;
+
+  // map screen coordinates to child coordinates
+  return ::SetWindowPos(m_hWnd, NULL, xLeft, yTop, -1, -1,
+    SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+
+// Message handler for about box.
+template&lt;class T&gt;
+INT_PTR CALLBACK DlgProc(HWND hDlg,
+  UINT message,
+  WPARAM wParam,
+  LPARAM lParam)
+{
+  BOOL bHandled = FALSE;
+  UNREFERENCED_PARAMETER(lParam);
+
+  switch (message)
+  {
+  case WM_INITDIALOG:
+    {
+      T * p = (T*)lParam;
+      SetWindowLongPtr(hDlg, GWLP_USERDATA, (LONG_PTR) p);
+      p-&gt;InitEntry(hDlg);
+      return (INT_PTR)TRUE;
+    }  
+  }
+
+  //TODO : all messages?
+  T * p = (T*)GetWindowLongPtr(hDlg, GWLP_USERDATA);
+  LRESULT r = Details::SendMessageTo(p, hDlg, message, wParam, lParam, bHandled);
+
+  return bHandled;
+}
+
+
+template&lt;class T&gt;
+INT_PTR ShowDialog(LPCWSTR lpTemplateName, T * p, HWND hWndParent)
+{
+  HINSTANCE hInst = GetModuleHandle(NULL);
+  INT_PTR r = DialogBoxParam(hInst, lpTemplateName, hWndParent, &amp;DlgProc&lt;T&gt;,(LPARAM) p);
+
+  ASSERT(r != 0); //resource exists?    (1813)
+  return r;
+}
+
+template&lt;class T&gt;
+HWND ShowModeless(UINT IDD, T* p, HWND hParent)
+{
+  HWND hWnd = NULL;
+
+  HINSTANCE hInstance = GetModuleHandle(NULL);   
+
+  HRSRC hDlg = FindResource(hInstance, MAKEINTRESOURCE(IDD), RT_DIALOG);
+  if (hDlg != NULL)
+  {
+    DWORD dwLastError = 0;
+    HGLOBAL hResource = LoadResource(hInstance, hDlg);
+    if (hResource != NULL)
+    {
+      DLGTEMPLATE* pDlg = (DLGTEMPLATE*) LockResource(hResource);
+      if (pDlg != NULL)
+      {
+        hWnd = CreateDialogIndirectParam(
+          hInstance,
+          pDlg,
+          hParent,
+          &amp;DlgProc&lt;T&gt;, 
+          (LPARAM)p);
+
+        UnlockResource(hResource);
+      }
+      else
+        dwLastError = ::GetLastError();
+    }
+    else
+      dwLastError = ::GetLastError();
+
+    if (dwLastError != 0)
+      SetLastError(dwLastError);
+  }
+  return hWnd;
+}
+
+
+template&lt;class T, UINT IDD&gt;
+class Dialog
+{
+protected:
+  HWND m_hDlg;
+  HWND m_hParent;
+
+public:
+
+  int EndDialog(int r)
+  {
+    return ::EndDialog(m_hDlg, r);
+  }
+
+  UINT GetDlgItemText(int nID, std::wstring&amp; s) const
+  {
+    ASSERT(::IsWindow(m_hDlg));
+    HWND hItem = GetDlgItem(nID);
+    if (hItem != NULL)
+    {
+      int nLength = ::GetWindowTextLength(hItem);
+      std::vector&lt;wchar_t&gt; buffer(nLength+1);
+      wchar_t* pszText = &amp;buffer[0];
+      nLength = ::GetWindowText(hItem, pszText, nLength+1);
+      s = pszText;
+      return nLength;
+    }
+    else
+    {
+      s.clear();
+      return 0;
+    }
+  }
+
+  HWND GetDlgItem(UINT id) const
+  {
+    return ::GetDlgItem(m_hDlg, id);
+  }
+
+  Dialog(HWND hParent = NULL) : m_hParent(hParent)
+  {
+  }
+
+  //WM_INITDIALOG
+  void InitEntry(HWND hDlg)
+  {     
+    m_hDlg = hDlg;
+    CenterWindow(m_hDlg, m_hParent);
+
+    __if_exists (T::InitDialog)
+    {
+      static_cast&lt;T*&gt;(this)-&gt;InitDialog();
+    }
+  }
+
+  //show modeless
+  void Show()
+  {
+    m_hDlg = ShowModeless(IDD, this, m_hParent);                        
+  }
+
+  //show modal
+  int ShowDialog()
+  {
+    return ::ShowDialog(MAKEINTRESOURCE(IDD), static_cast&lt;T*&gt;(this), m_hParent);
+  }
+};
+
+template&lt;class T, 
+  UINT IconId =0,
+  UINT MENUIDD = 0,
+  UINT wStyle =  WS_OVERLAPPEDWINDOW | CS_DBLCLKS 
+&gt;
+class Window
+{
+protected:
+  HWND m_hWnd;
+
+public:
+
+  static const WNDCLASSEX * GetClass()
+  {
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    static WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style          = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+    wcex.lpfnWndProc    = &amp;WindowsProcEx&lt;T&gt;;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = hInstance;
+
+    wcex.hIcon            = LoadIcon(hInstance, MAKEINTRESOURCE(IconId));
+
+    wcex.hCursor          = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
+
+    if (MENUIDD != NULL)
+      wcex.lpszMenuName   = MAKEINTRESOURCE(MENUIDD);
+    else
+      wcex.lpszMenuName   = NULL;
+
+    wcex.lpszClassName  = L&quot;class&quot;;
+    wcex.hIconSm        = 0;//LoadIcon(wcex.hInstance,MAKEINTRESOURCE(IDI_SMALL));
+    return &amp;wcex;
+  }
+
+  Window() : m_hWnd(NULL)
+  {
+  }
+
+  void Create(HWND hWndParent = 0)
+  {
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    RegisterClassEx(GetClass());
+
+    m_hWnd = CreateWindow(GetClass()-&gt;lpszClassName, L&quot;&quot;, wStyle,
+      0, 0, CW_USEDEFAULT, CW_USEDEFAULT, hWndParent, NULL, hInstance, NULL);
+
+    SetWindowDocument(m_hWnd, static_cast&lt;T*&gt;(this));
+    ShowWindow(m_hWnd, TRUE);
+    UpdateWindow(m_hWnd);
+  }
+};
+
+
+#if defined _M_IX86
+#pragma comment(linker, &quot;/manifestdependency:\&quot;type=&#39;win32&#39; name=&#39;Microsoft.Windows.Common-Controls&#39; version=&#39;6.0.0.0&#39; processorArchitecture=&#39;x86&#39; publicKeyToken=&#39;6595b64144ccf1df&#39; language=&#39;*&#39;\&quot;&quot;)
+#elif defined _M_IA64
+#pragma comment(linker, &quot;/manifestdependency:\&quot;type=&#39;win32&#39; name=&#39;Microsoft.Windows.Common-Controls&#39; version=&#39;6.0.0.0&#39; processorArchitecture=&#39;ia64&#39; publicKeyToken=&#39;6595b64144ccf1df&#39; language=&#39;*&#39;\&quot;&quot;)
+#elif defined _M_X64
+#pragma comment(linker, &quot;/manifestdependency:\&quot;type=&#39;win32&#39; name=&#39;Microsoft.Windows.Common-Controls&#39; version=&#39;6.0.0.0&#39; processorArchitecture=&#39;amd64&#39; publicKeyToken=&#39;6595b64144ccf1df&#39; language=&#39;*&#39;\&quot;&quot;)
+#else
+#pragma comment(linker, &quot;/manifestdependency:\&quot;type=&#39;win32&#39; name=&#39;Microsoft.Windows.Common-Controls&#39; version=&#39;6.0.0.0&#39; processorArchitecture=&#39;*&#39; publicKeyToken=&#39;6595b64144ccf1df&#39; language=&#39;*&#39;\&quot;&quot;)
+#endif
+
+
+#define COMMAND_ID_HANDLER(id, func) \
+  if(uMsg == WM_COMMAND &amp;&amp; id == LOWORD(wParam)) \
+{ \
+  bHandled = TRUE; \
+  lResult = func(HIWORD(wParam), LOWORD(wParam), (HWND)lParam, bHandled); \
+  if(bHandled) \
+  return TRUE; \
+}
+
+#define S_COMMAND_ID_HANDLER(id, func) \
+  if(uMsg == WM_COMMAND &amp;&amp; id == LOWORD(wParam)) \
+{ \
+  bHandled = TRUE; \
+  lResult = 1;\
+  bHandled = TRUE;\
+  func(); \
+  if(bHandled) \
+  return TRUE; \
+}
+
+
+#define COMMAND_HANDLER(id, code, func) \
+  if(uMsg == WM_COMMAND &amp;&amp; id == LOWORD(wParam) &amp;&amp; code == HIWORD(wParam)) \
+{ \
+  bHandled = TRUE; \
+  lResult = func(HIWORD(wParam), LOWORD(wParam), (HWND)lParam, bHandled); \
+  if(bHandled) \
+  return TRUE; \
+}
+
+
+#define BEGIN_MSG_MAP(theClass) \
+public: \
+  BOOL ProcessWindowMessage(_In_ HWND hWnd, _In_ UINT uMsg, _In_ WPARAM wParam,\
+  _In_ LPARAM lParam, _Inout_ LRESULT&amp; lResult, _In_ DWORD dwMsgMapID = 0) \
+{ \
+  BOOL bHandled = TRUE; \
+  (hWnd); \
+  (uMsg); \
+  (wParam); \
+  (lParam); \
+  (lResult); \
+  (bHandled); \
+  switch(dwMsgMapID) \
+{ \
+  case 0:
+
+
+#define END_MSG_MAP() \
+  break; \
+  default: \
+  break; \
+} \
+  return FALSE; \
+}
+
+</code></pre>
+
+<p><a href="Download%20sample">win32express1.zip</a></p>
+</body></html>

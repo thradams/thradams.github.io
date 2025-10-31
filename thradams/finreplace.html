@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Find-Replace for standard strings</h2>
+
+<p>I always need this function!
+It is self-explanation.</p>
+
+<pre><code class="language-cpp">inline void find_replace(std::string&amp; in_this_string,
+                         const std::string&amp; find,
+                         const std::string&amp; replace)
+{
+    std::string::size_type pos = 0;
+    while( std::string::npos != (pos = in_this_string.find(find, pos)) )
+    {
+        in_this_string.replace(pos, find.length(), replace);
+        pos += replace.length();
+    }
+}
+
+inline void find_replace(std::wstring&amp; in_this_string,
+                         const std::wstring&amp; find,
+                         const std::wstring&amp; replace)
+{
+    std::wstring::size_type pos = 0;
+    while( std::wstring::npos != (pos = in_this_string.find(find, pos)) )
+    {
+        in_this_string.replace(pos, find.length(), replace);
+        pos += replace.length();
+    }
+}
+</code></pre>
+
+<p>See also cmpnocase</p>
+</body></html>

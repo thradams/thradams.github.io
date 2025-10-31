@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Generating a temporary file name on Windows.</p>
+
+<pre><code class="language-cpp">bool GetTempFileName(std::wstring&amp; ws )
+{
+    ws.clear();//out
+
+    TCHAR szTempFileName[MAX_PATH];  
+    TCHAR lpTempPathBuffer[MAX_PATH];
+    char  chBuffer[BUFSIZE]; 
+
+     //  Gets the temp path env string (no guarantee it&#39;s a valid path).
+    auto dwRetVal = GetTempPath(MAX_PATH,          // length of the buffer
+                           lpTempPathBuffer); // buffer for path 
+    if (dwRetVal &gt; MAX_PATH || (dwRetVal == 0))
+    {
+       return false;
+    }
+
+    //  Generates a temporary file name. 
+    auto uRetVal = GetTempFileName(lpTempPathBuffer, // directory for tmp files
+                              TEXT(&quot;DEMO&quot;),     // temp file name prefix 
+                              0,                // create unique name 
+                              szTempFileName);  // buffer for name 
+    if (uRetVal == 0)
+    {
+        return false;
+    }
+    ws = szTempFileName;
+    return true;
+}
+</code></pre>
+</body></html>

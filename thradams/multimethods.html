@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Multimethods in C++</h2>
+
+<p>The problem:
+Let&#39;s say we have a polymorphic shape class with functions to calculate intersections with other shapes.
+I want to choose in runtime the correct function based on the shape even using the base class shape. 
+How to do it?
+Here, I will present a way to do it using RTTI capabilities from C++.
+```cpp</p>
+
+<p>namespace shapes {</p>
+
+<pre><code>struct shape 
+{
+    virtual ~shape(){}
+    virtual void collide(const shape &amp;) const = 0;
+};
+
+struct rectangle;
+
+struct circle : public shape
+{
+    void collide(const circle &amp;) const { std::cout &lt;&lt; &quot;circle-&gt;circle&quot; &lt;&lt; std::endl; }
+    void collide(const rectangle &amp;) const { std::cout &lt;&lt; &quot;circle-&gt;rectangle&quot; &lt;&lt; std::endl; }
+    void collide(const shape &amp;) const { std::cout &lt;&lt; &quot;shape-&gt;shape&quot; &lt;&lt; std::endl;  }
+};
+
+struct rectangle : public shape
+{    
+    void collide(const rectangle &amp;) const { std::cout &lt;&lt; &quot;rectangle-&gt;rectangle&quot; &lt;&lt; std::endl; }
+    void collide(const circle &amp;) const { std::cout &lt;&lt; &quot;rectangle-&gt;circle&quot; &lt;&lt; std::endl; }
+    void collide(const shape &amp;) const { std::cout &lt;&lt; &quot;shape-&gt;shape&quot; &lt;&lt; std::endl;  }
+};
+</code></pre>
+
+<p>}</p>
+
+<p>struct double<em>type</em>info<em>key
+{
+    const type</em>info* l<em>info;
+    const type</em>info* r<em>info;
+    double</em>type<em>info</em>key(const type<em>info* l, const type</em>info*r) :
+    l<em>info(l),
+    r</em>info(r)
+    {}
+};</p>
+
+<p>bool operator &lt; (const double<em>type</em>info<em>key &amp;l,
+                 const double</em>type<em>info</em>key &amp;r)
+{
+    if ( *l.l<em>info == *r.l</em>info )
+        return l.r<em>info-&gt;before(*r.r</em>info);
+    return l.l<em>info-&gt;before(*r.l</em>info);
+}</p>
+
+<p>template<class T1, class T2>
+struct do<em>cast {
+   void operator()(const shapes::shape &amp;l,
+                   const shapes::shape &amp;r) const
+   {
+      dynamic</em>cast<const T1&>(l).collide(dynamic_cast<const T2&>(r));
+   }
+};</p>
+
+<p>typedef std::tr1::function&lt; void (const shapes::shape&amp;, const shapes::shape&amp;) &gt;  collide<em>fptr;
+typedef std::map&lt;double</em>type<em>info</em>key, collide<em>fptr&gt; Map;
+Map type</em>info_map;</p>
+
+<p>void check<em>collision(const shapes::shape &amp; l, const shapes::shape &amp;r)
+{
+    Map::const</em>iterator it = type<em>info</em>map.find(double<em>type</em>info<em>key(&amp;typeid(l), &amp;typeid(r)));
+    if (it == type</em>info_map.end())
+    {
+        l.collide(r);
+        return;
+    }</p>
+
+<pre><code>(*it).second(l, r);
+</code></pre>
+
+<p>}</p>
+
+<p>template<class T1, class T2>
+std::pair<double_type_info_key, collide_fptr> make<em>key()
+{
+  return make</em>pair(double<em>type</em>info<em>key(&amp;typeid(T1), &amp;typeid(T2)),
+                   collide</em>fptr(do_cast<T1, T2>()));
+}</p>
+
+<p>int main()
+{
+    type<em>info</em>map.insert( make<em>key<shapes::rectangle, shapes::circle> ());
+    type</em>info<em>map.insert( make</em>key<shapes::circle, shapes::rectangle> ());
+    type<em>info</em>map.insert( make<em>key<shapes::rectangle, shapes::rectangle> ());
+    type</em>info<em>map.insert( make</em>key<shapes::circle, shapes::circle> ());
+    type<em>info</em>map.insert( make_key<shapes::shape, shapes::shape> ());</p>
+
+<pre><code>shapes::rectangle rectangle;
+shapes::circle circle;
+
+check_collision(rectangle, circle);
+check_collision(rectangle, rectangle);
+
+check_collision(circle, rectangle);
+check_collision(circle, circle);
+</code></pre>
+
+<p>}
+```</p>
+</body></html>

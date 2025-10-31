@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<pre><code class="language-cpp">
+
+#include &quot;stdafx.h&quot;
+
+#ifdef __cplusplus
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;iostream&gt;
+#endif
+
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include &lt;time.h&gt;
+#include &lt;assert.h&gt;
+
+#define LOOP_COUNT 1000
+
+#define STRING_ITEM &quot;small&quot;
+//#define STRING_ITEM &quot;large large large large large&quot;
+
+#define LOCAL_BUFFER_SIZE sizeof(size_t) * 4
+
+struct str
+{
+    char * text;
+    size_t size;
+    char localbuffer[LOCAL_BUFFER_SIZE];
+    int ismall;
+};
+
+inline void str_destroy(struct str* p)
+{
+    if (!p-&gt;ismall)
+    {
+        free(p-&gt;text);
+    }
+}
+
+inline int str_init(struct str* p, const char * text)
+{
+    int r = 1;
+    size_t text_size = strlen(text);
+
+    int ismall = (text_size + 1) &lt; LOCAL_BUFFER_SIZE;
+
+    char * pcopy = ismall ?
+        p-&gt;localbuffer : (char*)malloc(sizeof(char) * (text_size + 1));
+
+    if (pcopy)
+    {
+        strncpy(pcopy, text, text_size + 1);
+        p-&gt;ismall = ismall;
+        p-&gt;text = pcopy;
+        p-&gt;size = text_size;
+        r = 0;
+    }
+
+    return r;
+}
+
+struct strs
+{
+    struct str * strings;
+    size_t size;
+    size_t capacity;
+};
+
+#define STRS_INIT { 0, 0, 0 }
+
+inline int strs_reserve(struct strs* p, size_t nelements)
+{
+    int r = 0;
+    if (nelements &gt; p-&gt;capacity)
+    {
+        struct str* pnew = p-&gt;strings;
+        pnew = (struct str*)realloc(pnew, nelements * sizeof(struct str));
+        
+        if (pnew &amp;&amp; p-&gt;strings != pnew)
+        {            
+            for (size_t i = 0; i &lt; p-&gt;size; i++)
+            {
+                if (pnew[i].ismall)
+                {
+                    /*correção do ponteiro interno*/
+                    pnew[i].text = pnew[i].localbuffer;
+                }
+            }
+        }
+        
+        if (pnew)
+        {
+            p-&gt;strings = pnew;
+            p-&gt;capacity = nelements;
+            assert(r == 0);
+        }
+        else
+        {
+            /*sem memoria*/
+            r = 1;
+        }
+    }
+    return r;
+}
+
+inline int strs_grow(struct strs* p, size_t nelements)
+{
+    int r = 0;
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size_t new_nelements = p-&gt;capacity + p-&gt;capacity / 2;
+        if (new_nelements &lt; nelements)
+        {
+            new_nelements = nelements;
+        }
+        r = strs_reserve(p, new_nelements);
+    }
+    return r;
+}
+
+inline int strs_emplace_back(struct strs* p, const char* text)
+{
+    int r = strs_grow(p, p-&gt;size + 1);
+    if (r == 0)
+    {
+        r = str_init(&amp;p-&gt;strings[p-&gt;size], text);
+        if (r == 0)
+        {            
+            p-&gt;size++;
+        }        
+    }
+    return r;
+}
+
+void strs_destroy(struct strs* p)
+{
+    for (size_t i = 0; i &lt; p-&gt;size; i++)
+    {
+        str_destroy(&amp;p-&gt;strings[i]);        
+    }
+    free(p-&gt;strings);
+}
+
+int fc(void)
+{
+    int r = 0;
+    char buffer[] = STRING_ITEM;
+    for (int k = 0; k &lt; LOOP_COUNT; k++)
+    {
+        struct strs v = STRS_INIT;
+        for (int i = 0; i &lt; LOOP_COUNT; i++)
+        {
+            if (strs_emplace_back(&amp;v, buffer) != 0)
+            {
+                r = 0;
+                break;
+            }
+        }
+
+        strs_destroy(&amp;v);
+    }
+    return r;
+}
+
+#ifdef __cplusplus
+int f()
+{
+    char buffer[] = STRING_ITEM;
+    for (int k = 0; k &lt; LOOP_COUNT; k++)
+    {
+        std::vector&lt;std::string&gt; v;
+
+        for (int i = 0; i &lt; LOOP_COUNT; i++)
+        {
+            v.emplace_back(buffer);
+        }
+    }
+    return 0;
+}
+#endif
+
+int run_test(const char* message, int(*test)(void))
+{
+    time_t start = clock();
+    int r = test();
+    printf(&quot;%s %d\n&quot;, message, (int) clock() - start);
+    return r;
+}
+
+int main(int argc, char* argv[])
+{
+    run_test(&quot;C   :&quot;, &amp;fc);
+#ifdef __cplusplus
+    run_test(&quot;C++ :&quot;, &amp;f);
+#endif
+    return 0;
+}
+
+
+</code></pre>
+</body></html>

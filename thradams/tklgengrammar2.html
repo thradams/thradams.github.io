@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>tklgen grammar</p>
+
+<pre><code class="language-tklgen">
+module tklgen2
+{
+  language tklgen
+  {    
+    token PlusCharacter                = &#39;+&#39;;
+    token LiteralChar                  = &quot;&#39;&quot;((&#39; &#39;..&#39;&amp;&#39; | &#39;(&#39;..&#39;[&#39; | &#39;]&#39;..&#39;~&#39;) |
+                                    (&#39;\\&#39;(&#39;\&#39;&#39; | &#39;\\&#39; | &#39;/&#39; | &#39;0&#39; | &#39;b&#39; | &#39;f&#39; | &#39;n&#39; | &#39;r&#39; | &#39;t&#39; | (&#39;u&#39;(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;))))
+                                         )* &quot;&#39;&quot;;
+    token RangeSeparator               = &quot;..&quot;;
+    token EqualsCharacter              = &#39;=&#39;;
+    token SemicolonCharacter           = &#39;;&#39;;
+    token CommaCharacter               = &#39;,&#39;;
+    
+    token KeywordEmpty                 = &quot;empty&quot;;
+    token KeywordAny                   = &quot;any&quot;;
+    token KeywordModule                = &quot;module&quot;;
+    token KeywordLanguage              = &quot;language&quot;;
+    token KeywordInterleave            = &quot;interleave&quot;;
+    token KeywordSyntax                = &quot;syntax&quot;;
+    token KeywordToken                 = &quot;token&quot;;
+
+    token Identifier                   = (&#39;a&#39;..&#39;z&#39; | &#39;A&#39;..&#39;Z&#39; | &#39;_&#39; | &#39;$&#39;) +
+                                         (&#39;0&#39;..&#39;9&#39; + (&#39;a&#39;..&#39;z&#39; | &#39;A&#39;..&#39;Z&#39; | &#39;_&#39; | &#39;$&#39;) +) ?;
+        
+    token QuestionMarkCharacter        = &#39;?&#39;;
+    token AsteriskCharacter            = &#39;*&#39;;
+    token LeftCurlyBracketCharacter    = &#39;{&#39;;
+    token RightCurlyBracketCharacter   = &#39;}&#39;;
+    token VerticalLineCharacter        = &#39;|&#39;;
+    token AmpersandCharacter           = &#39;&amp;&#39;;
+    token LeftParenthesisCharacter     = &#39;(&#39;;
+    token RightParenthesisCharacter    = &#39;)&#39;;
+    token StringLiteral                = &#39;&quot;&#39;((&#39; &#39;..&#39;!&#39; | &#39;#&#39;..&#39;[&#39; | &#39;]&#39;..&#39;~&#39;) | 
+                                         (&#39;\\&#39;(&#39;&quot;&#39; | &#39;\\&#39; | &#39;0&#39; | &#39;/&#39; | &#39;b&#39; | &#39;f&#39; | &#39;n&#39; | &#39;r&#39; | &#39;t&#39; | (&#39;u&#39;(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;)(&#39;0&#39;..&#39;9&#39; | &#39;A&#39;..&#39;F&#39; | &#39;a&#39;..&#39;f&#39;))))
+                                         )* &#39;&quot;&#39;;
+    
+    interleave Blanks                  = ((&quot; &quot; | &quot;\n&quot; | &quot;\t&quot; | &quot;\r&quot;) +) |
+                                             (&quot;//&quot;(&#39; &#39;..&#39;~&#39;) * (&quot;\n&quot; | &quot;\r\n&quot;)) |
+                                             (&quot;/*&quot;(((&#39; &#39;..&#39;)&#39; | &#39;+&#39;..&#39;~&#39; | &quot;\n&quot; | &quot;\r&quot; | &quot;\t&quot;)) |
+                                             (&quot;*&quot;(&#39; &#39;..&#39;.&#39; | &#39;0&#39;..&#39;~&#39; | &quot;\n&quot; | &quot;\r&quot; | &quot;\t&quot;)))* &quot;*/&quot;);
+
+    syntax Main = ModuleBody;
+    syntax ModuleBody = &quot;module&quot; Identifier
+                        &#39;{&#39;
+                           LanguageBody 
+                        &#39;}&#39;;
+
+    syntax LanguageBody = &quot;language&quot; Identifier
+                          &#39;{&#39;
+                             Declarations 
+                          &#39;}&#39;;
+
+    syntax Declarations = Declaration Declarations | empty;
+
+    syntax Declaration = TokenDeclaration |
+                         SyntaxDeclaration |
+                         InterleaveDeclaration;
+
+    syntax TokenDeclaration = 
+       &quot;token&quot; Identifier &#39;=&#39; TokenExpression &#39;;&#39;;
+
+    syntax InterleaveDeclaration = 
+      &quot;interleave&quot; Identifier &#39;=&#39; TokenExpression &#39;;&#39;;
+    
+    syntax SyntaxDeclaration = 
+      &quot;syntax&quot; Identifier &#39;=&#39; SyntaxExpression &#39;;&#39;;
+
+    //tokens expressions-------------------------------------
+    //Tip:
+    //E --&gt; T { T };
+    //T --&gt; F { &quot;|&quot; F };
+    //F --&gt; P [&quot;?&quot;];
+    //P --&gt; V | &quot;(&quot; E &quot;)&quot;;
+    //V --&gt; v [&quot;..&quot; v];
+    
+    syntax TokenExpression = T ZeroOrMoreT;
+    syntax ZeroOrMoreT = T ZeroOrMoreT | empty;
+
+    syntax T = F ZeroOrMoreOrF;
+    syntax OrF = &#39;|&#39; F;
+    syntax ZeroOrMoreOrF = OrF ZeroOrMoreOrF | empty;
+
+    syntax F = P OptOperator;
+
+    syntax OptOperator = QuestionMarkCharacter |
+                         AsteriskCharacter     |
+                         PlusCharacter         |
+                         empty;
+
+    syntax P = V | &#39;(&#39; TokenExpression &#39;)&#39;;
+    syntax V = LiteralChar RangeOpt |
+               Identifier           |
+               KeywordAny           |
+               StringLiteral;
+
+    syntax RangeOpt  = RangeSeparator LiteralChar | empty;
+    
+    //end token expressions---------------------------------------------------
+
+
+    // Syntax expression----------------------------------------------------
+    //Tip:
+    //E --&gt; T { | T};
+    //T --&gt; F { F };
+    //T --&gt; Empty;
+    //F --&gt; NAME | CHAR | STRING | OPENB Action CLOSEB;
+
+    syntax SyntaxExpression = SyntaxExpressionSingle SyntaxExpressionMoreSingle;
+
+    syntax SyntaxExpressionMoreSingle = 
+      &#39;|&#39; SyntaxExpressionSingle SyntaxExpressionMoreSingle |
+      empty;
+
+    syntax SyntaxExpressionSingle = SyntaxExpressionItem SyntaxExpressionSingleFollow;
+    syntax SyntaxExpressionSingle = KeywordEmpty;
+
+    syntax SyntaxExpressionSingleFollow = SyntaxExpressionItem SyntaxExpressionSingleFollow |
+                            empty;
+
+    syntax SyntaxExpressionItem = Identifier |
+                                  LiteralChar |
+                                  StringLiteral |
+                                  SyntaxExpressionAction;
+
+    syntax SyntaxExpressionAction = &#39;{&#39; Identifier &#39;}&#39;;
+
+    //end syntax expression ---------------------------------------------------
+  }
+}
+
+
+</code></pre>
+</body></html>

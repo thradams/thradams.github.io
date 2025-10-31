@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Switch Generator</title>
+
+
+<style type='text/css'>
+    .OutTextArea {
+     white-space: nowrap;
+     overflow:    scroll;
+     overflow-y:  scroll;
+     overflow-x:  scroll;
+     overflow:    -moz-scrollbars-horizontal;
+    }
+   </style>
+
+</head>
+<body>
+
+    <h1>C string switch generator</h1>
+    Given a list of strings it generates a C switch case.</br>
+    Let's say you want to create a swith for day of weeks:
+
+
+<pre>
+    switch (key)
+    {
+        case "Sunday": break;
+        case "Monday":break;
+        case "Tuesday": break;
+        case "Wednesday": break;
+        case "Thursday": break;
+        case "Friday: break;
+        case "Saturday": break;
+    }
+</pre>
+    <Button onclick="OnButtonGenerate()">Generate</Button>
+    </br>
+    <input type="checkbox" id="zero" value="true">Match whole word<br>
+
+    </br>
+    </br>
+    Input:
+<textarea id="input" rows="4" style="width: 100%">
+["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+</textarea>
+
+    Ouput:
+<textarea class='OutTextArea' id="output" rows="40" style="width: 100%"></textarea>
+
+    <script src="switchgenerator.js"></script>
+
+    <a href="http://thradams.com/findtest.htm">http://thradams.com/findtest.htm</a>
+</body>
+</html>

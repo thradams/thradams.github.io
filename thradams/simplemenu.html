@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Simple popup menu sample in Windows.</p>
+
+<p>{{{cpp
+  int ShowPopupMenu(HWND hWnd,
+                    int x,
+                    int y,
+                    const std::vector<a href="std::wstring">std::wstring</a>&amp; items)
+  {
+    HMENU hMenu = CreatePopupMenu();</p>
+
+<pre><code>for(int i = 0; i &lt; items.size(); i++)
+{
+  AppendMenu(hMenu, MF_STRING, i + 1, items[i].c_str());
+}
+
+POINT pt = {x, y};
+ClientToScreen(hWnd, &amp;pt);
+BOOL b =  TrackPopupMenu(hMenu,
+  TPM_LEFTALIGN |TPM_RETURNCMD,
+  pt.x,
+  pt.y,
+  0,
+  m_hWnd,
+  0);
+
+DestroyMenu(hMenu);    
+return b;
+</code></pre>
+
+<p>}</p>
+
+<p>void OnMouseDown(int xPos, int yPos)
+  {<br>
+    std::vector<a href="std::wstring">std::wstring</a> items;
+    items.push<em>back(L&quot;Item1&quot;);
+    items.push</em>back(L&quot;Item2&quot;);
+    items.push<em>back(L&quot;Item3&quot;);
+    ShowPopupMenu(m</em>hWnd, xPos, yPos, items);
+  }
+}}}</p>
+</body></html>

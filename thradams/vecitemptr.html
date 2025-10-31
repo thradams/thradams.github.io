@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h1 id="toc_0">Vector of struct item*</h1>
+
+<p><a href="makecontainer.md">Make container</a></p>
+
+<pre><code class="language-cpp">
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+
+struct item
+{
+    int index;
+    int count;
+};
+
+void item_delete(struct item* p) {
+    
+    free(p); 
+}
+
+struct itemptr_array
+{
+    struct item** data;
+    int size;
+    int capacity;
+};
+
+int int_array_reserve(struct itemptr_array* p, int n)
+{
+    if (n &gt; p-&gt;capacity)
+    {
+        void* pnew = realloc(p-&gt;data, n * sizeof(p-&gt;data[0]));
+        if (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = n;
+        }
+        else
+        {
+            return 0; /*out of mem*/
+        }
+    }
+    
+    return p-&gt;capacity;
+}
+
+int itemptr_array_push(struct itemptr_array* p, struct item* pitem)
+{
+    if (p-&gt;size + 1 &gt; p-&gt;capacity)
+    {
+        int n = p-&gt;capacity * 2;
+        if (n == 0)
+        {
+            n = 1;
+        }
+        if (int_array_reserve(p, n) == 0)
+        {
+            item_delete(pitem); /*design choice*/
+            return 0;
+        }
+    }
+
+    p-&gt;data[p-&gt;size] = pitem;    
+    p-&gt;size++;
+
+    return p-&gt;size;
+}
+
+void itemptr_array_destroy(struct itemptr_array* p)
+{
+    for (int i = 0; i &lt; p-&gt;size; i++)
+    {
+        item_delete(p-&gt;data[i]);
+    }
+
+    free(p-&gt;data);
+}
+
+
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    struct itemptr_array a = { 0 };
+    itemptr_array_push(&amp;a, calloc(1, sizeof (struct item)));    
+    for (int i = 0; i &lt; a.size; i++)
+    {
+        printf(&quot;%d %d\n&quot;, a.data[i]-&gt;index, a.data[i]-&gt;count);
+    }
+    itemptr_array_destroy(&amp;a);
+}
+
+
+</code></pre>
+</body></html>

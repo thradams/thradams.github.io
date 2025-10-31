@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Testing strings utils.</p>
+
+<pre><code class="language-cpp">
+
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include  &lt;errno.h&gt;
+#include  &lt;string.h&gt;
+
+static inline errno_t  wstr_reserve(wchar_t** pptext,
+                                    size_t* capacity,
+                                    size_t new_capacity)
+{
+    assert(pptext &amp;&amp; capacity);
+    assert(new_capacity &gt; 0);
+
+    if (new_capacity &lt; *capacity)
+    {
+        return 0;
+    }
+
+    errno_t r = ENOMEM;
+    wchar_t* ptemp = 0;
+
+    if (*pptext == NULL)
+    {
+        ptemp = (wchar_t*)malloc(sizeof(wchar_t) * (new_capacity));
+        if (ptemp)
+        {
+            ptemp[0] = &#39;\0&#39;;
+        }
+    }
+    else
+    {
+        ptemp = (wchar_t*)realloc(*pptext, sizeof(wchar_t) * (new_capacity));
+    }
+
+    if (ptemp)
+    {
+        *pptext = ptemp;
+        *capacity = new_capacity;
+        r = 0;
+    }
+
+    return r;
+}
+
+errno_t wstr_append(wchar_t **pptext,
+                    size_t* capacity,
+                    size_t* size,
+                    const wchar_t* psource)
+{
+    errno_t r = 0;
+    size_t s = wcslen(psource);
+    r = wstr_reserve(pptext, capacity, *size + s + 1);
+    if (r == 0)
+    {
+        r = wcscpy_s(*pptext + *size, *capacity - *size, psource);
+        if (r == 0)
+        {
+            *size += s;
+        }
+    }
+    return r;
+}
+
+errno_t wstr_set(wchar_t **pptext,
+                 size_t* capacity,
+                 size_t* size,
+                 const wchar_t* psource)
+{
+    errno_t r = 0;
+    size_t s = wcslen(psource);
+    r = wstr_reserve(pptext, capacity, s + 1);
+    if (r == 0)
+    {
+        r = wcscpy_s(*pptext, *capacity, psource);
+        if (r == 0)
+        {
+            *size = s;
+        }
+    }
+    return r;
+}
+
+void wstr_clear(wchar_t **pptext,
+                size_t* size)
+{
+    (*pptext)[0] = 0;
+    *size = 0;
+}
+
+void wstr_destroy(wchar_t **pptext,
+                  size_t* capacity,
+                  size_t* size)
+{
+    free(*pptext);
+    *capacity = 0;
+    *size = 0;
+}
+
+int main(int argc, char* argv[])
+{
+    wchar_t *ptext = 0;
+    size_t capacity = 0;
+    size_t size = 0;
+
+    wstr_append(&amp;ptext, &amp;capacity, &amp;size, L&quot;teste&quot;);
+    wstr_append(&amp;ptext, &amp;capacity, &amp;size, L&quot;2&quot;);
+    wstr_set(&amp;ptext, &amp;capacity, &amp;size, L&quot;b&quot;);
+    wstr_clear(&amp;ptext, &amp;size);
+    wstr_destroy(&amp;ptext, &amp;capacity, &amp;size);
+
+
+    return 0;
+}
+
+
+
+
+</code></pre>
+</body></html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<pre><code class="language-cpp">#include &quot;stdafx.h&quot;
+
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;time.h&gt;
+#include &lt;string.h&gt;
+
+
+#include &lt;stack&gt;
+#include &lt;functional&gt;
+#include &lt;string&gt;
+
+typedef void(*clsr_void_call_t)(void*);
+typedef void(*clsr_void_destroy_t)(void*);
+
+typedef struct clsr_void_t
+{
+    clsr_void_call_t call;
+    clsr_void_destroy_t destroy;
+} clsr_void;
+
+#define CLSR_VOID_INIT(f) { f , 0 }
+
+inline void clsr_void_destroy(clsr_void* p)
+{
+    if (p-&gt;destroy)
+        p-&gt;destroy(p);
+}
+
+inline void clsr_void_delete(clsr_void* p)
+{
+    if (p)
+    {
+        clsr_void_destroy(p);
+        free(p);
+    }
+}
+
+inline void clsr_void_init(clsr_void* closure,
+    clsr_void_call_t call,
+    clsr_void_destroy_t destroy)
+{
+    closure-&gt;call = call;
+    closure-&gt;destroy = destroy;
+}
+
+inline clsr_void* clsr_void_create(clsr_void_call_t call,
+    clsr_void_destroy_t destroy)
+{
+    clsr_void* closure = (clsr_void*)malloc(sizeof(clsr_void));
+    if (closure)
+    {
+        clsr_void_init(closure, call, destroy);
+    }
+    return closure;
+}
+
+inline void clsr_void_call(clsr_void* p)
+{
+    p-&gt;call(p);
+}
+
+struct clsr_void_str_t;
+typedef void(*clsr_void_str_call_t)(clsr_void_str_t*);
+typedef void(*clsr_void_str_call_t2)(const char*);
+
+typedef struct clsr_void_str_t
+{
+    clsr_void_t base;
+    const char* text;
+} clsr_void_str;
+
+#define CLST_VOID_STR_INIT {0,0,0}
+
+int clsr_void_str_init(clsr_void_str * closure,
+    clsr_void_str_call_t call,
+    const char* text);
+
+static void clsr_void_str_destroy(void* pv)
+{
+    clsr_void_str * p = (clsr_void_str *)(pv);
+    free((void*)p-&gt;text);
+}
+
+int clsr_void_str_init(clsr_void_str * closure,
+    clsr_void_str_call_t call,
+    const char* text)
+{
+    clsr_void_init((clsr_void*)closure,
+        (clsr_void_call_t)call,
+        &amp;clsr_void_str_destroy);
+
+    closure-&gt;text = (const char*)malloc(sizeof(char) * (strlen(text) + 1));
+    if (closure-&gt;text)
+    {
+        strcpy((char*)closure-&gt;text, text);
+        return 0;
+    }
+    return 1;
+}
+
+clsr_void* clsr_void_str_create(clsr_void_str_call_t call, const char* text)
+{
+    clsr_void_str * closure = (clsr_void_str*)malloc(sizeof(clsr_void_str));
+    if (closure)
+    {
+        if (clsr_void_str_init(closure, call, text) != 0)
+        {
+            free(closure);
+            closure = 0;
+        }
+    }
+    return (clsr_void*)closure;
+}
+
+
+typedef struct clsr_void_stack_t
+{
+    size_t      size;
+    size_t      capacity;
+    clsr_void** data;
+} clsr_void_stack;
+
+#define CLSR_VOID_STACK_INIT { 0, 0, 0 }
+
+inline clsr_void* clsr_void_stack_top(clsr_void_stack* p)
+{
+    return p-&gt;data[p-&gt;size - 1];
+}
+
+inline void clsr_void_stack_pop(clsr_void_stack* p, clsr_void** ppItem)
+{
+    *ppItem = p-&gt;data[p-&gt;size - 1];
+    p-&gt;size -= 1;
+}
+
+inline void clsr_void_stack_destroy(clsr_void_stack* p)
+{
+    for (size_t i = 0; i &lt; p-&gt;size; i++)
+    {
+        clsr_void_delete(p-&gt;data[i]);
+    }
+    free(p-&gt;data);
+    p-&gt;size = 0;
+    p-&gt;data = 0;
+    p-&gt;capacity = 0;
+}
+
+size_t clsr_void_stack_reserve(clsr_void_stack* p, size_t nelements)
+{
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size_t nelem = nelements;
+
+        if (p-&gt;data == NULL)
+        {
+            p-&gt;data = (clsr_void**)malloc(nelem * sizeof(clsr_void*));
+        }
+        else
+        {
+            p-&gt;data = (clsr_void**)realloc((void*)p-&gt;data, nelem * sizeof(clsr_void*));
+        }
+        p-&gt;capacity = nelements;
+    }
+
+    return (p-&gt;data != 0) ? nelements : 0;
+}
+
+static size_t clsr_void_stack_grow(clsr_void_stack* p, size_t nelements)
+{
+    const size_t INITIAL_CAPACITY = 4;
+    const size_t MAX_CAPACITY = (size_t)(UINT_MAX / sizeof(clsr_void*));
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size_t newCap = p-&gt;capacity == 0 ? INITIAL_CAPACITY : p-&gt;capacity;
+        while (newCap &lt; nelements)
+        {
+            newCap *= 2;
+
+            if (newCap &lt; nelements ||
+                newCap &gt; MAX_CAPACITY)
+            {
+                /*overflow check*/
+                newCap = MAX_CAPACITY;
+            }
+        }
+        return clsr_void_stack_reserve(p, newCap);
+    }
+    return p-&gt;capacity;
+}
+
+inline size_t clsr_void_stack_push(clsr_void_stack* p, clsr_void* pItem)
+{
+    size_t result = clsr_void_stack_grow(p, p-&gt;size + 1);
+
+    if (result == 0)
+    {
+        clsr_void_delete(pItem);
+        return 0;
+    }
+
+    p-&gt;data[p-&gt;size] = pItem;
+    p-&gt;size += 1;
+    return 1;
+}
+
+inline void clsr_void_stack_pop_call(clsr_void_stack* stack)
+{
+    clsr_void* p;
+    clsr_void_stack_pop(stack, &amp;p);
+
+    clsr_void_call(p);
+    clsr_void_destroy(p);
+}
+
+void clsr_void_stack_clear(clsr_void_stack* p)
+{
+    for (size_t i = 0; i &lt; p-&gt;size; i++)
+    {
+        clsr_void_delete(p-&gt;data[i]);
+    }
+    p-&gt;size = 0;
+}
+
+#define MAX_COUNT 10000000
+
+static int counter = 0;
+
+static void f(void*)
+{
+    counter++;
+}
+
+static void f2(clsr_void_str* p)
+{
+    counter += strlen(p-&gt;text);
+}
+
+void Test1()
+{
+
+
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        clsr_void_stack stack = CLSR_VOID_STACK_INIT;
+
+        clsr_void_stack_push(&amp;stack, clsr_void_create(&amp;f, 0));
+        clsr_void_stack_push(&amp;stack, clsr_void_str_create(&amp;f2, &quot;thiago&quot;));
+
+        while (stack.size)
+        {
+            clsr_void_stack_pop_call(&amp;stack);
+        }
+
+        clsr_void_stack_destroy(&amp;stack);
+    }
+
+}
+
+//#define HAS_MOVE_CAPTURE
+
+void Test2()
+{
+
+
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        std::stack&lt;std::function&lt;void(void)&gt;&gt; st;
+
+        st.emplace([]()
+        {
+            counter++;
+        });
+
+        std::string s2 = &quot;thiago&quot;;
+#ifdef HAS_MOVE_CAPTURE
+        st.emplace([s2 = std::move(s2)]()
+#else
+        st.emplace([s2]()
+#endif      
+        {
+            counter += s2.size();
+        });
+
+        while (st.size())
+        {
+            st.top()();
+            st.pop();
+        }
+    }
+}
+
+
+void RunTest(const char* message, void(*test)(void))
+{
+    counter = 0;
+    time_t start = clock();
+    test();
+    printf(&quot;%s %d %d\n&quot;, message, int(clock() - start), counter);
+}
+
+int main(int argc, char* argv[])
+{
+    RunTest(&quot;C++&quot;, &amp;Test2);
+    RunTest(&quot;C  &quot;, &amp;Test1);
+    return 0;
+}
+
+
+</code></pre>
+
+<p>Output 2013
+<code>
+C++ 6453 70000000
+C   4116 70000000
+</code></p>
+
+<p>HAS<em>MOVE</em>CAPTURE
+Output 2015. 
+{{{
+C++ 5333 70000000
+C   4048 70000000
+```</p>
+
+<p>Output 2015. 
+<code>
+C++ 5452 70000000
+C   4083 70000000
+</code></p>
+
+<p>C 23% faster</p>
+
+<p>Just construction/destruction of stack</p>
+
+<pre><code class="language-cpp">
+        //C
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        clsr_void_stack stack = CLSR_VOID_STACK_INIT;
+        clsr_void_stack_destroy(&amp;stack);
+    }
+
+        //C++
+        for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        std::stack&lt;std::function&lt;void(void)&gt;&gt; st;
+    }
+
+</code></pre>
+
+<pre><code>C++ 1063 0
+C   58 0
+</code></pre>
+
+<p>statck out of the loop - first call</p>
+
+<pre><code class="language-cpp">
+void Test1()
+{
+    clsr_void_stack stack = CLSR_VOID_STACK_INIT;
+    clsr_void_stack_push(&amp;stack, clsr_void_create(&amp;f, 0));
+    
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        clsr_void_call(clsr_void_stack_top(&amp;stack));
+    }
+    clsr_void_stack_destroy(&amp;stack);
+}
+
+void Test2()
+{
+    std::stack&lt;std::function&lt;void(void)&gt;&gt; st;
+
+    st.emplace([]()
+    {
+        counter++;
+    });
+
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        st.top()();
+    }
+}
+</code></pre>
+
+<p>VC++ 2015
+<code>
+C++ 152 10000000
+C   25 10000000
+</code></p>
+
+<p>statck out of the loop - second call</p>
+
+<pre><code class="language-cpp">
+void Test1()
+{
+    clsr_void_stack stack = CLSR_VOID_STACK_INIT;
+    clsr_void_stack_push(&amp;stack, clsr_void_str_create(&amp;f2, &quot;thiago&quot;));
+    
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        clsr_void_call(clsr_void_stack_top(&amp;stack));
+    }
+    clsr_void_stack_destroy(&amp;stack);
+}
+
+void Test2()
+{
+    std::stack&lt;std::function&lt;void(void)&gt;&gt; st;
+
+    std::string s2 = &quot;thiago&quot;;
+    st.emplace([s2]()
+    {
+        counter += s2.size();
+    });
+
+    for (int i = 0; i &lt; MAX_COUNT; i++)
+    {
+        st.top()();
+    }
+}
+
+</code></pre>
+
+<pre><code>C++ 161 60000000
+C   72 60000000
+</code></pre>
+</body></html>

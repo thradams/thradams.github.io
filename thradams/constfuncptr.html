@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">How to declare a const function pointer?</h2>
+
+<p>In other words, where &quot;const&quot; goes? :D</p>
+
+<p>Anwser:</p>
+
+<pre><code class="language-cpp"> void (* const fptr)(argument&amp;);
+
+void (* const Button::Draw)(Button&amp;) = DrawButton;
+</code></pre>
+</body></html>

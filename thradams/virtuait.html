@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">Virtual iterator</h2>
+
+<p>How to iterate in any kind of STL container with using the same iterator?</p>
+
+<pre><code class="language-cpp">
+using namespace std;
+
+int main()
+{
+    vector&lt;int&gt; vec;
+    vec.push_back(1);
+    vec.push_back(2);
+
+    list&lt;int&gt; lst;
+    lst.push_back(3);
+    lst.push_back(4);
+
+    for (v_iterator&lt;int&gt; it(vec); it.next() ; )
+    {
+      cout &lt;&lt; *it &lt;&lt; endl;
+    }
+
+    v_iterator&lt;int&gt; it(vec, true); // true arg means &quot;reverse&quot;
+    while(it.next())
+    {
+        cout &lt;&lt; it.get() &lt;&lt; endl;
+    }
+
+    it.reset();
+    while(it.next())
+    {
+        cout &lt;&lt; it.get() &lt;&lt; endl;
+    }
+
+    it.reset(lst);
+    while(it.next())
+    {
+        cout &lt;&lt; *it &lt;&lt; endl;
+    }
+
+    it.reset();
+    if (it.next())
+    {
+        v_iterator&lt;int&gt; it2(it);
+        cout &lt;&lt; *it2 &lt;&lt; endl;
+        v_iterator&lt;int&gt; it3;
+        it3 = it2;
+        cout &lt;&lt; *it3 &lt;&lt; endl;
+    }
+}
+Source code for the iterator
+
+template&lt;class T&gt;
+struct virtual_iterator
+{
+    virtual void start() = 0;
+    virtual bool end() const = 0;
+    virtual void next() = 0;
+    virtual const T &amp; get() const = 0;
+    virtual virtual_iterator * clone() const = 0;
+    virtual ~virtual_iterator() {}
+};
+
+template&lt;class T&gt;
+class virtual_iterator_imp : public virtual_iterator&lt; typename T::value_type &gt;
+{
+    const typename T::const_iterator m_begin;
+    const typename T::const_iterator m_end;
+    typename T::const_iterator m_it;
+
+    void start() { m_it = m_begin;  }
+
+    void next()  { ++m_it; }
+
+    bool end() const { return m_it != m_end; }
+
+    typename const T::value_type &amp; get() const { return *m_it; }
+
+    virtual_iterator_imp * clone() const { return new virtual_iterator_imp(*this); }
+
+    bool operator == (const virtual_iterator_imp &amp;); //not imp
+    bool operator != (const virtual_iterator_imp &amp;); //not imp
+
+public:
+    virtual_iterator_imp(const T &amp; container) :
+      m_begin(container.begin()),
+          m_end(container.end()),
+          m_it()
+      {
+      }
+
+      virtual_iterator_imp(const virtual_iterator_imp &amp; it) :
+      m_begin(it.m_begin),
+          m_end(it.m_end),
+          m_it(it.m_it)
+      {
+      }
+
+      virtual_iterator_imp &amp; operator = (const virtual_iterator_imp &amp; it)
+      {
+          m_begin = it.m_begin;
+          m_end = it.end;
+          m_it = it.m_it;
+          return *this;
+      }
+};
+
+
+
+template&lt;class T&gt;
+class virtual_rev_iterator_imp : public virtual_iterator&lt; typename T::value_type &gt;
+{
+    const typename T::const_reverse_iterator m_rbegin;
+    const typename T::const_reverse_iterator m_rend;
+    typename T::const_reverse_iterator m_it;
+
+    void start() { m_it = m_rbegin;  }
+
+    void next()  { ++m_it; }
+
+    bool end() const { return m_it != m_rend; }
+
+    typename const T::value_type &amp; get() const { return *m_it; }
+
+    virtual_rev_iterator_imp * clone() const { return new virtual_rev_iterator_imp(*this); }
+
+    bool operator == (const virtual_rev_iterator_imp &amp;); //not imp
+    bool operator != (const virtual_rev_iterator_imp &amp;); //not imp
+
+public:
+    virtual_rev_iterator_imp(const T &amp; container) :
+      m_rbegin(container.rbegin()),
+          m_rend(container.rend()),
+          m_it()
+      {
+      }
+
+      virtual_rev_iterator_imp(const virtual_rev_iterator_imp &amp; it) :
+      m_rbegin(it.m_rbegin),
+          m_rend(it.m_rend),
+          m_it(it.m_it)
+      {
+      }
+
+      virtual_rev_iterator_imp &amp; operator = (const virtual_rev_iterator_imp &amp; it)
+      {
+          m_rbegin = it.m_rbegin;
+          m_rend = it.rend;
+          m_it = it.m_it;
+          return *this;
+      }
+};
+
+template&lt;class T&gt;
+class v_iterator
+{
+    virtual_iterator&lt;T&gt; * m_pIt;
+    bool m_first;
+
+public:
+
+    template&lt;class ContainerType&gt;
+    v_iterator(const ContainerType &amp; container, bool bReverse = false) :
+    m_first(true)
+    {
+        if (bReverse)
+            m_pIt = new virtual_rev_iterator_imp&lt;ContainerType&gt;(container);
+        else
+            m_pIt = new virtual_iterator_imp&lt;ContainerType&gt;(container);
+    }
+
+    v_iterator() : m_first(true), m_pIt(0)
+    {
+    }
+
+    v_iterator(const v_iterator &amp;it) :
+    m_first(it.m_first),
+        m_pIt(it.m_pIt-&gt;clone())
+    {
+    }
+
+    void swap(v_iterator &amp;it)
+    {
+        std::swap(it.m_first, m_first);
+        std::swap(it.m_pIt, m_pIt);
+    }
+
+    ~v_iterator() { delete m_pIt;  }
+    void reset() {  m_first = true;  }
+
+    template&lt;class ContainerType&gt;
+    void reset(const ContainerType &amp; container, bool reverse = false)
+    {
+        v_iterator(container, reverse).swap(*this);
+    }
+
+    v_iterator&amp; operator =(const v_iterator &amp; it)
+    {
+        v_iterator(it).swap(*this);
+        return *this;
+    }
+
+    bool next()
+    {
+        if (!m_pIt)
+            return false;
+
+        if (m_first)
+        {
+            m_pIt-&gt;start();
+            m_first = false;
+        }
+        else
+        {
+            m_pIt-&gt;next();
+        }
+
+        return m_pIt-&gt;end();
+    }
+
+    const T &amp; get() const
+    {
+        return m_pIt-&gt;get();
+    }
+
+    const T &amp; operator *() const
+    {
+        return get();
+    }
+};
+</code></pre>
+</body></html>

@@ -1,0 +1,90 @@
+
+#ifndef _[VECTOR_UNAME]_H
+#define _[VECTOR_UNAME]_H
+
+#ifndef __cplusplus
+#include <stdbool.h>
+#define inline __inline
+#endif
+
+
+struct [VECTOR_NAME]
+{
+    size_t    size;
+    size_t    capacity;
+    [VECTOR_ITEM_TYPE]* data;    
+};
+
+#define [VECTOR_NAME]_INIT { 0, 0, 0 }
+
+void                   [VECTOR_NAME]_destructor(struct [VECTOR_NAME]* p);
+size_t                 [VECTOR_NAME]_reserve(struct [VECTOR_NAME]* p, size_t size);
+void                   [VECTOR_NAME]_erase_n(struct [VECTOR_NAME]* p, size_t index, size_t count);
+
+size_t                 [VECTOR_NAME]_insert_n(struct [VECTOR_NAME]* p,
+                           size_t index,
+                           const [VECTOR_ITEM_TYPE]* pSource,
+                           size_t count);
+
+void                   [VECTOR_NAME]_set(struct [VECTOR_NAME]* p, size_t index, [VECTOR_ITEM_TYPE] pointer);
+
+
+inline void [VECTOR_NAME]_append_n(struct [VECTOR_NAME]* p, const [VECTOR_ITEM_TYPE]* psz, size_t nelements)
+{
+    [VECTOR_NAME]_insert_n(p, p->size, psz, nelements);
+}
+
+inline [VECTOR_ITEM_TYPE] [VECTOR_NAME]_get(struct [VECTOR_NAME]* p, size_t index)
+{
+    return p->data[index];
+}
+
+inline size_t [VECTOR_NAME]_size(struct [VECTOR_NAME]* p)
+{
+    return p->size;
+}
+
+inline [VECTOR_ITEM_TYPE] [VECTOR_NAME]_back(struct [VECTOR_NAME]* p)
+{
+    return [VECTOR_NAME]_get(p, [VECTOR_NAME]_size(p) - 1);
+}
+
+inline [VECTOR_ITEM_TYPE] [VECTOR_NAME]_front(struct [VECTOR_NAME]* p)
+{
+    return [VECTOR_NAME]_get(p, 0);
+}
+
+inline bool [VECTOR_NAME]_empty(struct [VECTOR_NAME]* p)
+{
+    return [VECTOR_NAME]_size(p) == 0;
+}
+
+inline void [VECTOR_NAME]_clear(struct [VECTOR_NAME]* p)
+{
+    [VECTOR_NAME]_erase_n(p, 0, p->size);
+}
+
+inline void [VECTOR_NAME]_erase(struct [VECTOR_NAME]* p, size_t index)
+{
+    [VECTOR_NAME]_erase_n(p, index, 1);
+}
+
+inline size_t [VECTOR_NAME]_capacity(struct [VECTOR_NAME]* p)
+{
+    return p->capacity;
+}
+
+inline [VECTOR_ITEM_TYPE]* [VECTOR_NAME]_data(struct [VECTOR_NAME]* p)
+{
+    return p->data;
+}
+
+inline size_t [VECTOR_NAME]_push_back(struct [VECTOR_NAME]* p, [VECTOR_ITEM_TYPE] pointer)
+{
+    return [VECTOR_NAME]_insert_n(p, p->size, &pointer, 1);
+}
+
+void [VECTOR_NAME]_print(struct [VECTOR_NAME]* v);
+
+#endif  //_[VECTOR_UNAME]_H
+

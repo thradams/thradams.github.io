@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>Testing vector unique_ptr x C++ 003 x C</p>
+
+<pre><code class="language-cpp">
+#include &quot;stdafx.h&quot;
+
+#include &lt;stdlib.h&gt;
+
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;time.h&gt;
+
+const size_t TOTAL = 1000;
+//#define FRONT
+//#define BACK
+#define ALL
+
+struct shape
+{
+    virtual void draw() = 0;
+    virtual ~shape() {}
+};
+
+struct box : public shape
+{
+    int w;  int h;
+    virtual void draw() override
+    {
+    }
+};
+
+void f03()
+{
+    for (size_t k = 0; k &lt; TOTAL; k++)
+    {
+        std::vector&lt;shape*&gt; shapes;
+        for (int i = 0; i &lt; TOTAL; i++)
+        {
+            shapes.emplace_back(new box());
+        }
+
+#ifdef ALL
+        for (size_t i = 0; i &lt; shapes.size(); i++)
+        {
+            delete shapes[i];
+        }
+        shapes.clear();
+#else
+        while (!shapes.empty())
+        {
+#ifdef FRONT
+            delete shapes.front();
+            shapes.erase(shapes.begin());
+#endif
+#ifdef BACK
+            delete shapes.back();
+            shapes.erase(shapes.end() - 1);
+#endif
+        }
+#endif    
+    }
+}
+
+void f11()
+{
+    for (size_t k = 0; k &lt; TOTAL; k++)
+    {
+        std::vector&lt;std::unique_ptr&lt;shape&gt;&gt; shapes;
+        for (int i = 0; i &lt; TOTAL; i++)
+        {
+            shapes.emplace_back(std::make_unique&lt;box&gt;());
+        }
+
+#ifdef ALL
+        shapes.clear();
+#else
+
+        while (!shapes.empty())
+        {
+#ifdef FRONT
+            shapes.erase(shapes.begin());
+#endif
+#ifdef BACK
+            shapes.erase(shapes.end() - 1);
+#endif
+        }
+#endif
+
+    }
+}
+
+
+void destroy_shape(void* p)
+{
+    shape * ps = (shape*)p;
+    delete ps;
+}
+
+struct vptrs
+{
+    void ** data;
+    size_t size;
+    size_t capacity;
+};
+
+#define INIT_VPTRS { 0,0,0 }
+
+
+inline int vptrs_reserve(struct vptrs* p, size_t nelements)
+{
+    int r = 0;
+    if (nelements &gt; p-&gt;capacity)
+    {
+        void** pnew = p-&gt;data;
+        pnew = (void**)realloc(pnew, nelements * sizeof(void*));
+        if (pnew)
+        {
+            p-&gt;data = pnew;
+            p-&gt;capacity = nelements;
+        }
+        else
+        {
+            /*sem memoria*/
+            r = 1;
+        }
+    }
+    return r;
+}
+
+int vptrs_grow(struct vptrs* p, size_t nelements)
+{
+    int r = 0;
+    if (nelements &gt; p-&gt;capacity)
+    {
+        size_t new_nelements = p-&gt;capacity + p-&gt;capacity / 2;
+        if (new_nelements &lt; nelements)
+        {
+            new_nelements = nelements;
+        }
+        r = vptrs_reserve(p, new_nelements);
+    }
+    return r;
+}
+
+inline int vptrs_emplace_back(struct vptrs* p, void* pdata)
+{
+    int r = vptrs_grow(p, p-&gt;size + 1);
+    if (r == 0)
+    {
+        p-&gt;data[p-&gt;size] = pdata;
+        p-&gt;size++;
+    }
+    return r;
+}
+
+void vptrs_destroy(struct vptrs* p,
+    void(*destroy)(void*))
+{
+    for (size_t i = 0; i &lt; p-&gt;size; i++)
+    {
+        destroy(p-&gt;data[i]);
+    }
+    free(p-&gt;data);
+}
+
+inline void* vptrs_remove_back(struct vptrs* p)
+{    
+    void* pdata = p-&gt;data[p-&gt;size - 1];
+    p-&gt;size--;
+    return pdata;
+}
+
+inline void* vptrs_remove_front(struct vptrs* p)
+{
+    void* pdata = p-&gt;data[0];
+    
+    memmove(p-&gt;data,
+            p-&gt;data + 1,
+            sizeof(void*) * (p-&gt;size - 1));
+
+    p-&gt;size--;
+
+    return pdata;
+}
+
+
+void fC()
+{
+    for (size_t k = 0; k &lt; TOTAL; k++)
+    {
+        struct vptrs shapes = INIT_VPTRS;
+        for (int i = 0; i &lt; TOTAL; i++)
+        {
+            vptrs_emplace_back(&amp;shapes, (void*)new box());
+        }
+
+#ifdef ALL
+        vptrs_destroy(&amp;shapes, &amp;destroy_shape);
+#else
+        while (shapes.size &gt; 0)
+        {
+#ifdef FRONT
+            destroy_shape(vptrs_remove_front(&amp;shapes));
+#endif
+#ifdef BACK
+            destroy_shape(vptrs_remove_back(&amp;shapes));
+#endif
+        }
+#endif    
+    }
+}
+
+void run_test(const char* message, void(*test)(void))
+{
+    time_t start = clock();
+    test();
+    printf(&quot;%s %d\n&quot;, message, (int)clock() - start);
+
+}
+
+
+int main(int argc, char* argv[])
+{
+
+#ifdef ALL
+    printf(&quot;all\n\n&quot;);
+#endif
+#ifdef FRONT
+    printf(&quot;front\n\n&quot;);
+#endif
+#ifdef BACK
+    printf(&quot;back\n\n&quot;);
+#endif
+
+    //A ordem pode alterar os resultados
+
+    run_test(&quot;C     :&quot;, &amp;fC);
+    run_test(&quot;C++ 03 :&quot;, &amp;f03);
+    run_test(&quot;C++ 11:&quot;, &amp;f11);
+    
+
+    printf(&quot;\n&quot;);
+    
+
+    run_test(&quot;C     :&quot;, &amp;fC);
+    run_test(&quot;C++ 03 :&quot;, &amp;f03);
+    run_test(&quot;C++ 11:&quot;, &amp;f11);
+    
+
+    return 0;
+}
+
+
+</code></pre>
+</body></html>

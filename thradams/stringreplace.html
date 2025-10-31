@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p>The strdup function is usefull for initialization.
+This function is an alternative for repetive calls of  free(p); p = strdup(s);</p>
+
+<pre><code class="language-cpp">
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+
+struct Person
+{
+    char* name;
+};
+
+char* strnt(const char* source)
+{
+    size_t sourcelen = strlen(source);
+    char* p = malloc(sourcelen + 1);
+    if (p != NULL)
+    {
+        strcpy(p, source);
+    }
+    return p;
+}
+
+size_t strrep(char** dest, const char* source)
+{
+    size_t sourcelen = strlen(source);
+    char* p = realloc(*dest, sourcelen + 1);
+    if (p != NULL)
+    {
+        *dest = p;
+        strcpy(p, source);
+    }
+    else
+    {
+        sourcelen = 0;
+    }
+
+    return sourcelen;
+}
+
+int main()
+{
+    char* name = strnt(&quot;test&quot;);
+    struct Person person = { 0 };
+    strrep(&amp;person.name, &quot;new name&quot;);
+    strrep(&amp;person.name, &quot;new name2&quot;);
+    
+    strrep(&amp;name, &quot;new name3&quot;);
+    
+
+    free(person.name);
+    free(name);
+}
+
+
+</code></pre>
+</body></html>

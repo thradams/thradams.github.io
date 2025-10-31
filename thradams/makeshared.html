@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<h2 id="toc_0">make_shared x new</h2>
+
+<p>Using new, counters are allocated separatelly, them the object and memory is dealocated with de last shared_ptr remaning only weakpointer counters.</p>
+
+<pre><code class="language-cpp">#include &lt;memory&gt;
+
+using namespace std;
+
+struct X
+{
+    int b[1000];
+};
+
+int main()
+{
+    {
+        weak_ptr&lt;X&gt; wp; //lives longer than shared_ptr
+        {
+            shared_ptr&lt;X&gt; sp(new X());
+            wp = sp;
+        }
+    }   
+}
+</code></pre>
+
+<p><img src="s1.png" alt=""></p>
+
+<hr>
+
+<p>make<em>shared makes a single alloc with the object plus counters.
+The object destructor is called with the last shared</em>ptr, however the memory used by the object is dealocated only with the last weak_ptr.</p>
+
+<pre><code>From the standard:
+
+Remarks: Implementations are encouraged, but not required, to perform no more than one memory
+allocation.  Note: this provides efficiency equivalent to an intrusive smart pointer. end note 
+</code></pre>
+
+<pre><code class="language-cpp">#include &lt;memory&gt;
+
+using namespace std;
+
+struct X
+{
+    int b[1000];
+};
+
+int main()
+{
+    {
+        weak_ptr&lt;X&gt; wp; //lives longer than shared_ptr
+        {
+            shared_ptr&lt;X&gt; sp = make_shared&lt;X&gt;();
+            wp = sp;
+        }
+    }   
+}
+</code></pre>
+
+<p><img src="s2.png" alt=""></p>
+</body></html>

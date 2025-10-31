@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href = "default.min.css">
+  <script src = "highlight.min.js"></script>
+  <script>hljs.highlightAll(); </script>
+ <link rel = "stylesheet" href = "style.css"/>
+</head>
+<body>
+<a class = "linkbox" href = "index.html" > HOME</a>
+<p><a href="algorithms.md">Algorithms</a></p>
+
+<h3>set_digits</h3>
+
+<p>Fills digits to represent a value using base.</p>
+
+<hr>
+
+<h3>Declaration</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+int set_digits(unsigned long long value,
+               It first,
+               It last);
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code>       1 -&gt; {0, 0, 1} 
+                    base = 10
+
+       10 -&gt; {0, 1, 0} 
+                      base = 10
+
+       100 -&gt; {0, 0, 100} 
+                         base = 256
+</code></pre>
+
+<hr>
+
+<h3>Sample</h3>
+
+<pre><code class="language-cpp">void set_digits_test()
+{
+    using namespace std;
+    int n[] = { 0, 0, 0 , 0 }; 
+    assert(set_digits&lt;10&gt;(103, begin(n), end(n)) == 3);
+    assert(n[3] == 0 &amp;&amp; n[2] == 1 &amp;&amp; n[1] == 0 &amp;&amp; n[0] == 3);
+
+    std::fill(begin(n), end(n), 0);
+    assert(set_digits&lt;256&gt;(103, begin(n), end(n)) == 1);
+    assert(n[3] == 0 &amp;&amp; n[2] == 0 &amp;&amp; n[1] == 0 &amp;&amp; n[0] == 103);
+}
+</code></pre>
+
+<hr>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-cpp">template&lt;unsigned long long base, class It&gt;
+int set_digits(unsigned long long value,
+               It first,
+               It last)
+{
+    static_assert(base &gt; 1, &quot;base must be &gt; 1&quot;);
+    int d = 0;
+    for (; first != last; ++first)
+    {
+        ++d;
+        *first = value % base;
+        value = value / base;
+
+        if (value == 0)
+        {
+            return d;   //ok
+        }
+    };
+
+    assert(false);
+
+    return 0; //more digits are necessary
+}
+</code></pre>
+</body></html>
