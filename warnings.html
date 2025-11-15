@@ -1272,9 +1272,12 @@ int main()
 
 <h3 id="toc_73">720 Struct member not found</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">struct X{int a;}
+int main()
+{
+  struct X x;
+  x.b = 1; //error C0720: member &#39;b&#39; not found in &#39;struct X&#39;
+  return 0;
 }
 </code></pre>
 
