@@ -506,6 +506,8 @@ It does not include the following features:</p>
 <pre><code class="language-c">void f(const char* restrict s);
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_8">C99 Variable-length array (VLA)</h3>
 
 <pre><code class="language-c">#include &lt;stdlib.h&gt;
@@ -520,8 +522,10 @@ int main() {
 
     free(p);
 }
-cdd
+
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n683.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n683.htm</a></p>
 
@@ -570,6 +574,8 @@ int main() {
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_10">C99 static and type qualifiers in parameter array declarators</h3>
 
 <pre><code class="language-c">#include &lt;stdlib.h&gt;
@@ -595,6 +601,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_11">C99 Complex and imaginary support</h3>
 
 <p>Not implemented</p>
@@ -607,6 +615,8 @@ int main()
 
 <pre><code class="language-c">double d = 0x1p+1;
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>Cake converts hexadecimal floating-point values to decimal 
 floating-point representation using strtod followed by snprintf.
@@ -640,6 +650,8 @@ int f(void) {
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p>N716
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n716.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n716.htm</a></p>
 
@@ -655,6 +667,8 @@ int f(void) {
  }
 
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>N494
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n494.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n494.pdf</a></p>
@@ -674,6 +688,8 @@ int f(void) {
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_18">C99 inline functions</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n709.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n709.htm</a>  (30 May 1997)
@@ -688,6 +704,8 @@ int main(void)
     int r = sum(1, 2);
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_19">C99 _Pragma preprocessing operator</h3>
 
@@ -705,6 +723,8 @@ int main()
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_21">C99 Variadic macros</h3>
 
 <pre><code class="language-c">
@@ -719,6 +739,8 @@ int main()
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p>N707
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n707.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n707.htm</a></p>
 
@@ -732,6 +754,8 @@ int main()
     return 0;
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h2 id="toc_23">C11</h2>
 
@@ -749,6 +773,8 @@ int main()
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_25">C11 Anonymous structures and unions</h3>
 
 <pre><code class="language-c">struct v {
@@ -765,6 +791,8 @@ int main(){
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1406.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1406.pdf</a></p>
 
 <h3 id="toc_26">C11 _Noreturn</h3>
@@ -773,6 +801,8 @@ int main(){
   abort(); // ok
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_27">C11 Thread_local/Atomic</h3>
 
@@ -800,11 +830,15 @@ int main(void)
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_29">C11 u&#39; &#39; U&#39; &#39; character constants</h3>
 
 <pre><code class="language-c"> int i = U&#39;ç&#39;;
  int i2 = u&#39;ç&#39;;
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>Important: Cake assume source is utf8 encoded.</p>
 
@@ -813,6 +847,8 @@ int main(void)
 <pre><code class="language-c">char * s1 = u8&quot;maçã&quot;;
 char * s2 = u8&quot;maca&quot;;
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>N1488
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1488.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1488.htm</a></p>
@@ -827,6 +863,8 @@ char * s2 = u8&quot;maca&quot;;
  }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_32">C11 _Alignas or C23 alignas</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1335.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1335.pdf</a></p>
@@ -840,6 +878,8 @@ char * s2 = u8&quot;maca&quot;;
 <pre><code class="language-c">#define __STDC_VERSION__ 201710L  //C17
 #define __STDC_VERSION__ 202311L  //C23
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_34">C23 _Decimal32, _Decimal64, and _Decimal128</h3>
 
@@ -860,6 +900,8 @@ char * s2 = u8&quot;maca&quot;;
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_37">C23 No function declarators without prototypes</h3>
 
 <p><a href="https://www.open-std.org/JTC1/SC22/WG14/www/docs/n2841.htm">https://www.open-std.org/JTC1/SC22/WG14/www/docs/n2841.htm</a></p>
@@ -868,6 +910,8 @@ char * s2 = u8&quot;maca&quot;;
     func(); //this is an error in C23
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>See also Remove support for function definitions with identifier lists  </p>
 
@@ -887,6 +931,8 @@ void bar(void)
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_39">C23 Unnamed parameters in function definitions</h3>
 
 <pre><code class="language-c">int f(int );
@@ -894,6 +940,8 @@ void bar(void)
 int f(int ) {
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2480.pdf">https://open-std.org/JTC1/SC22/WG14/www/docs/n2480.pdf</a></p>
 
@@ -907,6 +955,8 @@ We should add a dummy name when generating - Not implemented yet.</p>
     int a = 1000&#39;00;
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2626.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2626.pdf</a></p>
 
@@ -922,6 +972,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_42">C23 Introduce the nullptr constant</h3>
 
 <pre><code class="language-c">
@@ -933,6 +985,8 @@ int main()
 }
 
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n3042.htm">https://open-std.org/JTC1/SC22/WG14/www/docs/n3042.htm</a></p>
 
@@ -959,6 +1013,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2900.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2900.htm</a>
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3011.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3011.htm</a></p>
 
@@ -971,6 +1027,8 @@ double A[3] = { 0 };
 auto pA = A;
 auto qA = &amp;A;
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n3007.htm">https://open-std.org/JTC1/SC22/WG14/www/docs/n3007.htm</a></p>
 
@@ -1016,6 +1074,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p><a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2927.htm">https://open-std.org/JTC1/SC22/WG14/www/docs/n2927.htm</a>
 <a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2930.pdf">https://open-std.org/JTC1/SC22/WG14/www/docs/n2930.pdf</a></p>
 
@@ -1034,6 +1094,8 @@ static_assert(_Generic(a0,
         int: 1,
         default: 2 == 0));
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p>The type of the enum must be adjusted.</p>
 
@@ -1085,6 +1147,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_49">C23 Enhancements to Enumerations</h3>
 
 <pre><code class="language-c">enum X : short {
@@ -1095,6 +1159,8 @@ int main() {
    enum X x = A;   
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3030.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3030.htm</a></p>
 
@@ -1150,6 +1216,8 @@ int main() {
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_58">C23 #warning</h3>
 
 <pre><code class="language-c">int main()
@@ -1160,6 +1228,8 @@ int main() {
 Implemented
 C89 backend - n/a
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2686.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2686.pdf</a></p>
 
@@ -1180,6 +1250,8 @@ int main()
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_60">C23 #elifdef #elifndef</h3>
 
 <p>Implemented</p>
@@ -1194,6 +1266,8 @@ int main()
 #define VERSION 3
 #endif
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_61">C23 __VA_OPT__</h3>
 
@@ -1226,6 +1300,8 @@ int main()
 
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm</a></p>
 
 <h3 id="toc_62">C23 BitInt(N))</h3>
@@ -1245,6 +1321,8 @@ int main()
    F((static int []){1, 2, 3, 0})
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3038.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3038.htm</a></p>
 
@@ -1268,6 +1346,8 @@ int main()
 }
 
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm</a></p>
 
@@ -1315,6 +1395,8 @@ int main() {
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_71">Function literals and local functions</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3645.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3645.pdf</a></p>
@@ -1335,6 +1417,8 @@ int main()
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p>C++ proposal
 <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html</a></p>
 
@@ -1354,6 +1438,8 @@ int main()
     static_assert(_Generic(typeof(p), const int * const: 1));
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h2 id="toc_74">Cake Extensions</h2>
 
@@ -1393,6 +1479,8 @@ void list_push_back(struct list* list,
 }
 </code></pre>
 
+<p><button onclick="Try(this)">try</button></p>
+
 <p>However, <code>assert</code> is not a &quot;blind override command.&quot; In situations like:</p>
 
 <pre><code class="language-c">    int i = 0;
@@ -1415,6 +1503,8 @@ assert works as a state selector, similar to what happens in if statements but w
         //we assume p is not null here...        
     }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_77">try { throw; } catch {}</h3>
 
@@ -1447,6 +1537,8 @@ catch
 {
 }
 </code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_78">#pragma dir</h3>
 

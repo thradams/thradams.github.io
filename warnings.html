@@ -46,7 +46,7 @@
 <a href="#toc_4">4 Enum conversion issue</a>
 </li>
 <li>
-<a href="#toc_5">5 Suspicious address usage</a>
+<a href="#toc_5">5 (unused)</a>
 </li>
 <li>
 <a href="#toc_6">6 Unused function parameter (disabled by default)</a>
@@ -79,7 +79,7 @@
 <a href="#toc_15">15 Discarded qualifiers</a>
 </li>
 <li>
-<a href="#toc_16">16 (currently not used)</a>
+<a href="#toc_16">16 (unused)</a>
 </li>
 <li>
 <a href="#toc_17">17 Uninitialized variable</a>
@@ -94,7 +94,7 @@
 <a href="#toc_20">20 Array indirection issue</a>
 </li>
 <li>
-<a href="#toc_21">21 (currently not used)</a>
+<a href="#toc_21">21 (unused)</a>
 </li>
 <li>
 <a href="#toc_22">22 Using object without being owner</a>
@@ -112,13 +112,13 @@
 <a href="#toc_26">26 Discarding an owner</a>
 </li>
 <li>
-<a href="#toc_27">27 Moving a non-owner object</a>
+<a href="#toc_27">27 (unused)</a>
 </li>
 <li>
 <a href="#toc_28">28 Non-null flow violation</a>
 </li>
 <li>
-<a href="#toc_29">29 Missing destructor (flow analysis)</a>
+<a href="#toc_29">29 pointed object was not released (flow analysis)</a>
 </li>
 <li>
 <a href="#toc_30">30 Uninitialized value (flow analysis)</a>
@@ -190,7 +190,7 @@
 <a href="#toc_52">52 Invalid array size</a>
 </li>
 <li>
-<a href="#toc_53">53 Empty statement</a>
+<a href="#toc_53">53 (unused)</a>
 </li>
 <li>
 <a href="#toc_54">54 Incompatible types</a>
@@ -211,10 +211,10 @@
 <a href="#toc_59">59 Expected warning did not occur</a>
 </li>
 <li>
-<a href="#toc_60">60 Nullable to non-nullable</a>
+<a href="#toc_60">60 Null pointer constant to non-nullable pointer</a>
 </li>
 <li>
-<a href="#toc_61">61 Cast to same type</a>
+<a href="#toc_61">61 Cast to same type (inactive)</a>
 </li>
 <li>
 <a href="#toc_62">62 Too many initializers</a>
@@ -226,7 +226,7 @@
 <a href="#toc_64">64–127 Reserved / unused warnings</a>
 </li>
 <li>
-<a href="#toc_65">640 Invalid qualifier for pointer</a>
+<a href="#toc_65">640 _View is the default qualifier</a>
 </li>
 <li>
 <a href="#toc_66">650 Unexpected compiler error</a>
@@ -259,13 +259,13 @@
 <a href="#toc_75">740 Struct is incomplete</a>
 </li>
 <li>
-<a href="#toc_76">750 Declarator not found</a>
+<a href="#toc_76">750 (unused)</a>
 </li>
 <li>
 <a href="#toc_77">760 Expected declarator name</a>
 </li>
 <li>
-<a href="#toc_78">770 Unknown attribute name</a>
+<a href="#toc_78">770 (unused)</a>
 </li>
 <li>
 <a href="#toc_79">780 Indirection requires pointer operand</a>
@@ -442,7 +442,7 @@
 <a href="#toc_136">1330 Preprocessor division by zero</a>
 </li>
 <li>
-<a href="#toc_137">1340 Integer-to-pointer conversion error</a>
+<a href="#toc_137">1340 non-pointer to pointer error</a>
 </li>
 <li>
 <a href="#toc_138">1350 Literal overflow</a>
@@ -580,15 +580,7 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_5">5 Suspicious address usage</h3>
-
-<pre><code class="language-c">int main()
-{    
-}
-
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<h3 id="toc_5">5 (unused)</h3>
 
 <h3 id="toc_6">6 Unused function parameter (disabled by default)</h3>
 
@@ -697,7 +689,7 @@ int main() { //  warning C0011: not following correct brace style
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_16">16 (currently not used)</h3>
+<h3 id="toc_16">16 (unused)</h3>
 
 <h3 id="toc_17">17 Uninitialized variable</h3>
 
@@ -733,15 +725,15 @@ int main() { //  warning C0011: not following correct brace style
 
 <h3 id="toc_20">20 Array indirection issue</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">void f(int a[])
+{
+    *a =1; // warning C0020: array indirection
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_21">21 (currently not used)</h3>
+<h3 id="toc_21">21 (unused)</h3>
 
 <h3 id="toc_22">22 Using object without being owner</h3>
 
@@ -789,60 +781,121 @@ int main()
 
 <h3 id="toc_26">26 Discarding an owner</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">
+#pragma safety enable
+
+void* _Owner _Opt malloc(unsigned long size);
+
+void f(int * _Opt p){}
+
+int main() {
+   f((int*)malloc(1)); //warning C0026: discarding _Owner pointer   
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_27">27 Moving a non-owner object</h3>
-
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<h3 id="toc_27">27 (unused)</h3>
 
 <h3 id="toc_28">28 Non-null flow violation</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">#pragma nullable enable
+
+void f(int *p)
+{
+  if (p) //warning C0028: pointer is always not-null
+  {   
+  }
+}
+int main() {}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<pre><code class="language-c">#pragma nullable enable
+
+int main() {
+  int * _Opt p = 0;
+  if (p) //warning C0028: pointer is always null
+  {   
+  }
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_29">29 Missing destructor (flow analysis)</h3>
+<h3 id="toc_29">29 pointed object was not released (flow analysis)</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">#pragma safety enable
+
+struct X {
+    char* _Owner text; 
+};
+
+void delete_x(struct X *_Owner p) //warning C0029: object pointed by &#39;p&#39; was not released.
+{
 }
+int main() {}
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_30">30 Uninitialized value (flow analysis)</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">#pragma safety enable
+
+void f(int i)
+{
+    int j;
+    if (i) j =1;
+    i = j; //warning C0030: object &#39;j&#39; can be uninitialized
 }
+int main() {}
+
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<pre><code class="language-c">
+#pragma safety enable
+
+void* _Owner _Opt malloc(unsigned long size);
+void free(void* _Owner _Opt ptr);
+
+struct X{
+    char* _Owner _Opt p;
+};
+struct X makeX();
+void destroyX([[dtor]]struct X * p){
+  free(p-&gt;p);
+}
+
+int main() {
+    struct X x = makeX();
+    destroyX(&amp;x);
+    destroyX(&amp;x); //double free
+}
+
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_31">31 Lifetime has ended (flow analysis)</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">
+#pragma safety enable
+
+struct X { int i; };
+
+int main() {
+    struct X * _Opt p = 0;
+    {
+      struct X x ={};
+      p = &amp;x;
+    }
+    p-&gt;i = 0; //warning C0031: object lifetime ended
 }
+
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
@@ -1067,15 +1120,7 @@ int main(){
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_53">53 Empty statement</h3>
-
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<h3 id="toc_53">53 (unused)</h3>
 
 <h3 id="toc_54">54 Incompatible types</h3>
 
@@ -1144,21 +1189,22 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_60">60 Nullable to non-nullable</h3>
+<h3 id="toc_60">60 Null pointer constant to non-nullable pointer</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">#pragma safety enable
+
+int main() {  
+  int * p2 = nullptr; //warning C0060: cannot convert a null pointer constant to non-nullable pointer
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_61">61 Cast to same type</h3>
+<h3 id="toc_61">61 Cast to same type (inactive)</h3>
 
 <pre><code class="language-c">int main()
 {  
-//TODO
+  int i = (int) 0;
 }
 </code></pre>
 
@@ -1176,9 +1222,8 @@ int main()
 
 <h3 id="toc_63">63 Float out of range</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">int main() {
+  float f = 1e300f; //warning C0063: floating constant exceeds range of float
 }
 </code></pre>
 
@@ -1188,11 +1233,12 @@ int main()
 
 <hr>
 
-<h3 id="toc_65">640 Invalid qualifier for pointer</h3>
+<h3 id="toc_65">640 _View is the default qualifier</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">#pragma safety enable
+
+int main() {  
+  int * _View i; //error C0640: invalid qualifier for pointer
 }
 </code></pre>
 
@@ -1200,13 +1246,7 @@ int main()
 
 <h3 id="toc_66">650 Unexpected compiler error</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<p>Some internal error.</p>
 
 <h3 id="toc_67">660 Too many arguments</h3>
 
@@ -1285,9 +1325,9 @@ int main()
 
 <h3 id="toc_74">730 Structure or union required</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">int main() {  
+  int a;
+  a.a = 1; // error C0730: structure or union required
 }
 </code></pre>
 
@@ -1303,15 +1343,7 @@ int main(){
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_76">750 Declarator not found</h3>
-
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<h3 id="toc_76">750 (unused)</h3>
 
 <h3 id="toc_77">760 Expected declarator name</h3>
 
@@ -1323,21 +1355,13 @@ int main(){
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_78">770 Unknown attribute name</h3>
-
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
-</code></pre>
-
-<p><button onclick="Try(this)">try</button></p>
+<h3 id="toc_78">770 (unused)</h3>
 
 <h3 id="toc_79">780 Indirection requires pointer operand</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">int main() {
+    int i;
+    *i = 1; //error C0780: indirection requires pointer operand
 }
 </code></pre>
 
@@ -1639,10 +1663,14 @@ int main(){
 
 <h3 id="toc_109">1080 Static-state analysis failed</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
-}
+<pre><code class="language-c">#pragma safety enable
+
+int f();
+
+int main() {   
+    int i = f();
+    static_state(i, &quot;not-zero&quot;); //error C1080: static_state failed
+} 
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
@@ -1826,6 +1854,13 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
+<pre><code class="language-c">int main() {
+  int a[2147483647]; //error C1270: sizeof &#39;a&#39; is too large
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
 <h3 id="toc_131">1280 Returning owner to non-owner</h3>
 
 <pre><code class="language-c">#pragma safety enable
@@ -1888,11 +1923,14 @@ int main(){
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_137">1340 Integer-to-pointer conversion error</h3>
+<h3 id="toc_137">1340 non-pointer to pointer error</h3>
 
-<pre><code class="language-c">int main()
-{  
-//TODO
+<pre><code class="language-c">
+void f(int * p);
+
+int main() {
+    int i;
+    f(i); //error C1340: non-pointer to pointer   
 }
 </code></pre>
 
