@@ -243,56 +243,53 @@
 <a href="#toc_67">case range expressions</a>
 </li>
 <li>
-<a href="#toc_68">#def</a>
+<a href="#toc_68">_Countof operator</a>
 </li>
 <li>
-<a href="#toc_69">_Countof operator</a>
+<a href="#toc_69">defer</a>
 </li>
 <li>
-<a href="#toc_70">defer</a>
+<a href="#toc_70">Function literals and local functions</a>
 </li>
 <li>
-<a href="#toc_71">Function literals and local functions</a>
+<a href="#toc_71">if declarations, v4</a>
 </li>
 <li>
-<a href="#toc_72">if declarations, v4</a>
-</li>
-<li>
-<a href="#toc_73">C2Y typename on _Generic</a>
+<a href="#toc_72">C2Y typename on _Generic</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_74">Cake Extensions</a>
+<a href="#toc_73">Cake Extensions</a>
 <ul>
 <li>
-<a href="#toc_75">Pre-defined macros in Cake</a>
+<a href="#toc_74">Pre-defined macros in Cake</a>
 </li>
 <li>
-<a href="#toc_76">assert built-in</a>
+<a href="#toc_75">assert built-in</a>
 </li>
 <li>
-<a href="#toc_77">try { throw; } catch {}</a>
+<a href="#toc_76">try { throw; } catch {}</a>
 </li>
 <li>
-<a href="#toc_78">#pragma dir</a>
+<a href="#toc_77">#pragma dir</a>
 </li>
 <li>
-<a href="#toc_79">offsetof</a>
+<a href="#toc_78">offsetof</a>
 </li>
 <li>
-<a href="#toc_80">Type traits</a>
+<a href="#toc_79">Type traits</a>
 </li>
 <li>
-<a href="#toc_81">Extension - Object lifetime checks</a>
+<a href="#toc_80">Extension - Object lifetime checks</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_82">GCC extensions</a>
+<a href="#toc_81">GCC extensions</a>
 </li>
 <li>
-<a href="#toc_83">MSVC extensions</a>
+<a href="#toc_82">MSVC extensions</a>
 </li>
 </ul>
 <h2 id="toc_0">Using cake</h2>
@@ -663,7 +660,7 @@ int f(void) {
 
   struct point { int x, y; };
 
-  struct point p = { .y = 2, .x = 3 }
+  struct point p = { .y = 2, .x = 3 };
  }
 
 </code></pre>
@@ -709,11 +706,23 @@ int main(void)
 
 <h3 id="toc_19">C99 _Pragma preprocessing operator</h3>
 
-<p>NXXXX?</p>
+<pre><code class="language-c">
+// Use -E option
+//6.10.11 Pragma operator
+
+#define LISTING(x) PRAGMA(listing on #x)
+#define PRAGMA(x) _Pragma(#x)
+
+LISTING (..listing.dir)
+
+
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_20">C99 __func__ predefined identifier</h3>
 
-<p>N611 13 Sep 96 Mooney, <strong>FUNC</strong></p>
+<p>N611 13 Sep 96 Mooney, __FUNC__</p>
 
 <pre><code class="language-c">#include &lt;stdio.h&gt;
 int main()
@@ -945,8 +954,7 @@ int f(int ) {
 
 <p><a href="https://open-std.org/JTC1/SC22/WG14/www/docs/n2480.pdf">https://open-std.org/JTC1/SC22/WG14/www/docs/n2480.pdf</a></p>
 
-<p>C89 backened.
-We should add a dummy name when generating - Not implemented yet.</p>
+<p>Missing a dummy name when generating c89.</p>
 
 <h3 id="toc_40">C23 Digit separators</h3>
 
@@ -993,6 +1001,18 @@ int main()
 <h3 id="toc_43">C23 Make false and true first-class language features</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2935.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2935.pdf</a></p>
+
+<pre><code class="language-c">#if true
+#warning yes..
+#endif
+
+int main()
+{
+    bool b = true;
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_44">C23 {} empty initializer</h3>
 
@@ -1069,7 +1089,7 @@ int main()
    int k = sizeof(typeof(array));
 
    /*new way to declare pointer to functions?*/
-   typeof(void (int)) * pf = NULL;
+   typeof(void (int)) * pf = nullptr;
 }
 
 </code></pre>
@@ -1177,13 +1197,37 @@ int main() {
 
 <h3 id="toc_52">C23 deprecated attribute</h3>
 
-<p>Partially implemented
-<a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2334.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2334.pdf</a></p>
+<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2334.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2334.pdf</a></p>
+
+<pre><code class="language-c">// Compil with -w03
+[[deprecated]] void f2() {}
+struct [[deprecated]] S {  int a;};
+enum [[deprecated]] E1 { one };
+
+int main(void) {
+    struct S s;
+    enum E1 e;
+    f2();
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_53">C23 maybe_unused attribute</h3>
 
-<p>Implemented
-<a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2270.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2270.pdf</a></p>
+<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2270.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2270.pdf</a></p>
+
+<pre><code class="language-c">//
+// Compile with -w02 -w06
+//
+void f( [[maybe_unused]] int arg1, int arg2) //warning C0006: &#39;arg2&#39;: unreferenced formal parameter
+{
+    [[maybe_unused]] int local1;
+    int local2; //warning C0002: &#39;local2&#39;: unreferenced declarator
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
 
 <h3 id="toc_54">C23 nodiscard attribute</h3>
 
@@ -1224,9 +1268,6 @@ int main() {
 {
   #warning my warning message  
 }
-
-Implemented
-C89 backend - n/a
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
@@ -1271,7 +1312,7 @@ int main()
 
 <h3 id="toc_61">C23 __VA_OPT__</h3>
 
-<p>Implemented.</p>
+<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm</a></p>
 
 <pre><code class="language-c">
 #define F(...) f(0 __VA_OPT__(,) __VA_ARGS__)
@@ -1302,13 +1343,11 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3033.htm</a></p>
-
 <h3 id="toc_62">C23 BitInt(N))</h3>
 
-<p>Not implemented</p>
-
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2763.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2763.pdf</a></p>
+
+<p>Not implemented yet.</p>
 
 <h3 id="toc_63">C23 Compound Literals with storage specifier</h3>
 
@@ -1328,12 +1367,17 @@ int main()
 
 <h3 id="toc_64">C23 Variably-modified (VM) types</h3>
 
-<p>Not implemented
+<p>NOT IMPLEMENTED YET
+Variably modified types part of C23. 
 <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2778.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2778.pdf</a></p>
+
+<p>Only variable length arrays with automatic storage duration that are optional.</p>
 
 <h2 id="toc_65">C2Y</h2>
 
 <h3 id="toc_66">Obsolete implicitly octal literals</h3>
+
+<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm</a></p>
 
 <pre><code class="language-c">
 static_assert(0o52 == 052);
@@ -1349,26 +1393,118 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3353.htm</a></p>
-
 <h3 id="toc_67">case range expressions</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3370.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3370.htm</a></p>
 
-<h3 id="toc_68">#def</h3>
+<pre><code class="language-c">  #include &lt;stdio.h&gt;
 
-<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3524.txt">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3524.txt</a></p>
+  void f(int n)
+  {
+    switch (n)
+    {
+       case 1 ... 10:
+       printf(&quot;n in range 1...10\n&quot;);
+       break;
+       default:
+       break;
+    }
+  }
 
-<h3 id="toc_69">_Countof operator</h3>
+  int main(){
+    f(1);
+    f(11);
+  }
+ ```
+
+### \#def
+
+https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3524.txt
+
+```c
+//Use -E
+#def foo(x)
+        do {
+            bar(x);
+            baz(x);
+        }
+        while (0)
+#enddef
+
+foo(1)
+foo(2)
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<p>It may not be part of C2Y, but it is implemented in Cake while 
+we wait to see whether we will keep it as an extension or remove it.</p>
+
+<h3 id="toc_68">_Countof operator</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3369.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3369.pdf</a></p>
 
+<pre><code class="language-c">void f(int n)
+{
+  int v[123][n];
+  static_assert(_Countof(v) == 123);
+}
+
+int main()
+{
+  int a[7][3];
+  int n = _Countof(a);
+  static_assert(_Countof(a) == 7);
+
+  int n2 = _Countof(int [7][3]);
+  static_assert(_Countof(int [2][3]) == 2);
+}
+
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
 <p>Obs: Cake extends countof to enums, returning the number
-of enumerators.</p>
+of enumerators. (this is not part of C2Y)
+It can be a new keyword in cake.</p>
 
-<h3 id="toc_70">defer</h3>
+<pre><code class="language-c">#include &lt;string.h&gt;
+enum E { A, B, C, D, E, F };
 
-<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3199.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3199.htm</a></p>
+void f(enum E e)
+{
+    switch (e)
+    {
+        case A:
+            break;
+        case B:
+            break;
+        default:
+            static_assert(_Countof(e) == 6);
+    }
+}
+
+enum E parse_enum_e(const char* s)
+{
+    if (strcmp(s, &quot;A&quot;) == 0) return A;
+    if (strcmp(s, &quot;B&quot;) == 0) return B;
+    if (strcmp(s, &quot;C&quot;) == 0) return C;
+    if (strcmp(s, &quot;D&quot;) == 0) return D;
+    if (strcmp(s, &quot;E&quot;) == 0) return E;
+    if (strcmp(s, &quot;F&quot;) == 0) return F;
+    static_assert(_Countof(enum E) == 6);
+
+    return A;
+}
+
+int main() { }
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<h3 id="toc_69">defer</h3>
+
+<p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3734.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3734.pdf</a></p>
 
 <p><em>defer</em> will call the defer statement before the block exit at inverse order of declaration.</p>
 
@@ -1397,11 +1533,11 @@ int main() {
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_71">Function literals and local functions</h3>
+<h3 id="toc_70">Function literals and local functions</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3645.pdf">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3645.pdf</a></p>
 
-<h3 id="toc_72">if declarations, v4</h3>
+<h3 id="toc_71">if declarations, v4</h3>
 
 <p><a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3388.htm">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3388.htm</a></p>
 
@@ -1414,15 +1550,18 @@ int main()
      /*...*/
      fclose(f);
    }
+
+   if (FILE* f = fopen(&quot;file.txt&quot;, &quot;r&quot;))
+   {
+     /*...*/
+     fclose(f);
+   }
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<p>C++ proposal
-<a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0305r0.html</a></p>
-
-<h3 id="toc_73">C2Y typename on _Generic</h3>
+<h3 id="toc_72">C2Y typename on _Generic</h3>
 
 <p>This feature was created in Cake and now it is part of C2Y!</p>
 
@@ -1441,18 +1580,16 @@ int main()
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h2 id="toc_74">Cake Extensions</h2>
+<h2 id="toc_73">Cake Extensions</h2>
 
-<h3 id="toc_75">Pre-defined macros in Cake</h3>
+<h3 id="toc_74">Pre-defined macros in Cake</h3>
 
-<pre><code class="language-c"> #define __CAKE__ 202311L
- #define __STDC_VERSION__ 202311L
- #define __STDC_OWNERSHIP__ 1
+<pre><code class="language-c"> #define __CAKE__           202311L
+ #define __STDC_VERSION__   202311L
+ 
 </code></pre>
 
-<p>The define <strong>STDC_OWNERSHIP</strong> indicates that the compiler suports owneship checks</p>
-
-<h3 id="toc_76">assert built-in</h3>
+<h3 id="toc_75">assert built-in</h3>
 
 <p>In cake assert is an built-in function.
 The reason is because it works as tips for flow analysis.</p>
@@ -1506,7 +1643,7 @@ assert works as a state selector, similar to what happens in if statements but w
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_77">try { throw; } catch {}</h3>
+<h3 id="toc_76">try { throw; } catch {}</h3>
 
 <pre><code>   try-statement:
       try secondary-block
@@ -1523,35 +1660,63 @@ assert works as a state selector, similar to what happens in if statements but w
 
 <p>catch block is optional.</p>
 
-<pre><code class="language-c">try
+<pre><code class="language-c">extern int error;
+
+int main()
 {
-   for (int i = 0 ; i &lt; 10; i++) {
-      for (int j = 0 ; j &lt; 10; j++) {
-        ... 
-        if (error) throw;
-        ...
-      }
-   }
-}
-catch
-{
+    try
+    {
+        for (int i = 0 ; i &lt; 10; i++) 
+        {
+            for (int j = 0 ; j &lt; 10; j++) 
+            {
+                /*...*/
+                if (error) throw;
+                /*...*/
+            }
+        }
+    }
+    catch
+    {
+    }
 }
 </code></pre>
 
 <p><button onclick="Try(this)">try</button></p>
 
-<h3 id="toc_78">#pragma dir</h3>
+<h3 id="toc_77">#pragma dir</h3>
 
 <pre><code class="language-c">#pragma dir &quot;C:/Program Files (x86)/Windows Kits/10//include/10.0.22000.0/cppwinrt&quot;
 </code></pre>
 
-<p>pragma dir makes the preprocessor include the directory when searching for includes.</p>
+<p>Add the path to the list of directory paths used to seach include files.</p>
 
-<h3 id="toc_79">offsetof</h3>
+<h3 id="toc_78">offsetof</h3>
 
 <p>In cake offset (<a href="https://en.cppreference.com/w/cpp/types/offsetof.html">https://en.cppreference.com/w/cpp/types/offsetof.html</a>) is an operator</p>
 
-<h3 id="toc_80">Type traits</h3>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+ 
+struct S
+{
+    char   m0;
+    double m1;
+    short  m2;
+    char   m3;
+};
+ 
+int main()
+{
+    printf(&quot;offset of char   m0 = %zu&quot;, offsetof(struct S, m0));
+    printf(&quot;offset of char   m0 = %zu&quot;, offsetof(struct S, m1));
+    printf(&quot;offset of char   m0 = %zu&quot;, offsetof(struct S, m2));
+    printf(&quot;offset of char   m0 = %zu&quot;, offsetof(struct S, m3));
+}
+</code></pre>
+
+<p><button onclick="Try(this)">try</button></p>
+
+<h3 id="toc_79">Type traits</h3>
 
 <p>We have some compile time functions to infer properties of types.</p>
 
@@ -1586,7 +1751,7 @@ Arithmetic types, pointer types, and the nullptr_t type are collectively called 
 <p>Note: Type traits that can be easily created with _Generic will be removed.
 _</p>
 
-<h3 id="toc_81">Extension - Object lifetime checks</h3>
+<h3 id="toc_80">Extension - Object lifetime checks</h3>
 
 <p>See <a href="ownership.html">ownership</a></p>
 
@@ -1595,7 +1760,7 @@ _Opt
 _View
 </code></pre>
 
-<h2 id="toc_82">GCC extensions</h2>
+<h2 id="toc_81">GCC extensions</h2>
 
 <ul>
 <li>__builtin_va_list</li>
@@ -1616,7 +1781,7 @@ _View
 
 <p>See <code>\src\include\x86_x64_gcc_builtins.h</code></p>
 
-<h2 id="toc_83">MSVC extensions</h2>
+<h2 id="toc_82">MSVC extensions</h2>
 
 <ul>
 <li>__ptr32, __ptr64</li>
