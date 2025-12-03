@@ -1629,10 +1629,14 @@ int main() { }
 <pre><code class="language-c">// 12 EXAMPLE 1 Defer statements cannot be jumped over.
 #include &lt;stdio.h&gt;
 
-int main() {
+int main() 
+{    
     goto target;  // constraint violation
+ 
     _Defer { fputs(&quot; meow&quot;, stdout); }
-target:
+    
+    target:
+
     fputs(&quot;cat says&quot;, stdout);
     return 1;
 }
@@ -1649,7 +1653,9 @@ int main()
 {
     // print &quot;cat says&quot; to standard output
     return fputs(&quot;cat says&quot;, stdout);
+
     _Defer { fputs(&quot; meow&quot;, stdout); }  // okay: no constraint violation,
+
     // not executed
 }
 
@@ -1667,7 +1673,9 @@ int main()
         // okay: no constraint violation
         _Defer { fputs(&quot; meow&quot;, stdout); }
     }
-target:
+
+    target:
+
     fputs(&quot;cat says&quot;, stdout);
     return 1;  // prints &quot;cat says&quot; to standard output
 }
@@ -1681,15 +1689,17 @@ target:
 #include &lt;stdio.h&gt;
 int main()
 {    
-  {
+    {
         _Defer { fputs(&quot;cat says&quot;, stdout); }
+
         // okay: no constraint violation
         goto target;
     }
+
 target:
+
     fputs(&quot; meow&quot;, stdout);
     return 1;  // prints &quot;cat says meow&quot; to standard output
-
 }
 
 </code></pre>
@@ -1726,6 +1736,7 @@ int main()
         return 5;  // constraint violation
         fputs(&quot; meow&quot;, stdout);
     }
+
     fputs(&quot;cat says&quot;, stdout);
     return 1;
 }
@@ -1737,14 +1748,15 @@ int main()
 #include &lt;stdio.h&gt;
 int main()
 {    
- _Defer {
-    target:
+    _Defer 
+    {
+        target:
         fputs(&quot; meow&quot;, stdout);
     }
     goto target;  // constraint violation
+
     fputs(&quot;cat says&quot;, stdout);
     return 1;
-
 }
 </code></pre>
 
@@ -1755,14 +1767,16 @@ int main()
 #include &lt;stdio.h&gt;
 int main()
 {   
-  goto target;  // okay: no constraint violation
+    goto target;  // okay: no constraint violation
+
     {
-    target:
+        target:
         _Defer { fputs(&quot;cat says&quot;, stdout); }
     }
-    fputs(&quot; meow&quot;, stdout);
-    return 1;  // prints &quot;cat says meow&quot; to standard output
 
+    fputs(&quot; meow&quot;, stdout);
+
+    return 1;  // prints &quot;cat says meow&quot; to standard output
 }
 </code></pre>
 
@@ -1779,6 +1793,7 @@ int main()
        _Defer {fputs(&quot; meow&quot;, stdout); }
        target:
     }
+
     fputs(&quot;cat says&quot;, stdout);
     return 1;
 
@@ -1851,13 +1866,15 @@ int main()
 int main()
 {   
     {
-    target:
+        target:
         _Defer { fputs(&quot;cat says&quot;, stdout); }
     }
-    goto target;  // ok
-    fputs(&quot; meow\n&quot;, stdout);
-    return 1;  // prints &quot;cat says&quot; repeatedly
 
+    goto target;  // ok
+
+    fputs(&quot; meow\n&quot;, stdout);
+
+    return 1;  // prints &quot;cat says&quot; repeatedly
 }
 </code></pre>
 
@@ -1868,9 +1885,9 @@ int main()
 int main()
 {    
    {
-    target:
+       target:
         _Defer { fputs(&quot;cat says&quot;, stdout); }
-        goto target;  // ok
+       goto target;  // ok
    }
    
    // never reached
@@ -1890,16 +1907,19 @@ int main()
 {   
     int count = 0;
     {
-    target:
+        target:
+
         _Defer { fputs(&quot;cat says &quot;, stdout); }
+
         ++count;
         if (count &lt;= 2) {
             goto target;  // ok
         }
     }
-    fputs(&quot;meow&quot;, stdout);
-    return 1;  // prints &quot;cat says cat says cat says meow&quot;
 
+    fputs(&quot;meow&quot;, stdout);
+
+    return 1;  // prints &quot;cat says cat says cat says meow&quot;
 }
 </code></pre>
 
@@ -1914,7 +1934,7 @@ int main()
     {
         _Defer { fputs(&quot;cat says&quot;, stdout); }
 
-    target:
+        target:
         
         if (count &lt; 5) {
             ++count;
@@ -1978,7 +1998,8 @@ int main()
 #include &lt;stddef.h&gt;
 #include &lt;stdlib.h&gt;
 
-int f(size_t n, void* buf) {
+int use_buffer(size_t n, void* buf) 
+{
     /* ... */
     return 0;
 }
