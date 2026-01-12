@@ -146,6 +146,45 @@
 
         </section>
 
+                <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>do this, then that...</h2>
+            <pre><code style="font-size:10px" code class="language-c">
+    void part1_async(void* data, void (*callback)(int result, void* data));
+    void part2_async(void* data, void (*callback)(int result, void* data));
+
+    struct part1_capture {
+        int value;
+    };
+
+    struct part2_capture {
+        char ch;
+    };
+
+    static void part2_complete(int result, void* data);
+
+    static void part1_complete(int result, void* data) {
+       struct part1_capture* capture1 = data;
+
+        struct part2_capture* capture2 = calloc(1, sizeof *capture2);
+        part2_async(capture2, part2_complete);
+
+        free(capture2);
+    }
+
+    static void part2_complete(int result, void* data) {
+       struct part2_capture* capture2 = data;
+       free(capture2);
+    }
+
+    void start() {
+       struct part1_capture* capture1 = calloc(1, sizeof *capture1);
+       part1_async(capture1, part1_complete);
+    }
+</code></pre>
+
+        </section>
+
         <!-------------------------------------------- Slide 3 -------------------------------------------------->
         <section>
             <h2>Local functions</h2>
@@ -192,6 +231,36 @@
 
         </section>
 
+                <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>do this, then that...</h2>
+            <pre><code code class="language-c">
+void part1_async(void* data, void (*callback)(int result, void* data));
+void part2_async(void* data, void (*callback)(int result, void* data));
+
+   
+void start() {
+
+    struct { int value; }* capture1 = calloc(1, sizeof *capture1);
+
+    part1_async(capture1, (void(int result, void* data)) 
+    {
+        typeof(capture1)* cap1 = data;
+
+        struct { char ch; }* capture2 = calloc(1, sizeof *capture2);
+
+        part2_async(capture2, (void(int result, void* data)) 
+        {
+            typeof(capture2) cap2 = data;
+            free(cap2);
+        });
+
+        free(cap1);
+    });
+}
+</code></pre>
+
+        </section>
 
         <!-------------------------------------------- Slide 5 -------------------------------------------------->
         <section>
@@ -384,13 +453,13 @@ int main() {
     enum E {A};
 
     (void (void)) {    
-        struct X x = {}; //ok
-        x.i = A; //ok
+        struct X x = {}; /* ok */
+        x.i = A; /* ok */
     }();
 
    void local() {     
-     struct X x = {}; //ok
-     x.i = A; //ok
+     struct X x = {}; /* ok */
+     x.i = A; /* ok */
    };
 }
 </code></pre>
@@ -434,19 +503,25 @@ void start(int n) {
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics</h2>
-            <li style="font-size: smaller;">
-                Non-automatic variables do not have this restriction.
-            </li>
+            <h2>Semantics : Allowed captures</h2>
 
             <pre><code code class="language-c">
 static int g = 1;
+
 int main() {
    static int i = 1;
+   constexpr int c = 123;
+   const int d = 321;
+
    void local() {     
-     int j = sizeof(i); //ok
-     int k = i; //ok
-     int m = g; //ok
+     int j = sizeof(i); /* ok */
+     int k = i; /* ok */
+     int m = g; /* ok */
+     int n = c; /* ok */             
+     int *p = &c; /*constrain violation*/
+
+     n = d; /* ok */             
+     p = &d; /*constrain violation*/
    };
 }
 </code></pre>
@@ -467,8 +542,16 @@ int main() {
 int main() {
     int a = 1;
     int b = 2;
+
     SWAP(a, b);
     
+    (void (typeof(a)* arg1, typeof(b)* arg2)) { 
+        typeof(a) temp = *arg1;
+        *arg1 = *arg2; 
+        *arg2 = temp; 
+    }(&(a), &(b));
+
+
     double da = 1.0;
     double db = 2.0;
     SWAP(da, db);
@@ -589,78 +672,11 @@ int main() {
 
         </section>
 
-        <!-------------------------------------------- Slide  -------------------------------------------------->
-        <section>
-            <h2>do this, then do that...</h2>
-            <pre><code style="font-size:10px" code class="language-c">
-    void do_this_async(void* data, void (*callback)(int result, void* data));
-    void then_that_async(void* data, void (*callback)(int result, void* data));
+     
 
-    struct do_this_capture {
-        int value;
-    };
+ 
 
-    struct then_that_capture {
-        char ch;
-    };
-
-    static void then_that_complete(int result, void* data);
-
-    static void do_this_complete(int result, void* data) {
-       struct do_this_capture* capture1 = data;
-
-        struct then_that_capture* capture2 = calloc(1, sizeof *capture2);
-        then_that_async(capture2, then_that_complete);
-
-        free(capture2);
-    }
-
-    static void then_that_complete(int result, void* data) {
-       struct then_that_capture* capture2 = data;
-       free(capture2);
-    }
-
-    void start() {
-       struct do_this_capture* capture1 = calloc(1, sizeof *capture1);
-       do_this_async(capture1, do_this_complete);
-    }
-</code></pre>
-
-        </section>
-
-
-        <!-------------------------------------------- Slide  -------------------------------------------------->
-        <section>
-            <h2>do this, then do that...</h2>
-            <pre><code code class="language-c">
-void do_this_async(void* data, void (*callback)(int result, void* data));
-void then_that_async(void* data, void (*callback)(int result, void* data));
-
-   
-void start() {
-
-    struct { int value; }* capture1 = calloc(1, sizeof *capture1);
-
-    do_this_async(capture1, (void(int result, void* data)) 
-    {
-        typeof(capture1)* cap1 = data;
-
-        struct { char ch; }* capture2 = calloc(1, sizeof *capture2);
-
-        then_that_async(capture2, (void(int result, void* data)) 
-        {
-            typeof(capture2) cap2 = data;
-            free(cap2);
-        });
-
-        free(cap1);
-    });
-}
-</code></pre>
-
-        </section>
-
-        <div class="footer">Slide 4</div>
+        <div class="footer">Slide N/N</div>
     </div>
 
 
