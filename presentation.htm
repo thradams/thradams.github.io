@@ -35,7 +35,7 @@
             width: 100vw;
             height: 100vh;
             position: relative;
-            text-align: center;
+            
         }
 
         /* Individual slide */
@@ -96,8 +96,8 @@
             border: 1px solid #e5e5e5;
             border-left: 4px solid #d0d0d0;
 
-            padding: 16px 20px;
-            margin: 16px 0;
+            padding: 8px 10px;
+            margin: 8px 0;
 
             border-radius: 6px;
 
@@ -148,7 +148,7 @@
 
         </section>
 
-                <!-------------------------------------------- Slide  -------------------------------------------------->
+    <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
             <h2>do this, then that...</h2>
             <pre><code style="font-size:10px" code class="language-c">
@@ -233,17 +233,14 @@
 
         </section>
 
-           <!-------------------------------------------- Slide 5 -------------------------------------------------->
+           <!-------------------------------------------- Slide -------------------------------------------------->
    <section>
-       <h2>Local functions and function literals are not about not having captures; 
-           they are about having explicitly controlled captures passed as arguments.
-       </h2>
-       
+       <h2>Local functions and function literals are about explicit, argument-passed captures.</h2>       
    </section>
 
-                <!-------------------------------------------- Slide 5 -------------------------------------------------->
+                <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Captures</h2>
+            <h2>Reusing captures</h2>
             <pre><code code class="language-c">
 int main()
 {
@@ -308,7 +305,7 @@ int main() {
 
 void f() { printf("extern"); }
 </code></pre>
-
+            <div  class="note">See also: N3579 auto as a placeholder type specifier</div>
         </section>
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
@@ -385,12 +382,9 @@ int main() {
    int f1() { return i; /*GCC extension*/ }   
 }
 </code></pre>
-
-
         </section>
 
-
-        <!-------------------------------------------- Slide 9 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Function Literal syntax</h2>
             <pre>
@@ -410,16 +404,13 @@ int main() {
 
         </section>
 
-        <!-------------------------------------------- Slide 10 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Semantics</h2>
-
             <ul>
                 <li>The function literal is a function designator. (Behaves like a function, not a function pointer)
                 </li>
-
             </ul>
-
             <pre><code code class="language-c">
 void main()
 {
@@ -427,15 +418,15 @@ void main()
     &(void (void)){} = 0;                  /* error: lvalue required */
 }
 </code></pre>
-
-
         </section>
 
-        <!-------------------------------------------- Slide 11 -------------------------------------------------->
+
+        <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
-            <h2>Semantics</h2>
+            <h2>Labels</h2>
             <ul>
-                <li>Labels are not shared between a function literal or local function and its enclosing function.</li>
+                <li>Labels are not shared</li>
+                <li>Statements are not shared (break; continue)</li>
             </ul>
             <pre><code code class="language-c">
 int main() {
@@ -452,22 +443,23 @@ int main() {
 
         </section>
 
-        <!-------------------------------------------- Slide 11 -------------------------------------------------->
+        <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
-            <h2>Semantics: __func__ </h2>
+            <h2> __func__ </h2>
             <ul>
-                <li>__func__ is a implementation defined c string</li>
+                <li>The value of the string returned by __func__ is implementation-defined.</li>
             </ul>
-
         </section>
 
 
-        <!-------------------------------------------- Slide 12 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics: Scope</h2>
+            <h2>Scope</h2>
             <ul>
                 <li>Function literals and local functions have access to the enclosing scope at the point of its
                     definition.</li>
+                </ul>
+
                 <pre><code code class="language-c">
 int main() {
     
@@ -491,7 +483,7 @@ int main() {
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics: Automatic variables</h2>
+            <h2>Automatic variables</h2>
             <ul>
                 <li style="font-size: smaller;">
                     Identifiers referring to automatic variables of an enclosing function cannot
@@ -517,38 +509,45 @@ void start(int n) {
         int m = sizeof(a); /* constrain violation */
     };   
 }
+</code></pre>                
+        </section>
+
+                <!-------------------------------------------- Slide -------------------------------------------------->
+        <section>
+            <h2>Constants</h2>
+            <pre><code code class="language-c">
+int main() {
+   constexpr int a = 1;
+   const int b = 2;     /*N3693 Implicitly constexpr*/
+
+   void local() {     
+     int x = a;   /* ok */             
+     int *p = &a; /*constrain violation*/
+     
+     n = b;       /* ok */             
+     p = &b;      /*constrain violation*/
+   };
+}
 </code></pre>
-
-
         </section>
 
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics : Allowed captures</h2>
-
+            <h2>Non automatic variables</h2>
             <pre><code code class="language-c">
 static int g = 1;
 
 int main() {
    static int i = 1;
-   constexpr int c = 123;
-   const int d = 321;
-
+   
    void local() {     
      int j = sizeof(i); /* ok */
-     int k = i; /* ok */
-     int m = g; /* ok */
-     int n = c; /* ok */             
-     int *p = &c; /*constrain violation*/
-
-     n = d; /* ok */             
-     p = &d; /*constrain violation*/
+     int k = i;         /* ok */
+     int m = g;         /* ok */     
    };
 }
 </code></pre>
-
-
         </section>
 
         <!-------------------------------------------- Slide -------------------------------------------------->
@@ -584,8 +583,11 @@ int main() {
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics</h2>
-            <p>Distinct function literals are not required to have unique addresses.</p>
+            <h2>Functiol Literal address</h2>
+            <ul>
+            <li>Distinct function literals are not required to have unique addresses.</li>
+            <li>local functions?</li>
+            </ul>
             <pre><code code class="language-c">
         
 int main(){
@@ -601,8 +603,11 @@ int main(){
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Semantics</h2>
-            <p>static variables inside function literals will generate distinct functions</p>
+            <h2>Static variables inside function literals</h2>
+            <ul>
+                <li>static variables inside function literals will generate distinct functions</li>
+            </ul>
+
             <pre><code code class="language-c">       
 int main() {
     auto pf1 = (void ()) { static int i = 0; };
@@ -625,10 +630,7 @@ int main() {
                 <li>Existing practice</li>
                 <li>Does not require trampolines or other hidden features.</li>
                 <li>No forced capture strategy</li>
-                <li>Works with existing APIs that use void* callbacks</li>
-                <li>Conservative</li>
-                <li>C-idiomatic</li>
-                <li>Implementation-friendly</li>
+                <li>Works with existing APIs that use void* callbacks</li>                
             </ul>
         </section>
 
@@ -654,12 +656,15 @@ int main() {
         <section>
             <h2>References</h2>
             <ul>
-                <li>N3724 - Discarded, V https://www.open-std.org/JTC1/SC22/WG14/www/docs/n3724.pdf</li>
-                <li>N3579 auto as a placeholder type specifier, v2,
-                    https://www.open-std.org/JTC1/SC22/WG14/www/docs/n3579.htm</li>
-                <li>N2956 Unsequenced functions https://www.open-std.org/JTC1/SC22/WG14/www/docs/n2956.htm</li>
-
-                <li>https://www.reddit.com/r/C_Programming/comments/1omrrra/closures_in_c_yes/</li>
+                <li>N3724: Discarded, https://www.open-std.org/JTC1/SC22/WG14/www/docs/n3724.pdf</li>
+                <li>N3622  Allow calling static inline within extern inline</li>
+                <li>N3579: auto as a placeholder type specifier, v2, https://www.open-std.org/JTC1/SC22/WG14/www/docs/n3579.htm</li>
+                <li>N2956: Unsequenced functions https://www.open-std.org/JTC1/SC22/WG14/www/docs/n2956.htm</li>
+                <li>N3693: Integer Constant Expression-Initialized const Integer-Typed Declarations are Implicitly constexpr https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3693.htm</li>
+                <li>N3694: Functions with Data https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3694.htm</li>
+                <li>N3654: Accessing the Context of Nested Functions https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3654.pdf</li>
+                <li>Reddit: https://www.reddit.com/r/C_Programming/comments/1omrrra/closures_in_c_yes/</li>
+                <li>http://cakecc.org/</li>
             </ul>
         </section>
         
