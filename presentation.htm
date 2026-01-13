@@ -107,6 +107,8 @@
 
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
+
+
     </style>
 
 
@@ -231,35 +233,35 @@
 
         </section>
 
-                <!-------------------------------------------- Slide  -------------------------------------------------->
+           <!-------------------------------------------- Slide 5 -------------------------------------------------->
+   <section>
+       <h2>Local functions and function literals are not about not having captures; 
+           they are about having explicitly controlled captures passed as arguments.
+       </h2>
+       
+   </section>
+
+                <!-------------------------------------------- Slide 5 -------------------------------------------------->
         <section>
-            <h2>do this, then that...</h2>
+            <h2>Captures</h2>
             <pre><code code class="language-c">
-void part1_async(void* data, void (*callback)(int result, void* data));
-void part2_async(void* data, void (*callback)(int result, void* data));
-
-   
-void start() {
-
-    struct { int value; }* capture1 = calloc(1, sizeof *capture1);
-
-    part1_async(capture1, (void(int result, void* data)) 
+int main()
+{
+    struct capture { int id; }* capture = calloc(1, sizeof * capture);
+    login_async(capture,  (void (int id, void * p))
     {
-        typeof(capture1)* cap1 = data;
-
-        struct { char ch; }* capture2 = calloc(1, sizeof *capture2);
-
-        part2_async(capture2, (void(int result, void* data)) 
+        printf("login completed. id=%d\n", id);
+        struct capture * cap1 = p;
+        cap1->id = id;
+        get_data_async(cap1 /*moved*/, (void (const char* email, void * data))
         {
-            typeof(capture2) cap2 = data;
+            struct capture * cap2 = data;
+            printf("your data='%s'  from id=%d\n", email, cap2->id);
             free(cap2);
         });
-
-        free(cap1);
     });
 }
 </code></pre>
-
         </section>
 
         <!-------------------------------------------- Slide 5 -------------------------------------------------->
@@ -356,7 +358,7 @@ void f() { /*extern*/ }
 
 int main() {
    auto void f();
-   void f() { }
+   /*auto*/ void f() { }
 
    auto int f2();
    int i = 1;              
@@ -366,6 +368,27 @@ int main() {
 
 
         </section>
+
+                <!-------------------------------------------- Slide 8 -------------------------------------------------->
+        <section>
+            <h2>Alternative III</h2>
+            <pre><code code class="language-c">
+void f() { /*extern*/ }
+
+int main() {
+   static void f();
+   void f() { }
+      
+   /*static*/ int f1() { return 0; }   
+
+   int i = 1;              
+   int f1() { return i; /*GCC extension*/ }   
+}
+</code></pre>
+
+
+        </section>
+
 
         <!-------------------------------------------- Slide 9 -------------------------------------------------->
         <section>
@@ -397,12 +420,11 @@ int main() {
 
             </ul>
 
-
             <pre><code code class="language-c">
 void main()
 {
     (void (*pf)(void)) = &(void (void)){}; /* ok */
-    &(void (void)){} = 0; /* error: lvalue required */
+    &(void (void)){} = 0;                  /* error: lvalue required */
 }
 </code></pre>
 
@@ -419,11 +441,11 @@ void main()
 int main() {
     L1:;
     (void (void)) {    
-    goto L1; /* error: label 'L1' used but not defined */
+        goto L1; /* error: label 'L1' used but not defined */
     }();
 
    void local() {     
-     goto L1; /* error: label 'L1' used but not defined */
+       goto L1; /* error: label 'L1' used but not defined */
    };
 }
 </code></pre>
@@ -454,12 +476,12 @@ int main() {
 
     (void (void)) {    
         struct X x = {}; /* ok */
-        x.i = A; /* ok */
+        x.i = A;         /* ok */
     }();
 
    void local() {     
      struct X x = {}; /* ok */
-     x.i = A; /* ok */
+     x.i = A;         /* ok */
    };
 }
 </code></pre>
@@ -491,8 +513,8 @@ int main() {
 void start(int n) {
     int a[n];
     void local() {    
-        typeof(a) k; //error
-        int m = sizeof(a); //error
+        typeof(a) k;       /* constrain violation */
+        int m = sizeof(a); /* constrain violation */
     };   
 }
 </code></pre>
