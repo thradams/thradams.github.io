@@ -233,6 +233,8 @@
 
         </section>
 
+
+
            <!-------------------------------------------- Slide -------------------------------------------------->
    <section>
        <h2>Local functions and function literals are about explicit, argument-passed captures.</h2>       
@@ -401,7 +403,7 @@ int main() {
           attribute-specifier-sequence opt declaration-specifiers declarator function-body
 </pre>
 
-
+       <div class="note">The abstract-declarator portion of a function literal definition must have a function type.</div>
         </section>
 
         <!-------------------------------------------- Slide -------------------------------------------------->
@@ -419,8 +421,14 @@ void main()
 }
 </code></pre>
         </section>
-
-
+                <!-------------------------------------------- Slide -------------------------------------------------->
+        <section>
+            <h2>File scope function literals</h2>
+            <pre><code code class="language-c">
+auto f = (int (int a)){ return a * 2; }; /* ok */
+</code></pre>
+        </section>
+        
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
             <h2>Labels</h2>
@@ -443,12 +451,80 @@ int main() {
 
         </section>
 
+                <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>Returning VM types</h2>
+            <pre><code code class="language-c">
+#include &lt;stdio.h&gt;
+int main(){
+    int n = 1;
+    auto typeof(int [n])* local(void);
+    n  = 2;
+    typeof(int [n])* local(void)
+    {
+       printf("%d", n); //prints 3
+       return 0;
+    }    
+    n = 3;
+    local();
+}
+</code></pre>
+            <div class="note">Following GCC implementation of nested functions</div>
+        </section>
+
+                        <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>Argument evaluation</h2>
+            <pre><code code class="language-c">
+#include &lt;stdio.h&gt;
+
+int main() {
+    int n = 1;
+
+    void local(typeof(int[n])* p) 
+    {
+         printf("%zu", sizeof(*p)); //prints 12
+    }
+
+    n = 2;
+    int a[n];
+    n = 3;
+    local(&a);
+}
+</code></pre>
+            <div class="note">Following GCC implementation of nested functions</div>
+        </section>
+
+                                <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>Argument VM types</h2>
+            <pre><code code class="language-c">
+#include &lt;stdio.h&gt;
+
+int main() {
+    
+    void local(int i, typeof(int[i])* p) 
+    {
+         printf("%zu", sizeof(*p)); //ok
+    }
+
+    int n = 2;
+    int a[n];
+    local(n, &a);
+}
+</code></pre>
+            <div class="note">Following GCC implementation of nested functions</div>
+        </section>
+
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
             <h2> __func__ </h2>
             <ul>
                 <li>The value of the string returned by __func__ is implementation-defined.</li>
             </ul>
+
+            <div class="note"> GCC returns the function name for nested functions</div>
+            <div class="note"> C++ returns "operator ()"  in lambdas</div>
         </section>
 
 
@@ -534,7 +610,7 @@ int main() {
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Non automatic variables</h2>
+            <h2>Non-automatic variables</h2>
             <pre><code code class="language-c">
 static int g = 1;
 
@@ -548,6 +624,18 @@ int main() {
    };
 }
 </code></pre>
+                    <div class="note">For synchronous code, static variables can be an alternative to captures</div>
+        </section>
+
+<!-------------------------------------------- Slide 4 -------------------------------------------------->
+        <section>
+            <h2>Function literal emulation in GCC</h2>
+            <pre><code code class="language-c">
+int main() {
+    ({int _(int a) { return a * 2; } _;})(2);
+}
+</code></pre>
+
         </section>
 
         <!-------------------------------------------- Slide -------------------------------------------------->
@@ -671,6 +759,30 @@ int main() {
         <div class="footer">Slide N/N</div>
     </div>
 
+
+
+            <!-------------------------------------------- Slide -------------------------------------------------->
+        <section>
+            <h2>Sample async implementation</h2>            
+            <pre><code code class="language-c">       
+void async(void* data, void (*callback)(int result, void* data))
+{
+   struct capture {
+    void * data;
+    void (*callback)(int result, void* data);
+   } = {data, callback};
+
+   thread_pool(capture, sizeof capture, (void (int status, void* data)) {
+
+       struct capture * ctx = data;
+       /*...job...*/
+       ctx->callback(status, ctx->data);
+   });
+}
+</code></pre>
+
+
+        </section>
 
     <script>
         const slides = document.querySelectorAll("section");
