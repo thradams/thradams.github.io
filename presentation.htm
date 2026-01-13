@@ -581,29 +581,6 @@ int main() {
 </code></pre>
         </section>
 
-        <!-------------------------------------------- Slide -------------------------------------------------->
-        <section>
-            <h2>Generic functions</h2>
-
-            <pre><code code class="language-c">
-#define SWAP(a, b)\
-    (void (typeof(a)* arg1, typeof(b)* arg2)) { \
-    typeof(a) temp = *arg1; *arg1 = *arg2; *arg2 = temp; \
-    }(&(a), &(b))
-
-int main() {
-    int a = 1;
-    int b = 2;
-    SWAP(a, b);
-    
-    double da = 1.0;
-    double db = 2.0;
-    SWAP(da, db);
-}
-</code></pre>
-
-
-        </section>
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
