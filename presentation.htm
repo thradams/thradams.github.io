@@ -380,6 +380,37 @@ int main() {
 
         </section>
 
+                <!-------------------------------------------- Slide 8 -------------------------------------------------->
+        <section>
+            <h2>Multiple forward declarations/definitions</h2>
+
+             <ul >   
+                  <li style="font-size:smaller">We cannot have a "forward declaration" after the definition.</li>
+                  <li style="font-size:smaller">We should have only one "forward declaration" or none. </li>
+                  <li style="font-size:smaller" >A local function must have only one definition per scope.</listyle="font-size:smaller">
+             </ul>
+            <pre><code code class="language-c">
+#include &lt;stdio.h&gt;
+
+int main()
+{
+    int n = 1;
+    auto typeof(int [n])* f();
+    printf("%zu\n", _Countof(*f())); //1
+    
+    n = 2;
+    auto typeof(int [n])* f();
+    printf("%zu\n", _Countof(*f())); //2
+    
+    n = 3;
+    auto typeof(int [n])* f(){
+    }
+    printf("%zu\n", _Countof(*f())); //3
+}
+</code></pre>
+
+        </section>
+
 
 
         <!-------------------------------------------- Slide -------------------------------------------------->
@@ -426,6 +457,7 @@ void main()
             <pre><code code class="language-c">
 auto f = (int (int a)){ return a * 2; }; /* ok */
 </code></pre>
+            <div>I don't have a use case for that at the moment.</div>
         </section>
         
 
@@ -557,7 +589,7 @@ int main() {
 int main() {    
     int i = 2;
     void local() {    
-        int j = sizeof(i); /*ok*/
+        int j = sizeof(i); /* ok */
         int  k = i;        /* constraint violation */
         int *p = &amp;i;   /* constraint violation */
     };   
@@ -577,8 +609,8 @@ void start(int n) {
         <section>
             <h2>Constants</h2>
 
-            <ul>
-    <li>The same restrictions that apply to automatic variables also apply here,
+            <ul  >
+    <li style="font-size: smaller;" >The same restrictions that apply to automatic variables also apply here,
                 but we may assume they can be read without having access to their address.
     </li>
 </ul>
@@ -598,7 +630,7 @@ int main() {
    };
 }
 </code></pre>
-            <div>Originally left as a possible option, it can be included</div>
+            <div class="note">Originally left as a possible option, it can be included</div>
         </section>
 
 
@@ -665,7 +697,7 @@ int main() {
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Functiol Literal address</h2>
+            <h2>Function Literal address</h2>
             <ul>
             <li>Distinct function literals are not required to have unique addresses.</li>
             <li>local functions?</li>
