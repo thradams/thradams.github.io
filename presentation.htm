@@ -396,7 +396,7 @@ int main() {
   
       <span style="color:blue">function-literal-definition:
          ( attribute-specifier-sequence opt declaration-specifiers abstract-declarator ) 
-           function-body 
+              function-body 
        </span>
 
        function-definition:
@@ -404,6 +404,8 @@ int main() {
 </pre>
 
        <div class="note">The abstract-declarator portion of a function literal definition must have a function type.</div>
+       <div class="note">Extra attribute-specifier-sequence may be necessary for [[unsequenced]] and similar</div>
+       
         </section>
 
         <!-------------------------------------------- Slide -------------------------------------------------->
@@ -429,6 +431,7 @@ auto f = (int (int a)){ return a * 2; }; /* ok */
 </code></pre>
         </section>
         
+
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
             <h2>Labels</h2>
@@ -708,6 +711,14 @@ int main() {
 
         </section>
 
+                <!-------------------------------------------- Slide  -------------------------------------------------->
+        <section>
+            <h2>Why not C++ lambda syntax?</h2>
+            <ul>
+                <li>Keeps the grammar for functions and function literals in sync</li>
+                <li>Keeps the scope rules for return type and parameters.</li>                
+            </ul>
+        </section>
 
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
