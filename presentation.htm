@@ -118,14 +118,14 @@
 
     <div class="presentation">
 
-        <!-------------------------------------------- Slide 1 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section class="slide active">
             <h1>Local functions <br>&&<br> Function literals</h1>
             <h2>N3678 and N3679</h2>
         </section>
 
 
-        <!-------------------------------------------- Slide 2 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Motivation</h2>
             <pre><code class="language-c">
@@ -235,12 +235,7 @@
 
 
 
-           <!-------------------------------------------- Slide -------------------------------------------------->
-   <section>
-       <h2>Local functions and function literals are about explicit, argument-passed captures.</h2>       
-   </section>
-
-                <!-------------------------------------------- Slide -------------------------------------------------->
+<!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Reusing captures</h2>
             <pre><code code class="language-c">
@@ -302,7 +297,7 @@ void f() { printf("extern"); }
 int main() {
    auto void f();
    f();
-   void f() { printf("local"); } 
+   /*auto*/ void f() { printf("local"); } 
 }
 
 void f() { printf("extern"); }
@@ -328,9 +323,9 @@ void f() { printf("extern"); }
         </section>
 
 
-        <!-------------------------------------------- Slide 7 -------------------------------------------------->
+        <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Alternative I</h2>
+            <h2>Alternative I (static)</h2>
             <pre><code code class="language-c">
 void f() { /*extern*/ }
 
@@ -349,28 +344,9 @@ int main() {
 
         </section>
 
-        <!-------------------------------------------- Slide 8 -------------------------------------------------->
+<!-------------------------------------------- Slide -------------------------------------------------->
         <section>
-            <h2>Alternative II</h2>
-            <pre><code code class="language-c">
-void f() { /*extern*/ }
-
-int main() {
-   auto void f();
-   /*auto*/ void f() { }
-
-   auto int f2();
-   int i = 1;              
-   int f2() { return i; /*GCC extension*/ }   
-}
-</code></pre>
-
-
-        </section>
-
-                <!-------------------------------------------- Slide 8 -------------------------------------------------->
-        <section>
-            <h2>Alternative III</h2>
+            <h2>Alternative II (hybrid)</h2>
             <pre><code code class="language-c">
 void f() { /*extern*/ }
 
@@ -385,6 +361,26 @@ int main() {
 }
 </code></pre>
         </section>
+
+        <!-------------------------------------------- Slide 8 -------------------------------------------------->
+        <section>
+            <h2>Alternative III (same as gcc)</h2>
+            <pre><code code class="language-c">
+void f() { /*extern*/ }
+
+int main() {
+   auto void f();
+   /*auto*/ void f() { }
+
+   auto int f2();
+   int i = 1;              
+   int f2() { return i; /*GCC extension*/ }   
+}
+</code></pre>
+
+        </section>
+
+
 
         <!-------------------------------------------- Slide -------------------------------------------------->
         <section>
@@ -418,7 +414,8 @@ int main() {
             <pre><code code class="language-c">
 void main()
 {
-    (void (*pf)(void)) = &(void (void)){}; /* ok */
+    (void (*pf1)(void)) = (void (void)){}; /* ok */
+    (void (*pf2)(void)) = &(void (void)){}; /* ok */
     &(void (void)){} = 0;                  /* error: lvalue required */
 }
 </code></pre>
@@ -462,14 +459,17 @@ int main() {
 int main(){
     int n = 1;
     auto typeof(int [n])* local(void);
+
     n  = 2;
-    typeof(int [n])* local(void)
-    {
-       printf("%d", n); //prints 3
+    typeof(int [n])* local(void) {
        return 0;
     }    
+    
     n = 3;
-    local();
+    auto r = local();
+
+    n = 4;
+    printf("%zu", _Countof(*r)); //returns 2
 }
 </code></pre>
             <div class="note">Following GCC implementation of nested functions</div>
@@ -486,11 +486,12 @@ int main() {
 
     void local(typeof(int[n])* p) 
     {
-         printf("%zu", sizeof(*p)); //prints 12
+         printf("%zu", _Countof(*p)); //prints 3
     }
 
     n = 2;
     int a[n];
+    
     n = 3;
     local(&a);
 }
@@ -498,26 +499,7 @@ int main() {
             <div class="note">Following GCC implementation of nested functions</div>
         </section>
 
-                                <!-------------------------------------------- Slide  -------------------------------------------------->
-        <section>
-            <h2>Argument VM types</h2>
-            <pre><code code class="language-c">
-#include &lt;stdio.h&gt;
 
-int main() {
-    
-    void local(int i, typeof(int[i])* p) 
-    {
-         printf("%zu", sizeof(*p)); //ok
-    }
-
-    int n = 2;
-    int a[n];
-    local(n, &a);
-}
-</code></pre>
-            <div class="note">Following GCC implementation of nested functions</div>
-        </section>
 
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
@@ -569,7 +551,7 @@ int main() {
                     have their address resolved inside the body of a function literal or local function.
                     If they have VM types, this restriction also apply to resolving their type.
                 </li>
-
+            </ul>
 
                 <pre><code code class="language-c">
 int main() {    
@@ -590,10 +572,18 @@ void start(int n) {
 }
 </code></pre>                
         </section>
-
-                <!-------------------------------------------- Slide -------------------------------------------------->
+        
+<!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Constants</h2>
+
+            <ul>
+    <li>The same restrictions that apply to automatic variables also apply here,
+                but we may assume they can be read without having access to their address.
+    </li>
+</ul>
+
+
             <pre><code code class="language-c">
 int main() {
    constexpr int a = 1;
@@ -608,6 +598,7 @@ int main() {
    };
 }
 </code></pre>
+            <div>Originally left as a possible option, it can be included</div>
         </section>
 
 
@@ -630,7 +621,7 @@ int main() {
                     <div class="note">For synchronous code, static variables can be an alternative to captures</div>
         </section>
 
-<!-------------------------------------------- Slide 4 -------------------------------------------------->
+<!-------------------------------------------- Slide -------------------------------------------------->
         <section>
             <h2>Function literal emulation in GCC</h2>
             <pre><code code class="language-c">
@@ -715,8 +706,8 @@ int main() {
         <section>
             <h2>Why not C++ lambda syntax?</h2>
             <ul>
-                <li>Keeps the grammar for functions and function literals in sync</li>
-                <li>Keeps the scope rules for return type and parameters.</li>                
+                <li>Keeps the grammar for functions and function literals in sync.</li>
+                <li>Keeps the existing scope rules for return types and parameters.</li>              
             </ul>
         </section>
 
@@ -725,21 +716,24 @@ int main() {
             <h2>Key points</h2>
             <ul>
                 <li>Almost zero learning curve</li>
-                <li>No new semantic model</li>
                 <li>Existing practice</li>
                 <li>Does not require trampolines or other hidden features.</li>
-                <li>No forced capture strategy</li>
-                <li>Works with existing APIs that use void* callbacks</li>                
+                <li>No forced capture strategy (by reference, by copy, stack, heap, etc.).</li>
+                <li>Works with existing APIs that use void* callbacks</li>
+                <li>Lifetime problems may exist, but they are not new</li>
+                <li>Implementation is not complex</li>
+
             </ul>
         </section>
+
 
         <!-------------------------------------------- Slide  -------------------------------------------------->
         <section>
             <h2>Next steps</h2>
             <ul>
                 <li>Wording</li>
-                <li>GCC feedback about nested functions.</li>
-                <li>Experimental implementation (cake)</li>
+                <li>Deciding on forward-declaration syntax</li>
+                <li>Experimental implementation (Cake — missing VM type constraints)</li>
             </ul>
         </section>
 
