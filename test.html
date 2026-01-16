@@ -964,22 +964,22 @@ int main() {
         });
 
         // Mouse click
-document.addEventListener("touchstart", (e) =>
-{
-    const width = window.innerWidth;
+        document.addEventListener("touchstart", (e) =>
+        {
+            const width = window.innerWidth;
 
-    if (x < width / 2)
-    {
-        previousSlide();
-    } else
-    {
-        nextSlide();
-    }
-});
+            if (x < width / 2)
+            {
+                previousSlide();
+            } else
+            {
+                nextSlide();
+            }
+        });
 
-    li.addEventListener('touchend', event => {
-   event.preventDefault(); // Prevent the possible ghost click delay
-    });
+       document.addEventListener('touchend', event => {
+         event.preventDefault(); // Prevent the possible ghost click delay
+       });
 
 
         document.addEventListener("keydown", (e) =>
