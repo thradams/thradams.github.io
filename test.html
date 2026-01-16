@@ -906,6 +906,7 @@ int main() {
         </section>
 
 
+        <!--PART2-->
 
         <div class="footer">Slide N/N</div>
     </div>
@@ -961,6 +962,24 @@ int main() {
                 nextSlide();
             }
         });
+
+        // Mouse click
+document.addEventListener("touchstart", (e) =>
+{
+    const width = window.innerWidth;
+
+    if (x < width / 2)
+    {
+        previousSlide();
+    } else
+    {
+        nextSlide();
+    }
+});
+
+    li.addEventListener('touchend', event => {
+   event.preventDefault(); // Prevent the possible ghost click delay
+    });
 
 
         document.addEventListener("keydown", (e) =>
