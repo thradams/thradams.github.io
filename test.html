@@ -950,7 +950,7 @@ int main() {
 
 
         // Mouse click
-        document.addEventListener("click", (e) =>
+        document.addEventListener("pointerdown", (e) =>
         {
             const width = window.innerWidth;
 
@@ -963,25 +963,7 @@ int main() {
             }
         });
 
-        // Mouse click
-        document.addEventListener("touchstart", (e) =>
-        {
-            const width = window.innerWidth;
-
-            if (x < width / 2)
-            {
-                previousSlide();
-            } else
-            {
-                nextSlide();
-            }
-        });
-
-       document.addEventListener('touchend', event => {
-         event.preventDefault(); // Prevent the possible ghost click delay
-       });
-
-
+      
         document.addEventListener("keydown", (e) =>
         {
             if (e.key === "ArrowRight" || e.key === " ")
