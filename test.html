@@ -35,7 +35,6 @@
             width: 100vw;
             height: 100vh;
             position: relative;
-            
         }
 
         /* Individual slide */
@@ -50,30 +49,30 @@
             margin: auto;
         }
 
-        section.active {
-            display: flex;
-        }
+            section.active {
+                display: flex;
+            }
 
 
 
-        /* Titles */
-        section h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+            /* Titles */
+            section h1 {
+                font-size: 3rem;
+                margin-bottom: 20px;
+                text-align: center;
+            }
 
-        section h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            text-align: center;
-        }
+            section h2 {
+                font-size: 2rem;
+                margin-bottom: 15px;
+                text-align: center;
+            }
 
-        /* Text */
-        section li {
-            font-size: 1.3rem;
-            line-height: 1.6;
-        }
+            /* Text */
+            section li {
+                font-size: 1.3rem;
+                line-height: 1.6;
+            }
 
         ul {
             margin-left: 30px;
@@ -95,20 +94,14 @@
             color: #222;
             border: 1px solid #e5e5e5;
             border-left: 4px solid #d0d0d0;
-
             padding: 8px 10px;
             margin: 8px 0;
-
             border-radius: 6px;
-
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-size: smaller;
             line-height: 1.6;
-
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
-
-
     </style>
 
 
@@ -116,14 +109,15 @@
 
 <body>
 
-    <div class="presentation"><!---------------------------------------------------------------------------------------------->
-<section>
-  <h1>Local functions <br> && <br> Function literals</h1>
-  <h3> N3678 and N3679</h3>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Motivation</h2>
+    <div class="presentation">
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h1>Local functions <br> && <br> Function literals</h1>
+            <h3> N3678 and N3679</h3>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Motivation</h2>
 <pre><code class="language-c">
 void async(void* data, void (*callback)(int result, void* data));
 
@@ -142,10 +136,10 @@ void start() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> do this, then that...</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> do this, then that...</h2>
 <pre><code class="language-c" style="font-size:10px">
 void part1_async(void* data, void (*callback)(int result, void* data));
 void part2_async(void* data, void (*callback)(int result, void* data));
@@ -180,10 +174,10 @@ void start() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Local functions</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Local functions</h2>
 <pre><code class="language-c">
 void async(void* data, void (*callback)(int result, void* data));
 
@@ -203,10 +197,10 @@ void start() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Literal functions</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Literal functions</h2>
 <pre><code class="language-c">
 void async(void* data, void (*callback)(int result, void* data));
 
@@ -224,10 +218,10 @@ void start() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Reusing captures</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Reusing captures</h2>
 <pre><code class="language-c">
 int main()
 {
@@ -247,10 +241,10 @@ int main()
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Captures on Stack</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Captures on Stack</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -273,10 +267,10 @@ int main(){
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Static captures</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Static captures</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -294,22 +288,22 @@ int main()
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Local function syntax</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Local function syntax</h2>
 <pre>
 block-item:
     ...
-    <span style="color:blue">function-definition</span>
+            <span style="color:blue">function-definition</span>
        
 function-definition:
    attribute-specifier-sequence opt declaration-specifiers declarator function-body
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Forward declarations</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Forward declarations</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -322,10 +316,10 @@ int main() {
 void f() { printf("extern"); }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> GCC Nested function solution</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> GCC Nested function solution</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -338,11 +332,11 @@ int main() {
 void f() { printf("extern"); }
 </code>
 </pre>
-  <div class="note">See also: N3579 auto as a placeholder type specifier</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> GCC Nested function solution</h2>
+            <div class="note">See also: N3579 auto as a placeholder type specifier</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> GCC Nested function solution</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -356,10 +350,10 @@ int main() {
 void f() { printf("extern"); }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Alternative I (static)</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Alternative I (static)</h2>
 <pre><code class="language-c">
 void f() { /*extern*/ }
 
@@ -376,10 +370,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Alternative II (hybrid)</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Alternative II (hybrid)</h2>
 <pre><code class="language-c">
 void f() { /*extern*/ }
 
@@ -394,10 +388,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Alternative III (same as gcc)</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Alternative III (same as gcc)</h2>
 <pre><code class="language-c">
 void f() { /*extern*/ }
 
@@ -411,10 +405,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Multiple forward declarations/definitions</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Multiple forward declarations/definitions</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -435,11 +429,11 @@ int main()
 }
 </code>
 </pre>
-  <p> </p>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> GCC Curiosity I</h2>
+            <p> </p>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> GCC Curiosity I</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -459,10 +453,10 @@ int main()
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> GCC Curiosity II</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> GCC Curiosity II</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -481,24 +475,24 @@ int main()
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2>  Minimizing problems</h2>
-  <ul>
-    <li>We cannot have a forward declaration after the definition</li>
-    <li>We should have only one forward declaration for each function definition or none</li>
-    <li>A local function must have only one definition per scope </li>
-  </ul>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Function Literal syntax</h2>
-  <p> </p>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2>  Minimizing problems</h2>
+            <ul>
+                <li>We cannot have a forward declaration after the definition</li>
+                <li>We should have only one forward declaration for each function definition or none</li>
+                <li>A local function must have only one definition per scope </li>
+            </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Function Literal syntax</h2>
+            <p> </p>
 <pre>
 postfix-expression: 
    ...      
-   <span style="color:blue">function-literal-definition</span>
+            <span style="color:blue">function-literal-definition</span>
   
 <span style="color:blue">function-literal-definition:
    ( attribute-specifier-sequence opt declaration-specifiers abstract-declarator ) 
@@ -507,29 +501,29 @@ postfix-expression:
 function-definition:
    attribute-specifier-sequence opt declaration-specifiers declarator function-body
 </pre>
-  <div class="note">The abstract-declarator portion of a function literal definition must have a function type.</div>
-  <div class="note">Extra attribute-specifier-sequence may be necessary for [[unsequenced]] and similar</div>
-  <div class="note">Compound literals cannot have a function type.</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Function literal emulation in GCC</h2>
+            <div class="note">The abstract-declarator portion of a function literal definition must have a function type.</div>
+            <div class="note">Extra attribute-specifier-sequence may be necessary for [[unsequenced]] and similar</div>
+            <div class="note">Compound literals cannot have a function type.</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Function literal emulation in GCC</h2>
 <pre><code class="language-c">
 int main() {
     ({int _(int a) { return a * 2; } _;})(2);
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Why not C++ lambda syntax?</h2>
-  <ul>
-    <li>Keeps the grammar for functions and function literals in sync.</li>
-    <li>Keeps the existing scope rules for return types and parameters.</li>
-    <li>Return type deduction not required.</li>
-  </ul>
-  <p> </p>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Why not C++ lambda syntax?</h2>
+            <ul>
+                <li>Keeps the grammar for functions and function literals in sync.</li>
+                <li>Keeps the existing scope rules for return types and parameters.</li>
+                <li>Return type deduction not required.</li>
+            </ul>
+            <p> </p>
 <pre><code class="language-c">
 /*   C++   */
 int main() {
@@ -540,15 +534,15 @@ int main() {
 }
 </code>
 </pre>
-  <div class="note">Return type deduction could be added using auto</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Why not C++ lambda syntax?</h2>
-  <ul>
-    <li>Fits well with the existing concept of compound literals.</li>
-    <li>Do not create the expectation that the C and C++ features are identical.</li>
-  </ul>
+            <div class="note">Return type deduction could be added using auto</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Why not C++ lambda syntax?</h2>
+            <ul>
+                <li>Fits well with the existing concept of compound literals.</li>
+                <li>Do not create the expectation that the C and C++ features are identical.</li>
+            </ul>
 <pre><code class="language-c">
 /*   C   */
 int main() {
@@ -559,15 +553,15 @@ int main() {
 }
 </code>
 </pre>
-  <div class="note">This could be necessary for someone using <code>vec(int)</code> with struct tag compatibility.</div>
-  <div class="note">It does not create problems that were not considered before.</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Semantics</h2>
-  <ul>
-    <li>The function literal is a function designator. </li>
-  </ul>
+            <div class="note">This could be necessary for someone using <code>vec(int)</code> with struct tag compatibility.</div>
+            <div class="note">It does not create problems that were not considered before.</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Semantics</h2>
+            <ul>
+                <li>The function literal is a function designator. </li>
+            </ul>
 <pre><code class="language-c">
 void main()
 {
@@ -577,11 +571,11 @@ void main()
 }
 </code>
 </pre>
-  <div class="note">Behaves like a function, not a function pointer</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> File scope function literals</h2>
+            <div class="note">Behaves like a function, not a function pointer</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> File scope function literals</h2>
 <pre><code class="language-c">
 auto f = (int (int a)){ return a * 2; }; /* ok */
 
@@ -590,15 +584,15 @@ int main()
 }
 </code>
 </pre>
-  <div class="note">I don't have a use case for that at the moment.</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Labels</h2>
-  <ul>
-    <li>Labels are not shared</li>
-    <li>Statements are not shared (break; continue)</li>
-  </ul>
+            <div class="note">I don't have a use case for that at the moment.</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Labels</h2>
+            <ul>
+                <li>Labels are not shared</li>
+                <li>Statements are not shared (break; continue)</li>
+            </ul>
 <pre><code class="language-c">
 int main() {
     L1:;
@@ -612,10 +606,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Returning VM types</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Returning VM types</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 int main() {
@@ -635,11 +629,11 @@ int main() {
 }
 </code>
 </pre>
-  <div class="note">Following GCC implementation of nested functions</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Argument evaluation</h2>
+            <div class="note">Following GCC implementation of nested functions</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Argument evaluation</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -660,10 +654,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Argument evaluation</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Argument evaluation</h2>
 <pre><code class="language-c">
 #include &lt;stdio.h&gt;
 
@@ -680,23 +674,23 @@ int main() {
 }
 </code>
 </pre>
-  <div class="note">Following GCC implementation of nested functions</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> __func__</h2>
-  <ul>
-    <li>The value of the string returned by __func__ is implementation-defined.</li>
-  </ul>
-  <div class="note">GCC returns the function name for nested functions</div>
-  <div class="note">C++ returns "operator ()" in lambdas</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Scope</h2>
-  <ul>
-    <li>Function literals and local functions have access to the enclosing scope at the point of its definition.</li>
-  </ul>
+            <div class="note">Following GCC implementation of nested functions</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> __func__</h2>
+            <ul>
+                <li>The value of the string returned by __func__ is implementation-defined.</li>
+            </ul>
+            <div class="note">GCC returns the function name for nested functions</div>
+            <div class="note">C++ returns "operator ()" in lambdas</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Scope</h2>
+            <ul>
+                <li>Function literals and local functions have access to the enclosing scope at the point of its definition.</li>
+            </ul>
 <pre><code class="language-c">
 int main() {
     
@@ -715,13 +709,13 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Automatic variables</h2>
-  <ul>
-    <li>Identifiers referring to automatic variables of an enclosing function cannot have their address resolved inside the body of a function literal or local function. <span style="color:gray">If they have VM types, this restriction also apply to resolving their type.</span>  </li>
-  </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Automatic variables</h2>
+            <ul>
+                <li>Identifiers referring to automatic variables of an enclosing function cannot have their address resolved inside the body of a function literal or local function. <span style="color:gray">If they have VM types, this restriction also apply to resolving their type.</span>  </li>
+            </ul>
 <pre><code class="language-c">
 int main() {    
     int i = 2;
@@ -733,13 +727,13 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Automatic variables</h2>
-  <ul>
-    <li><span style="color:gray">Identifiers referring to automatic variables of an enclosing function cannot have their address resolved inside the body of a function literal or local function. </span> If they have VM types, this restriction also apply to resolving their type. </li>
-  </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Automatic variables</h2>
+            <ul>
+                <li><span style="color:gray">Identifiers referring to automatic variables of an enclosing function cannot have their address resolved inside the body of a function literal or local function. </span> If they have VM types, this restriction also apply to resolving their type. </li>
+            </ul>
 <pre><code class="language-c">
 void start(int n) {
     int a[n];
@@ -750,13 +744,13 @@ void start(int n) {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Constants</h2>
-  <ul>
-    <li>The same restrictions apply to constants. However their values can be read without accessing memory.</li>
-  </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Constants</h2>
+            <ul>
+                <li>The same restrictions apply to constants. However their values can be read without accessing memory.</li>
+            </ul>
 <pre><code class="language-c">
 int main() {
    constexpr int a = 1;
@@ -775,11 +769,11 @@ int main() {
 }
 </code>
 </pre>
-  <div class="note">Originally left as a possible option, it can be included</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Non-automatic variables</h2>
+            <div class="note">Originally left as a possible option, it can be included</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Non-automatic variables</h2>
 <pre><code class="language-c">
 static int g = 1;
 
@@ -794,10 +788,10 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Generic functions</h2>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Generic functions</h2>
 <pre><code class="language-c">
 #define SWAP(a, b)\
     (void (typeof(a)* arg1, typeof(b)* arg2)) { \
@@ -823,14 +817,14 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Function Literal address</h2>
-  <ul>
-    <li>Distinct function literals are not required to have unique addresses.</li>
-    <li>Extend this to local functions?</li>
-  </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Function Literal address</h2>
+            <ul>
+                <li>Distinct function literals are not required to have unique addresses.</li>
+                <li>Extend this to local functions?</li>
+            </ul>
 <pre><code class="language-c">
 int main(){
     auto pf1 = (void ()) { return 1 + 1; };
@@ -840,13 +834,13 @@ int main(){
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2>  Static variables inside function literals</h2>
-  <ul>
-    <li>static variables inside function literals will generate distinct functions</li>
-  </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2>  Static variables inside function literals</h2>
+            <ul>
+                <li>static variables inside function literals will generate distinct functions</li>
+            </ul>
 <pre><code class="language-c">
 int main() {
     auto pf1 = (void ()) { static int i = 0; };
@@ -855,61 +849,61 @@ int main() {
 }
 </code>
 </pre>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Key points</h2>
-  <ul>
-    <li>Almost zero learning curve</li>
-    <li>Existing practice</li>
-    <li>Does not require trampolines or other hidden features.</li>
-    <li>If it looks like a function, then it is a function.</li>
-    <li>No forced capture strategy (by reference, by copy, stack, heap, etc.).</li>
-    <li>Works with existing APIs that use <code>void *</code> callbacks</li>
-    <li>No new problems. Lifetime issues may exist, but they are not new.</li>
-    <li>We are adding convenience improving safety and maintainability.</li>
-    <li>Keeps the compiler simple</li>
-  </ul>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Positive feedback on reddit</h2>
-  <div class="note"> Anyone else just want to be able to define anonymous functions/lambdas without capturing data? I feel like for callbacks this would already greatly improve convenience without adding the complexity full blown closures need. If I need to capture some data I'll gladly do it manually through a user pointer.</div>
-  <div class="note">This would make some libraries relying on callbacks (like my own sm.h library) way more convenient and tidy to use. </div>
-  <div class="note"> it really does match what I've been hoping for for a while! I think it's a very intuitive approach that really does not change the nature of the language at all while adding a lot of convenience. </div>
-  <div class="note">This is exactly what most C community wants. Provide some convenient syntax for functions which usage is very localized and delegate all issues with passing captures and ensuring their lifetime are delegated to the programmer. </div>
-  <div class="note">Lambdas with no captures would be a simple and very convenient addition to C. It's quite frustrating that this feature did not land in C23. </div>
-  <div class="note">Keep the language small and simple. Keep the spirit of C.</div>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> Road map</h2>
-  <ul>
-    <li> Improving the proposal, add wording maybe merge in one proposal?</li>
-    <li> Deciding on forward-declaration syntax</li>
-    <li> Experimental implementation http://cakecc.org/ (missing VM types)</li>
-  </ul>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h2> References</h2>
-  <ul>
-    <li>   N3724: Discarded</li>
-    <li>   N3622 Allow calling static inline within extern inline</li>
-    <li>   N3579: auto as a placeholder type specifier</li>
-    <li>   N2956: Unsequenced functions </li>
-    <li>   N3693: Integer Constant Expression</li>
-    <li>   N3694: Functions with Data </li>
-    <li>   N3654: Accessing the Context of Nested Functions</li>
-    <li>   Reddit: https://www.reddit.com/r/C_Programming/comments/1omrrra/closures_in_c_yes/</li>
-    <li>   http://cakecc.org/</li>
-  </ul>
-</section>
-<!---------------------------------------------------------------------------------------------->
-<section>
-  <h1>Thank You</h1>
-  <p>Press ← → or Space to navigate.</p>
-</section>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Key points</h2>
+            <ul>
+                <li>Almost zero learning curve</li>
+                <li>Existing practice</li>
+                <li>Does not require trampolines or other hidden features.</li>
+                <li>If it looks like a function, then it is a function.</li>
+                <li>No forced capture strategy (by reference, by copy, stack, heap, etc.).</li>
+                <li>Works with existing APIs that use <code>void *</code> callbacks</li>
+                <li>No new problems. Lifetime issues may exist, but they are not new.</li>
+                <li>We are adding convenience improving safety and maintainability.</li>
+                <li>Keeps the compiler simple</li>
+            </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Positive feedback on reddit</h2>
+            <div class="note"> Anyone else just want to be able to define anonymous functions/lambdas without capturing data? I feel like for callbacks this would already greatly improve convenience without adding the complexity full blown closures need. If I need to capture some data I'll gladly do it manually through a user pointer.</div>
+            <div class="note">This would make some libraries relying on callbacks (like my own sm.h library) way more convenient and tidy to use. </div>
+            <div class="note"> it really does match what I've been hoping for for a while! I think it's a very intuitive approach that really does not change the nature of the language at all while adding a lot of convenience. </div>
+            <div class="note">This is exactly what most C community wants. Provide some convenient syntax for functions which usage is very localized and delegate all issues with passing captures and ensuring their lifetime are delegated to the programmer. </div>
+            <div class="note">Lambdas with no captures would be a simple and very convenient addition to C. It's quite frustrating that this feature did not land in C23. </div>
+            <div class="note">Keep the language small and simple. Keep the spirit of C.</div>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> Road map</h2>
+            <ul>
+                <li> Improving the proposal, add wording maybe merge in one proposal?</li>
+                <li> Deciding on forward-declaration syntax</li>
+                <li> Experimental implementation http://cakecc.org/ (missing VM types)</li>
+            </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h2> References</h2>
+            <ul>
+                <li>   N3724: Discarded</li>
+                <li>   N3622 Allow calling static inline within extern inline</li>
+                <li>   N3579: auto as a placeholder type specifier</li>
+                <li>   N2956: Unsequenced functions </li>
+                <li>   N3693: Integer Constant Expression</li>
+                <li>   N3694: Functions with Data </li>
+                <li>   N3654: Accessing the Context of Nested Functions</li>
+                <li>   Reddit: https://www.reddit.com/r/C_Programming/comments/1omrrra/closures_in_c_yes/</li>
+                <li>   http://cakecc.org/</li>
+            </ul>
+        </section>
+        <!---------------------------------------------------------------------------------------------->
+        <section>
+            <h1>Thank You</h1>
+            <p>Press ← → or Space to navigate.</p>
+        </section>
 
 
 
@@ -953,7 +947,9 @@ int main() {
 
         }
 
-        function handleInput(x)
+
+        // Mouse click
+        document.addEventListener("click", (e) =>
         {
             const width = window.innerWidth;
 
@@ -964,22 +960,8 @@ int main() {
             {
                 nextSlide();
             }
-        }
-
-        // Mouse click
-        document.addEventListener("click", (e) =>
-        {
-            handleInput(e.clientX);
         });
 
-        // Touch
-        document.addEventListener("touchstart", (e) =>
-        {
-            if (e.touches.length > 0)
-            {
-                handleInput(e.touches[0].clientX);
-            }
-        });
 
         document.addEventListener("keydown", (e) =>
         {
