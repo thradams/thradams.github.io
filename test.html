@@ -953,6 +953,7 @@ int main() {
         document.addEventListener("pointerdown", (e) =>
         {
             const width = window.innerWidth;
+            const x = e.clientX;
 
             if (x < width / 2)
             {
