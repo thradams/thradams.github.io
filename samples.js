@@ -2164,15 +2164,17 @@ int main()
 
 `;
 
-sample["Extensions"]["postfix check"] =
+sample["Extensions"]["checked expressions I"] =
  `
   int f();
   int* get_ptr();
 
 int main()
 {
-    try {
+    try
+    {
       int i = f()!;
+
       int *p = get_ptr()!;
       int a = 1, b = 0;
       int x = (a + b)!;
@@ -2183,6 +2185,29 @@ int main()
 }
 
 `;
+
+sample["Extensions"]["checked expressions II"] =
+`
+#pragma safety enable
+
+void* _Owner _Opt malloc(unsigned long size);
+void free(void* _Owner _Opt ptr);
+
+int main() {
+    try
+    {
+        int * _Owner p = malloc(1)!;
+        *p = 1;
+        free(p);
+    }
+    catch {
+
+    }
+}
+
+`;
+
+
 
 sample["Extensions"]["line slicing checks"] =
     `
