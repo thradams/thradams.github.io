@@ -2164,6 +2164,26 @@ int main()
 
 `;
 
+sample["Extensions"]["postfix check"] =
+ `
+  int f();
+  int* get_ptr();
+
+int main()
+{
+    try {
+      int i = f()!;
+      int *p = get_ptr()!;
+      int a = 1, b = 0;
+      int x = (a + b)!;
+    }
+    catch
+    {
+    }
+}
+
+`;
+
 sample["Extensions"]["line slicing checks"] =
     `
 
