@@ -2166,24 +2166,19 @@ int main()
 
 sample["Extensions"]["checked expressions I"] =
  `
-  int f();
-  int* get_ptr();
+#include <stdio.h>
 
 int main()
 {
-    try
-    {
-      int i = f()!;
-
-      int *p = get_ptr()!;
-      int a = 1, b = 0;
-      int x = (a + b)!;
-    }
-    catch
-    {
-    }
+  try
+  {
+     FILE* f = fopen("in.txt", "r") !;
+     defer fclose(f);
+  }
+  catch
+  {
+  }
 }
-
 `;
 
 sample["Extensions"]["checked expressions II"] =
