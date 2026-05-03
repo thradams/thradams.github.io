@@ -112,7 +112,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
 
                     //cake extensions
                     "assert", 
-                    "_Generic", "static_debug", "static_state", "static_set",
+                    "_Generic", "static_debug", "assert_state", "override_state",
                     //C2Y
                     "_Countof",
                     "defer",
