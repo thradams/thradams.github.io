@@ -3763,3 +3763,1475 @@ auto i64_max1 = 9'223'372'036'854'775'808;
 auto u64_max = 18'446'744'073'709'551'615;
 
 `;
+
+sample["Flow3"] = [];
+
+sample["Flow3"]["static init"] =
+`
+#pragma flow enable
+
+constexpr int a = 1;
+constexpr int b = 2;
+int c;
+
+void f()
+{
+    compile_assert(a == 1);
+    compile_assert(b == 2);
+    c = 3;
+    compile_assert(c == 3);
+
+    c = 4;
+    compile_assert(c == 4);
+}
+
+`;
+
+
+sample["Flow3"]["if"] =
+    `
+
+#pragma flow enable
+
+void f(int * p)
+{
+    if (p)
+    {
+        compile_assert(p != 0);
+    }
+    else
+    {
+        compile_assert(p == 0);
+    }
+}
+
+`;
+
+
+sample["Flow3"]["test"] =
+`
+
+#pragma flow enable
+
+
+void f1(int * p)
+{
+    if (p)
+    {
+        compile_assert(p != 0);   /* ok */
+    }
+    else
+    {
+        compile_assert(p == 0);   /* ok */
+    }
+}
+
+void f2(void)
+{
+    int a = 1;
+    compile_assert(a == 1);   /* ok */
+    compile_assert(a != 0);   /* ok */
+}
+
+void f3(int c)
+{
+    int a;
+    if (c)
+        a = 1;
+    else
+        a = 2;
+    compile_assert(a == 1 || a == 2);   /* ok — both alternatives satisfy */
+    compile_assert(a != 0);             /* ok — neither 1 nor 2 is zero   */
+}
+
+void f4(void)
+{
+    int a;
+    compile_assert(a != 0);   /* warning: uninitialized use; compile_state failed */
+}
+
+
+void f5(int x)
+{
+    compile_assert(x != 0);   /* compile_state any */
+}
+
+void f6(int x)
+{
+    if (x != 2)
+    {
+        compile_assert(x != 2);   /* ok — NOT_EQUAL 2, definitely not 2 */
+        compile_assert(x != 0);   /* compile_state any — 0 is still possible */
+    }
+}
+
+
+void f7(int * p)
+{
+    if (!p)
+    {
+        compile_assert(p == 0);   /* ok */
+    }
+}
+
+void f8(int c1, int c2)
+{
+    int a, b;
+    if (c1) a = 1; else a = 0;
+    if (c2) b = 1; else b = 0;
+
+    compile_assert(a == 0 || a == 1);   /* ok — exhaustive */
+    compile_assert(a || b);             /* compile_state any — {0,0} fails */
+}
+
+void f9(int * _Opt p)
+{
+    if (p != 0)
+    {
+        compile_assert(p != 0);   /* ok */
+    }
+    else
+    {
+        compile_assert(p == 0);   /* ok */
+    }
+}
+
+
+void f10(int x)
+{
+    if (x == 3)
+    {
+        compile_assert(x == 3);   /* ok — EQUAL 3 */
+        compile_assert(x != 0);   /* ok — EQUAL 3, nonzero */
+        compile_assert(x != 4);   /* ok — EQUAL 3, not 4 */
+    }
+}
+
+`;
+
+sample["Flow3"]["test2"] =
+`
+#pragma safety enable
+
+
+void f_eq_nonzero_true_branch(int x)
+{
+    if (x == 3)
+    {
+        compile_assert(x == 3);
+    }
+}
+
+void f_eq_nonzero_false_branch(int x)
+{
+    if (x == 3)
+    {
+        /* nothing */
+    }
+    else
+    {
+        compile_assert(x != 3);
+    }
+}
+
+void f_eq_one_true_branch(int x)
+{
+    if (x == 1)
+    {
+        compile_assert(x == 1);
+    }
+}
+
+void f_eq_neg_true_branch(int x)
+{
+    if (x == -1)
+    {
+        compile_assert(x == -1);
+    }
+}
+
+
+void f_neq_nonzero_true_branch(int x)
+{
+    if (x != 2)
+    {
+        compile_assert(x != 2);          /* was failing after first fix */
+    }
+}
+
+void f_neq_nonzero_false_branch(int x)
+{
+    if (x != 2)
+    {
+        /* nothing */
+    }
+    else
+    {
+        compile_assert(x == 2);          /* false branch of !=: x must be 2 */
+    }
+}
+
+void f_neq_one_true_branch(int x)
+{
+    if (x != 1)
+    {
+        compile_assert(x != 1);
+    }
+}
+
+void f_compile_assert_same_cond_eq(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x == 5);
+        compile_assert(x != 4);          /* 5 != 4 */
+        compile_assert(x != 0);          /* 5 != 0 */
+    }
+}
+
+void f_compile_assert_same_cond_neq(int x)
+{
+    if (x != 7)
+    {
+        compile_assert(x != 7);
+    }
+}
+
+void f_two_alternatives(int c)
+{
+    int a;
+    if (c)
+        a = 1;
+    else
+        a = 2;
+
+    compile_assert(a == 1 || a == 2);
+    compile_assert(a != 3);
+    compile_assert(a != 0);
+}
+
+void f_three_alternatives(int c)
+{
+    int a;
+    if (c == 1)
+        a = 10;
+    else if (c == 2)
+        a = 20;
+    else
+        a = 30;
+
+    compile_assert(a == 10 || a == 20 || a == 30);
+    compile_assert(a != 0);
+}
+
+void f_same_value_both_branches(int c)
+{
+    int a;
+    if (c)
+        a = 5;
+    else
+        a = 5;
+
+    compile_assert(a == 5);
+}
+
+void f_or_two_alternatives(int c)
+{
+    int a;
+    if (c)
+        a = 1;
+    else
+        a = 2;
+
+    compile_assert(a == 1 || a == 2);
+}
+
+void f_or_with_known_true_left(int x)
+{
+    if (x == 4)
+    {
+        /* left is true, OR is true */
+        compile_assert(x == 4 || x == 9);   
+    }
+}
+
+void f_or_with_known_true_right(int x)
+{
+    if (x == 9)
+    {
+        /* right is true, OR is true */
+        compile_assert(x == 4 || x == 9);   
+    }
+}
+
+
+void f_and_both_known(int x)
+{
+    if (x == 6)
+    {
+        /* 6==6 true, 6!=7 true */
+        compile_assert(x == 6 && x != 7);   
+    }
+}
+
+void f_and_short_circuit(int x)
+{
+    if (x == 0)
+    {
+        compile_assert(x == 0 && x != 1);
+    }
+}
+
+
+void f_nested_eq(int x)
+{
+    if (x == 3)
+    {
+        if (x == 3)
+        {
+            /* always true inside outer true branch */
+            compile_assert(x == 3);
+        }
+    }
+}
+
+void f_inner_refine(int x)
+{
+    /* outer narrows to != 0; inner narrows further to == 5 */
+    if (x != 0)
+    {
+        if (x == 5)
+        {
+            compile_assert(x == 5);
+            compile_assert(x != 0);
+        }
+    }
+}
+
+
+void f_commuted_eq(int x)
+{
+    if (3 == x)
+    {
+        compile_assert(x == 3);
+        compile_assert(3 == x);
+    }
+}
+
+void f_commuted_neq(int x)
+{
+    if (2 != x)
+    {
+        compile_assert(x != 2);
+    }
+}
+
+void f_eq_zero_true_branch(int x)
+{
+    if (x == 0)
+    {
+        compile_assert(x == 0);
+    }
+}
+
+void f_eq_zero_false_branch(int x)
+{
+    if (x == 0)
+    {
+        /* nothing */
+    }
+    else
+    {
+        compile_assert(x != 0);
+    }
+}
+
+void f_neq_zero_true_branch(int x)
+{
+    if (x != 0)
+    {
+        compile_assert(x != 0);
+    }
+}
+
+void f_neq_zero_false_branch(int x)
+{
+    if (x != 0)
+    {
+        /* nothing */
+    }
+    else
+    {
+        compile_assert(x == 0);
+    }
+}
+
+void f_sequential_eq(int x, int y)
+{
+    if (x == 3)
+    {
+        if (y == 7)
+        {
+            compile_assert(x == 3);
+            compile_assert(y == 7);
+            compile_assert(x != y);      /* 3 != 7 */
+        }
+    }
+}
+
+void f_sequential_neq(int x, int y)
+{
+    if (x != 3)
+    {
+        if (y != 3)
+        {
+            compile_assert(x != 3);
+            compile_assert(y != 3);
+        }
+    }
+}
+
+void f_neq_different_constants(int x)
+{
+    if (x != 5)
+    {
+        /* x != 5, but x could be 3 or not — compile_assert(x != 3) must NOT pass */
+        (void)x;
+    }
+}
+
+void f_neq_same_constant_twice(int x)
+{
+    if (x != 4)
+    {
+        compile_assert(x != 4);         /* same constant: must fold to true */
+    }
+}
+
+void f_tautology_from_alternatives(int c)
+{
+    int a;
+    if (c)
+        a = 0;
+    else
+        a = 1;
+
+    /* Every alternative (0 and 1) satisfies a == 0 || a == 1 */
+    compile_assert(a == 0 || a == 1);
+
+    /* Every alternative satisfies a != 2 */
+    compile_assert(a != 2);
+}
+
+void f_eq_after_known_assign(int x)
+{
+    int a = 42;
+    compile_assert(a == 42);
+    compile_assert(a != 0);
+    compile_assert(a != 41);
+    compile_assert(a != 43);
+    (void)x;
+}
+`;
+sample["Flow3"]["test3"] =
+`
+#pragma flow enable
+
+void f_rel_eq_then_gt_const(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x > 3);   /* 5 > 3 */
+    }
+}
+
+void f_rel_eq_then_lt_const(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x < 10);  /* 5 < 10 */
+    }
+}
+
+void f_rel_eq_then_ge_const(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x >= 5);  /* 5 >= 5 */
+    }
+}
+
+void f_rel_eq_then_le_const(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x <= 5);  /* 5 <= 5 */
+    }
+}
+
+void f_rel_const_lt_eq(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(3 < x);   /* 3 < 5 */
+    }
+}
+
+void f_rel_const_gt_eq(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(10 > x);  /* 10 > 5 */
+    }
+}
+
+void f_rel_const_le_eq(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(5 <= x);  /* 5 <= 5 */
+    }
+}
+
+void f_rel_const_ge_eq(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(5 >= x);  /* 5 >= 5 */
+    }
+}
+
+void f_rel_two_vars_lt(int x, int y)
+{
+    if (x == 3)
+    {
+        if (y == 7)
+        {
+            compile_assert(x < y);   /* 3 < 7 */
+        }
+    }
+}
+
+void f_rel_two_vars_le(int x, int y)
+{
+    if (x == 3)
+    {
+        if (y == 7)
+        {
+            compile_assert(x <= y);  /* 3 <= 7 */
+        }
+    }
+}
+
+void f_rel_two_vars_gt(int x, int y)
+{
+    if (x == 7)
+    {
+        if (y == 3)
+        {
+            compile_assert(x > y);   /* 7 > 3 */
+        }
+    }
+}
+
+void f_rel_two_vars_ge(int x, int y)
+{
+    if (x == 7)
+    {
+        if (y == 3)
+        {
+            compile_assert(x >= y);  /* 7 >= 3 */
+        }
+    }
+}
+
+void f_rel_two_vars_le_equal(int x, int y)
+{
+    if (x == 5)
+    {
+        if (y == 5)
+        {
+            compile_assert(x <= y);  /* 5 <= 5 */
+        }
+    }
+}
+
+void f_rel_two_vars_ge_equal(int x, int y)
+{
+    if (x == 5)
+    {
+        if (y == 5)
+        {
+            compile_assert(x >= y);  /* 5 >= 5 */
+        }
+    }
+}
+
+void f_rel_outer_ne_inner_eq_gt(int x)
+{
+    if (x != 0)
+    {
+        if (x == 5)
+        {
+            compile_assert(x > 0);   /* 5 > 0 */
+        }
+    }
+}
+
+
+void f_rel_outer_ne_inner_eq_lt(int x)
+{
+    if (x != 0)
+    {
+        if (x == 5)
+        {
+            compile_assert(x < 10);  /* 5 < 10 */
+        }
+    }
+}
+
+void f_rel_outer_ne_inner_eq_two_vars(int x, int y)
+{
+    if (x != 0)
+    {
+        if (x == 5)
+        {
+            if (y == 2)
+            {
+                compile_assert(x > y);   /* 5 > 2 */
+            }
+        }
+    }
+}
+
+
+void f_rel_negative_lt_zero(int x)
+{
+    if (x == -3)
+    {
+        compile_assert(x < 0);   /* -3 < 0 */
+    }
+}
+
+void f_rel_negative_two_vars(int x, int y)
+{
+    if (x == -3)
+    {
+        if (y == -1)
+        {
+            compile_assert(x < y);   /* -3 < -1 */
+        }
+    }
+}
+
+void f_rel_negative_gt(int x, int y)
+{
+    if (x == -1)
+    {
+        if (y == -3)
+        {
+            compile_assert(x > y);   /* -1 > -3 */
+        }
+    }
+}
+
+void f_rel_negative_const_left(int x)
+{
+    if (x == -5)
+    {
+        compile_assert(-10 < x);  /* -10 < -5 */
+    }
+}
+
+void f_rel_zero_ge(int x)
+{
+    if (x == 0)
+    {
+        compile_assert(x >= 0);  /* 0 >= 0 */
+    }
+}
+
+void f_rel_zero_le(int x)
+{
+    if (x == 0)
+    {
+        compile_assert(x <= 0);  /* 0 <= 0 */
+    }
+}
+
+void f_rel_one_gt_zero(int x)
+{
+    if (x == 1)
+    {
+        compile_assert(x > 0);   /* 1 > 0 */
+    }
+}
+
+void f_rel_neg_one_lt_zero(int x)
+{
+    if (x == -1)
+    {
+        compile_assert(x < 0);   /* -1 < 0 */
+    }
+}
+
+void f_rel_three_vars_skip(int x, int y, int z)
+{
+    if (x == 1)
+    {
+        if (y == 2)
+        {
+            if (z == 3)
+            {
+                compile_assert(x < z);   /* 1 < 3  (y not used) */
+            }
+        }
+    }
+}
+
+void f_rel_three_vars_middle(int x, int y, int z)
+{
+    if (x == 10)
+    {
+        if (y == 20)
+        {
+            if (z == 30)
+            {
+                compile_assert(y < z);   /* 20 < 30 */
+            }
+        }
+    }
+}
+
+`;
+
+sample["Flow3"]["test4"] =
+`
+    #pragma flow enable
+
+void f_logical_and_two_eq(int x, int y)
+{
+    if (x == 3 && y == 7)
+    {
+        compile_assert(x == 3);   /* left narrowing active */
+        compile_assert(y == 7);   /* right narrowing active */
+        compile_assert(x != y);   /* 3 != 7 — two-var equality */
+        compile_assert(x < y);    /* 3 < 7  — two-var relational */
+    }
+}
+
+void f_logical_and_same_value(int x, int y)
+{
+    if (x == 5 && y == 5)
+    {
+        compile_assert(x == y);   /* 5 == 5 */
+        compile_assert(x <= y);   /* 5 <= 5 */
+        compile_assert(x >= y);   /* 5 >= 5 */
+    }
+}
+
+void f_logical_and_three(int x, int y, int z)
+{
+    if (x == 1 && y == 2 && z == 3)
+    {
+        compile_assert(x < y);    /* 1 < 2 */
+        compile_assert(y < z);    /* 2 < 3 */
+        compile_assert(x < z);    /* 1 < 3 */
+    }
+}
+
+void f_logical_and_rel_then_eq(int x)
+{
+    if (x > 0 && x == 5)
+    {
+        compile_assert(x == 5);   /* right side narrows to exactly 5 */
+        compile_assert(x > 0);    /* 5 > 0 */
+        compile_assert(x > 3);    /* 5 > 3 */
+    }
+}
+
+void f_logical_and_ne_then_eq(int x)
+{
+    if (x != 0 && x == 7)
+    {
+        compile_assert(x == 7);   /* right fully narrows */
+        compile_assert(x > 0);    /* 7 > 0 */
+    }
+}
+
+void f_logical_and_result_true(int x, int y)
+{
+    if (x == 3)
+    {
+        if (y == 7)
+        {
+            compile_assert(x == 3 && y == 7);   /* both known true */
+        }
+    }
+}
+
+void f_logical_and_result_single_var(int x)
+{
+    if (x == 3)
+    {
+        compile_assert(x == 3 && x > 0);   /* 3==3 && 3>0 */
+    }
+}
+
+void f_logical_or_false_branch(int x, int y)
+{
+    if (x == 3 || y == 7)
+    {
+        /* true branch: x==3 OR y==7 — too broad to assert specific values */
+    }
+    else
+    {
+        /* false branch: neither condition held */
+        compile_assert(x != 3);   /* x was not 3 */
+        compile_assert(y != 7);   /* y was not 7 */
+    }
+}
+
+void f_logical_or_false_both_nonzero(int x, int y)
+{
+    if (x == 0 || y == 0)
+    {
+    }
+    else
+    {
+        compile_assert(x != 0);
+        compile_assert(y != 0);
+    }
+}
+
+void f_logical_or_result_left_true(int x)
+{
+    if (x == 5)
+    {
+        compile_assert(x == 5 || x == 99);   /* left is true -> whole expr true */
+    }
+}
+
+void f_logical_or_result_known_true(int x, int y)
+{
+    if (x == 3)
+    {
+        if (y == 7)
+        {
+            compile_assert(x == 3 || y == 99);  /* left true, right irrelevant */
+        }
+    }
+}
+
+void f_logical_not_eq(int x)
+{
+    if (!(x == 0))
+    {
+        compile_assert(x != 0);
+    }
+}
+
+void f_logical_and_inside_outer_ne(int x, int y)
+{
+    if (x != 0)
+    {
+        if (x == 4 && y == 9)
+        {
+            compile_assert(x == 4);
+            compile_assert(y == 9);
+            compile_assert(x < y);    /* 4 < 9 */
+            compile_assert(x != y);   /* 4 != 9 */
+        }
+    }
+}
+
+void f_logical_and_three_vars_nested(int x, int y, int z)
+{
+    if (x == 10)
+    {
+        if (y == 20 && z == 5)
+        {
+            compile_assert(z < x);    /* 5 < 10 */
+            compile_assert(z < y);    /* 5 < 20 */
+            compile_assert(x < y);    /* 10 < 20 */
+        }
+    }
+}
+    `;
+
+
+sample["Flow3"]["test5"] =
+
+`
+#pragma flow enable
+
+void test_postfix_increment_basic(void)
+{
+    int i = 0;
+    i++;
+    compile_assert(i == 1);
+}
+
+void test_postfix_increment_chain(void)
+{
+    int i = 0;
+    i++;
+    i++;
+    compile_assert(i == 2);
+}
+
+void test_postfix_increment_from_nonzero(void)
+{
+    int i = 5;
+    i++;
+    compile_assert(i == 6);
+}
+
+void test_postfix_decrement_basic(void)
+{
+    int i = 3;
+    i--;
+    compile_assert(i == 2);
+}
+
+void test_postfix_decrement_to_zero(void)
+{
+    int i = 1;
+    i--;
+    compile_assert(i == 0);
+}
+
+void test_postfix_decrement_below_zero(void)
+{
+    int i = 0;
+    i--;
+    compile_assert(i == -1);
+}
+
+void test_postfix_increment_init_expression_value(void)
+{
+    int i = 0;
+    int j = i++;    /* j gets OLD value (0); i becomes 1 */
+    compile_assert(j == 0);
+    compile_assert(i == 1);
+}
+
+void test_postfix_decrement_init_expression_value(void)
+{
+    int i = 7;
+    int j = i--;    /* j gets OLD value (7); i becomes 6 */
+    compile_assert(j == 7);
+    compile_assert(i == 6);
+}
+
+void test_postfix_increment_assign_expression_value(void)
+{
+    int i = 0;
+    int j;
+    j = i++;        /* j gets OLD value (0); i becomes 1 */
+    compile_assert(j == 0);
+    compile_assert(i == 1);
+}
+
+void test_postfix_decrement_assign_expression_value(void)
+{
+    int i = 4;
+    int j;
+    j = i--;        /* j gets OLD value (4); i becomes 3 */
+    compile_assert(j == 4);
+    compile_assert(i == 3);
+}
+
+void test_prefix_increment_basic(void)
+{
+    int i = 0;
+    ++i;
+    compile_assert(i == 1);
+}
+
+void test_prefix_increment_chain(void)
+{
+    int i = 0;
+    ++i;
+    ++i;
+    ++i;
+    compile_assert(i == 3);
+}
+
+void test_prefix_decrement_basic(void)
+{
+    int i = 4;
+    --i;
+    compile_assert(i == 3);
+}
+
+void test_prefix_increment_init_expression_value(void)
+{
+    int i = 0;
+    int j = ++i;    /* j and i both become 1 */
+    compile_assert(j == 1);
+    compile_assert(i == 1);
+}
+
+void test_prefix_decrement_init_expression_value(void)
+{
+    int i = 5;
+    int j = --i;    /* j and i both become 4 */
+    compile_assert(j == 4);
+    compile_assert(i == 4);
+}
+
+void test_prefix_increment_assign_expression_value(void)
+{
+    int i = 0;
+    int j;
+    j = ++i;        /* j and i both become 1 */
+    compile_assert(j == 1);
+    compile_assert(i == 1);
+}
+
+void test_prefix_decrement_assign_expression_value(void)
+{
+    int i = 5;
+    int j;
+    j = --i;        /* j and i both become 4 */
+    compile_assert(j == 4);
+    compile_assert(i == 4);
+}
+
+void test_comma_postfix_then_assert(void)
+{
+    int i = 0;
+    i++, compile_assert(i == 1);
+}
+
+void test_comma_prefix_then_assert(void)
+{
+    int i = 0;
+    ++i, compile_assert(i == 1);
+}
+
+void test_mixed_increment_decrement(void)
+{
+    int i = 0;
+    i++;    /* 1 */
+    ++i;    /* 2 */
+    i--;    /* 1 */
+    --i;    /* 0 */
+    compile_assert(i == 0);
+}
+
+
+void test_add_tracked_plus_literal(void)
+{
+    int i = 0;
+    i++;                /* i == 1 */
+    int j = i + 2;
+    compile_assert(j == 3);
+}
+
+void test_add_tracked_plus_tracked(void)
+{
+    int a = 0;
+    int b = 0;
+    a++;                /* a == 1 */
+    b++; b++;           /* b == 2 */
+    int c = a + b;
+    compile_assert(c == 3);
+}
+
+void test_sub_tracked_minus_literal(void)
+{
+    int i = 0;
+    i++; i++; i++;      /* i == 3 */
+    int j = i - 1;
+    compile_assert(j == 2);
+}
+
+void test_add_zero_identity_tracked(void)   /* x + 0 == x */
+{
+    int x = 0;
+    x++;                /* x == 1 */
+    int y = x + 0;
+    compile_assert(y == 1);
+}
+
+void test_zero_plus_tracked(void)           /* 0 + x == x */
+{
+    int x = 0;
+    x++; x++;           /* x == 2 */
+    int y = 0 + x;
+    compile_assert(y == 2);
+}
+
+void test_sub_zero_identity_tracked(void)   /* x - 0 == x */
+{
+    int x = 0;
+    x++;                /* x == 1 */
+    int y = x - 0;
+    compile_assert(y == 1);
+}
+
+void test_sub_self_is_zero(void)            /* x - x == 0 */
+{
+    int x = 0;
+    x++; x++;           /* x == 2, value doesn't matter for this identity */
+    int y = x - x;
+    compile_assert(y == 0);
+}
+
+void test_mul_one_identity_right(void)      /* x * 1 == x */
+{
+    int x = 0;
+    x++; x++;           /* x == 2 */
+    int y = x * 1;
+    compile_assert(y == 2);
+}
+
+void test_mul_one_identity_left(void)       /* 1 * x == x */
+{
+    int x = 0;
+    x++; x++; x++;      /* x == 3 */
+    int y = 1 * x;
+    compile_assert(y == 3);
+}
+
+void test_mul_zero_absorb_right(void)       /* x * 0 == 0 */
+{
+    int x = 0;
+    x++;                /* x == 1 — value doesn't matter */
+    int y = x * 0;
+    compile_assert(y == 0);
+}
+
+void test_mul_zero_absorb_left(void)        /* 0 * x == 0 */
+{
+    int x = 0;
+    x++; x++;           /* x == 2 — value doesn't matter */
+    int y = 0 * x;
+    compile_assert(y == 0);
+}
+
+void test_mul_tracked_times_tracked(void)
+{
+    int a = 0;
+    int b = 0;
+    a++; a++;           /* a == 2 */
+    b++; b++; b++;      /* b == 3 */
+    int c = a * b;
+    compile_assert(c == 6);
+}
+
+
+#if 0
+
+/* Expected: "compile_assert failed" — i is 1 after i++, not 0 */
+void test_FAIL_postfix_wrong_value(void)
+{
+    int i = 0;
+    i++;
+    compile_assert(i == 0); /*FAIL*/
+}
+
+/* Expected: "compile_assert failed" — j=i++ gives OLD value (0), not 1 */
+void test_FAIL_postfix_init_expression_value_wrong(void)
+{
+    int i = 0;
+    int j = i++;
+    compile_assert(j == 1); /*FAIL*/
+}
+
+/* Expected: "compile_assert failed" — j=++i gives NEW value (1), not 0 */
+void test_FAIL_prefix_init_expression_value_wrong(void)
+{
+    int i = 0;
+    int j = ++i;
+    compile_assert(j == 0); /*FAIL*/
+}
+
+/* Expected: "compile_assert failed" — 2 * 3 == 6, not 5 */
+void test_FAIL_mul_wrong_result(void)
+{
+    int a = 0; int b = 0;
+    a++; a++;       /* a == 2 */
+    b++; b++; b++;  /* b == 3 */
+    int c = a * b;
+    compile_assert(c == 5); /*FAIL*/
+}
+
+/* Expected: "could not be proven" — x is unknown after unknown_fn() */
+void test_FAIL_unknown_operand(void)
+{
+    int x = unknown_fn();
+    x++;
+    compile_assert(x == 1); /*FAIL: x was unknown, still unknown after ++*/
+}
+
+#endif
+`; 
+
+sample["Flow3"]["ownership"] =
+`
+
+
+
+
+#pragma safety enable
+
+void* _Owner _Opt malloc(unsigned long size);
+void free(void* _Owner _Opt ptr);
+char* _Owner _Opt strdup(const char* s);
+
+struct X {
+    char* _Owner _Opt text;
+    int i;
+};
+
+void x_init(_Ctor struct X* p);
+void x_destroy(_Dtor struct X* p);
+
+void test_nonnull_param(int* p)
+{
+    *p = 42; /* ok */
+}
+
+void test_nonnull_param_caller(int* _Opt q)
+{
+    test_nonnull_param(q);  //lint 33  q may be null
+}
+
+void test_nonnull_param_caller_fixed(int* _Opt q)
+{
+    if (q)
+    {
+        test_nonnull_param(q); /* ok */
+    }
+}
+
+int* test_nonnull_param_return(int* p)
+{
+    return p; /* ok */
+}
+
+
+void test_opt_param_guarded(int* _Opt p)
+{
+    if (p)
+    {
+        *p = 1; /*ok*/
+    }
+}
+
+void test_opt_param_unguarded(int* _Opt p)
+{
+    *p = 1; //lint 33  p may be null
+}
+
+void test_opt_param_to_opt(int* _Opt p, int* _Opt* _Opt out)
+{
+    if (out) *out = p; /* ok */
+}
+
+
+void x_init(_Ctor struct X* p)
+{
+    p->text = strdup("hello");
+} /* ok */
+
+void x_init_forgot(_Ctor struct X* p)
+{
+    /* p->text is never written */
+} //lint 30  _Ctor parameter: pointed object is uninitialized at end
+
+int x_init_or_fail(_Ctor struct X* p, int flag)
+{
+    if (flag)
+    {
+        p->text = strdup("ok");
+        return 1;
+    }
+    p->text = 0;
+    return 0;
+} /* ok */
+
+void x_destroy(_Dtor struct X* p)
+{
+    free(p->text);
+} /* ok */
+
+void x_destroy_forgot(_Dtor struct X* p)
+{
+    /* p->text is never freed/moved */
+} //lint 30  _Dtor parameter: pointed object is not uninitialized
+
+void x_destroy_cond(_Dtor struct X* p)
+{
+    if (p->text)
+        free(p->text); /* moved */
+} /* ok */
+
+void consume_x(struct X x)
+{
+    free(x.text);
+}
+
+void leak_x(struct X x)
+{
+    /* x.text is never freed or moved */
+} //lint 31  resource leak: _Owner object not consumed
+
+void take_x(struct X x); /* forward */
+
+void free_x(struct X* _Owner _Opt p)
+{
+    if (p)
+    {
+        x_destroy(p); /* moves *p contents */
+        free(p);   /* frees p itself → p is expired */
+    }
+} /* ok */
+
+void free_x_forgot(struct X* _Owner p)
+{
+    x_destroy(p); /* moves *p contents, but p itself still lives */
+    /* missing: free(p) */
+} //lint 32  _Owner pointer: pointed object not consumed (p itself leaked)
+
+void read_x(_View struct X x)
+{
+
+} /* ok */
+
+void maybe_free(struct X* _Owner _Opt p)
+{
+    if (p)
+    {
+        x_destroy(p);
+        free(p);
+    }
+    /* if p is null: nothing to free */
+} /* ok */
+
+void accepts_opt(int* _Opt p);
+
+void test_nonnull_to_opt(int* p)
+{
+    accepts_opt(p); // ok
+}
+
+int* _Owner _Opt f(int c)
+{
+    int* _Owner _Opt p = malloc(sizeof * p);
+    try
+    {
+        if (c)
+            throw;
+    }
+    catch {
+        free(p);
+        p = nullptr;
+    }
+
+    return p;
+} /* ok */
+
+void test_assign_owner_leak(void)
+{
+    struct X  a = { .text = strdup("hello") };
+    struct X  b = { .text = strdup("world") };
+    a = b;  //expected warning
+}
+
+int* _Opt test_return_owner_as_nonowner(void)
+{
+    int* _Owner _Opt p = malloc(sizeof(int));
+    return p; //lint 31
+}
+
+void* _Owner _Opt test_void_owner_bad(void)
+{
+    int* _Owner _Opt p = malloc(sizeof(int));
+    if (p)
+        *p = 42;  // p is now initialized
+    return p;
+}
+
+void test_void_owner_assign_bad(void)
+{
+    int* _Owner _Opt p = malloc(sizeof(int));
+    if (p == nullptr)
+        return;
+    void* _Owner _Opt q = p;
+    free(q);
+}
+
+struct Y { int x; };
+void clear_y(_Clear struct Y* p);
+
+
+void test_opt_to_nonnull_ambiguous(int* _Opt p)
+{
+    // p may be null or non-null; assigning to non-null pointer is invalid.
+    int* q = p;  //lint 33  p may be null
+}
+
+void takes_view(_View struct X x);
+
+void test_pass_owner_to_view(void)
+{
+    struct X x = { .text = strdup("hello") };
+    takes_view(x);
+}
+
+int* f2();
+
+void test_free_nonowner(void)
+{
+    int* p = f2();
+    free(p); //lint 25
+}
+int* _Owner test_return_moved_bad(void)
+{
+    int* _Owner p = malloc(sizeof(int));
+    free(p);
+    return p; // Should error: returning moved/expired object
+}
+struct X make(void)
+{
+    char* _Owner _Opt s = strdup("hello");
+    return (struct X) { .text = s };  // moves s into the struct
+} // ok
+
+void test_init_nonopt_null_bad(void)
+{
+    int* p = 0; // Should error if nullable_enabled is on
+}
+
+void test_init_opt_null_ok(void)
+{
+    int* _Opt p = 0; // Should be OK
+}
+
+void test_pass_moved_bad(void)
+{
+    char* _Owner _Opt s = strdup("hi");
+    free(s);
+    accepts_opt(s); // Should error: s is expired/moved
+}
+
+void take_non_owner(int* p);
+void test_pass_owner_to_nonowner_bad(void)
+{
+    int* _Owner p = malloc(sizeof(int));
+    take_non_owner(p); // Should error: losing ownership without move/free
+}
+void test_clear_usage(void)
+{
+    struct Y y = { .x = 10 };
+    clear_y(&y); // What is the expected state after this? No sample verifies it.
+    compile_assert(y.x == 0);
+}
+
+
+`;
+
