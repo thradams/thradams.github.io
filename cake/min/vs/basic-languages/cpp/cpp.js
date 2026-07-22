@@ -112,10 +112,11 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
 
                     //cake extensions
                     "assert", 
-                    "_Generic", "static_debug", "static_state", "static_set",
+                    "_Generic", "compile_assert", "static_debug", "assert_state", "override_state",
                     //C2Y
                     "_Countof",
                     "defer",
+                    "_Defer",
                     //cake extensions
                     //C23
                     "_Static_assert",
@@ -134,7 +135,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                     "inline", "int", "interior_ptr", "internal", "literal", "long", "mutable", "namespace",
                     "new", "noexcept", "nullptr", "__nullptr", "operator", "override", "partial", "pascal", "pin_ptr", "private",
                     "property", "protected", "public", "ref", "register", "reinterpret_cast", "restrict", "return",
-                    "safe_cast", "sealed", "short", "signed", "sizeof", "static", "static_assert", "static_cast", "struct",
+                    "safe_cast", "sealed", "short", "signed", "sizeof", "offsetof", "static", "static_assert", "static_cast", "struct",
                     "switch", "template", "this", "thread_local", "throw", "tile_static", "true", "try", "typedef", "typeid",
                     "typename", "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t", "where", "while",
                     "_asm", "_based", "_cdecl", "_declspec", "_fastcall", "_if_exists", "_if_not_exists",
@@ -161,7 +162,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                 tokenizer: {
                     root: [
 
-                        [/\b(_Owner|_View|_Opt|_Ctor|_Dtor)\b/, 'keyword.special'],
+                        [/\b(in|out|_Owner|_View|_Opt|_Ctor|_Dtor)\b/, 'keyword.special'],
 
                         [/@encoding?R\"(?:([^ ()\\\t]*))\(/, {
                             token: "string.raw.begin",
@@ -218,13 +219,16 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                         [/'/, "string.invalid"]
                     ],
                     whitespace: [
+                        // special lint comments
+                        [/\/\/lint\s[^\n]*/, "comment.lint"],
                         [/[ \t\r\n]+/, ""],
                         [/\/\*\*(?!\/)/,
                             "comment.doc", "@doccomment"
                         ],
                         [/\/\*/, "comment", "@comment"],
                         [/\/\/.*\\$/, "comment", "@linecomment"],
-                        [/\/\/.*$/, "comment"]
+                        [/\/\/.*$/, "comment"],
+
                     ],
                     comment: [
                         [/[^\/*]+/, "comment"],
@@ -235,6 +239,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                         [/.*[^\\]$/, "comment", "@pop"],
                         [/[^]+/, "comment"]
                     ],
+
                     doccomment: [
                         [/[^\/*]+/, "comment.doc"],
                         [/\*\//, "comment.doc", "@pop"],
