@@ -636,13 +636,15 @@ of these rules.</p>
 
 <pre><code class="language-c">#pragma safety enable
 
+typedef int FILE;
+
 FILE * _Owner _Opt fopen( const char *filename, const char *mode );
-void fclose(FILE * _Owner p); /*p is not nullable*/
+void fclose(FILE * _Owner p); /* p is not nullable */
 
 int main() {
     FILE * _Owner _Opt f = fopen(&quot;file.txt&quot;, &quot;r&quot;);
     if (f)
-        fclose(f);  // ownership is transferred to fclose
+        fclose(f);  /* ownership is transferred to fclose */
 }
 </code></pre>
 
@@ -777,37 +779,32 @@ void x_delete(struct X * _Owner _Opt p) {
 
 <h3 id="toc_21">Comparison with C++ RAII</h3>
 
-<p>RAII is a <em>pattern</em>, not a static check: a constructor/destructor pair runs automatically at scope
-exit, but nothing verifies that a raw resource outside such a wrapper was released. <code>T* p = new T;</code>
-with no matching <code>delete</code> compiles without complaint in C++ — the guarantee only exists for types
-that actually implement it.</p>
+<p>RAII is a pattern, not a static check: a constructor/destructor pair runs automatically at 
+scope exit, but nothing verifies that a raw resource outside such a wrapper was released. 
+<code>T* p = new T;</code> with no matching delete compiles without complaint in C++. The guarantee only 
+exists for types that actually implement it.</p>
 
-<p>Cake&#39;s <code>_Owner</code> takes the opposite approach: it enforces the <em>same</em> discipline directly on
-ordinary pointers and values, without requiring a wrapper type. Leaving scope with an unmoved
-<code>_Owner</code> is a compile-time warning, not a convention you have to trust. The <code>fopen</code>/<code>fclose</code>
-example earlier in this chapter is exactly the RAII pattern, but checked by the analyzer instead
-of relying on a class to run the cleanup.</p>
+<p>Cake&#39;s <code>_Owner</code> takes the opposite approach: it enforces the same discipline directly on ordinary
+pointers and values, without requiring a wrapper type. Leaving scope with an unmoved <code>_Owner</code> 
+is a compile-time warning, not a convention you have to trust. The fopen/fclose example earlier 
+in this chapter is exactly the RAII pattern, but checked by the analyzer instead of relying 
+on a class to run the cleanup.</p>
 
-<p>The trade-off is that Cake only <em>checks</em> that cleanup was written — it does not <em>run</em> it for you.
-RAII actually executes the destructor at scope exit; Cake&#39;s <code>_Dtor</code>/<code>_Ctor</code> are contracts the
-analyzer verifies were fulfilled, but no code is generated to call them automatically. A code path
-the analyzer can&#39;t reach soundly (see Chapter 5, Known Limitations) is a path RAII would still have
-cleaned up, but Cake might not warn about.</p>
+<p>The two approaches provide different guarantees. RAII executes the destructor automatically 
+at scope exit. Cake&#39;s <em>Ctor/</em>Dtor are contracts that the analyzer verifies were fulfilled, 
+but no code is generated to call them automatically. As a result, there are code paths that 
+RAII would still clean up automatically, whereas Cake relies on the analyzer being able to 
+verify that the required cleanup was written.</p>
 
-<p>Where Cake wins over RAII is retrofitting: the annotations attach to existing <code>malloc</code>/<code>free</code>-style
-C code and structs directly, without wrapping them in classes — useful for adding ownership
-guarantees to a codebase you can&#39;t (or don&#39;t want to) rewrite in C++.</p>
-
-<p>Cake also proves the ownership rules statically, with no runtime check involved. RAII itself is
-free at runtime for the destructor-call mechanism, but the reference-counted smart pointers
-(<code>shared_ptr</code>) commonly used to make ownership safe in the presence of aliasing carry real runtime
-cost — atomic increments/decrements on every copy. Even <code>unique_ptr</code>, which is the closer analog
-to <code>_Owner</code> (single, non-aliased ownership, move-only), still pays at runtime: after a move its
-internal pointer is set to <code>nullptr</code> specifically so the destructor&#39;s <code>if (ptr) delete ptr;</code> is a
-no-op — every destructor call carries that null check, whether or not the object was ever moved
-from. Cake proves the equivalent fact — &quot;this owner still holds something to release&quot; — ahead of
-time by tracking moved/null state through the flow analysis, so the check does not need to exist
-in the compiled output at all.</p>
+<p>Cake also proves the ownership rules statically, with no runtime overhead. <code>std::unique_ptr</code>,
+which is the closest analog to <code>_Owner</code> (single, move-only ownership), still performs a runtime
+check in its destructor. After a move, its internal pointer is set to null so that <code>delete ptr;</code>
+becomes a no-op. 
+Every destructor therefore executes a null check, whether or not the object was ever moved from.
+Cake proves the equivalent fact &quot;this owner still holds something to release&quot; ahead of time by tracking
+ownership and moved/null state through flow analysis, so no unconditional runtime check needs to be emitted.
+When the analyzer cannot prove that an owner is null, an explicit <code>if (ptr)</code> provides the missing proof,
+allowing the cleanup to be verified while keeping the common case free of unnecessary runtime checks.</p>
 
 <h2 id="toc_22">Chapter 3: Parameter annotations</h2>
 
