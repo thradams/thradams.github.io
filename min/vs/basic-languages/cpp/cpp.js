@@ -162,7 +162,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                 tokenizer: {
                     root: [
 
-                        [/\b(in|out|_Owner|_View|_Opt|_Ctor|_Dtor)\b/, 'keyword.special'],
+                        [/\b(in|out|_Uninitialized|_Clear|_Owner|_View|_Opt|_Ctor|_Dtor)\b/, 'keyword.special'],
 
                         [/@encoding?R\"(?:([^ ()\\\t]*))\(/, {
                             token: "string.raw.begin",
