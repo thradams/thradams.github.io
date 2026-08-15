@@ -120,6 +120,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                     //cake extensions
                     //C23
                     "_Static_assert",
+                    "_Assert",
                     "_Bool",
                     "typeof_unqual", "typeof",
                     "_Alignof", "alignof",
@@ -162,7 +163,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                 tokenizer: {
                     root: [
 
-                        [/\b(in|out|_Uninitialized|_Clear|_Owner|_View|_Opt|_Ctor|_Dtor)\b/, 'keyword.special'],
+                        [/\b(in|out|_Uninitialized|_Clear|_Owner|_View|_Opt|_Out|_Dtor)\b/, 'keyword.special'],
 
                         [/@encoding?R\"(?:([^ ()\\\t]*))\(/, {
                             token: "string.raw.begin",
