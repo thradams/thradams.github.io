@@ -412,37 +412,48 @@ directory as shown above, without installing anything. Installing simply
 copies the compiler and supporting files into a system directory and updates 
 the system <code>PATH</code> so the <code>cake</code> command can be executed from any terminal.</p>
 
+<p>The build (<code>build.c</code>, not in <code>fast</code> mode) creates the installer in <code>src</code>.
+They are also attached to the GitHub releases.</p>
+
+<p>Versions are installed side by side (<code>cake/&lt;version&gt;</code>); the last one
+installed is the one in the <code>PATH</code>.</p>
+
 <h2 id="toc_11">Windows</h2>
 
-<p>Run the installer as Administrator.</p>
+<p>Run <code>cake-&lt;version&gt;-setup.exe</code> (it asks for Administrator).</p>
 
-<pre><code class="language-bash">install.exe
-</code></pre>
-
-<p>The installer:</p>
+<p>The setup:</p>
 
 <ul>
-<li>Copies Cake files into <code>Program Files</code></li>
-<li>Updates the system <code>PATH</code></li>
-<li>Removes obsolete Cake <code>PATH</code> entries from previous installations</li>
+<li>Copies Cake files into <code>Program Files\cake\&lt;version&gt;</code> (the folder can be changed)</li>
+<li>Adds that folder to the system <code>PATH</code>, removing other Cake versions from it</li>
+<li>Registers an uninstaller in Settings &gt; Apps</li>
 </ul>
+
+<p>The installer source is <code>src/tools/win_installer.c</code>; the installed files are
+listed in <code>src/tools/win_installer.h</code>.</p>
 
 <h2 id="toc_12">Linux / macOS</h2>
 
-<p>Run the installer using:</p>
-
-<pre><code class="language-bash">sudo ./install
+<pre><code class="language-bash">tar xzf cake-&lt;version&gt;-linux.tar.gz      # or cake-&lt;version&gt;-macos.tar.gz
+cd cake-&lt;version&gt;-linux
+sudo ./install.sh
 </code></pre>
 
-<p>The installer:</p>
+<p>The installer (<code>src/tools/unix_install.sh</code>):</p>
 
 <ul>
-<li>Copies Cake files into the installation directory</li>
-<li>Creates or updates a file in <code>/etc/profile.d/</code></li>
-<li>Adds Cake to the system <code>PATH</code></li>
+<li>Copies Cake files into <code>/usr/local/cake/&lt;version&gt;</code>
+(use <code>sudo INSTALL_PREFIX=/opt ./install.sh</code> for another prefix)</li>
+<li>Adds that folder to the <code>PATH</code>: <code>/etc/profile.d/cake.sh</code> on Linux,
+<code>/etc/paths.d/cake</code> on macOS</li>
+<li>Creates <code>uninstall.sh</code> in the installation folder</li>
 </ul>
 
-<p>Changes become available in new login sessions.</p>
+<p>Changes become available in new terminals. To remove:</p>
+
+<pre><code class="language-bash">sudo /usr/local/cake/&lt;version&gt;/uninstall.sh
+</code></pre>
 
 <h1 id="toc_13">Running cake</h1>
 
