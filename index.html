@@ -412,8 +412,9 @@ directory as shown above, without installing anything. Installing simply
 copies the compiler and supporting files into a system directory and updates 
 the system <code>PATH</code> so the <code>cake</code> command can be executed from any terminal.</p>
 
-<p>The build (<code>build.c</code>, not in <code>fast</code> mode) creates the installer in <code>src</code>.
-They are also attached to the GitHub releases.</p>
+<p>Download the installer for your system from the
+<a href="https://github.com/thradams/cake/releases">GitHub releases</a>; no source code
+or compiler is needed.</p>
 
 <p>Versions are installed side by side (<code>cake/&lt;version&gt;</code>); the last one
 installed is the one in the <code>PATH</code>.</p>
@@ -435,10 +436,17 @@ listed in <code>src/tools/win_installer.h</code>.</p>
 
 <h2 id="toc_12">Linux / macOS</h2>
 
-<pre><code class="language-bash">tar xzf cake-&lt;version&gt;-linux.tar.gz      # or cake-&lt;version&gt;-macos.tar.gz
+<p>The release has <code>cake-&lt;version&gt;-linux.tar.gz</code> and <code>cake-&lt;version&gt;-macos.tar.gz</code>,
+compressed archives (like a zip) with the binaries and <code>install.sh</code>.</p>
+
+<pre><code class="language-bash">curl -L https://github.com/thradams/cake/releases/download/v&lt;version&gt;/cake-&lt;version&gt;-linux.tar.gz | tar xz
 cd cake-&lt;version&gt;-linux
 sudo ./install.sh
 </code></pre>
+
+<p>(use <code>macos</code> instead of <code>linux</code> on macOS). If the archive was downloaded
+with a browser, extract it with <code>tar xzf cake-&lt;version&gt;-linux.tar.gz</code>
+or with a double click, then run <code>sudo ./install.sh</code> inside the folder.</p>
 
 <p>The installer (<code>src/tools/unix_install.sh</code>):</p>
 
@@ -454,6 +462,17 @@ sudo ./install.sh
 
 <pre><code class="language-bash">sudo /usr/local/cake/&lt;version&gt;/uninstall.sh
 </code></pre>
+
+<p>Notes:</p>
+
+<ul>
+<li>Linux: built on Ubuntu 22.04 (needs glibc 2.35+). <code>cakeide</code> needs the
+X11/Xft libraries (e.g. <code>sudo apt install libxft2</code>).</li>
+<li>macOS: Apple Silicon (arm64) only. The binaries are not signed; if the
+archive was downloaded with a browser, macOS blocks them. Allow with
+<code>xattr -dr com.apple.quarantine cake-&lt;version&gt;-macos</code> before installing
+(not needed when downloaded with <code>curl</code>).</li>
+</ul>
 
 <h1 id="toc_13">Running cake</h1>
 
