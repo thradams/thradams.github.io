@@ -109,16 +109,21 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                     }
                 ],
                 keywords: [
-
-                    //cake extensions
-                    "assert", 
-                    "_Generic", "compile_assert", "static_debug", "assert_state", "override_state",
+                    
                     //C2Y
+                    "_Generic",
+                    "_BitInt",
+                    "_Atomic",
                     "_Countof",
                     "defer",
                     "_Defer",
                     //cake extensions
                     //C23
+                    "assert",
+                    "compile_assert",
+                    "static_debug",
+                    "assert_state",
+                    "override_state",
                     "_Static_assert",
                     "_Assert",
                     "_Bool",
@@ -163,7 +168,7 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                 tokenizer: {
                     root: [
 
-                        [/\b(in|out|_Uninitialized|_Clear|_Owner|_View|_Opt|_Out|_Dtor)\b/, 'keyword.special'],
+                        [/\b(in|out|_Uninitialized|_Clear|_Owner|_View|_Nullable|_Opt|_Out|_Dtor)\b/, 'keyword.special'],
 
                         [/@encoding?R\"(?:([^ ()\\\t]*))\(/, {
                             token: "string.raw.begin",
