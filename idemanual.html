@@ -200,36 +200,39 @@
 <li>
 <a href="#toc_9">3.1 Command line (Output window)</a>
 </li>
+<li>
+<a href="#toc_10">3.2 Find Definition (F12)</a>
+</li>
 </ul>
 </li>
 <li>
-<a href="#toc_10">4. Debugging</a>
+<a href="#toc_11">4. Debugging</a>
 <ul>
 <li>
-<a href="#toc_11">4.1 Backend</a>
+<a href="#toc_12">4.1 Backend</a>
 </li>
 <li>
-<a href="#toc_12">4.2 Breakpoints</a>
+<a href="#toc_13">4.2 Breakpoints</a>
 </li>
 <li>
-<a href="#toc_13">4.3 Running a session</a>
+<a href="#toc_14">4.3 Running a session</a>
 </li>
 <li>
-<a href="#toc_14">4.4 Locals and Call Stack</a>
+<a href="#toc_15">4.4 Locals and Call Stack</a>
 </li>
 <li>
-<a href="#toc_15">4.5 Known limitations (Windows/cdb backend)</a>
+<a href="#toc_16">4.5 Known limitations (Windows/cdb backend)</a>
 </li>
 </ul>
 </li>
 <li>
-<a href="#toc_16">5. Menu Reference</a>
+<a href="#toc_17">5. Menu Reference</a>
 </li>
 <li>
-<a href="#toc_17">6. Keyboard Shortcuts</a>
+<a href="#toc_18">6. Keyboard Shortcuts</a>
 </li>
 <li>
-<a href="#toc_18">7. Troubleshooting</a>
+<a href="#toc_19">7. Troubleshooting</a>
 </li>
 </ul>
 </li>
@@ -275,6 +278,8 @@
 <p>run in <code>$(ProjectDir)</code> picks up <code>$(CakeOutput)</code>, which expands to Cake&#39;s predicted output paths — one per <code>.c</code> file with a project open, or just the active file&#39;s output without one.</p>
 
 <p><strong>Build &gt; Show Generated Code</strong> shows the C89-compatible output Cake produced. <strong>Build &gt; Config File</strong> and <strong>Build &gt; Options...</strong> control compiler flags and the active <code>cakeconf.h</code>.</p>
+
+<p><strong>Project &gt; Report Unused</strong> lists unused <code>static</code> functions, macros, enumerators and external functions of the project in the <strong>Find results</strong> window (compiler option <code>-unused-extern-report</code>).</p>
 
 <h3 id="toc_6">2.4 Global settings vs. project settings</h3>
 
@@ -412,7 +417,7 @@
 <h2 id="toc_8">3. Editor</h2>
 
 <ul>
-<li>Standard editing: Undo/Redo, Cut/Copy/Paste, Find/Replace/Find in Files, Go to Line, Go to Definition (F12).</li>
+<li>Standard editing: Undo/Redo, Cut/Copy/Paste, Find/Replace/Find in Files, Go to Line, Find Definition (F12).</li>
 <li><strong>Edit &gt; Format</strong> (Ctrl+Shift+F) reformats the current file.</li>
 <li><strong>Edit &gt; Word Wrap...</strong> toggles soft wrapping.</li>
 <li><strong>View &gt; Line Numbers</strong> toggles the gutter&#39;s line-number display.</li>
@@ -484,11 +489,15 @@
 
 <p>Double-clicking an Output line opens what it names: a compiler diagnostic (<code>file.c:10:5: ...</code> or <code>file.c(10,5): ...</code>) jumps to that line, and a listing row from <code>dir</code>, <code>ls</code> or <code>git status</code> opens the file — or, for a directory, makes it the <code>cd</code> directory.</p>
 
+<h3 id="toc_10">3.2 Find Definition (F12)</h3>
+
+<p>Shows where the identifier under the caret is defined, in the <strong>Find results</strong> window. It compiles the active file (for a header, also its <code>.c</code>) and the other <code>.c</code> files of the project with the compiler&#39;s <code>-find-definition</code> option. When nothing is found, it falls back to a text search.</p>
+
 <hr>
 
-<h2 id="toc_10">4. Debugging</h2>
+<h2 id="toc_11">4. Debugging</h2>
 
-<h3 id="toc_11">4.1 Backend</h3>
+<h3 id="toc_12">4.1 Backend</h3>
 
 <p>The IDE drives a real console debugger behind the scenes and scrapes its plain-text output — there is no separate install step beyond having the right tool on your machine:</p>
 
@@ -497,11 +506,11 @@
 <li><strong>Linux / macOS:</strong> <code>lldb</code>, invoked as a plain console subprocess (not through Python bindings).</li>
 </ul>
 
-<h3 id="toc_12">4.2 Breakpoints</h3>
+<h3 id="toc_13">4.2 Breakpoints</h3>
 
 <p>Click a line&#39;s gutter (or place the caret on it and press <strong>F9</strong> / Debug &gt; Toggle Breakpoint) to set or clear a breakpoint. Breakpoints are stored per file and persist across debug sessions until explicitly toggled off — they are not cleared automatically when a session ends.</p>
 
-<h3 id="toc_13">4.3 Running a session</h3>
+<h3 id="toc_14">4.3 Running a session</h3>
 
 <ul>
 <li><strong>F5</strong> is dual-purpose, matching Visual Studio&#39;s convention: <strong>Start Debugging</strong> when idle, <strong>Continue</strong> once a session is already stopped at a breakpoint (the two menu items are never enabled at the same time, so F5 always does the right thing).</li>
@@ -512,11 +521,11 @@
 
 <p>The Debug menu&#39;s Continue/Step Over/Step Into items (and their shortcuts) are only enabled while a session is actually stopped at a line; they&#39;re disabled while running and while idle.</p>
 
-<h3 id="toc_14">4.4 Locals and Call Stack</h3>
+<h3 id="toc_15">4.4 Locals and Call Stack</h3>
 
 <p><strong>View &gt; Debug Info</strong> opens the Locals/Call Stack panel, refreshed automatically every time execution stops at a new line.</p>
 
-<h3 id="toc_15">4.5 Known limitations (Windows/cdb backend)</h3>
+<h3 id="toc_16">4.5 Known limitations (Windows/cdb backend)</h3>
 
 <ul>
 <li>A breakpoint on a function&#39;s very first statement can occasionally fail to resolve silently, depending on how the compiler&#39;s line table merges the prologue and first statement — a breakpoint one line earlier (on the function&#39;s opening brace) always works reliably. If a breakpoint doesn&#39;t seem to fire, try moving it one line up.</li>
@@ -525,7 +534,7 @@
 
 <hr>
 
-<h2 id="toc_16">5. Menu Reference</h2>
+<h2 id="toc_17">5. Menu Reference</h2>
 
 <table>
 <thead>
@@ -550,11 +559,11 @@
 </tr>
 <tr>
 <td><strong>Search</strong></td>
-<td>Find..., Replace..., Search Next, Go to line..., Go to Definition, Find in Files...</td>
+<td>Find..., Replace..., Search Next, Go to line..., Find Definition, Find in Files...</td>
 </tr>
 <tr>
 <td><strong>Project</strong></td>
-<td>Add Existing File..., Include Directories..., Options..., Build, Close Project</td>
+<td>Add Existing File..., Include Directories..., Options..., Report Unused, Close Project</td>
 </tr>
 <tr>
 <td><strong>Build</strong></td>
@@ -581,7 +590,7 @@
 
 <hr>
 
-<h2 id="toc_17">6. Keyboard Shortcuts</h2>
+<h2 id="toc_18">6. Keyboard Shortcuts</h2>
 
 <table>
 <thead>
@@ -638,7 +647,7 @@
 </tr>
 <tr>
 <td>F12</td>
-<td>Go to Definition</td>
+<td>Find Definition</td>
 </tr>
 <tr>
 <td>Ctrl+F</td>
@@ -685,7 +694,7 @@
 
 <hr>
 
-<h2 id="toc_18">7. Troubleshooting</h2>
+<h2 id="toc_19">7. Troubleshooting</h2>
 
 <p><strong>&quot;Could not start debugging: ... cdb itself failing to launch&quot;</strong> — <code>cdb.exe</code> isn&#39;t installed or isn&#39;t on PATH. Install the Windows SDK&#39;s &quot;Debugging Tools for Windows&quot; component (see §4.1).</p>
 
