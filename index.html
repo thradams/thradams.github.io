@@ -355,6 +355,20 @@ fatal error: X11/Xft/Xft.h: No such file or directory</p>
 
 <p>These headers are used by the IDE.</p>
 
+<p>If you encounter an error such as:
+fatal error: wayland-client.h: No such file or directory</p>
+
+<p>Ubuntu / Debian / Raspberry Pi OS: <code>sudo apt install libwayland-dev libxkbcommon-dev libfreetype-dev libfontconfig-dev</code></p>
+
+<p>Fedora: <code>sudo dnf install wayland-devel libxkbcommon-devel freetype-devel fontconfig-devel</code></p>
+
+<p>Arch Linux: <code>sudo pacman -S wayland libxkbcommon freetype2 fontconfig</code></p>
+
+<p>openSUSE: <code>sudo zypper install wayland-devel libxkbcommon-devel freetype2-devel fontconfig-devel</code></p>
+
+<p>These headers are used by the Wayland IDE backend (<code>./build wayland</code>, or the
+default in a Wayland session when these libraries are installed).</p>
+
 <h2 id="toc_8">TCC on Windows/Linux build instructions</h2>
 
 <p>With <a href="https://bellard.org/tcc/">tcc</a> on the PATH, go to the <em>src</em> directory and type:</p>
@@ -501,22 +515,9 @@ archive was downloaded with a browser, macOS blocks them. Allow with
 
 <p>The Cake IDE was developed with the help of AI tools. It has now been adopted as
 part of the Cake project and will be maintained alongside the rest of the
-codebase. Over time, the IDE code will be reviewed, refined, and gradually
-humanized as the project evolves.</p>
+codebase. </p>
 
-<p>The IDE works in macOS, Windows and Linux. Its purpose is to make Cake easier
-to use: open a file or a project, press Build, and the whole pipeline — Cake&#39;s
-C89 output, the external compiler, the debugger — is set up and driven from one
-place, with no command lines to remember. It is very useful to visualize and
-remove warnings: Cake&#39;s diagnostics show up in the Output window and jump
-straight to the offending line.</p>
-
-<p>It is also how Cake itself is developed and debugged. The <code>src/cakeprj.cakeproj</code>
-project builds the compiler with the same process any other project uses: Cake
-translates the sources to C89, an External Tool (gcc, clang, tcc or cl) links the
-generated code, and the built-in debugger (lldb / cdb) runs the result. Opening
-that project is the quickest way to step through the compiler while it compiles
-a sample.</p>
+<p>The IDE works in macOS, Windows and Linux / Raspberry Pi.</p>
 
 <p><img src="cakeide.png" alt="Cake IDE"></p>
 
