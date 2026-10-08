@@ -345,7 +345,7 @@ automatic documentation and more.</p>
 <p>If you encounter an error such as:
 fatal error: X11/Xft/Xft.h: No such file or directory</p>
 
-<p>Ubuntu / Debian:  <code>sudo apt install libx11-dev libxft-dev</code></p>
+<p>Ubuntu / Debian / Raspberry Pi OS:  <code>sudo apt install libx11-dev libxft-dev</code></p>
 
 <p>Fedora: <code>sudo dnf install libX11-devel libXft-devel</code></p>
 
@@ -355,6 +355,20 @@ fatal error: X11/Xft/Xft.h: No such file or directory</p>
 
 <p>These headers are used by the IDE.</p>
 
+<p>If you encounter an error such as:
+fatal error: wayland-client.h: No such file or directory</p>
+
+<p>Ubuntu / Debian / Raspberry Pi OS: <code>sudo apt install libwayland-dev libxkbcommon-dev libfreetype-dev libfontconfig-dev</code></p>
+
+<p>Fedora: <code>sudo dnf install wayland-devel libxkbcommon-devel freetype-devel fontconfig-devel</code></p>
+
+<p>Arch Linux: <code>sudo pacman -S wayland libxkbcommon freetype2 fontconfig</code></p>
+
+<p>openSUSE: <code>sudo zypper install wayland-devel libxkbcommon-devel freetype2-devel fontconfig-devel</code></p>
+
+<p>These headers are used by the Wayland IDE backend (<code>./build wayland</code>, or the
+default in a Wayland session when these libraries are installed).</p>
+
 <h2 id="toc_8">TCC on Windows/Linux build instructions</h2>
 
 <p>With <a href="https://bellard.org/tcc/">tcc</a> on the PATH, go to the <em>src</em> directory and type:</p>
@@ -363,7 +377,7 @@ fatal error: X11/Xft/Xft.h: No such file or directory</p>
 </code></pre>
 
 <p>On Windows, <code>build_tcc.bat</code> does the same. A Cake built by tcc uses the matching
-tcc target (<code>tcc_win_x64</code>, <code>tcc_linux_x64</code> or <code>tcc_macos_arm64</code>) and the tcc headers by default. Tested with tcc 0.9.28 on Windows
+tcc target (<code>tcc-win-x64</code>, <code>tcc-linux-x64</code> or <code>tcc-macos-arm64</code>) and the tcc headers by default. Tested with tcc 0.9.28 on Windows
 and 0.9.27 on Linux.</p>
 
 <h2 id="toc_9">Build options</h2>
@@ -447,16 +461,17 @@ listed in <code>src/tools/win_installer.h</code>.</p>
 
 <h2 id="toc_13">Linux / macOS</h2>
 
-<p>The release has <code>cake-&lt;version&gt;-linux.tar.gz</code> and <code>cake-&lt;version&gt;-macos.tar.gz</code>,
+<p>The release has <code>cake-&lt;version&gt;-linux-x64.tar.gz</code>, <code>cake-&lt;version&gt;-linux-arm64.tar.gz</code>
+(e.g. Raspberry Pi, 64-bit OS) and <code>cake-&lt;version&gt;-macos.tar.gz</code>,
 compressed archives (like a zip) with the binaries and <code>install.sh</code>.</p>
 
-<pre><code class="language-bash">curl -L https://github.com/thradams/cake/releases/download/v&lt;version&gt;/cake-&lt;version&gt;-linux.tar.gz | tar xz
-cd cake-&lt;version&gt;-linux
+<pre><code class="language-bash">curl -L https://github.com/thradams/cake/releases/download/v&lt;version&gt;/cake-&lt;version&gt;-linux-x64.tar.gz | tar xz
+cd cake-&lt;version&gt;-linux-x64
 sudo ./install.sh
 </code></pre>
 
-<p>(use <code>macos</code> instead of <code>linux</code> on macOS). If the archive was downloaded
-with a browser, extract it with <code>tar xzf cake-&lt;version&gt;-linux.tar.gz</code>
+<p>(use <code>linux-arm64</code> on a Raspberry Pi, <code>macos</code> on macOS). If the archive was downloaded
+with a browser, extract it with <code>tar xzf cake-&lt;version&gt;-linux-x64.tar.gz</code>
 or with a double click, then run <code>sudo ./install.sh</code> inside the folder.</p>
 
 <p>The installer (<code>src/tools/unix_install.sh</code>):</p>
@@ -478,7 +493,11 @@ or with a double click, then run <code>sudo ./install.sh</code> inside the folde
 
 <ul>
 <li>Linux: built on Ubuntu 22.04 (needs glibc 2.35+). <code>cakeide</code> needs the
-X11/Xft libraries (e.g. <code>sudo apt install libxft2</code>).</li>
+X11/Xft libraries (e.g. <code>sudo apt install libxft2</code>, also on Raspberry Pi OS).</li>
+<li>Raspberry Pi: <code>cakeide</code> is an X11 program. Under a Wayland session (the
+default on Raspberry Pi OS) it runs through XWayland and is very slow.
+Switch to an X11 session: <code>sudo raspi-config</code>, then
+Advanced Options &gt; Wayland &gt; X11, and reboot.</li>
 <li>macOS: Apple Silicon (arm64) only. The binaries are not signed; if the
 archive was downloaded with a browser, macOS blocks them. Allow with
 <code>xattr -dr com.apple.quarantine cake-&lt;version&gt;-macos</code> before installing
@@ -490,30 +509,15 @@ archive was downloaded with a browser, macOS blocks them. Allow with
 <pre><code>cake source.c
 </code></pre>
 
-<p>This writes the C89 output to <code>./&lt;target&gt;/source.c</code>, where <code>&lt;target&gt;</code> is the platform Cake was built for — for example <code>./macos_arm64/source.c</code> or <code>./x64_msvc/source.c</code>. <code>-target=&lt;name&gt;</code> selects another platform; see the <a href="manual.html">Manual</a> for the full option list.</p>
+<p>This writes the C89 output to <code>./&lt;target&gt;/source.c</code>, where <code>&lt;target&gt;</code> is the platform Cake was built for — for example <code>./clang-macos-arm64/source.c</code> or <code>./msvc-win-x64/source.c</code>. <code>-target=&lt;name&gt;</code> selects another platform; see the <a href="manual.html">Manual</a> for the full option list.</p>
 
 <h1 id="toc_15">IDE</h1>
 
 <p>The Cake IDE was developed with the help of AI tools. It has now been adopted as
 part of the Cake project and will be maintained alongside the rest of the
-codebase. Over time, the IDE code will be reviewed, refined, and gradually
-humanized as the project evolves.</p>
+codebase. </p>
 
-<p>The IDE works in macOS, Windows and Linux. Its purpose is to make Cake easier
-to use: open a file or a project, press Build, and the whole pipeline — Cake&#39;s
-C89 output, the external compiler, the debugger — is set up and driven from one
-place, with no command lines to remember. It is very useful to visualize and
-remove warnings: Cake&#39;s diagnostics show up in the Output window and jump
-straight to the offending line.</p>
-
-<p>It is also how Cake itself is developed and debugged. The <code>src/cakeprj.cakeproj</code>
-project builds the compiler with the same process any other project uses: Cake
-translates the sources to C89, an External Tool (gcc, clang, tcc or cl) links the
-generated code, and the built-in debugger (lldb / cdb) runs the result. Opening
-that project is the quickest way to step through the compiler while it compiles
-a sample.</p>
-
-<p>See <a href="idemanual.html">IDE Manual</a></p>
+<p>The IDE works in macOS, Windows and Linux / Raspberry Pi.</p>
 
 <p><img src="cakeide.png" alt="Cake IDE"></p>
 
