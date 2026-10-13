@@ -113,9 +113,8 @@ define("vs/basic-languages/cpp/cpp", ["require", "require"], (require) => {
                     //C2Y
                     "_Generic",
                     "_BitInt",
-                    "_Atomic",
                     "_Countof",
-                    "defer", 
+                    "defer",
                     "_Defer",
                     //cake extensions
                     //C23
