@@ -242,7 +242,7 @@
 
 <h3 id="toc_2">1. <code>_Out</code></h3>
 
-<p><code>_Out</code>: the function receives uninitialized storage and must initialize every member.</p>
+<p><code>_Out</code>: the function writes the object; it does not read it.</p>
 
 <!-- runnable -->
 
@@ -276,6 +276,22 @@ void point_init(_Out struct point* p)
 {
     p-&gt;x = 0;
 } //warning 71 _Out parameter &#39;p-&gt;y&#39; is not initialized at exit
+</code></pre>
+
+<p>Reading the input is reported:</p>
+
+<!-- runnable -->
+
+<pre><code class="language-c">#pragma safety enable
+
+struct point { int x; int y; };
+
+void point_init(_Out struct point* p)
+{
+    int i = p-&gt;x; //warning 30 assigning a possibly uninitialized object &#39;p-&gt;x&#39;
+    p-&gt;x = 0;
+    p-&gt;y = 0;
+}
 </code></pre>
 
 <h3 id="toc_3">2. <code>_Opt</code></h3>
