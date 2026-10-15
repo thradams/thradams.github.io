@@ -273,7 +273,7 @@ sample["C2Y"]["literal-function-async-i"] =
 
 sample["C2Y"]["literal-function-async-ii"] =
 `
-/*\n   Pattern:\n   do this -> then that -> then that ....\n*/\n\n#include <stdlib.h>\n#include <stdio.h>\n\nvoid login_async(void * data, void callback(void* data, int id))\n{\n   callback(data, 1);\n}\n\nvoid get_data_async(void * data, void callback(const char* email, void * data))\n{\n  callback(data, \"your data...\");\n}\n\nint main()\n{\n\tstruct capture { int id; }* capture = calloc(1, sizeof * capture);\n    login_async(capture, (static void (int id, void * capture))\n    {\n        struct capture * cap1 = capture;\n\n        printf(\"login completed. id=%d\\n\", id);\n        cap1->id = id;\n        get_data_async(cap1, (static void (const char* email, void * data))\n        {\n\t\t    struct capture * cap2 = data;\n            printf(\"your data='%s'  from id=%d\\n\", email, cap2->id);\n            free(cap2);\n        });\n    });\n}\n
+/*\n   Pattern:\n   do this -> then that -> then that ....\n*/\n\n#include <stdlib.h>\n#include <stdio.h>\n\nvoid login_async(void * data, void callback(void* data, int id))\n{\n   callback(data, 1);\n}\n\nvoid get_data_async(void * data, void callback(const char* email, void * data))\n{\n  callback(\"your data...\", data);\n}\n\nint main()\n{\n\tstruct capture { int id; }* capture = calloc(1, sizeof * capture);\n    login_async(capture, (static void (void * capture, int id))\n    {\n        struct capture * cap1 = capture;\n\n        printf(\"login completed. id=%d\\n\", id);\n        cap1->id = id;\n        get_data_async(cap1, (static void (const char* email, void * data))\n        {\n\t\t    struct capture * cap2 = data;\n            printf(\"your data='%s'  from id=%d\\n\", email, cap2->id);\n            free(cap2);\n        });\n    });\n}\n
 `;
 
 sample["C2Y"]["literal-function-scopes"] =
@@ -320,7 +320,7 @@ sample["C89"] = [];
 
 sample["C89"]["bit-fields"] =
 `
-struct X {\n    unsigned char a : 3;\n    unsigned int b : 9;\n};\n\n#ifdef _MSC_VER\nstatic_assert(sizeof(struct X) == 8);\nstatic_assert(alignof(struct X) == 4);\n#else\nstatic_assert(sizeof(struct X) == 4);\nstatic_assert(alignof(struct X) == 4);\n#endif\n\nint main() {}\n
+/*\n  Bit-fields\n\n  By default cake keeps bit-fields in the generated code.\n\n  With -no-bitfields, cake replaces them with plain integer members\n  and does every read and write with shifts and masks. The layout\n  (size, alignment, bit positions) is the one of the target, so the\n  generated code does not depend on how the backend compiler lays out\n  bit-fields.\n\n  For this sample, -no-bitfields -target=x86_64-linux-gnu-gcc gives:\n\n    struct X {\n        unsigned int __bits0;\n    };\n\n    x.a = 5;    -> (x.__bits0 = (x.__bits0 & 0xfffffff8U) | 0x5U);\n    x.b = 300;  -> (x.__bits0 = (x.__bits0 & 0xfffff007U) | 0x960U);\n    x.a + x.b   -> ((int)(x.__bits0 & 0x7U)) + ((int)((x.__bits0 >> 3) & 0x1ffU))\n*/\n\nstruct X {\n    unsigned char a : 3;\n    unsigned int b : 9;\n};\n\n#ifdef _MSC_VER\nstatic_assert(sizeof(struct X) == 8);\nstatic_assert(alignof(struct X) == 4);\n#else\nstatic_assert(sizeof(struct X) == 4);\nstatic_assert(alignof(struct X) == 4);\n#endif\n\nint main()\n{\n    struct X x = { 0 };\n    x.a = 5;\n    x.b = 300;\n    return x.a + x.b;\n}\n
 `;
 
 sample["C89"]["enuns"] =
@@ -670,7 +670,7 @@ sample["static-analysis"]["moving-parts-of-view"] =
 
 sample["static-analysis"]["mtx-t"] =
 `
-#pragma safety enable\n\nenum {\n    mtx_plain ,\n    mtx_timed,\n    mtx_plain,\n    mtx_timed,\n};\n\nenum {\n\n    thrd_success , /* unspecified */\n    thrd_nomem , /* unspecified */\n    thrd_timedout , /* unspecified */\n    thrd_busy , /* unspecified */\n    thrd_error /* unspecified */\n};\n\ntypedef struct { _Owner int dummy; } mtx_t;\nint mtx_init(_Out mtx_t *mtx, int type);\nvoid mtx_destroy( _Dtor mtx_t * mutex );\n\nint main()\n{\n    mtx_t mtx;\n    if (mtx_init(&mtx, mtx_plain) != thrd_success)\n    {\n        return 1;\n    }\n    mtx_destroy(&mtx);\n}\n
+#pragma safety enable\n\nenum {\n    mtx_plain,\n    mtx_recursive,\n    mtx_timed,\n};\n\nenum {\n\n    thrd_success , /* unspecified */\n    thrd_nomem , /* unspecified */\n    thrd_timedout , /* unspecified */\n    thrd_busy , /* unspecified */\n    thrd_error /* unspecified */\n};\n\ntypedef struct { _Owner int dummy; } mtx_t;\nint mtx_init(_Out mtx_t *mtx, int type);\nvoid mtx_destroy( _Dtor mtx_t * mutex );\n\nint main()\n{\n    mtx_t mtx;\n    if (mtx_init(&mtx, mtx_plain) != thrd_success)\n    {\n        return 1;\n    }\n    mtx_destroy(&mtx);\n}\n
 `;
 
 sample["static-analysis"]["override-state-realloc"] =
