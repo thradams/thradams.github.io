@@ -610,7 +610,7 @@ sample["static-analysis"] = [];
 
 sample["static-analysis"]["assert-state-static-debug"] =
 `
-#pragma safety enable\n\nvoid* _Owner _Opt _Uninitialized malloc(unsigned long size);\nvoid free(void* _Owner ptr);\n\nint main() {\n   void * _Owner  _Opt p = malloc(1);\n   if (p)\n   {\n     free(p);\n   }\n   static_debug(p);\n}\n
+#pragma safety enable\n\n_Uninitialized void* _Owner _Opt malloc(unsigned long size);\nvoid free(void* _Owner ptr);\n\nint main() {\n   void * _Owner  _Opt p = malloc(1);\n   if (p)\n   {\n     free(p);\n   }\n   static_debug(p);\n}\n
 `;
 
 sample["static-analysis"]["checking-double-free"] =
@@ -650,7 +650,7 @@ sample["static-analysis"]["implementing-a-destructor-ii"] =
 
 sample["static-analysis"]["implementing-delete"] =
 `
-#pragma safety enable \n\nvoid * _Opt _Owner _Clear calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\n\nstruct X {\n    char * _Owner _Opt text;\n};\n\nvoid x_delete(struct X * _Owner _Opt p)\n{\n    if (p)\n    {\n        free(p->text);\n        free(p);\n    }\n}\n\nint main() {\n    struct X * _Owner _Opt p = calloc(1, sizeof * p);\n    if (p){\n        p->text = strdup(\"a\");\n    }\n    x_delete(p);\n\n}\n
+#pragma safety enable \n\n_Clear void * _Opt _Owner calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\n\nstruct X {\n    char * _Owner _Opt text;\n};\n\nvoid x_delete(struct X * _Owner _Opt p)\n{\n    if (p)\n    {\n        free(p->text);\n        free(p);\n    }\n}\n\nint main() {\n    struct X * _Owner _Opt p = calloc(1, sizeof * p);\n    if (p){\n        p->text = strdup(\"a\");\n    }\n    x_delete(p);\n\n}\n
 `;
 
 sample["static-analysis"]["linked-list"] =
@@ -660,12 +660,12 @@ sample["static-analysis"]["linked-list"] =
 
 sample["static-analysis"]["malloc-free"] =
 `
-#pragma safety enable\n\nvoid * _Opt _Owner _Clear malloc(unsigned long s);\nvoid free(void * _Opt _Owner p);\n\nint main() {\n    void * _Owner _Opt p = malloc(1);\n    free(p);\n}\n
+#pragma safety enable\n\n_Clear void * _Opt _Owner malloc(unsigned long s);\nvoid free(void * _Opt _Owner p);\n\nint main() {\n    void * _Owner _Opt p = malloc(1);\n    free(p);\n}\n
 `;
 
 sample["static-analysis"]["moving-parts-of-view"] =
 `
-#pragma safety enable\n\nvoid * _Opt _Owner _Clear calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\n\nstruct X {\n    char * _Owner name;\n};\n\nstruct Y {\n    struct X x;\n    struct X * px;\n};\n\nvoid x_destroy(_Dtor struct X * p)\n{\n    free(p->name);\n}\n\nvoid f(struct Y * p)\n{\n    x_destroy(&p->x);\n    x_destroy(p->px);\n}\n\nint main() {\n    struct Y y = {};\n    y.x.name = strdup(\"a\");\n    f(&y);\n    free(y.x.name);\n}\n
+#pragma safety enable\n\n_Clear void * _Opt _Owner calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\n\nstruct X {\n    char * _Owner name;\n};\n\nstruct Y {\n    struct X x;\n    struct X * px;\n};\n\nvoid x_destroy(_Dtor struct X * p)\n{\n    free(p->name);\n}\n\nvoid f(struct Y * p)\n{\n    x_destroy(&p->x);\n    x_destroy(p->px);\n}\n\nint main() {\n    struct Y y = {};\n    y.x.name = strdup(\"a\");\n    f(&y);\n    free(y.x.name);\n}\n
 `;
 
 sample["static-analysis"]["mtx-t"] =
@@ -675,7 +675,7 @@ sample["static-analysis"]["mtx-t"] =
 
 sample["static-analysis"]["override-state-realloc"] =
 `
-#pragma safety enable\n\nvoid* _Owner _Opt realloc(void* _Opt ptr, unsigned size);\nvoid* _Owner _Opt _Uninitialized malloc(unsigned long size);\nvoid free(void* _Owner _Opt ptr);\n\nvoid f()\n{\n    void * _Owner _Opt p = malloc(1);\n    void * _Owner _Opt p2 = realloc(p, 2);\n    if (p2 != 0)\n    {\n        p = p2; //lint26 (semantic of realloc)\n    }\n    free(p);\n}\n
+#pragma safety enable\n\nvoid* _Owner _Opt realloc(void* _Opt ptr, unsigned size);\n_Uninitialized void* _Owner _Opt malloc(unsigned long size);\nvoid free(void* _Owner _Opt ptr);\n\nvoid f()\n{\n    void * _Owner _Opt p = malloc(1);\n    void * _Owner _Opt p2 = realloc(p, 2);\n    if (p2 != 0)\n    {\n        p = p2; //lint26 (semantic of realloc)\n    }\n    free(p);\n}\n
 `;
 
 sample["static-analysis"]["owner-assignment"] =
@@ -695,7 +695,7 @@ _Owner int socket();\nvoid close(_Owner int fd);\n\nint main()\n{\n    _Owner in
 
 sample["static-analysis"]["takes-ownership"] =
 `
-#pragma safety enable\n\nvoid * _Opt _Owner _Clear calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\nvoid printf(char char* fmt, ...);\n\nvoid takes_ownership(char * _Owner _Opt some_string)\n{\n    if (some_string)\n    {\n        printf(\"%s\", some_string);\n        free(some_string);\n    }\n}\n\nint main()\n{\n    _Opt _Owner auto s = strdup(\"hello\");\n    takes_ownership(s /*moved here*/ );\n}\n
+#pragma safety enable\n\n_Clear void * _Opt _Owner calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\nvoid printf(char char* fmt, ...);\n\nvoid takes_ownership(char * _Owner _Opt some_string)\n{\n    if (some_string)\n    {\n        printf(\"%s\", some_string);\n        free(some_string);\n    }\n}\n\nint main()\n{\n    _Opt _Owner auto s = strdup(\"hello\");\n    takes_ownership(s /*moved here*/ );\n}\n
 `;
 
 sample["static-analysis"]["use-after-free-via-member-pointer"] =
@@ -705,7 +705,7 @@ sample["static-analysis"]["use-after-free-via-member-pointer"] =
 
 sample["static-analysis"]["using-moved-object"] =
 `
-#pragma safety enable\n\nvoid * _Opt _Owner _Clear calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\nvoid printf(char char* fmt, ...);\n\nstruct user\n{\n    int id;\n    char* _Owner _Opt name;\n};\n\nvoid set_id(struct user* p, int id){}\n\nint main()\n{\n    _Opt struct user user = {};\n    user.name = strdup(\"a\");\n    char* _Owner _Opt name = user.name;\n    free(name);\n    set_id(&user, 1); //warning: object 'user.name' was moved  \n}\n
+#pragma safety enable\n\n_Clear void * _Opt _Owner calloc(unsigned long n, unsigned long s);\nchar * _Opt _Owner strdup(const char* s);\nvoid free(void * _Opt _Owner p);\nvoid printf(char char* fmt, ...);\n\nstruct user\n{\n    int id;\n    char* _Owner _Opt name;\n};\n\nvoid set_id(struct user* p, int id){}\n\nint main()\n{\n    _Opt struct user user = {};\n    user.name = strdup(\"a\");\n    char* _Owner _Opt name = user.name;\n    free(name);\n    set_id(&user, 1); //warning: object 'user.name' was moved  \n}\n
 `;
 
 sample["static-analysis"]["view-qualifier"] =
