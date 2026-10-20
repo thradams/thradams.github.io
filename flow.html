@@ -281,7 +281,7 @@
 <a href="#toc_33">6.2 Contracts That Are Not Written</a>
 </li>
 <li>
-<a href="#toc_34">6.3 <code>const</code> Is Not Deep Yet</a>
+<a href="#toc_34">6.3 What the Analysis Assumes About <code>const</code></a>
 </li>
 <li>
 <a href="#toc_35">6.4 Functions That Are Too Large</a>
@@ -341,6 +341,9 @@
 </li>
 <li>
 <a href="#toc_53">A14. Flow analysis</a>
+</li>
+<li>
+<a href="#toc_54">A15. Compatibility of annotated types</a>
 </li>
 </ul>
 </li>
@@ -635,7 +638,7 @@ void f(struct person* p)
 }
 </code></pre>
 
-<p>With <code>void update(const struct person* p)</code> the test would still hold.</p>
+<p>With <code>void update(const struct person* p)</code> the test would still hold. The analysis assumes that nothing reachable from <code>*p</code> changes (Section 6.3).</p>
 
 <p>Because of this, <code>const</code> improves the static analysis: the caller keeps what it knew. That is why the implementation of a function is warned when a pointer parameter could be <code>const</code>:</p>
 
@@ -826,7 +829,7 @@ void h(struct X* p)
 }
 </code></pre>
 
-<p>A <code>const</code> pointer promises more: nothing reachable from <code>*p</code> changes, so the caller may keep using what it knew before the call.</p>
+<p>A <code>const</code> pointer promises more: nothing reachable from <code>*p</code> changes, so the caller may keep using what it knew before the call (Section 6.3).</p>
 
 <h3 id="toc_21">4.2 Output Parameters: <code>_Out</code></h3>
 
@@ -1162,9 +1165,11 @@ int f(void)
 
 <p><code>realloc</code> and <code>id</code> are two examples of a larger need. The annotations describe a fixed set of contracts, and more of them are still needed, or a more general way to write a contract.</p>
 
-<h3 id="toc_34">6.3 <code>const</code> Is Not Deep Yet</h3>
+<h3 id="toc_34">6.3 What the Analysis Assumes About <code>const</code></h3>
 
-<p>A <code>const struct X* p</code> promises that nothing reachable from <code>*p</code> is written. Callers rely on that promise (Section 4.1), but the implementation is only checked for writes to <code>*p</code> itself, not to the objects reached through its members.</p>
+<p>In C a <code>const struct X* p</code> protects only <code>*p</code>: <code>p-&gt;m</code> cannot be written, but <code>p-&gt;m-&gt;x</code> can. The analysis assumes more: after a call through <code>const</code>, the caller keeps what it knew about everything reachable from <code>*p</code>.</p>
+
+<p>Where a function&#39;s implementation does not agree with that, warning 120 reports it: writing <code>p-&gt;m-&gt;x</code> (or <code>++</code>, <code>+=</code>...) through a <code>const</code> pointer parameter <code>p</code>. Calls are not checked, they assume the same. An explicit cast is taken as intended.</p>
 
 <h3 id="toc_35">6.4 Functions That Are Too Large</h3>
 
@@ -1248,7 +1253,7 @@ void f(int n, int* p)
 <li>A2.1 The implementation assumes <code>p</code> is not null, <code>*p</code> is valid, and <code>p</code> does not own <code>*p</code>.</li>
 <li>A2.2 At every exit <code>*p</code> is valid.</li>
 <li>A2.3 The caller must pass a non-null pointer to a valid object. After the call it must assume every object reachable from <code>*p</code> may have changed, and that its pointers into them are no longer valid.</li>
-<li>A2.4 With <code>const</code>, nothing reachable from <code>*p</code> is written or moved, and what the caller knew still holds.</li>
+<li>A2.4 With <code>const</code>, the analysis assumes that nothing reachable from <code>*p</code> is written or moved, so what the caller knew still holds (6.3). C protects only <code>*p</code>, so the implementation is checked for writes that break this assumption (warning 120).</li>
 </ul>
 
 <h3 id="toc_42">A3. Results: <code>struct X* F(void)</code></h3>
@@ -1348,4 +1353,79 @@ void f(int n, int* p)
 <li>A14.8 A fact supported by several paths is reported once.</li>
 <li>A14.9 An implementation that stops analysing a function must report warning 97 once and nothing else in that function.</li>
 </ul>
+
+<h3 id="toc_54">A15. Compatibility of annotated types</h3>
+
+<p><code>_Opt</code> is checked in two places. The flow analysis checks the value (whether it can be null at that point, branch by branch). The type checks the pointed objects, because writes through a pointer happen later, where the flow analysis does not see them.</p>
+
+<ul>
+<li>A15.1 The value copied by an assignment, argument or return (the top level) may drop <code>_Opt</code> (<code>T* _Opt</code> to <code>T*</code>); whether it is null there is checked by the flow analysis (A4.1). It may drop <code>_Owner</code> (A5.3), but it cannot gain <code>_Owner</code>.</li>
+<li>A15.2 Through a pointer, the pointed object is shared, so its annotations must allow every access the destination can make:
+
+<ul>
+<li>when the destination pointee is mutable, <code>_Opt</code> and <code>_Owner</code> must match exactly at every level;</li>
+<li>when the destination pointee is <code>const</code> (read only, as in <code>int * _Opt const *</code>), it may add <code>_Opt</code> but not remove it;</li>
+<li>when the destination pointee is <code>_Out</code> (write only), it may remove <code>_Opt</code> but not add it: <code>char * _Out _Opt *</code> cannot receive <code>&amp;s</code> when <code>s</code> is <code>char *</code>, because null may be stored in <code>s</code> (issue #523).</li>
+</ul></li>
+<li>A15.3 A function pointer may point to a function that accepts more and promises more: each parameter of the function may add <code>_Opt</code> (<code>void (*pf)(int *p)</code> may point to <code>void f(int * _Opt p)</code>, but not the opposite), and its result may remove <code>_Opt</code>. <code>_Owner</code> on parameters and results must match exactly.</li>
+<li>A15.4 A <code>[[nodiscard]]</code> function pointer may point to a function that is not <code>[[nodiscard]]</code>; a pointer without <code>[[nodiscard]]</code> cannot point to a <code>[[nodiscard]]</code> function.</li>
+<li>A15.5 <code>[[noreturn]]</code>/<code>_Noreturn</code> must match exactly.</li>
+<li>A15.6 These rules apply only when the extensions are on (<code>#pragma safety enable</code>); otherwise compatibility is the one in C23 6.2.7.</li>
+<li>A15.7 In <code>c ? a : b</code> the <code>_Opt</code> of the result value is decided by the flow analysis, per branch (<code>p ? p : 0</code> may be null, <code>p ? p : q</code> is not), and <code>_Owner</code> stays in the type. Below the value, <code>a</code> and <code>b</code> point to shared objects, so <code>_Opt</code> and <code>_Owner</code> must match at every pointee level: <code>c ? (int * _Opt *) pp1 : (int **) pp2</code> is incompatible.</li>
+</ul>
+
+<p>Examples. Each line says what could go wrong if it were accepted.</p>
+
+<pre><code class="language-c">#pragma safety enable
+
+void f_ptr(int * p);
+void f_opt(int * _Opt p);
+int * _Opt g_opt(void);
+int * g_nonnull(void);
+void get(char * _Out _Owner _Opt * p);
+void free(void * _Owner _Opt p);
+
+void examples(int * p, int * _Opt q, int * _Owner o, int c)
+{
+    /* A15.1 the copied value */
+    int * a = q;                 /* flow: warning 35, q may be null here           */
+    int * b = o;                 /* ok: b is a view of what o owns                 */
+
+    /* A15.2 through a pointer: *pp is shared with the source */
+    int * _Opt * pp1 = &amp;p;       /* error: *pp1 = NULL would make p null           */
+    int ** pp2 = &amp;q;             /* error: *pp2 is read as non-null, q may be null */
+    int * _Opt const * pp3 = &amp;p; /* ok: read only, a non-null p is a valid _Opt    */
+    int * const * pp4 = &amp;q;      /* error: read as non-null, q may be null         */
+
+    char * _Owner s;
+    get(&amp;s);                     /* error: get may store null in s                 */
+    free(s);
+
+    /* A15.3 function pointers: calls through pf go to the function */
+    void (*pf1)(int * p) = f_opt;      /* ok: f_opt accepts more than pf1 passes */
+    void (*pf2)(int * _Opt p) = f_ptr; /* error: pf2(NULL) would reach f_ptr     */
+    int * _Opt (*pg1)(void) = g_nonnull; /* ok: g_nonnull promises more          */
+    int * (*pg2)(void) = g_opt;          /* error: g_opt may return null         */
+
+    /* A15.7 ?: the value is decided by flow, branch by branch */
+    int * r1 = q ? q : p;        /* ok: q is not null in the first branch          */
+    int * r2 = q ? q : 0;        /* flow: warning 35, the second branch is null    */
+    int * _Opt * r3 = c ? pp1 : &amp;p; /* error: int * _Opt * and int ** share *r3    */
+
+    free(o);
+}
+</code></pre>
+
+<pre><code class="language-c">#pragma safety enable
+
+[[nodiscard]] int h_nd(void);
+int h(void);
+
+void attributes(void)
+{
+    /* A15.4 the caller through the pointer must keep every promise of the function */
+    [[nodiscard]] int (*pn1)(void) = h; /* ok: the result is used, h does not care */
+    int (*pn2)(void) = h_nd;            /* error: pn2() would discard h_nd&#39;s result */
+}
+</code></pre>
 </article></body></html>
