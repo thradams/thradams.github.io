@@ -2197,7 +2197,7 @@ struct X { struct Y * p; };
 
 void f(const struct X * x)
 {
-    x-&gt;p-&gt;value = 1; //warning 120: &#39;x-&gt;p-&gt;value&#39; is modified, but &#39;x&#39; is a const parameter: callers assume nothing reachable from it changes
+    x-&gt;p-&gt;value = 1; //warning 120: &#39;x-&gt;p-&gt;value&#39; is modified, but &#39;x&#39; is a const parameter: callers may assume nothing reachable from it is changed
 }
 </code></pre>
 
