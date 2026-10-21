@@ -723,6 +723,27 @@ void f(struct X* _Owner p)
 }
 </code></pre>
 
+<p>After a move between owners, the source can still be used to read the object. A move only changes who must release the object, not whether it is alive. When the move is visible in the same function, the analysis knows the object is still alive and accepts the use. When the owner is moved into a function, the analysis cannot see what the function did with it, so it assumes the lifetime may have ended:</p>
+
+<!-- runnable -->
+
+<pre><code class="language-c">#pragma safety enable
+
+void destroy(char* _Owner p);
+char* _Owner _Opt strdup(const char* s);
+int puts(const char* s);
+
+void f(void)
+{
+    char* _Owner _Opt s1 = strdup(&quot;hello&quot;);
+    if (s1 == 0) return;
+    char* _Owner s2 = s1;
+    puts(s1);    /* ok, the object is alive */
+    destroy(s2);
+    puts(s1);    /* warning 31 lifetime of &#39;*s1&#39; has ended */
+}
+</code></pre>
+
 <h3 id="toc_16">3.3 Owner Members</h3>
 
 <p>A struct with an <code>_Owner</code> member owns what that member points to. Overwriting the member without releasing it first loses the object:</p>
@@ -1169,7 +1190,7 @@ int f(void)
 
 <p>In C a <code>const struct X* p</code> protects only <code>*p</code>: <code>p-&gt;m</code> cannot be written, but <code>p-&gt;m-&gt;x</code> can. The analysis assumes more: after a call through <code>const</code>, the caller keeps what it knew about everything reachable from <code>*p</code>.</p>
 
-<p>Where a function&#39;s implementation does not agree with that, warning 120 reports it: writing <code>p-&gt;m-&gt;x</code> (or <code>++</code>, <code>+=</code>...) through a <code>const</code> pointer parameter <code>p</code>. Calls are not checked, they assume the same. An explicit cast is taken as intended.</p>
+<p>Where a function&#39;s implementation does not agree with that, warning 120 reports it: writing <code>p-&gt;m-&gt;x</code> (or <code>++</code>, <code>+=</code>...) through a <code>const</code> pointer <code>p</code>, or passing <code>p-&gt;m</code> to a pointer parameter that is not <code>const</code> (<code>void*</code> is assumed not to change it). Passing it to a <code>const</code> parameter is fine: that function assumes the same and is checked the same way. An explicit cast is taken as intended. The same is reported through any <code>const</code> pointer (a local, a member), not only a parameter: it may not be what the programmer meant.</p>
 
 <h3 id="toc_35">6.4 Functions That Are Too Large</h3>
 
@@ -1260,6 +1281,7 @@ void f(int n, int* p)
 
 <ul>
 <li>A3.1 The result is not null and <code>*result</code> is valid. The caller does not own it.</li>
+<li>A3.2 The implementation must return a value on every path: reaching the closing <code>}</code> of a non-void function leaves the result uninitialized (warning 98). <code>main</code> is the exception, its end returns 0.</li>
 </ul>
 
 <h3 id="toc_43">A4. <code>_Opt</code></h3>
@@ -1278,6 +1300,7 @@ void f(int n, int* p)
 <li>A5.3 When <code>a</code> is an owner, <code>b</code> must be an owner too (or a null pointer constant); a view cannot be assigned to an owner. Owner to owner moves <code>b</code>. Owner to non-owner makes <code>a</code> a view of the object <code>b</code> still owns.</li>
 <li>A5.4 <code>= {}</code> may leave non-nullable members null until they are set and before the object is used.</li>
 <li>A5.5 Passing an argument and returning a value follow the same rules, with the parameter or the result as <code>a</code>. There <code>a</code> is a new object, uninitialized, so A5.1 always holds.</li>
+<li>A5.6 A move changes only which owner must release the object. After <code>a = b</code> between owners, the object is still alive and may be read through <code>b</code>. After <code>b</code> is passed to an <code>_Owner</code> parameter, the lifetime of the object may have ended and it must not be used through <code>b</code>.</li>
 </ul>
 
 <h3 id="toc_45">A6. <code>_Out</code></h3>
@@ -1368,10 +1391,11 @@ void f(int n, int* p)
 <li>when the destination pointee is <code>_Out</code> (write only), it may remove <code>_Opt</code> but not add it: <code>char * _Out _Opt *</code> cannot receive <code>&amp;s</code> when <code>s</code> is <code>char *</code>, because null may be stored in <code>s</code> (issue #523).</li>
 </ul></li>
 <li>A15.3 A function pointer may point to a function that accepts more and promises more: each parameter of the function may add <code>_Opt</code> (<code>void (*pf)(int *p)</code> may point to <code>void f(int * _Opt p)</code>, but not the opposite), and its result may remove <code>_Opt</code>. <code>_Owner</code> on parameters and results must match exactly.</li>
-<li>A15.4 A <code>[[nodiscard]]</code> function pointer may point to a function that is not <code>[[nodiscard]]</code>; a pointer without <code>[[nodiscard]]</code> cannot point to a <code>[[nodiscard]]</code> function.</li>
+<li>A15.4 A <code>[[nodiscard]]</code> function pointer may point to a function that is not <code>[[nodiscard]]</code>; a pointer without <code>[[nodiscard]]</code> cannot point to a <code>[[nodiscard]]</code> function. This is only between function types: the result of a call is a value, so <code>struct X * _Owner _Opt p = malloc(sizeof *p);</code> is fine even though <code>malloc</code> is <code>[[nodiscard]]</code>.</li>
 <li>A15.5 <code>[[noreturn]]</code>/<code>_Noreturn</code> must match exactly.</li>
-<li>A15.6 These rules apply only when the extensions are on (<code>#pragma safety enable</code>); otherwise compatibility is the one in C23 6.2.7.</li>
-<li>A15.7 In <code>c ? a : b</code> the <code>_Opt</code> of the result value is decided by the flow analysis, per branch (<code>p ? p : 0</code> may be null, <code>p ? p : q</code> is not), and <code>_Owner</code> stays in the type. Below the value, <code>a</code> and <code>b</code> point to shared objects, so <code>_Opt</code> and <code>_Owner</code> must match at every pointee level: <code>c ? (int * _Opt *) pp1 : (int **) pp2</code> is incompatible.</li>
+<li>A15.6 Only <code>_Opt</code> and <code>_Owner</code> (and, between functions, <code>[[nodiscard]]</code> and <code>[[noreturn]]</code>) are compared. <code>_Clear</code>, <code>_Uninitialized</code>, <code>_Dtor</code> and <code>_View</code> describe the state of an object and are not part of compatibility: <code>struct X * _Owner _Opt p = calloc(1, sizeof *p);</code> is fine with <code>_Clear void * _Owner _Opt calloc(...)</code>. <code>const</code> and <code>_Out</code> only select the A15.2 rule.</li>
+<li>A15.7 These rules apply only when the extensions are on (<code>#pragma safety enable</code>); otherwise compatibility is the one in C23 6.2.7.</li>
+<li>A15.8 In <code>c ? a : b</code> the <code>_Opt</code> of the result value is decided by the flow analysis, per branch (<code>p ? p : 0</code> may be null, <code>p ? p : q</code> is not), and <code>_Owner</code> stays in the type. Below the value, <code>a</code> and <code>b</code> point to shared objects, so <code>_Opt</code> and <code>_Owner</code> must match at every pointee level: <code>c ? (int * _Opt *) pp1 : (int **) pp2</code> is incompatible.</li>
 </ul>
 
 <p>Examples. Each line says what could go wrong if it were accepted.</p>
@@ -1407,7 +1431,7 @@ void examples(int * p, int * _Opt q, int * _Owner o, int c)
     int * _Opt (*pg1)(void) = g_nonnull; /* ok: g_nonnull promises more          */
     int * (*pg2)(void) = g_opt;          /* error: g_opt may return null         */
 
-    /* A15.7 ?: the value is decided by flow, branch by branch */
+    /* A15.8 ?: the value is decided by flow, branch by branch */
     int * r1 = q ? q : p;        /* ok: q is not null in the first branch          */
     int * r2 = q ? q : 0;        /* flow: warning 35, the second branch is null    */
     int * _Opt * r3 = c ? pp1 : &amp;p; /* error: int * _Opt * and int ** share *r3    */
