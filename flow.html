@@ -1427,7 +1427,7 @@ void f(int n, int* p)
 <li>A14.3 At each point, every object has a set of possible states. Each state comes from at least one path. A diagnostic must be reported when some state supports it and must not be reported when none does.</li>
 <li>A14.4 Where paths meet, the set is the union of the arriving sets. A path that left by <code>return</code>, <code>break</code>, <code>continue</code>, <code>goto</code>, <code>throw</code> or a noreturn call does not arrive.</li>
 <li>A14.5 In the true branch of a condition only the states where it can be true remain; in the false branch, only those where it can be false.</li>
-<li>A14.6 Code no path reaches must be reported with warning 68, and its effects must not reach any later point.</li>
+<li>A14.6 Code no path reaches must be reported with warning 68, and its effects must not reach any later point. Code nested in it (the body of an <code>if</code> or a loop inside unreachable code) is unreachable too: nothing in it is reported, and warning 68 is reported once, at the start of the outer unreachable code. The body of a loop whose condition never holds is unreachable code.</li>
 <li>A14.7 When the first test of a loop condition is true in every state, the zero-iteration path must not exist. A <code>do</code> body runs at least once.</li>
 <li>A14.8 A fact supported by several paths is reported once.</li>
 <li>A14.9 An implementation that stops analysing a function must report warning 97 once and nothing else in that function.</li>
@@ -1514,7 +1514,7 @@ void attributes(void)
 <ul>
 <li>A16.1 Two pointer parameters with the same pointed type, neither <code>restrict</code>, may point to the same object. The implementation must be correct in that case.</li>
 <li>A16.2 For each such pair the function is analysed again with both pointing to the same object; each keeps its own nullability. A diagnostic that only this analysis has is reported as warning 100, with its message. Unreachable code (68) and conditions known at compile time (85) that follow from the two pointers being equal are not reported.</li>
-<li>A16.3 <code>restrict</code> on either parameter of a pair says they never point to the same object: the pair is not analysed again.</li>
+<li>A16.3 <code>restrict</code> on either parameter of a pair says they never point to the same object: the pair is not analysed again. Two <code>_Owner</code> parameters never point to the same object either: each owns its object, and the caller cannot pass one owner twice. Two parameters that only read through <code>const</code> (neither <code>_Owner</code>) are not analysed again either: the same object changes nothing for them.</li>
 <li>A16.4 The caller may pass the same object to two parameters, unless one of them is <code>restrict</code>. With <code>restrict</code> the caller is checked: two arguments of the call that may point to the same object, by the values the analysis knows for them, must be reported with warning 101.</li>
 </ul>
 </article></body></html>
