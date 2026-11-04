@@ -700,7 +700,7 @@ struct X* _Nonnull g(void);    /* never returns null */
 struct Y { struct X* _Nonnull x; };
 </code></pre>
 
-<p>Writing the default is redundant and is reported (warning 122). A cast has no nullability, because the analysis follows the value.</p>
+<p>Writing the default is redundant and is reported (warning 122). A cast keeps the nullability of its operand, and writing one in a cast is an error (A13).</p>
 
 <h3 id="toc_10">2.2 A Pointer to a Pointer</h3>
 
@@ -1762,8 +1762,9 @@ void f(int n, int* p)
 <h3 id="toc_55">A13. Casts</h3>
 
 <ul>
-<li>A13.1 A cast has no nullability at the top level; the analysis follows the value (warning 122).</li>
-<li>A13.2 Whether a cast may add or remove <code>_Owner</code> (for example from <code>T* _Owner</code> to <code>T*</code>) is an open question.</li>
+<li>A13.1 A cast changes the type only: it keeps the top-level <code>_Owner</code> and nullability of its operand; <code>const</code> is not kept.</li>
+<li>A13.2 Writing a Cake annotation at any level of a cast (<code>_Owner</code>, <code>_View</code>, <code>_Nullable</code>, <code>_Nonnull</code>, <code>_Dtor</code>, <code>_Ctor</code>, <code>_Uninitialized</code>, <code>_Clear</code>) is an error (2400). To convert a non-owner to an owner, use <code>//lint 78</code> at the assignment.</li>
+<li>A13.3 A cast does not create or end ownership: <code>(void*)p</code> of an owner is still that owner, so passing it to an owner parameter moves <code>p</code>; <code>(void*)p</code> of a non-owner is still a non-owner, and a cast of a temporary owner is still a temporary owner, which must be moved (warning 79 when assigned to a non-owner).</li>
 </ul>
 
 <h3 id="toc_56">A14. Flow analysis</h3>
