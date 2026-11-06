@@ -352,7 +352,7 @@
 <a href="#toc_60">60 Null pointer constant to non-nullable pointer (not emitted)</a>
 </li>
 <li>
-<a href="#toc_61">61 Cast to same type (not emitted)</a>
+<a href="#toc_61">61 Cast to same type</a>
 </li>
 <li>
 <a href="#toc_62">62 Too many initializers</a>
@@ -966,6 +966,9 @@
 <li>
 <a href="#toc_263">2390 Construct not supported by the target</a>
 </li>
+<li>
+<a href="#toc_264">2400 Annotation in a cast</a>
+</li>
 </ul>
 <h2 id="toc_0">Warnings</h2>
 
@@ -1142,6 +1145,8 @@ int main(void) { //warning 11: not following correct brace style {
 conditional is qualified with the qualifiers of <em>both</em> referenced types, so a
 const operand makes the whole result const.</p>
 
+<p>Converting to <code>void* _Owner</code> is not reported: <code>free(s)</code> with <code>const char* _Owner s</code> releases the object, it does not write to it.</p>
+
 <p><strong>Not reported:</strong> an explicit cast that removes the qualifier
 (<code>g((struct X*)p)</code>). That is legal C -- the cast is the author taking
 responsibility -- so no diagnostic is possible, and none of the const checks
@@ -1254,6 +1259,20 @@ void f(int i)
     if (i) j =1;
     i = j; //warning C0030: object &#39;j&#39; can be uninitialized
 }
+int main() {}
+
+</code></pre>
+
+<p>It is also issued when the pointee of a returned pointer may be uninitialized on some path but the return type does not declare it <code>_Uninitialized</code>.</p>
+
+<!-- runnable -->
+
+<pre><code class="language-c">#pragma safety enable
+
+_Uninitialized void * _Owner malloc(unsigned int size);
+
+int * _Owner f() { return malloc(sizeof(int)); } //warning 30: may be uninitialized, but the return type is not _Uninitialized
+_Uninitialized int * _Owner g() { return malloc(sizeof(int)); }
 int main() {}
 
 </code></pre>
@@ -1652,9 +1671,22 @@ int main()
 
 <p>Reserved (<code>W_NULLABLE_TO_NON_NULLABLE</code>). Not emitted by the current compiler.</p>
 
-<h3 id="toc_61">61 Cast to same type (not emitted)</h3>
+<h3 id="toc_61">61 Cast to same type</h3>
 
-<p>Reserved (<code>W_CAST_TO_SAME_TYPE</code>). Not emitted by the current compiler.</p>
+<p>The cast does nothing: the operand already has this type. Not reported inside
+macros, when any side comes from a typedef, in a conversion between an enum and
+an integer, or for a computed non-pointer value, because the types may be the
+same only on this target.
+Also not reported for a pointer reached through a <code>const</code> object: the cast says
+it is intended (warning 120).</p>
+
+<!-- runnable -->
+
+<pre><code class="language-c">void f(int i)
+{
+    int a = (int)i; //warning 61: casting to the same type
+}
+</code></pre>
 
 <h3 id="toc_62">62 Too many initializers</h3>
 
@@ -4087,5 +4119,22 @@ when an output is produced.</p>
 <!-- runnable -->
 
 <pre><code class="language-c">_BitInt(100) x; //error 2390: _BitInt(100) needs a 128-bit integer, not available on this target
+</code></pre>
+
+<h3 id="toc_263">2400 Annotation in a cast</h3>
+
+<p>A cast changes the type only: it keeps the <code>_Owner</code> and nullability of its
+operand, so <code>(void*)p</code> is still <code>_Owner</code> when <code>p</code> is. Writing an annotation in a
+cast is an error. To convert a non-owner to an owner, use <code>//lint 78</code> at the
+assignment.</p>
+
+<!-- runnable -->
+
+<pre><code class="language-c">#pragma safety enable
+
+void f(void* p)
+{
+    void* a = (void* _Owner)p; //error 2400: a cast cannot have ownership or nullability annotations: it keeps those of its operand
+}
 </code></pre>
 </article></body></html>
