@@ -1751,14 +1751,33 @@ int main() {
 }
 </code></pre>
 
-<p>A parameter can carry a <code>compile_assert</code> after its declarator. Each call checks it with the argument in place of the parameter, as if the caller wrote <code>f((compile_assert(x &gt; 0), x))</code>.</p>
+<p>A function declarator can carry <code>compile_assert</code> conditions after its <code>)</code>. Each call checks them with the arguments in place of the parameters, as if the caller wrote <code>f((compile_assert(x &gt; 0), x))</code>. A condition can use every parameter.</p>
 
-<pre><code class="language-c">void f(int i compile_assert(i &gt; 0));
+<pre><code class="language-c">void f(int a, int b) compile_assert(a &gt; 0) compile_assert(a &gt; b);
 
-void g(int x) {
-    f(1);              /* ok */
-    f(x);              /* warning 67: argument &#39;x&#39; may not adhere to the contract &#39;i &gt; 0&#39; of parameter &#39;i&#39; */
-    if (x &gt; 0) f(x);   /* ok */
+void g(int x, int y) {
+    f(2, 1);           /* ok */
+    f(x, y);           /* warning 67: the call may not adhere to the contract &#39;a &gt; 0&#39; of the function */
+    if (x &gt; y &amp;&amp; y &gt; 0) f(x, y);   /* ok */
+}
+</code></pre>
+
+<p><code>runtime_assert</code> after the declarator is a condition the caller does not have to prove. The body considers it true, like the other conditions.</p>
+
+<pre><code class="language-c">int g(int a) runtime_assert(a &gt; 0)
+{
+    compile_assert(a &gt; 0);   /* ok: assumed */
+    return a;
+}
+</code></pre>
+
+<p><code>_result</code> names the returned value and exists only when the function does not return <code>void</code>. A condition that uses it is not checked by the caller: it is checked in the function, at each <code>return</code>, with <code>_result</code> taking the returned expression. Repeat the conditions in the definition.</p>
+
+<pre><code class="language-c">int f(int a) compile_assert(_result &gt; 0)
+{
+    if (a)
+        return 1;      /* ok */
+    return 0;          /* warning 67: argument &#39;0&#39; may not adhere to the contract &#39;_result &gt; 0&#39; of the function */
 }
 </code></pre>
 
